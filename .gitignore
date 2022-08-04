@@ -352,3 +352,5 @@ MigrationBackup/
 launchSettings.json
 
 logs/
+
+.vscode/
