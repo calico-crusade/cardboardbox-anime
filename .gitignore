@@ -354,3 +354,5 @@ launchSettings.json
 logs/
 
 .vscode/
+
+dist/
