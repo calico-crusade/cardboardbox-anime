@@ -1,0 +1,166 @@
+$filters-size: 225px;
+
+:host {
+    width: 100%;
+    height: 100%;
+}
+
+.component-container {
+    display: flex;
+    flex-flow: row;
+    position: relative;
+
+    .background-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        filter: grayscale(80%) opacity(25%);
+        z-index: 0;
+
+        .bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-size: cover;
+            background-position: center;
+            transition: all 250ms;
+            opacity: 0;
+
+            &.active {
+                opacity: 1;
+            }
+        }
+    }
+
+    aside {
+        display: flex;
+        flex-flow: column;
+        width: $filters-size;
+        border-right: 1px solid var(--text-color-muted);
+        z-index: 99;
+        margin-left: -#{$filters-size + 1px};
+        transition: all 250ms;
+        overflow: hidden;
+        
+        .filters {
+            margin-top: 10px;
+            flex: 1;
+            display: flex;
+            flex-flow: column;
+            overflow-x: hidden;
+            overflow-y: auto;
+            
+            .search {
+                margin: 0 auto;
+                display: flex;
+                flex-flow: column;
+                width: 150px;
+
+                input {
+                    outline: none;
+                    border: none;
+                    border-bottom: 1px solid var(--text-color-muted);
+                    background-color: transparent;
+                    color: #fff;
+                    font-size: 16px;
+                }
+            }
+
+            .filter {
+                margin: 10px auto;
+                display: flex;
+                flex-flow: column;
+                width: 150px;
+
+                .label {
+                    text-align: center;
+                    padding-bottom: 5px;
+                    border-bottom: 1px solid var(--text-color-muted);
+                    text-transform: capitalize;
+                }
+
+                .options {
+                    margin: 5px auto;
+                    display: flex;
+                    flex-flow: column;
+
+                    .option {
+
+                        label {
+                            cursor: pointer;
+                        }
+                    }
+                }
+            }
+        }
+
+        .counts {
+            text-align: center;
+        }
+
+        .current-background {
+            display: flex;
+            flex-flow: column;
+            margin: 0 10px;
+            border-top: 1px solid var(--text-color-muted);
+            padding-top: 10px;
+            position: relative;
+
+            .title {
+                position: absolute;
+                bottom: 20%;
+                transform-origin: 0 0;
+                transform: rotate(270deg);
+                padding-bottom: 5px;
+            }
+        }
+    }
+
+    main {
+        flex: 1;
+        display: flex;
+        flex-flow: column;
+        overflow-x: hidden;
+        overflow-y: auto;
+        z-index: 99;
+
+        .anime {
+            flex: 1;
+            margin: 10px;
+            display: flex;
+            flex-flow: row wrap;
+            max-width: 1150px;
+            width: 100%;
+            margin: auto;
+        }
+    }
+
+    .filter-btn {
+        position: absolute;
+        top: 10px;
+        left: 0;
+
+        background-color: transparent;
+        color: #fff;
+        outline: none;
+        border: none;
+        z-index: 999;
+
+        transition: all 250ms;
+        cursor: pointer;
+    }
+
+    &.open {
+        aside {
+            margin-left: 0;
+        }
+
+        .filter-btn {
+            margin-left: #{$filters-size - 20px};
+        }
+    }
+}

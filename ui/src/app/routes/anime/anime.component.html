@@ -1,0 +1,49 @@
+<div class="component-container" 
+    [ngClass]="{ 'open': filtersOpen }"
+    (swipeleft)="filtersOpen = false"
+    (swiperight)="filtersOpen = true">
+    <div class="background-image">
+        <div class="bg" 
+             *ngFor="let b of bgs; let i = index" 
+             [style.background-image]="b.src"
+             [ngClass]="{ 'active': curIndex === i }"></div>
+    </div>
+
+    <aside>
+        <div class="filters">
+            <div class="search">
+                <input type="text" placeholder="Search Titles" [(ngModel)]="search" />
+            </div>
+            <ng-container *ngFor="let filter of filters">
+                <div class="filter" *ngIf="filter.enabled && filter.show">
+                    <div class="label" (click)="toggleAll(filter)">
+                        <input type="checkbox" [ngModel]="allChecked(filter)" (ngModelChange)="updateRoute()" />
+                        <label>{{ filter.param }}:</label>
+                    </div>
+                    <div class="options">
+                        <div class="option" *ngFor="let op of filter.options" (click)="toggle(op)">
+                            <input type="checkbox" [(ngModel)]="op.checked" (ngModelChange)="updateRoute()" />
+                            <label>{{ op.text }}</label>
+                        </div>
+                    </div>
+                </div>
+            </ng-container>
+        </div>
+        <div class="counts">
+            {{ anime.length }} / {{ total }}
+        </div>
+        <div class="current-background" *ngIf="current">
+            <div class="title">Current Background</div>
+            <cba-card class="card" [anime]="current"></cba-card>
+        </div>
+    </aside>
+    <main>
+        <div class="anime">
+            <cba-card *ngFor="let ani of anime" [anime]="ani"></cba-card>
+        </div>
+    </main>
+    <button class="filter-btn" (click)="filtersOpen = !filtersOpen">
+        <span *ngIf="filtersOpen">&lt;</span>
+        <span *ngIf="!filtersOpen">&gt;</span>
+    </button>
+</div>

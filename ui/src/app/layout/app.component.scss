@@ -1,0 +1,54 @@
+.app {
+    font-family: 'Roboto';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-flow: column;
+    color: var(--text-color);
+    background-color: var(--bg-main);
+
+    header {
+        background-color: var(--bg-card);
+        display: flex;
+        flex-flow: row;
+        border-bottom: 2px solid var(--color-vrv);
+
+        .logo {
+            margin: 10px auto;
+            cursor: pointer;
+            display: flex;
+            flex-flow: row;
+            color: #fff;
+            text-decoration: none;
+
+            svg {
+                height: 24px;
+                .group-three {
+                    fill: #1b1a26;
+                }
+
+                .group-two {
+                    fill: #fff;
+                }
+
+                .group-one {
+                    fill: var(--color-vrv);
+                }
+            }
+
+            span {
+                margin: auto 5px;
+            }
+        }
+    }
+
+    main {
+        flex: 1;
+        overflow: hidden;
+        position: relative;
+    }
+}
