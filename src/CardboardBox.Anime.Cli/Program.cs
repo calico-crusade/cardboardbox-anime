@@ -1,6 +1,5 @@
-﻿using CardboardBox.Anime.Cli;
-using CardboardBox.Anime.Vrv;
-using CardboardBox.Http;
+﻿using CardboardBox.Anime;
+using CardboardBox.Anime.Cli;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
@@ -11,7 +10,6 @@ var config = new ConfigurationBuilder()
 	.Build();
 
 return await new ServiceCollection()
-	.AddCardboardHttp()
 	.AddLogging(c =>
 		c.AddSerilog(new LoggerConfiguration()
 			.WriteTo.Console()
@@ -20,7 +18,7 @@ return await new ServiceCollection()
 	)
 	.AddSingleton<IConfiguration>(config)
 
-	.AddTransient<IVrvApiService, VrvApiService>()
+	.RegisterCba()
 
 	.AddSingleton<IRunner, Runner>()
 	.BuildServiceProvider()

@@ -1,12 +1,12 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { VrvAnime } from 'src/app/services/anime.model';
+import { Anime } from 'src/app/services/anime.model';
 import { AnimeService } from 'src/app/services/anime.service';
 import { UtilitiesService } from 'src/app/services/utilities.service';
 
 const STORE_TUT = 'showTut';
 
-type VrvAnimeImage = VrvAnime & { src: string; };
+type VrvAnimeImage = Anime & { src: string; };
 type CheckOption = {
     text: string;
     checked: boolean;
@@ -16,7 +16,7 @@ type CheckOptions = CheckOption[];
 type AvailableParams = 'channels' | 'languages' | 'ratings' | 'types' | 'tags';
 type QueryParam = {
     param: AvailableParams;
-    field: (anime: VrvAnime) => string[];
+    field: (anime: Anime) => string[];
     options: CheckOptions;
     show: boolean;
     enabled: boolean;
@@ -37,10 +37,14 @@ export class AnimeComponent implements OnInit, OnDestroy {
     filters: QueryParams = this.generateFilters();
     search: string = '';
     filteredTotal: number = 0;
-    anime: VrvAnime[] = [];
+    anime: Anime[] = [];
     showTut: boolean = true;
 
-    private _anime: VrvAnime[] = [];
+    private _anime: Anime[] = [];
+    private _page: number = 1;
+    private _size: number = 50;
+    private _totalPages: number = 0;
+    private _totalCount: number = 0;
 
     get total() { return this._anime.length; }
 
@@ -67,9 +71,12 @@ export class AnimeComponent implements OnInit, OnDestroy {
         this.showTut = !localStorage.getItem(STORE_TUT);
 
         this.api
-            .all()
+            .page(this._page, this._size, true)
             .subscribe(t => {
-                this._anime = t;
+                this._anime = t.results;
+                this._totalPages = t.pages;
+                this._totalCount = t.count;
+                
                 this.getFilters();
                 this.handleBgs();
                 this.filter();
@@ -168,22 +175,10 @@ export class AnimeComponent implements OnInit, OnDestroy {
         clearInterval(this.interval);
     }
 
-    getImage(anime: VrvAnime) {
-        for(let img of anime.images) {
-            if (img.type !== 'poster_tall') continue;
-
-            if (img.width < 100 || img.height < 200) continue;
-            
-            return `url("${img.source}")`;
-        }
-
-        return '';
-    }
-
-    getMaxImage(anime: VrvAnime) {
+    getMaxImage(anime: Anime) {
         return anime.images
-            .filter(t => t.type === 'poster_wide')
-            .reduce((p, v) => p.height > v.height && p.width > v.width ? p : v);
+            .filter(t => t.type === 'wallpaper')
+            .reduce((p, v) => p.height && p.width && v.height && v.width && p.height > v.height && p.width > v.width ? p : v);
     }
 
     getFilters() {
@@ -192,10 +187,10 @@ export class AnimeComponent implements OnInit, OnDestroy {
         const ratings: string[] = [];
 
         for(const anime of this._anime) {
-            if (channels.indexOf(anime.channelId) === -1)
-                channels.push(anime.channelId);
+            if (channels.indexOf(anime.platformId) === -1)
+                channels.push(anime.platformId);
             
-            for(const tag of anime.metadata?.series?.tenantCategories || []) {
+            for(const tag of anime.metadata?.tags || []) {
                 if (tags.indexOf(tag) === -1)
                     tags.push(tag);
             }
@@ -228,19 +223,13 @@ export class AnimeComponent implements OnInit, OnDestroy {
         return [
             {
                 param: 'channels',
-                field: (t) => [ t.channelId ],
+                field: (t) => [ t.platformId ],
                 options: [],
                 show: true,
                 defaults: [],
                 enabled: true
             }, {
-                field: (t) => {
-                    const langs = [];
-                    if (!t.metadata.subbed && !t.metadata.dubbed) langs.push('Unknown');
-                    if (t.metadata.subbed) langs.push('Subbed');
-                    if (t.metadata.dubbed) langs.push('Dubbed');
-                    return langs;
-                },
+                field: (t) => t.metadata.languageTypes,
                 options: [
                     { text: 'Subbed', checked: true },
                     { text: 'Dubbed', checked: true }, 
@@ -268,7 +257,7 @@ export class AnimeComponent implements OnInit, OnDestroy {
                 enabled: true,
                 param: 'ratings'
             }, {
-                field: (t) => t.metadata.series?.tenantCategories ?? [],
+                field: (t) => t.metadata.tags,
                 options: [],
                 show: false,
                 defaults: [],

@@ -2,12 +2,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CardboardBox.Anime.Api.Controllers
 {
-	using Vrv;
-
 	[ApiController]
 	public class VrvController : ControllerBase
 	{
-		[HttpGet, Route("vrv/all"), ProducesDefaultResponseType(typeof(VrvAnime[]))]
+		[HttpGet, Route("vrv/all")]
 		public IActionResult All()
 		{
 			var io = System.IO.File.OpenRead("vrv-formatted.json");

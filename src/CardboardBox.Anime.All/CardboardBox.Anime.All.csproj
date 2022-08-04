@@ -7,9 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CardboardBox.Database" Version="1.0.4" />
-    <PackageReference Include="CardboardBox.Discord" Version="1.0.7" />
-    <PackageReference Include="CardboardBox.Http" Version="1.0.1" />
+    <ProjectReference Include="..\CardboardBox.Anime.Funimation\CardboardBox.Anime.Funimation.csproj" />
+    <ProjectReference Include="..\CardboardBox.Anime.Vrv\CardboardBox.Anime.Vrv.csproj" />
   </ItemGroup>
 
 </Project>

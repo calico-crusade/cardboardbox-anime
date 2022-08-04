@@ -12,6 +12,7 @@ import { AnimeComponent } from './routes/anime/anime.component';
 import { ErrorComponent } from './routes/error/error.component';
 import { CardComponent } from './components/card/card.component';
 import { LazyLoadImageModule } from 'ng-lazyload-image';
+import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 
 export class MyHammerConfig extends HammerGestureConfig {
     override overrides = {
@@ -33,7 +34,8 @@ export class MyHammerConfig extends HammerGestureConfig {
         FormsModule,
         CommonModule,
         LazyLoadImageModule,
-        HammerModule
+        HammerModule,
+        InfiniteScrollModule
     ],
     providers: [
         {

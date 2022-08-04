@@ -130,4 +130,18 @@
             }
         }
     }
+
+    &.funimation {
+        .image {
+            border-bottom-color: var(--color-funimation);
+        }
+
+        &:hover {
+            .details {
+                .channel-icon {
+                    background-color: var(--color-funimation);
+                }
+            }
+        }
+    }
 }

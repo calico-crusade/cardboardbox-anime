@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { VrvAnime } from './anime.model';
+import { VrvAnime, PagedResults } from './anime.model';
 import { environment } from 'src/environments/environment';
 import { Observable, shareReplay } from 'rxjs';
 
@@ -23,5 +23,11 @@ export class AnimeService {
                 .get<VrvAnime[]>(`${this.apiUrl}/vrv/all`)
                 .pipe(shareReplay());
         return this.cache$;
+    }
+
+    page(page: number = 1, size: number = 50, asc: boolean = true) {
+        return this.http.get<PagedResults>(`${this.apiUrl}/anime/all`, {
+            params: { page, size, asc }
+        });
     }
 }

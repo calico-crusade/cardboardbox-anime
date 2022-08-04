@@ -36,3 +36,45 @@ export interface VrvAnime {
         }
     }
 }
+
+export interface Anime {
+    id: string;
+    hashId: string;
+    animeId: string;
+    link: string;
+    title: string;
+    description: string;
+    type: string;
+    platformId: string;
+    
+    images: {
+        width?: number;
+        height?: number;
+        type: string;
+        source: string;
+        platformId: string;
+    }[];
+
+    metadata: {
+        languages: string[];
+        languageTypes: string[];
+        ratings: string[];
+        tags: string[];
+        mature: boolean;
+        seasons: {
+            episodeCount: number;
+            type: string;
+            order: number;
+            number: number;
+            altTitle?: string;
+            id: string;
+        }[],
+        ext: { [key: string]: string; }
+    }
+}
+
+export interface PagedResults {
+    pages: number;
+    count: number;
+    results: Anime[];
+}

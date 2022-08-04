@@ -4,7 +4,7 @@
 
 export const environment = {
     production: false,
-    apiUrl: 'https://cba-api.index-0.com' //'https://localhost:7240'
+    apiUrl: 'https://localhost:7240' //'https://cba-api.index-0.com' //
 };
 
 /*

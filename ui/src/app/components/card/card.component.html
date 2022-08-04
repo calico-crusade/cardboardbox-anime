@@ -1,17 +1,16 @@
-<a class="card" [href]="anime.link" target="_blank" [ngClass]="anime.channelId">
+<a class="card" [href]="anime.link" target="_blank" [ngClass]="anime.platformId">
     <div class="image" [lazyLoad]="getImage()"></div>
     <div class="mature" *ngIf="anime.metadata.mature">Mature</div>
     <div class="details">
         <div class="channel-icon">
-            <img [src]="'/assets/' + anime.channelId + '-icon.png'" />
+            <img [src]="'/assets/' + anime.platformId + '-icon.png'" />
         </div>
         <div class="title">{{ anime.title }}</div>
         <div class="tags" [ngSwitch]="anime.type">
             <div class="type series" *ngSwitchCase="'series'">Series</div>
             <div class="type movie" *ngSwitchCase="'movie_listing'">Movie</div>
             <div class="type" *ngSwitchDefault>Unknown</div>
-            <div class="langs" *ngIf="anime.metadata.subbed">Sub</div>
-            <div class="langs" *ngIf="anime.metadata.dubbed">Dub</div>
+            <div class="langs" *ngFor="let lang of langs">{{ lang }}</div>
         </div>
     </div>
 </a>
