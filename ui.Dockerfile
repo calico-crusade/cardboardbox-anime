@@ -36,7 +36,7 @@ FROM nginx:1.17-alpine
 # ENV BACKEND="/api"
 
 # copy artifact build from the 'build environment'
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=build /app/dist/cardboard-box-anime /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # expose port 80
