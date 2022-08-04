@@ -4,6 +4,8 @@ import { VrvAnime } from 'src/app/services/anime.model';
 import { AnimeService } from 'src/app/services/anime.service';
 import { UtilitiesService } from 'src/app/services/utilities.service';
 
+const STORE_TUT = 'showTut';
+
 type VrvAnimeImage = VrvAnime & { src: string; };
 type CheckOption = {
     text: string;
@@ -36,6 +38,7 @@ export class AnimeComponent implements OnInit, OnDestroy {
     search: string = '';
     filteredTotal: number = 0;
     anime: VrvAnime[] = [];
+    showTut: boolean = true;
 
     private _anime: VrvAnime[] = [];
 
@@ -61,6 +64,8 @@ export class AnimeComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
+        this.showTut = !localStorage.getItem(STORE_TUT);
+
         this.api
             .all()
             .subscribe(t => {
@@ -282,5 +287,10 @@ export class AnimeComponent implements OnInit, OnDestroy {
         for(let f of filter.options)
             f.checked = val;
         this.updateRoute();
+    }
+
+    toggleTut() {
+        this.showTut = false;
+        localStorage.setItem(STORE_TUT, 'true');
     }
 }

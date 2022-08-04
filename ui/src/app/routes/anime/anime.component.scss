@@ -163,4 +163,45 @@ $filters-size: 225px;
             margin-left: #{$filters-size - 20px};
         }
     }
+
+    .tutorial {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+
+        display: flex;
+        flex-flow: column;
+
+        background-color: rgba(0, 0, 0, 0.75);
+        z-index: 9999;
+
+        .content {
+            margin: auto;
+            display: flex;
+            flex-flow: column;
+
+            h2, p {
+                margin: 10px;
+                text-align: center;
+            }
+
+            button {
+                margin: 10px auto;
+                border: 2px solid var(--color-vrv);
+                color: var(--color-vrv);
+                background-color: transparent;
+                text-transform: uppercase;
+                cursor: pointer;
+                font-size: 20px;
+                padding: 5px 20px;
+
+                &:hover {
+                    background-color: var(--color-vrv);
+                    color: #000;
+                }
+            }
+        }
+    }
 }

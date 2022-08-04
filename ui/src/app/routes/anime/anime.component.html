@@ -46,4 +46,14 @@
         <span *ngIf="filtersOpen">&lt;</span>
         <span *ngIf="!filtersOpen">&gt;</span>
     </button>
+
+    <div class="tutorial" *ngIf="showTut">
+        <div class="content">
+            <h2>Tutorial</h2>
+            <p>You can swipe vertically to open and close the filters</p>
+            <button (click)="toggleTut()">
+                I Understand!
+            </button>
+        </div>
+    </div>
 </div>
