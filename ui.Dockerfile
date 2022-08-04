@@ -25,7 +25,6 @@ COPY ui/ .
 # RUN ng e2e --port 4202
 
 # generate build
-RUN ng build core
 RUN ng build --prod -c $configuration --base-href / --source-map=false home
 
 ############
