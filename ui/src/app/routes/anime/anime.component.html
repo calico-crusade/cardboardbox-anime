@@ -12,7 +12,7 @@
     <aside>
         <div class="filters">
             <div class="search">
-                <input type="text" placeholder="Search Titles" [(ngModel)]="search" />
+                <input type="text" placeholder="Search Titles" [(ngModel)]="search" (ngModelChange)="searchFilter()" />
             </div>
             <ng-container *ngFor="let filter of filters">
                 <div class="filter" *ngIf="filter.enabled && filter.show">
