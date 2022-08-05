@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Anime, FilterSearch } from 'src/app/services/anime.model';
+import { Anime, FilterSearch, MatureType } from 'src/app/services/anime.model';
 import { AnimeService } from 'src/app/services/anime.service';
 import { UtilitiesService } from 'src/app/services/utilities.service';
 
@@ -78,7 +78,7 @@ export class AnimeComponent implements OnInit, OnDestroy {
         
         let params: { [key: string]: any } = { };
 
-        if (this.filter.mature !== undefined) params['mature'] = +this.filter.mature;
+        if (!this.filter.mature && this.filter.mature !== MatureType.Both) params['mature'] = +this.filter.mature;
         if (!this.filter.asc) params['asc'] = 'false';
         if (this.filter.search) params['search'] = this.filter.search;
         

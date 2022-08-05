@@ -26,7 +26,7 @@ export class AnimeService {
     }
 
     search(search: FilterSearch) {
-        search.mature = +search.mature;
+        search.mature = +search.mature || 0;
         return this.http.post<PagedResults>(`${this.apiUrl}/anime/all`, search);
     }
 

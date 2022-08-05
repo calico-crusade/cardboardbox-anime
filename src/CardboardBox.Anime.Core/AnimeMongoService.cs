@@ -85,18 +85,23 @@ namespace CardboardBox.Anime.Core
 
 			if (!string.IsNullOrEmpty(text))
 				filters.Add(Filter.Text(text));
+
 			if (langs.Any())
 				filters.Add(Filter.AnyIn(t => t.Metadata.Languages, langs));
+
 			if (types.Any())
 				filters.Add(Filter.AnyIn(t => t.Metadata.LanguageTypes, types));
+
 			if (plats.Any())
 				filters.Add(Filter.In(t => t.PlatformId, plats));
+
 			if (tags.Any())
 				filters.Add(Filter.AnyIn(t => t.Metadata.Tags, tags));
+
 			if (mature != FilterSearch.MatureType.Both)
 				filters.Add(Filter.Eq(t => t.Metadata.Mature, FilterSearch.MatureType.Mature == mature));
 
-			var filter = Filter.And(filters.ToArray());
+			var filter = filters.Any() ? Filter.And(filters.ToArray()) : Filter.Empty;
 			return _mongo.Paginate(page, size, t => t.Title, asc, filter);
 		}
 
