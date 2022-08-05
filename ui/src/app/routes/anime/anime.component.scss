@@ -197,3 +197,11 @@ $filters-size: 250px;
         }
     }
 }
+
+@media screen and (max-width: 500px) {
+    main {
+        .anime {
+            min-width: 100vw;
+        }
+    }
+}
