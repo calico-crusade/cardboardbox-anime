@@ -100,6 +100,12 @@ $filters-size: 250px;
                 animation-timing-function: linear;
             }
 
+            &.no-animation {
+                span {
+                    animation: none;
+                }
+            }
+
             @keyframes spin { 
                 from { 
                     transform: rotate(0deg); 
@@ -121,12 +127,6 @@ $filters-size: 250px;
             .infinite-loading {
                 width: 100%;
                 display: flex;
-
-                .loading {
-                    span {
-                        animation: none;
-                    }
-                }
             }
         }
     }

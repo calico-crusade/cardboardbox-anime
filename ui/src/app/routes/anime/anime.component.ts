@@ -80,6 +80,7 @@ export class AnimeComponent implements OnInit, OnDestroy {
 
         if (this.filter.mature !== undefined) params['mature'] = +this.filter.mature;
         if (!this.filter.asc) params['asc'] = 'false';
+        if (this.filter.search) params['search'] = this.filter.search;
         
         for(const key in this.filter.queryables) {
             const vals = this.filter.queryables[key];

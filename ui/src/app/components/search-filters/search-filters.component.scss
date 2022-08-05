@@ -40,12 +40,32 @@
             padding-bottom: 5px;
             border-bottom: 1px solid var(--text-color-muted);
             text-transform: capitalize;
+            position: relative;
+
+            button {
+                position: absolute;
+                right: 0;
+
+                border: none;
+                padding: 0;
+
+                .close {
+                    display: none;
+                }
+            }
         }
 
+        .options,
         .toggles {
             display: flex;
             flex-flow: row;
-            margin: 5px auto;
+            overflow-x: hidden;
+            overflow-y: auto;
+            transition: all 250ms;
+        }
+
+        .toggles {
+            margin: 2px auto;
 
             button {
                 &:first-child {
@@ -61,11 +81,31 @@
         }
 
         .options {
-            display: flex;
             flex-flow: row wrap;
 
             button {
                 margin: 2px auto;
+            }
+        }
+
+        &.closed {
+
+            .title {
+                button {
+                    .close {
+                        display: inline;
+                    }
+
+                    .open {
+                        display: none;
+                    }
+                }
+            }
+            
+            .options,
+            .toggles {
+                max-height: 0;
+                overflow: hidden;
             }
         }
     }

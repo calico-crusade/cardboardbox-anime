@@ -32,11 +32,15 @@
             <img src="/assets/loading.gif" />
             <span>Loading...</span>
         </div>
+        <div class="loading no-animation" *ngIf="anime.length == 0 && !loading">
+            <img src="/assets/error.gif" />
+            <span>Your search returned no records</span>
+        </div>
         <div class="anime" *ngIf="anime.length > 0">
             <cba-card *ngFor="let ani of anime" [anime]="ani"></cba-card>
             
             <div class="infinite-loading" *ngIf="loading">
-                <div class="loading">
+                <div class="loading no-animation">
                     <img src="/assets/loading.gif" />
                     <span>Loading...</span>
                 </div>

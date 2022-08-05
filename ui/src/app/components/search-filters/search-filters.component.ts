@@ -83,6 +83,7 @@ export class SearchFiltersComponent implements OnInit {
             size: 50,
             asc: p.asc === undefined ? true : false,
             mature: p.mature,
+            search: p.search || '',
             queryables: { }
         };
 
@@ -114,5 +115,9 @@ export class SearchFiltersComponent implements OnInit {
         }
 
         this.onSearch.emit(copy);
+    }
+
+    toggleEl(el: HTMLElement) {
+        el.classList.toggle('closed');
     }
 }
