@@ -3,7 +3,7 @@
 #############
 
 # base image
-FROM node:12 as build
+FROM node:16 as build
 ARG configuration=production
 
 # set working directory
