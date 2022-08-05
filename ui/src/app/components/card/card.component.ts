@@ -1,5 +1,5 @@
 import { Component, Input, OnInit, ViewEncapsulation } from '@angular/core';
-import { Anime, VrvAnime } from 'src/app/services/anime.model';
+import { Anime, Image, VrvAnime } from 'src/app/services/anime.model';
 
 @Component({
     selector: 'cba-card',
@@ -36,9 +36,26 @@ export class CardComponent implements OnInit {
             if (!img.width || !img.height) continue;
             if (img.width < 100 || img.height < 200) continue;
             
-            return img.source;
+            if (this.anime.platformId !== 'funimation') return img.source;
+
+            return this.handleFunimationImage(img);
         }
 
         return '';
+    }
+
+    handleFunimationImage(img: Image) {
+        //c_fill,q_80,w_265,h_397
+        const getModifier = (w: number, h: number) => `c_fill,q_80,w_${w},h_${h}`;
+        const width = 150, height = 210;
+        const mod = getModifier(width, height);
+
+        const parts = img.source.split('/image/upload/oth');
+        if (parts.length === 1) return img.source;
+
+        const dom = parts[0];
+        parts.splice(0, 1);
+
+        return dom + '/image/upload/' + mod + '/oth' + parts.join('/image/upload/oth');
     }
 }

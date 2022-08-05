@@ -37,6 +37,14 @@ export interface VrvAnime {
     }
 }
 
+export interface Image {
+    width?: number;
+    height?: number;
+    type: string;
+    source: string;
+    platformId: string;
+}
+
 export interface Anime {
     id: string;
     hashId: string;
@@ -47,13 +55,7 @@ export interface Anime {
     type: string;
     platformId: string;
     
-    images: {
-        width?: number;
-        height?: number;
-        type: string;
-        source: string;
-        platformId: string;
-    }[];
+    images: Image[];
 
     metadata: {
         languages: string[];
@@ -77,4 +79,30 @@ export interface PagedResults {
     pages: number;
     count: number;
     results: Anime[];
+}
+
+export type AvailableParams = 'platforms' | 'languages' | 'ratings' | 'types' | 'tags';
+
+export interface Filter {
+    key: AvailableParams;
+    values: string[];
+}
+
+export type Filters = Filter[];
+
+export enum MatureType {
+    Both = 0,
+    Mature = 1,
+    Everyone = 2
+}
+
+export interface FilterSearch {
+    page: number;
+    size: number;
+    search?: string;
+    queryables: {
+        [key: string]: string[];
+    }
+    asc: boolean;
+    mature: MatureType;
 }

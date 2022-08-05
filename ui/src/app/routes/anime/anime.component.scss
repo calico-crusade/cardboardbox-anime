@@ -1,4 +1,4 @@
-$filters-size: 225px;
+$filters-size: 250px;
 
 :host {
     width: 100%;
@@ -47,56 +47,10 @@ $filters-size: 225px;
         overflow: hidden;
         
         .filters {
-            margin-top: 10px;
             flex: 1;
-            display: flex;
-            flex-flow: column;
-            overflow-x: hidden;
-            overflow-y: auto;
-            
-            .search {
-                margin: 0 auto;
-                display: flex;
-                flex-flow: column;
-                width: 150px;
-
-                input {
-                    outline: none;
-                    border: none;
-                    border-bottom: 1px solid var(--text-color-muted);
-                    background-color: transparent;
-                    color: #fff;
-                    font-size: 16px;
-                }
-            }
-
-            .filter {
-                margin: 10px auto;
-                display: flex;
-                flex-flow: column;
-                width: 150px;
-
-                .label {
-                    text-align: center;
-                    padding-bottom: 5px;
-                    border-bottom: 1px solid var(--text-color-muted);
-                    text-transform: capitalize;
-                }
-
-                .options {
-                    margin: 5px auto;
-                    display: flex;
-                    flex-flow: column;
-
-                    .option {
-
-                        label {
-                            cursor: pointer;
-                        }
-                    }
-                }
-            }
+            overflow: hidden;
         }
+        
 
         .counts {
             text-align: center;
@@ -128,6 +82,33 @@ $filters-size: 225px;
         overflow-y: auto;
         z-index: 99;
 
+        .loading {
+            margin: auto;
+            display: flex;
+            flex-flow: row;
+
+            img {
+                width: 50px;
+            }
+
+            span {
+                margin: auto 10px;
+                transform-origin: -35px 15px;
+                animation-name: spin;
+                animation-duration: 4000ms;
+                animation-iteration-count: infinite;
+                animation-timing-function: linear;
+            }
+
+            @keyframes spin { 
+                from { 
+                    transform: rotate(0deg); 
+                } to { 
+                    transform: rotate(360deg); 
+                }
+            }
+        }
+
         .anime {
             flex: 1;
             margin: 10px;
@@ -136,6 +117,17 @@ $filters-size: 225px;
             max-width: 1150px;
             width: 100%;
             margin: auto;
+
+            .infinite-loading {
+                width: 100%;
+                display: flex;
+
+                .loading {
+                    span {
+                        animation: none;
+                    }
+                }
+            }
         }
     }
 

@@ -58,6 +58,8 @@ namespace CardboardBox.Anime.Cli
 					case "all": await All(); break;
 					case "reformat": await ReformatIds(); break;
 					case "load": await Load(); break;
+					case "test": await Test(); break;
+					case "clean": await Clean(); break;
 					default: _logger.LogInformation("Invalid command: " + command); break;
 				}
 
@@ -69,6 +71,11 @@ namespace CardboardBox.Anime.Cli
 				_logger.LogError(ex, "Error occurred while processing command: " + string.Join(" ", args));
 				return 1;
 			}
+		}
+
+		public async Task Test()
+		{
+			await _mongo.RegisterIndexes();
 		}
 
 		public async Task Load()
@@ -208,6 +215,33 @@ namespace CardboardBox.Anime.Cli
 			await JsonSerializer.SerializeAsync(io, output);
 
 			_logger.LogInformation("Finished writing");
+		}
+
+		public async Task Clean()
+		{
+			var data = await _mongo.All(1, 9000);
+			if (data == null)
+			{
+				_logger.LogError("Data is null");
+				return;
+			}
+
+			var all = data.Results.ToArray();
+
+			var delParan = (string item) =>
+			{
+				if (!item.Contains("(")) return item.ToLower().Trim();
+				return item.Split('(').First().Trim().ToLower();
+			};
+
+			foreach(var anime in all)
+			{
+				anime.Metadata.Languages = anime.Metadata.Languages.Select(delParan).Distinct().ToList();
+				anime.Metadata.Ratings = anime.Metadata.Ratings.Select(t => t.ToLower().Trim().Split('|')).SelectMany(t => t).Distinct().ToList();
+				anime.Metadata.Tags = anime.Metadata.Tags.Select(t => t.ToLower().Trim()).Distinct().ToList();
+			}
+
+			await _mongo.Upsert(all);
 		}
 	}
 }

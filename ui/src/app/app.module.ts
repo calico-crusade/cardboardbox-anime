@@ -13,6 +13,7 @@ import { ErrorComponent } from './routes/error/error.component';
 import { CardComponent } from './components/card/card.component';
 import { LazyLoadImageModule } from 'ng-lazyload-image';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
+import { SearchFiltersComponent } from './components/search-filters/search-filters.component';
 
 export class MyHammerConfig extends HammerGestureConfig {
     override overrides = {
@@ -25,7 +26,8 @@ export class MyHammerConfig extends HammerGestureConfig {
         AppComponent,
         AnimeComponent,
         ErrorComponent,
-        CardComponent
+        CardComponent,
+        SearchFiltersComponent
     ],
     imports: [
         BrowserModule,

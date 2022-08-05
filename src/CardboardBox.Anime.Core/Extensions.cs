@@ -60,6 +60,16 @@ namespace CardboardBox.Anime
 
 			return new (total, count, data);
 		}
+
+		public static async Task<List<T>> ToList<T>(this Task<IAsyncCursor<T>> task)
+		{
+			return await (await task).ToListAsync();
+		}
+
+		public static Task<T[]> WhenAll<T>(this IEnumerable<Task<T>> tasks)
+		{
+			return Task.WhenAll(tasks);
+		}
 	}
 
 	public record class PaginatedResult<T>(int Pages, long Count, IReadOnlyList<T> Results);

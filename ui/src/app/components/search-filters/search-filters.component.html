@@ -1,0 +1,44 @@
+<div class="loading" *ngIf="loading">
+    
+</div>
+
+<div class="filters" *ngIf="!loading && !!filter && !!available">
+    <div class="search">
+        <input type="text" placeholder="Search Titles" [(ngModel)]="filter.search" />
+    </div>
+
+    <div class="field">
+        <div class="title">Mature:</div>
+        <div class="toggles">
+            <button [ngClass]="{ 'active': filter.mature == 0 }"
+                    (click)="toggleMature(0)">All</button>
+            <button [ngClass]="{ 'active': filter.mature == 2 }"
+                    (click)="toggleMature(2)">PG</button>
+            <button [ngClass]="{ 'active': filter.mature == 1 }"
+                    (click)="toggleMature(1)">R</button>
+        </div>
+    </div>
+
+    <div class="field">
+        <div class="title">Order By</div>
+        <div class="toggles">
+            <button [ngClass]="{ 'active': filter.asc }"
+                    (click)="filter.asc = true">Ascending</button>
+            <button [ngClass]="{ 'active': !filter.asc }"
+                    (click)="filter.asc = false">Descending</button>
+        </div>
+    </div>
+
+    <div class="field" *ngFor="let avail of available">
+        <div class="title">{{ avail.key }}</div>
+        <div class="options">
+            <button *ngFor="let op of avail.values"
+                    [ngClass]="{ 'active': checked(avail, op) }"
+                    (click)="toggle(avail, op)">
+                {{ op }}
+            </button>
+        </div>
+    </div>
+
+    <button class="search" (click)="search()">Search</button>
+</div>

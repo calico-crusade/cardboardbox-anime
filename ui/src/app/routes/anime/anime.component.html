@@ -11,23 +11,7 @@
 
     <aside>
         <div class="filters">
-            <div class="search">
-                <input type="text" placeholder="Search Titles" [(ngModel)]="search" (ngModelChange)="searchFilter()" />
-            </div>
-            <ng-container *ngFor="let filter of filters">
-                <div class="filter" *ngIf="filter.enabled && filter.show">
-                    <div class="label" (click)="toggleAll(filter)">
-                        <input type="checkbox" [ngModel]="allChecked(filter)" (ngModelChange)="updateRoute()" />
-                        <label>{{ filter.param }}:</label>
-                    </div>
-                    <div class="options">
-                        <div class="option" *ngFor="let op of filter.options" (click)="toggle(op)">
-                            <input type="checkbox" [(ngModel)]="op.checked" (ngModelChange)="updateRoute()" />
-                            <label>{{ op.text }}</label>
-                        </div>
-                    </div>
-                </div>
-            </ng-container>
+            <cba-search-filters (searched)="onSearch($event)"></cba-search-filters>
         </div>
         <div class="counts">
             {{ anime.length }} / {{ total }}
@@ -37,9 +21,26 @@
             <cba-card class="card" [anime]="current"></cba-card>
         </div>
     </aside>
-    <main>
-        <div class="anime">
+
+    <main infiniteScroll 
+          (scrolled)="onScroll()"
+          [infiniteScrollDistance]="2"
+          [infiniteScrollThrottle]="50"
+          [scrollWindow]="false">
+
+        <div class="loading" *ngIf="anime.length == 0 && loading">
+            <img src="/assets/loading.gif" />
+            <span>Loading...</span>
+        </div>
+        <div class="anime" *ngIf="anime.length > 0">
             <cba-card *ngFor="let ani of anime" [anime]="ani"></cba-card>
+            
+            <div class="infinite-loading" *ngIf="loading">
+                <div class="loading">
+                    <img src="/assets/loading.gif" />
+                    <span>Loading...</span>
+                </div>
+            </div>
         </div>
     </main>
     <button class="filter-btn" (click)="filtersOpen = !filtersOpen">
