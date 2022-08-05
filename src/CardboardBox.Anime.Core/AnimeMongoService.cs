@@ -80,7 +80,7 @@ namespace CardboardBox.Anime.Core
 
 		public Task<PaginatedResult<Anime>> All(FilterSearch search)
 		{
-			var (page, size, text, langs, types, plats, tags, asc, mature) = search;
+			var (page, size, text, langs, types, plats, tags, videoTypes, asc, mature) = search;
 			var filters = new List<FilterDefinition<Anime>>();
 
 			if (!string.IsNullOrEmpty(text))
@@ -98,6 +98,9 @@ namespace CardboardBox.Anime.Core
 			if (tags.Any())
 				filters.Add(Filter.AnyIn(t => t.Metadata.Tags, tags));
 
+			if (videoTypes.Any())
+				filters.Add(Filter.In(t => t.Type, videoTypes));
+
 			if (mature != FilterSearch.MatureType.Both)
 				filters.Add(Filter.Eq(t => t.Metadata.Mature, FilterSearch.MatureType.Mature == mature));
 
@@ -111,7 +114,7 @@ namespace CardboardBox.Anime.Core
 			{
 				["languages"] = "metadata.languages",
 				["types"] = "metadata.language_types",
-				//["ratings"] = "metadata.ratings",
+				["video types"] = "type",
 				["tags"] = "metadata.tags",
 				["platforms"] = "platform_id"
 			}.Select(async t =>

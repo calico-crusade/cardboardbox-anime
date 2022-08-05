@@ -78,7 +78,7 @@ export class AnimeComponent implements OnInit, OnDestroy {
         
         let params: { [key: string]: any } = { };
 
-        if (!this.filter.mature && this.filter.mature !== MatureType.Both) params['mature'] = +this.filter.mature;
+        if (this.filter.mature !== MatureType.Both) params['mature'] = +this.filter.mature;
         if (!this.filter.asc) params['asc'] = 'false';
         if (this.filter.search) params['search'] = this.filter.search;
         

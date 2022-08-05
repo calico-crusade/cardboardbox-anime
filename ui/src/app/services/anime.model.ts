@@ -81,7 +81,7 @@ export interface PagedResults {
     results: Anime[];
 }
 
-export type AvailableParams = 'platforms' | 'languages' | 'ratings' | 'types' | 'tags';
+export type AvailableParams = 'platforms' | 'languages' | 'ratings' | 'types' | 'tags' | 'video types';
 
 export interface Filter {
     key: AvailableParams;

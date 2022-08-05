@@ -40,9 +40,17 @@
 
 			[JsonPropertyName("tags")]
 			public string[]? Tags { get; set; }
+
+			[JsonPropertyName("video types")]
+			public string[]? VideoTypes { get; set; }
 		}
 
-		public void Deconstruct(out int page, out int size, out string search, out string[] langs, out string[] types, out string[] plats, out string[] tags, out bool asc, out MatureType mature)
+		public void Deconstruct(
+			out int page, out int size, out string search, 
+			out string[] langs, out string[] types, 
+			out string[] plats, out string[] tags, 
+			out string[] videoTypes,
+			out bool asc, out MatureType mature)
 		{
 			page = Page;
 			size = Size;
@@ -51,6 +59,7 @@
 			types = Queryables.Types ?? Array.Empty<string>();
 			plats = Queryables.Platforms ?? Array.Empty<string>();
 			tags = Queryables.Tags ?? Array.Empty<string>();
+			videoTypes = Queryables.VideoTypes ?? Array.Empty<string>();
 			asc = Ascending;
 			mature = Mature;
 		}

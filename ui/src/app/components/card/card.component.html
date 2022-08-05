@@ -8,7 +8,7 @@
         <div class="title">{{ anime.title }}</div>
         <div class="tags" [ngSwitch]="anime.type">
             <div class="type series" *ngSwitchCase="'series'">Series</div>
-            <div class="type movie" *ngSwitchCase="'movie_listing'">Movie</div>
+            <div class="type movie" *ngSwitchCase="'movie'">Movie</div>
             <div class="type" *ngSwitchDefault>Unknown</div>
             <div class="langs" *ngFor="let lang of langs">{{ lang }}</div>
         </div>

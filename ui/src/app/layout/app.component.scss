@@ -16,6 +16,7 @@
         display: flex;
         flex-flow: row;
         border-bottom: 2px solid var(--color-vrv);
+        position: relative;
 
         .logo {
             margin: 10px auto;
@@ -42,6 +43,23 @@
 
             span {
                 margin: auto 5px;
+
+                b {
+                    color: var(--color-mondo);
+                }
+            }
+        }
+
+        .github {
+            position: absolute;
+            right: 10px;
+            color: #fff;
+            top: 50%;
+            transform: translateY(-50%);
+
+            path {
+                color: #fff;
+                fill: currentColor;
             }
         }
     }

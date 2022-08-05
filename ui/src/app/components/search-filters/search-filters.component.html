@@ -7,16 +7,16 @@
         <input type="text" placeholder="Search Titles" [(ngModel)]="filter.search" />
     </div>
 
-    <div class="field" #mature>
+    <div class="field closed" #mature>
         <div class="title">
-            <span>Mature:</span>
+            <span>Maturity:</span>
             <button (click)="toggleEl(mature)">
                 <span class="open">Hide</span>
                 <span class="close">Show</span>
             </button>
         </div>
         <div class="toggles">
-            <button [ngClass]="{ 'active': filter.mature == 0 }"
+            <button [ngClass]="{ 'active': filter.mature == 0 || !filter.mature }"
                     (click)="toggleMature(0)">All</button>
             <button [ngClass]="{ 'active': filter.mature == 2 }"
                     (click)="toggleMature(2)">PG</button>
@@ -25,7 +25,7 @@
         </div>
     </div>
 
-    <div class="field" #orderby>
+    <div class="field closed" #orderby>
         <div class="title">
             <span>Order By:</span>
             <button (click)="toggleEl(orderby)">
@@ -35,9 +35,9 @@
         </div>
         <div class="toggles">
             <button [ngClass]="{ 'active': filter.asc }"
-                    (click)="filter.asc = true">Ascending</button>
+                    (click)="filter.asc = true">A - Z</button>
             <button [ngClass]="{ 'active': !filter.asc }"
-                    (click)="filter.asc = false">Descending</button>
+                    (click)="filter.asc = false">Z - A</button>
         </div>
     </div>
 
