@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { Anime, FilterSearch, MatureType } from 'src/app/services/anime.model';
 import { AnimeService } from 'src/app/services/anime.service';
 import { UtilitiesService } from 'src/app/services/utilities.service';
@@ -13,6 +13,8 @@ type VrvAnimeImage = Anime & { src: string; };
     styleUrls: ['./anime.component.scss']
 })
 export class AnimeComponent implements OnInit, OnDestroy {
+
+    defaultImage = '/assets/default-background.webp';
 
     bgs: VrvAnimeImage[] = [];
     curIndex: number = 0;
@@ -93,6 +95,8 @@ export class AnimeComponent implements OnInit, OnDestroy {
     }
 
     randomImage() {
+        if (!this.anime || this.anime.length <= 0) return undefined;
+
         let anime = this.util.rand(this.anime);
         let src = `url("${this.getMaxImage(anime).source}")`;
 
@@ -105,14 +109,18 @@ export class AnimeComponent implements OnInit, OnDestroy {
     handleBgs() {
         this.bgs = [];
         for(let i = 0; i < 3; i++) {
-            this.bgs.push(this.randomImage());
+            let im = this.randomImage();
+            if (!im) continue;
+            this.bgs.push(im);
         }
 
         this.interval = setInterval(() => {
             let p = this.util.indexInBounds(this.bgs, this.curIndex - 1);
             let n = this.util.indexInBounds(this.bgs, this.curIndex + 1);
             this.curIndex = n;
-            this.bgs[p] = this.randomImage();
+            let im = this.randomImage();
+            if (!im) return;
+            this.bgs[p] = im;
         }, 4000);
     }
 
@@ -121,9 +129,9 @@ export class AnimeComponent implements OnInit, OnDestroy {
     }
 
     getMaxImage(anime: Anime) {
-        return anime.images
-            .filter(t => t.type === 'wallpaper')
-            .reduce((p, v) => p.height && p.width && v.height && v.width && p.height > v.height && p.width > v.width ? p : v);
+        return anime?.images
+            ?.filter(t => t.type === 'wallpaper')
+            ?.reduce((p, v) => p.height && p.width && v.height && v.width && p.height > v.height && p.width > v.width ? p : v);
     }
 
     toggleTut() {

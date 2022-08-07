@@ -33,6 +33,11 @@ $filters-size: 250px;
             &.active {
                 opacity: 1;
             }
+
+            &.default {
+                background-image: url('/assets/default-background.webp');
+                opacity: 1;
+            }
         }
     }
 

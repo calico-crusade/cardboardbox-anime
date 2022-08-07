@@ -3,6 +3,7 @@
     (swipeleft)="filtersOpen = false"
     (swiperight)="filtersOpen = true">
     <div class="background-image">
+        <div class="bg default" *ngIf="!bgs || bgs.length === 0"></div>
         <div class="bg" 
              *ngFor="let b of bgs; let i = index" 
              [style.background-image]="b.src"
