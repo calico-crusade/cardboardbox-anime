@@ -10,8 +10,8 @@ namespace CardboardBox.Anime.Vrv
 
 	public interface IVrvApiService : IAnimeApiService
 	{
-		Task<VrvResourceResult?> Fetch(string query, string sort = "alphabetical", int n = 100);
-		IEnumerable<Anime> Convert(VrvResourceResult? results);
+		Task<VrvResourceResult?> Fetch(string query, string sort = "alphabetical", int n = 100, Dictionary<string, string>? pars = null);
+		IAsyncEnumerable<Anime> All(VrvLoadRequest? request);
 	}
 
 	public class VrvApiService : IVrvApiService
@@ -32,7 +32,7 @@ namespace CardboardBox.Anime.Vrv
 			_config = config;
 		}
 
-		public Task<VrvResourceResult?> Fetch(string query, string sort = "alphabetical", int n = 100)
+		public Task<VrvResourceResult?> Fetch(string query, string sort = "alphabetical", int n = 100, Dictionary<string, string>? pars = null)
 		{
 			var url = _vrvConfig.ResourceList
 				.SetQueryParam("q", query)
@@ -42,24 +42,23 @@ namespace CardboardBox.Anime.Vrv
 			foreach (var (name, res) in _vrvConfig.Query)
 				url.SetQueryParam(name, res);
 
+			if (pars != null)
+				foreach (var (name, res) in pars)
+					url.SetQueryParam(name, res);
+
 			return _api.Get<VrvResourceResult>(url.ToString());
 		}
 
-		public IEnumerable<Anime> Convert(VrvResourceResult? results)
-		{
-			if (results == null) yield break;
+		public IAsyncEnumerable<Anime> All() => All(null);
 
-			foreach (var result in results.Items)
-				yield return ConvertItem(result);
-		}
-
-		public async IAsyncEnumerable<Anime> All()
+		public async IAsyncEnumerable<Anime> All(VrvLoadRequest? request)
 		{
 			_logger.LogInformation("Starting fetching all VRV data");
 			var ops = "ABCDEFGHIJKLMNOPQRSTUVWXYZ#";
+			var pars = request?.ToDictionary();
 			foreach(var op in ops)
 			{
-				var resources = await Fetch(op.ToString());
+				var resources = await Fetch(op.ToString(), pars: pars);
 				if (resources == null)
 				{
 					_logger.LogWarning("Resource not found for: " + op);
@@ -73,6 +72,14 @@ namespace CardboardBox.Anime.Vrv
 			}
 
 			_logger.LogInformation("Finsihed fetching all VRV data");
+		}
+
+		public IEnumerable<Anime> Convert(VrvResourceResult? results)
+		{
+			if (results == null) yield break;
+
+			foreach (var result in results.Items)
+				yield return ConvertItem(result);
 		}
 
 		public Anime ConvertItem(VrvResourceResult.Item item)

@@ -11,9 +11,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CardboardBox.Anime.Core", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CardboardBox.Anime.Api", "CardboardBox.Anime.Api\CardboardBox.Anime.Api.csproj", "{63FBCC66-4C25-465F-AFC7-E83F72D64D4A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CardboardBox.Anime.Funimation", "CardboardBox.Anime.Funimation\CardboardBox.Anime.Funimation.csproj", "{377FD166-3B6D-465E-AA4F-AAEC22DFB200}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CardboardBox.Anime.Funimation", "CardboardBox.Anime.Funimation\CardboardBox.Anime.Funimation.csproj", "{377FD166-3B6D-465E-AA4F-AAEC22DFB200}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CardboardBox.Anime.All", "CardboardBox.Anime.All\CardboardBox.Anime.All.csproj", "{AF248596-13FC-48EA-B9F4-B9EE8BE6D752}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CardboardBox.Anime.All", "CardboardBox.Anime.All\CardboardBox.Anime.All.csproj", "{AF248596-13FC-48EA-B9F4-B9EE8BE6D752}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Output Media", "Output Media", "{C0D571C4-DBA0-49C8-B3F5-19C040C6E267}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Third Party", "Third Party", "{54046D76-A0A0-4EBA-BF99-B1DDB6479448}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CardboardBox.Anime.HiDive", "CardboardBox.Anime.HiDive\CardboardBox.Anime.HiDive.csproj", "{04CF4FA1-4C21-4F86-9589-F07164A89C92}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,9 +51,20 @@ Global
 		{AF248596-13FC-48EA-B9F4-B9EE8BE6D752}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AF248596-13FC-48EA-B9F4-B9EE8BE6D752}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AF248596-13FC-48EA-B9F4-B9EE8BE6D752}.Release|Any CPU.Build.0 = Release|Any CPU
+		{04CF4FA1-4C21-4F86-9589-F07164A89C92}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04CF4FA1-4C21-4F86-9589-F07164A89C92}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04CF4FA1-4C21-4F86-9589-F07164A89C92}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04CF4FA1-4C21-4F86-9589-F07164A89C92}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D987EC18-A2BC-49B2-A3CE-061AA05D52CF} = {C0D571C4-DBA0-49C8-B3F5-19C040C6E267}
+		{136C4D2D-1F96-4E15-8959-F9FC3E9CAD32} = {54046D76-A0A0-4EBA-BF99-B1DDB6479448}
+		{63FBCC66-4C25-465F-AFC7-E83F72D64D4A} = {C0D571C4-DBA0-49C8-B3F5-19C040C6E267}
+		{377FD166-3B6D-465E-AA4F-AAEC22DFB200} = {54046D76-A0A0-4EBA-BF99-B1DDB6479448}
+		{04CF4FA1-4C21-4F86-9589-F07164A89C92} = {54046D76-A0A0-4EBA-BF99-B1DDB6479448}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F429A525-1A87-4D64-8900-FDC4C26EE386}

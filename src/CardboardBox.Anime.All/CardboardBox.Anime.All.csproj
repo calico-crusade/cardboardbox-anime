@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CardboardBox.Anime.Funimation\CardboardBox.Anime.Funimation.csproj" />
+    <ProjectReference Include="..\CardboardBox.Anime.HiDive\CardboardBox.Anime.HiDive.csproj" />
     <ProjectReference Include="..\CardboardBox.Anime.Vrv\CardboardBox.Anime.Vrv.csproj" />
   </ItemGroup>
 

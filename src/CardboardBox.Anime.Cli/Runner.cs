@@ -8,6 +8,7 @@ namespace CardboardBox.Anime.Cli
 	using Core;
 	using Core.Models;
 	using Funimation;
+	using HiDive;
 	using Vrv;
 
 	public interface IRunner
@@ -26,19 +27,22 @@ namespace CardboardBox.Anime.Cli
 		private readonly ILogger _logger;
 		private readonly IApiService _api;
 		private readonly IAnimeMongoService _mongo;
+		private readonly IHiDiveApiService _hidive;
 
 		public Runner(
 			IVrvApiService vrv, 
 			ILogger<Runner> logger,
 			IFunimationApiService fun,
 			IApiService api,
-			IAnimeMongoService mongo)
+			IAnimeMongoService mongo,
+			IHiDiveApiService hidive)
 		{
 			_vrv = vrv;
 			_logger = logger;
 			_fun = fun;
 			_api = api;
 			_mongo = mongo;
+			_hidive = hidive;
 		}
 
 		public async Task<int> Run(string[] args)
@@ -60,6 +64,7 @@ namespace CardboardBox.Anime.Cli
 					case "load": await Load(); break;
 					case "test": await Test(); break;
 					case "clean": await Clean(); break;
+					case "hidive": await Hidive(); break;
 					default: _logger.LogInformation("Invalid command: " + command); break;
 				}
 
@@ -73,6 +78,13 @@ namespace CardboardBox.Anime.Cli
 			}
 		}
 
+		public async Task Hidive()
+		{
+			var data = await _hidive.Fetch("https://www.hidive.com/tv/").ToArrayAsync();
+			using var io = File.OpenWrite("hidive.json");
+			await JsonSerializer.SerializeAsync(io, data);
+		}
+
 		public async Task Test()
 		{
 			await _mongo.RegisterIndexes();
@@ -80,7 +92,7 @@ namespace CardboardBox.Anime.Cli
 
 		public async Task Load()
 		{
-			using var io = File.OpenRead("all.json");
+			using var io = File.OpenRead("hidive.json");
 			var data = await JsonSerializer.DeserializeAsync<Anime[]>(io);
 
 			_logger.LogInformation("File Loaded");
@@ -91,7 +103,7 @@ namespace CardboardBox.Anime.Cli
 				return;
 			}
 
-			foreach (var item in data)
+			foreach (var item in data.Clean())
 				item.Id = null;
 
 			_logger.LogInformation("Ids nulled");
@@ -226,20 +238,9 @@ namespace CardboardBox.Anime.Cli
 				return;
 			}
 
-			var all = data.Results.ToArray();
-
-			var delParan = (string item) =>
-			{
-				if (!item.Contains("(")) return item.ToLower().Trim();
-				return item.Split('(').First().Trim().ToLower();
-			};
-
-			foreach(var anime in all)
-			{
-				anime.Metadata.Languages = anime.Metadata.Languages.Select(delParan).Distinct().ToList();
-				anime.Metadata.Ratings = anime.Metadata.Ratings.Select(t => t.ToLower().Trim().Split('|')).SelectMany(t => t).Distinct().ToList();
-				anime.Metadata.Tags = anime.Metadata.Tags.Select(t => t.ToLower().Trim()).Distinct().ToList();
-			}
+			var all = data.Results
+				.Clean()
+				.ToArray();
 
 			await _mongo.Upsert(all);
 		}

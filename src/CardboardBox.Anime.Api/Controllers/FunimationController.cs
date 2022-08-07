@@ -1,26 +1,26 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace CardboardBox.Anime.Api.Controllers
 {
 	using Core;
-	using Vrv;
+	using Funimation;
 
 	[ApiController]
-	public class VrvController : ControllerBase
+	public class FunimationController : ControllerBase
 	{
 		private readonly IAnimeMongoService _db;
-		private readonly IVrvApiService _vrv;
+		private readonly IFunimationApiService _fun;
 
-		public VrvController(IAnimeMongoService db, IVrvApiService vrv)
+		public FunimationController(IAnimeMongoService db, IFunimationApiService fun)
 		{
 			_db = db;
-			_vrv = vrv;
+			_fun = fun;
 		}
 
-		[HttpPost, Route("vrv/load")]
-		public async Task<IActionResult> Load([FromBody] VrvLoadRequest pars)
+		[HttpGet, Route("funimation/load")]
+		public async Task<IActionResult> Load()
 		{
-			var data = await _vrv.All(pars).ToArrayAsync();
+			var data = await _fun.All().ToArrayAsync();
 
 			if (data.Length == 0) return NotFound();
 
@@ -29,7 +29,7 @@ namespace CardboardBox.Anime.Api.Controllers
 			return Ok();
 		}
 
-		[HttpGet, Route("vrv")]
+		[HttpGet, Route("funimation")]
 		public async Task<IActionResult> Get([FromQuery] int page = 1, [FromQuery] int size = 100, [FromQuery] bool asc = true)
 		{
 			var data = await _db.All(new()
@@ -39,7 +39,7 @@ namespace CardboardBox.Anime.Api.Controllers
 				Ascending = asc,
 				Queryables = new()
 				{
-					Platforms = new[] { "crunchyroll", "vrvselect", "mondo" }
+					Platforms = new[] { "funimation" }
 				}
 			});
 

@@ -1,5 +1,5 @@
-import { Component, Input, OnInit, ViewEncapsulation } from '@angular/core';
-import { Anime, Image, VrvAnime } from 'src/app/services/anime.model';
+import { Component, Input, OnInit } from '@angular/core';
+import { Anime, Image } from 'src/app/services/anime.model';
 
 @Component({
     selector: 'cba-card',
@@ -33,6 +33,9 @@ export class CardComponent implements OnInit {
     getImage() {
         for(let img of this.anime.images) {
             if (img.type !== 'poster') continue;
+
+            if (this.anime.platformId === 'hidive') return img.source;
+
             if (!img.width || !img.height) continue;
             if (img.width < 100 || img.height < 200) continue;
             
@@ -45,7 +48,6 @@ export class CardComponent implements OnInit {
     }
 
     handleFunimationImage(img: Image) {
-        //c_fill,q_80,w_265,h_397
         const getModifier = (w: number, h: number) => `c_fill,q_80,w_${w},h_${h}`;
         const width = 150, height = 210;
         const mod = getModifier(width, height);

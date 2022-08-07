@@ -10,6 +10,7 @@
     <PackageReference Include="CardboardBox.Database" Version="1.0.4" />
     <PackageReference Include="CardboardBox.Discord" Version="1.0.7" />
     <PackageReference Include="CardboardBox.Http" Version="1.0.1" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.43" />
   </ItemGroup>
 
 </Project>

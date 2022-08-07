@@ -19,6 +19,8 @@
         width: 100%;
         height: 200px;
         background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
         border-bottom: 3px solid var(--accent-1);
     }
 
@@ -91,6 +93,7 @@
 
     &.crunchyroll {
         .image {
+            background-color: var(--color-crunchyroll);
             border-bottom-color: var(--color-crunchyroll);
         }
 
@@ -105,6 +108,7 @@
 
     &.mondo {
         .image {
+            background-color: var(--color-mondo);
             border-bottom-color: var(--color-mondo);
         }
 
@@ -119,6 +123,7 @@
 
     &.vrvselect {
         .image {
+            background-color: var(--color-vrvselect);
             border-bottom-color: var(--color-vrvselect);
         }
 
@@ -133,6 +138,7 @@
 
     &.funimation {
         .image {
+            background-color: var(--color-funimation);
             border-bottom-color: var(--color-funimation);
         }
 
@@ -140,6 +146,22 @@
             .details {
                 .channel-icon {
                     background-color: var(--color-funimation);
+                }
+            }
+        }
+    }
+
+    &.hidive {
+        .image {
+            background-size: contain;
+            background-color: var(--color-hidive);
+            border-bottom-color: var(--color-hidive);
+        }
+
+        &:hover {
+            .details {
+                .channel-icon {
+                    background-color: var(--color-hidive);
                 }
             }
         }

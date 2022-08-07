@@ -8,31 +8,31 @@ namespace CardboardBox.Anime.Api.Controllers
 	[ApiController]
 	public class AnimeController : ControllerBase
 	{
-		private readonly IAnimeMongoService _mongo;
+		private readonly IAnimeMongoService _db;
 
-		public AnimeController(IAnimeMongoService mongo)
+		public AnimeController(IAnimeMongoService db)
 		{
-			_mongo = mongo;
+			_db = db;
 		}
 
-		[HttpGet, Route("anime/all"), ProducesDefaultResponseType(typeof(PaginatedResult<Anime>))]
+		[HttpGet, Route("anime"), ProducesDefaultResponseType(typeof(PaginatedResult<Anime>))]
 		public async Task<IActionResult> All([FromQuery]int page = 1, [FromQuery]int size = 100, [FromQuery]bool asc = true)
 		{
-			var data = await _mongo.All(page, size, asc);
+			var data = await _db.All(page, size, asc);
 			return Ok(data);
 		}
 
-		[HttpPost, Route("anime/all"), ProducesDefaultResponseType(typeof(PaginatedResult<Anime>))]
+		[HttpPost, Route("anime"), ProducesDefaultResponseType(typeof(PaginatedResult<Anime>))]
 		public async Task<IActionResult> All([FromBody] FilterSearch search)
 		{
-			var data = await _mongo.All(search);
+			var data = await _db.All(search);
 			return Ok(data);
 		}
 
 		[HttpGet, Route("anime/filters")]
 		public async Task<IActionResult> Filters()
 		{
-			var filters = await _mongo.Filters();
+			var filters = await _db.Filters();
 			return Ok(filters);
 		}
 	}

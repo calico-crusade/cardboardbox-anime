@@ -7,6 +7,7 @@ namespace CardboardBox.Anime
 	using Core;
 	using Core.Models;
 	using Funimation;
+	using HiDive;
 	using Vrv;
 
 	public static class Extensions
@@ -19,6 +20,7 @@ namespace CardboardBox.Anime
 				.AddCardboardHttp()
 				.AddTransient<IVrvApiService, VrvApiService>()
 				.AddTransient<IFunimationApiService, FunimationApiService>()
+				.AddTransient<IHiDiveApiService, HiDiveApiService>()
 				.AddMongo<Anime, AnimeConfig>()
 				.AddTransient<IAnimeMongoService, AnimeMongoService>();
 		}
