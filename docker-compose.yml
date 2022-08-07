@@ -1,14 +1,32 @@
 version: "3.3"
+volumes:
+  cba-postg-vol:
 services:
-  cba-ui:
-    image: ghcr.io/calico-crusade/cardboardbox-anime/ui:latest
+  cba-postgres:
+    image: postgres
     restart: always
+    environment:
+      - POSTGRES_DB=${POSTGRES_HOST}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASS}
+    volumes:
+      - cba-postg-vol:/var/lib/postgresql/data
     ports:
-      - 8892:80
+      - 8893:5432
   cba-api:
     image: ghcr.io/calico-crusade/cardboardbox-anime/api:latest
     restart: always
     environment:
       - Mongo:ConnectionString=${MONGO_CON_URL}
+      - Postgres:ConnectionString=User ID=${POSTGRES_USER};Password=${POSTGRES_PASS};Host=cba-postgres;Database=${POSTGRES_HOST};
     ports:
       - 8891:80
+    depends_on:
+      - cba-postgres
+  cba-ui:
+    image: ghcr.io/calico-crusade/cardboardbox-anime/ui:latest
+    restart: always
+    ports:
+      - 8892:80
+    depends_on:
+      - cba-api
