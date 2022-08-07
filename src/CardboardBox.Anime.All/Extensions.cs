@@ -6,6 +6,7 @@ namespace CardboardBox.Anime
 {
 	using Core;
 	using Core.Models;
+	using Database;
 	using Funimation;
 	using HiDive;
 	using Vrv;
@@ -18,6 +19,7 @@ namespace CardboardBox.Anime
 
 			return services
 				.AddCardboardHttp()
+				.AddDatabase()
 				.AddTransient<IVrvApiService, VrvApiService>()
 				.AddTransient<IFunimationApiService, FunimationApiService>()
 				.AddTransient<IHiDiveApiService, HiDiveApiService>()

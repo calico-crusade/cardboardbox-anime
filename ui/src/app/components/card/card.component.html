@@ -1,6 +1,6 @@
 <a class="card" [href]="anime.link" target="_blank" [ngClass]="anime.platformId">
     <div class="image" [lazyLoad]="getImage()"></div>
-    <div class="mature" *ngIf="anime.metadata.mature">Mature</div>
+    <div class="mature" *ngIf="anime.mature">Mature</div>
     <div class="details">
         <div class="channel-icon">
             <img [src]="'/assets/' + anime.platformId + '-icon.png'" />

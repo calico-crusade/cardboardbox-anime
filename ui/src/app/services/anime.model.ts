@@ -7,6 +7,28 @@ export interface Image {
 }
 
 export interface Anime {
+    id: number;
+    hashId: string;
+    animeId: string;
+    link: string;
+    title: string;
+    description: string;
+    type: string;
+    platformId: string;
+    languages: string[];
+    languageTypes: string[];
+    ratings: string[];
+    tags: string[];
+    mature: boolean;
+    
+    images: Image[];
+
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt?: Date;
+}
+
+export interface OldAnime {
     id: string;
     hashId: string;
     animeId: string;

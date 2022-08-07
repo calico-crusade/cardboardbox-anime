@@ -2,11 +2,13 @@
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using SLImage = SixLabors.ImageSharp.Image;
+using AImage = CardboardBox.Anime.Core.Models.Image;
 
 namespace CardboardBox.Anime.Cli
 {
 	using Core;
 	using Core.Models;
+	using Database;
 	using Funimation;
 	using HiDive;
 	using Vrv;
@@ -28,6 +30,7 @@ namespace CardboardBox.Anime.Cli
 		private readonly IApiService _api;
 		private readonly IAnimeMongoService _mongo;
 		private readonly IHiDiveApiService _hidive;
+		private readonly IAnimeDbService _db;
 
 		public Runner(
 			IVrvApiService vrv, 
@@ -35,7 +38,8 @@ namespace CardboardBox.Anime.Cli
 			IFunimationApiService fun,
 			IApiService api,
 			IAnimeMongoService mongo,
-			IHiDiveApiService hidive)
+			IHiDiveApiService hidive,
+			IAnimeDbService db)
 		{
 			_vrv = vrv;
 			_logger = logger;
@@ -43,6 +47,7 @@ namespace CardboardBox.Anime.Cli
 			_api = api;
 			_mongo = mongo;
 			_hidive = hidive;
+			_db = db;
 		}
 
 		public async Task<int> Run(string[] args)
@@ -65,6 +70,7 @@ namespace CardboardBox.Anime.Cli
 					case "test": await Test(); break;
 					case "clean": await Clean(); break;
 					case "hidive": await Hidive(); break;
+					case "migrate": await Migrate(); break;
 					default: _logger.LogInformation("Invalid command: " + command); break;
 				}
 
@@ -244,6 +250,48 @@ namespace CardboardBox.Anime.Cli
 				.ToArray();
 
 			await _mongo.Upsert(all);
+		}
+
+		public async Task Migrate()
+		{
+			var convertImage = (AImage i) =>
+			{
+				return new DbImage
+				{
+					Width = i.Width,
+					Height = i.Height,
+					PlatformId = i.PlatformId,
+					Source = i.Source,
+					Type = i.Type,
+				};
+			};
+
+			var convertAnime = (Anime a) =>
+			{
+				return new DbAnime
+				{
+					HashId = a.HashId,
+					AnimeId = a.AnimeId,
+					Link = a.Link,
+					Title = a.Title,
+					Description = a.Description,
+					PlatformId = a.PlatformId,
+					Type = a.Type,
+					Mature = a.Metadata.Mature,
+					Languages = a.Metadata.Languages.ToArray(),
+					LanguageTypes = a.Metadata.LanguageTypes.ToArray(),
+					Ratings = a.Metadata.Ratings.ToArray(),
+					Tags = a.Metadata.Tags.ToArray(),
+					Images = a.Images.Select(convertImage).ToArray(),
+					CreatedAt = DateTime.Now,
+					UpdatedAt = DateTime.Now
+				};
+			};
+
+			var all = await _mongo.All(1, 9000);
+
+			foreach(var a in all.Results)
+				await _db.Upsert(convertAnime(a));
 		}
 	}
 }

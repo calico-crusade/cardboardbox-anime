@@ -12,7 +12,6 @@ export class CardComponent implements OnInit {
     
     get langs() {
         return this.anime
-            .metadata
             .languageTypes
             .filter(t => t !== 'Unknown')
             .map(t => {
