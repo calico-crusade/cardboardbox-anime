@@ -80,9 +80,10 @@ namespace CardboardBox.Anime.Cli
 
 		public async Task Hidive()
 		{
-			var data = await _hidive.Fetch("https://www.hidive.com/tv/").ToArrayAsync();
-			using var io = File.OpenWrite("hidive.json");
-			await JsonSerializer.SerializeAsync(io, data);
+			var data = await _hidive.Fetch("https://www.hidive.com/movies/", "movie").ToArrayAsync();
+			//using var io = File.OpenWrite("hidive.json");
+			//await JsonSerializer.SerializeAsync(io, data);
+			await _mongo.Upsert(data);
 		}
 
 		public async Task Test()

@@ -40,7 +40,7 @@ namespace CardboardBox.Anime.HiDive
 					var anime = await FromElement(id, type, cell);
 					if (anime == null) yield break;
 
-					yield return anime;
+					yield return anime.Clean();
 				}
 			}
 		}
@@ -87,12 +87,12 @@ namespace CardboardBox.Anime.HiDive
 			if (types.Count == 0)
 				types.Add("Unknown");
 
-			var bgi = "https" + node.DocumentNode.SelectSingleNode("//div[@class='table-cell title-img']").GetAttributeValue("style", "").Split(new[] { '(', ')' }).Skip(1).First();
+			var bgi = "https:" + node.DocumentNode.SelectSingleNode("//div[@class='table-cell title-img']").GetAttributeValue("style", "").Split(new[] { '(', ')' }).Skip(1).First();
 
-			var poster = "https" + rawNode.Copy().SelectSingleNode("//div[@class='default-img']/img").GetAttributeValue("data-src", "");
+			var poster = "https:" + rawNode.Copy().SelectSingleNode("//div[@class='default-img']/img").GetAttributeValue("data-src", "");
 			var images = node.DocumentNode
 				.SelectNodes("//div[@class='table-cell title-img']/div[@class='img-rotator']/img")
-				.Select(t => ("https" + t.GetAttributeValue("src", ""), t.GetAttributeValue("width", 0), t.GetAttributeValue("height", 0)))
+				.Select(t => ("https:" + t.GetAttributeValue("src", ""), t.GetAttributeValue("width", 0), t.GetAttributeValue("height", 0)))
 				.ToArray();
 
 			return new()
@@ -138,9 +138,13 @@ namespace CardboardBox.Anime.HiDive
 			};
 		}
 
-		public IAsyncEnumerable<Anime> All()
+		public async IAsyncEnumerable<Anime> All()
 		{
-			throw new NotImplementedException();
+			await foreach (var item in Fetch("https://www.hidive.com/tv/", "series"))
+				yield return item;
+
+			await foreach (var item in Fetch("https://www.hidive.com/movies/", "movies"))
+				yield return item;
 		}
 	}
 }
