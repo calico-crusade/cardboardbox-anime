@@ -3,12 +3,12 @@ services:
   cba-ui:
     image: ghcr.io/calico-crusade/cardboardbox-anime/ui:latest
     restart: always
-    environment:
-      - Mongo:ConnectionString=${MONGO_CON_URL}
     ports:
       - 8892:80
   cba-api:
     image: ghcr.io/calico-crusade/cardboardbox-anime/api:latest
     restart: always
+    environment:
+      - Mongo:ConnectionString=${MONGO_CON_URL}
     ports:
       - 8891:80
