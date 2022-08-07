@@ -166,4 +166,8 @@
             }
         }
     }
+
+    &:hover {
+        background-color: var(--bg-sidebar);
+    }
 }

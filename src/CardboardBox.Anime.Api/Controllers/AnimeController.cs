@@ -18,13 +18,6 @@ namespace CardboardBox.Anime.Api.Controllers
 			_sql = sql;
 		}
 
-		[HttpGet, Route("anime"), ProducesDefaultResponseType(typeof(PaginatedResult<Anime>))]
-		public async Task<IActionResult> All([FromQuery]int page = 1, [FromQuery]int size = 100, [FromQuery]bool asc = true)
-		{
-			var data = await _db.All(page, size, asc);
-			return Ok(data);
-		}
-
 		[HttpPost, Route("anime"), ProducesDefaultResponseType(typeof(PaginatedResult<Anime>))]
 		public async Task<IActionResult> All([FromBody] FilterSearch search)
 		{
@@ -48,6 +41,13 @@ namespace CardboardBox.Anime.Api.Controllers
 		public async Task<IActionResult> Filters()
 		{
 			var filters = await _db.Filters();
+			return Ok(filters);
+		}
+
+		[HttpGet, Route("anime/v2/filters")]
+		public async Task<IActionResult> FiltersV2()
+		{
+			var filters = await _sql.Filters();
 			return Ok(filters);
 		}
 	}

@@ -2,6 +2,7 @@
 
 namespace CardboardBox.Anime.Database
 {
+	using Core;
 	using Core.Models;
 	using Generation;
 
@@ -9,6 +10,8 @@ namespace CardboardBox.Anime.Database
 	{
 		Task<long> Upsert(DbAnime anime);
 		Task<(int total, DbAnime[] results)> Search(FilterSearch search);
+		Task<DbAnime[]> All();
+		Task<Filter[]> Filters();
 	}
 
 	public class AnimeDbService : OrmMapExtended<DbAnime>, IAnimeDbService
@@ -102,6 +105,30 @@ OFFSET {offset};";
 			var total = await reader.ReadSingleAsync<int>();
 
 			return (total, results);
+		}
+
+		public async Task<Filter[]> Filters()
+		{
+			const string QUERY = @"SELECT
+    *
+FROM (
+    SELECT DISTINCT 'languages' as key, unnest(languages) as value FROM anime
+    UNION
+    SELECT DISTINCT 'types' as key, unnest(language_types) as value FROM anime
+    UNION
+    SELECT DISTINCT 'video types' as key, type as value from anime
+    UNION
+    SELECT DISTINCT 'tags' as key, unnest(tags) as value from anime
+    UNION
+    SELECT DISTINCT 'platforms' as key, platform_id as value from anime
+) x
+ORDER BY key, value";
+
+			var filters = await _sql.Get<DbFilter>(QUERY);
+			return filters
+				.GroupBy(t => t.Key, t => t.Value)
+				.Select(t => new Filter(t.Key, t.ToArray()))
+				.ToArray();
 		}
 	}
 }

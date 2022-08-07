@@ -18,13 +18,7 @@ export class AnimeService {
         return this.http.post<PagedResults>(`${this.apiUrl}/anime/v2`, search);
     }
 
-    page(page: number = 1, size: number = 50, asc: boolean = true) {
-        return this.http.get<PagedResults>(`${this.apiUrl}/anime`, {
-            params: { page, size, asc }
-        });
-    }
-
     filters() {
-        return this.http.get<Filters>(`${this.apiUrl}/anime/filters`);
+        return this.http.get<Filters>(`${this.apiUrl}/anime/v2/filters`);
     }
 }

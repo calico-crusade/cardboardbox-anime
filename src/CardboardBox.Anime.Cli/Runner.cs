@@ -238,18 +238,15 @@ namespace CardboardBox.Anime.Cli
 
 		public async Task Clean()
 		{
-			var data = await _mongo.All(1, 9000);
+			var data = await _db.All();
 			if (data == null)
 			{
 				_logger.LogError("Data is null");
 				return;
 			}
 
-			var all = data.Results
-				.Clean()
-				.ToArray();
-
-			await _mongo.Upsert(all);
+			foreach (var anime in data)
+				await _db.Upsert(anime.Clean());
 		}
 
 		public async Task Migrate()
