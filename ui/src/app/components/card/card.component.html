@@ -1,16 +1,18 @@
-<a class="card" [href]="anime.link" target="_blank" [ngClass]="anime.platformId">
-    <div class="image" [lazyLoad]="getImage()"></div>
-    <div class="mature" *ngIf="anime.mature">Mature</div>
-    <div class="details">
-        <div class="channel-icon">
-            <img [src]="'/assets/' + anime.platformId + '-icon.png'" />
+<div class="card" [ngClass]="anime.platformId">
+    <a class="linkable" (click)="modal()" (swipeleft)="doSwipe(true)" (swiperight)="doSwipe(false)">
+        <div class="image" [ngClass]="anime.platformId + '-image'" [lazyLoad]="getImage()"></div>
+        <div class="mature" *ngIf="anime.mature">Mature</div>
+        <div class="details">
+            <div class="channel-icon" [ngClass]="anime.platformId + '-bg-hover'">
+                <img [src]="'/assets/' + anime.platformId + '-icon.png'" />
+            </div>
+            <div class="title">{{ anime.title }}</div>
+            <div class="tags" [ngSwitch]="anime.type">
+                <div class="type series" *ngSwitchCase="'series'">Series</div>
+                <div class="type movie" *ngSwitchCase="'movie'">Movie</div>
+                <div class="type" *ngSwitchDefault>Unknown</div>
+                <div class="langs" *ngFor="let lang of langs">{{ lang }}</div>
+            </div>
         </div>
-        <div class="title">{{ anime.title }}</div>
-        <div class="tags" [ngSwitch]="anime.type">
-            <div class="type series" *ngSwitchCase="'series'">Series</div>
-            <div class="type movie" *ngSwitchCase="'movie'">Movie</div>
-            <div class="type" *ngSwitchDefault>Unknown</div>
-            <div class="langs" *ngFor="let lang of langs">{{ lang }}</div>
-        </div>
-    </div>
-</a>
+    </a>
+</div>

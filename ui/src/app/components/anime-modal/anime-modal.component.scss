@@ -1,0 +1,180 @@
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    
+    display: flex;
+    flex-flow: column;
+
+    z-index: 900;
+
+    .fade {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.85);
+        z-index: 901;
+    }
+
+    .container {
+        position: relative;
+        margin: auto;
+        display: flex;
+        flex-flow: row;
+        z-index: 902;
+        background-color: var(--bg-card);
+        padding: 20px;
+        border-top: .25rem solid var(--color-vrv);
+        max-height: 80vh;
+        overflow-x: hidden;
+        overflow-y: auto;
+
+        .anime-image {
+            display: flex;
+
+            img {
+                margin: auto 0;
+                max-height: 100%;
+                max-width: 250px;
+            }
+        }
+
+        .content {
+            display: flex;
+            flex-flow: column;
+            padding-right: 5px;
+
+            max-width: 43.125rem;
+
+            margin-left: 1rem;
+
+            header {
+                display: flex;
+                flex-flow: row;
+
+                .title {
+                    flex: 1;
+                    
+                    .langs {
+                        display: flex;
+                        flex-flow: row;
+        
+                        .lang {
+                            padding: 0 5px;
+                            &:not(:first-child) {
+                                border-left: 1px solid var(--text-color-muted);
+                            }
+                        }
+                    }
+        
+                    h1 {
+                        margin: 5px 0;
+                    }
+                }
+
+                img {
+                    width: 45px;
+                    height: 45px;
+                    margin-left: 10px;
+                }
+            }
+
+            p {
+                margin: 0;
+            }
+
+            .buttons {
+                display: flex;
+                flex-flow: row wrap;
+                margin: 10px 0;
+
+                button, a {
+                    font-family: Roboto;
+                    background-color: transparent;
+                    color: var(--color-vrv);
+                    border: 2px solid var(--color-vrv);
+                    font-size: 1rem;
+                    padding: 15px;
+                    text-decoration: none;
+                    text-transform: uppercase;
+                    font-weight: bolder;
+                    cursor: pointer;
+                    text-align: center;
+                    margin: 5px 0;
+
+                    &:not(:last-child) {
+                        margin-right: 10px;
+                    }
+
+                    &:hover,
+                    &.active {
+                        background-color: var(--color-vrv);
+                        color: #000;
+                    }
+                }
+            }
+        }
+
+        .close {
+            position: absolute;
+            top: 0;
+            right: 0;
+
+            color: var(--text-color-muted);
+            background-color: transparent;
+            border: none;
+            outline: none;
+            cursor: pointer;
+
+            font-size: 24px;
+            font-weight: bolder;
+
+            &:hover {
+                color: #fff;
+            }
+        }
+
+        &.crunchyroll { border-color: var(--color-crunchyroll); }
+        &.vrvselect { border-color: var(--color-vrvselect); }
+        &.hidive { border-color: var(--color-hidive); }
+        &.funimation { border-color: var(--color-funimation); }
+        &.mondo { border-color: var(--color-mondo); }
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .overlay {
+        .container {
+            flex-flow: column;
+
+            .anime-image {
+                img {
+                    margin: 0 auto;
+                }
+            }
+
+            .content {
+                header {
+                    margin-top: 10px;
+                }
+
+                .buttons {
+                    flex-flow: column;
+
+                    button, a {
+                        margin: 5px 0 !important;
+                        flex: 1;
+                    }
+                }
+            }
+
+            .close {
+                right: 10px;
+            }
+        }
+    }
+}

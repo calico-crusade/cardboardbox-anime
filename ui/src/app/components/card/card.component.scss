@@ -1,167 +1,195 @@
+$card-size: 150px;
+
 :host {
     margin: 10px auto;
 }
 
 .card {
-    position: relative;
     color: #fff;
-    width: 150px;
-    display: flex;
-    flex-flow: column;
-    text-decoration: none;
     background-color: var(--bg-card);
-    font-size: .8rem;
-    cursor: pointer;
-    border-radius: 2px;
-    overflow: hidden;
+    display: flex;
+    flex-flow: row;
 
-    .image {
-        width: 100%;
-        height: 200px;
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-position: center;
-        border-bottom: 3px solid var(--accent-1);
-    }
-
-    .mature {
-        position: absolute;
-        top: 160px;
-        right: 10px;
-
-        padding: 5px;
-        border: 1px solid var(--dgr-color);
-        background-color: var(--dgr-color-trans);
-    }
-
-    .details {
+    .linkable {
+        position: relative;
+        color: #fff;
+        width: $card-size;
         display: flex;
         flex-flow: column;
-        margin: 10px;
-        margin-top: 15px;
-        position: relative;
+        text-decoration: none;
+        font-size: .8rem;
+        cursor: pointer;
+        border-radius: 2px;
+        overflow: hidden;
 
-        .channel-icon {
-            width: 30px;
-            height: 30px;
-            background-color: var(--bg-card);
-            border-radius: 50%;
+        .image {
+            width: 100%;
+            height: 200px;
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-bottom: 3px solid var(--accent-1);
+        }
+
+        .mature {
             position: absolute;
-            top: -31px;
+            top: 160px;
+            right: 10px;
 
-            img {
-                width: 20px;
-                margin: 5px;    
-            }
+            padding: 5px;
+            border: 1px solid var(--dgr-color);
+            background-color: var(--dgr-color-trans);
         }
 
-        .title {
-            height: 30px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .tags {
+        .details {
             display: flex;
-            flex-flow: row;
-            margin-top: 5px;
+            flex-flow: column;
+            margin: 10px;
+            margin-top: 15px;
+            position: relative;
 
-            .type {
-                color: var(--color-vrv);
-                margin-right: auto;
+            .channel-icon {
+                width: 30px;
+                height: 30px;
+                background-color: var(--bg-card);
+                border-radius: 50%;
+                position: absolute;
+                top: -31px;
 
-                &.movie {
-                    color: var(--accent-1);
+                img {
+                    width: 20px;
+                    margin: 5px;
                 }
             }
 
-            .langs {
-                color: var(--text-color);
+            .title {
+                height: 30px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
 
-                &:last-child {
-                    border-left: 1px solid var(--text-color-muted);
-                    padding-left: 5px;
+            .tags {
+                display: flex;
+                flex-flow: row;
+                margin-top: 5px;
+
+                .type {
+                    color: var(--color-vrv);
+                    margin-right: auto;
+
+                    &.movie {
+                        color: var(--accent-1);
+                    }
                 }
 
-                &:nth-child(2) {
-                    border-left: none;
-                    padding-right: 5px;
+                .langs {
+                    color: var(--text-color);
+
+                    &:last-child {
+                        border-left: 1px solid var(--text-color-muted);
+                        padding-left: 5px;
+                    }
+
+                    &:nth-child(2) {
+                        border-left: none;
+                        padding-right: 5px;
+                    }
                 }
             }
         }
     }
 
     &.crunchyroll {
-        .image {
-            background-color: var(--color-crunchyroll);
-            border-bottom-color: var(--color-crunchyroll);
+        .linkable {
+            .image {
+                background-color: var(--color-crunchyroll);
+                border-bottom-color: var(--color-crunchyroll);
+            }
         }
 
         &:hover {
-            .details {
-                .channel-icon {
-                    background-color: var(--color-crunchyroll);
+            .linkable {
+                .details {
+                    .channel-icon {
+                        background-color: var(--color-crunchyroll);
+                    }
                 }
             }
         }
     }
 
     &.mondo {
-        .image {
-            background-color: var(--color-mondo);
-            border-bottom-color: var(--color-mondo);
+        .linkable {
+            .image {
+                background-color: var(--color-mondo);
+                border-bottom-color: var(--color-mondo);
+            }
         }
 
         &:hover {
-            .details {
-                .channel-icon {
-                    background-color: var(--color-mondo);
+            .linkable {
+                .details {
+                    .channel-icon {
+                        background-color: var(--color-mondo);
+                    }
                 }
             }
         }
     }
 
     &.vrvselect {
-        .image {
-            background-color: var(--color-vrvselect);
-            border-bottom-color: var(--color-vrvselect);
+        .linkable {
+            .image {
+                background-color: var(--color-vrvselect);
+                border-bottom-color: var(--color-vrvselect);
+            }
         }
 
         &:hover {
-            .details {
-                .channel-icon {
-                    background-color: var(--color-vrvselect);
+            .linkable {
+                .details {
+                    .channel-icon {
+                        background-color: var(--color-vrvselect);
+                    }
                 }
             }
         }
     }
 
     &.funimation {
-        .image {
-            background-color: var(--color-funimation);
-            border-bottom-color: var(--color-funimation);
+        .linkable {
+            .image {
+                background-color: var(--color-funimation);
+                border-bottom-color: var(--color-funimation);
+            }
         }
 
         &:hover {
-            .details {
-                .channel-icon {
-                    background-color: var(--color-funimation);
+            .linkable {
+                .details {
+                    .channel-icon {
+                        background-color: var(--color-funimation);
+                    }
                 }
             }
         }
     }
 
     &.hidive {
-        .image {
-            background-size: contain;
-            background-color: var(--color-hidive);
-            border-bottom-color: var(--color-hidive);
+        .linkable {
+            .image {
+                background-size: contain;
+                background-color: var(--color-hidive);
+                border-bottom-color: var(--color-hidive) !important;
+            }
         }
 
         &:hover {
-            .details {
-                .channel-icon {
-                    background-color: var(--color-hidive);
+            .linkable {
+                .details {
+                    .channel-icon {
+                        background-color: var(--color-hidive);
+                    }
                 }
             }
         }
@@ -169,5 +197,13 @@
 
     &:hover {
         background-color: var(--bg-sidebar);
+
+        &.hidive {
+            .linkable {
+                .image {
+                    background-color: var(--color-hidive-dark);
+                }
+            }
+        }
     }
 }

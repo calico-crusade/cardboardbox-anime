@@ -1,0 +1,33 @@
+<div class="overlay" *ngIf="open && anime">
+    <div class="fade" (click)="close()"></div>
+    <div class="container" [ngClass]="anime.platformId">
+        <div class="anime-image">
+            <img [src]="getBackgroundImage()" />
+        </div>
+        <div class="content">
+            <header>
+                <div class="title">
+                    <div class="langs">
+                        <div class="lang" *ngFor="let lang of langs">{{ lang }}</div>
+                    </div>
+                    <h1>{{ anime.title }}</h1>
+                </div>
+                <img [src]="'/assets/' + anime.platformId + '-icon.png'" />
+            </header>
+            <p>{{ anime.description }}</p>
+
+            <div class="buttons">
+                <button (click)="watchlist()">
+                    Add to watchlist
+                </button>
+                <a [href]="anime.link" target="_blank">
+                    Start Watching
+                </a>
+            </div>
+        </div>
+
+        <button class="close" (click)="close()">
+            &times;
+        </button>
+    </div>
+</div>

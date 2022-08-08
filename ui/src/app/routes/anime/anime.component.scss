@@ -141,11 +141,14 @@ $filters-size: 250px;
         top: 10px;
         left: 0;
 
-        background-color: transparent;
-        color: #fff;
+        background-color: var(--color-vrv);
+        border-radius: 50%;
+        color: #000;
         outline: none;
         border: none;
-        z-index: 999;
+        z-index: 800;
+        width: 25px;
+        height: 25px;
 
         transition: all 250ms;
         cursor: pointer;
@@ -157,7 +160,7 @@ $filters-size: 250px;
         }
 
         .filter-btn {
-            margin-left: #{$filters-size - 20px};
+            margin-left: #{$filters-size - 30px};
         }
     }
 

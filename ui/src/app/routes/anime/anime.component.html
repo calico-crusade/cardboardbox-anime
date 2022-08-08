@@ -38,7 +38,8 @@
             <span>Your search returned no records</span>
         </div>
         <div class="anime" *ngIf="anime.length > 0">
-            <cba-card *ngFor="let ani of anime" [anime]="ani"></cba-card>
+            <cba-card *ngFor="let ani of anime" [anime]="ani"
+                (swipe)="filtersOpen = !$event"></cba-card>
             
             <div class="infinite-loading" *ngIf="loading">
                 <div class="loading no-animation">
@@ -56,10 +57,12 @@
     <div class="tutorial" *ngIf="showTut">
         <div class="content">
             <h2>Tutorial</h2>
-            <p>You can swipe vertically to open and close the filters</p>
+            <p>You can swipe horizontally to open and close the filters</p>
             <button (click)="toggleTut()">
                 I Understand!
             </button>
         </div>
     </div>
+
+    <cba-anime-modal></cba-anime-modal>
 </div>

@@ -14,6 +14,7 @@ import { CardComponent } from './components/card/card.component';
 import { LazyLoadImageModule } from 'ng-lazyload-image';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 import { SearchFiltersComponent } from './components/search-filters/search-filters.component';
+import { AnimeModalComponent } from './components/anime-modal/anime-modal.component';
 
 export class MyHammerConfig extends HammerGestureConfig {
     override overrides = {
@@ -27,7 +28,8 @@ export class MyHammerConfig extends HammerGestureConfig {
         AnimeComponent,
         ErrorComponent,
         CardComponent,
-        SearchFiltersComponent
+        SearchFiltersComponent,
+        AnimeModalComponent
     ],
     imports: [
         BrowserModule,

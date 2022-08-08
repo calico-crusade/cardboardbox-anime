@@ -31,6 +31,7 @@
     --color-mondo: rgb(233, 55, 53);
     --color-vrv: #fd0;
     --color-hidive: rgba(0,174,240,1);
+    --color-hidive-dark: rgb(0, 95, 133);
     --color-vrv-trans: rgba(255, 221, 0, 0.842);
     --color-funimation: #6030a1;
 }
@@ -44,4 +45,49 @@
 
 .bump {
     flex: 1;
+}
+
+.crunchyroll-bg, .crunchyroll-bg-hover:hover {
+    background-color: var(--color-crunchyroll) !important;
+}
+
+.crunchyroll-image {
+    background-color: var(--color-crunchyroll);
+    border-bottom-color: var(--color-crunchyroll) !important;
+}
+
+.mondo-bg, .mondo-bg-hover:hover {
+    background-color: var(--color-mondo) !important;
+}
+
+.mondo-image {
+    background-color: var(--color-mondo);
+    border-bottom-color: var(--color-mondo) !important;
+}
+
+.vrvselect-bg, .vrvselect-bg-hover:hover {
+    background-color: var(--color-vrvselect) !important;
+}
+
+.vrvselect-image {
+    background-color: var(--color-vrvselect);
+    border-bottom-color: var(--color-vrvselect) !important;
+}
+
+.funimation-bg, .funimation-bg-hover:hover {
+    background-color: var(--color-funimation) !important;
+}
+
+.funimation-image {
+    background-color: var(--color-funimation);
+    border-bottom-color: var(--color-funimation) !important;
+}
+
+.hidive-bg, .hidive-bg-hover:hover {
+    background-color: var(--color-hidive) !important;
+}
+
+.hidive-image {
+    background-color: var(--color-funimation);
+    border-bottom-color: var(--color-funimation) !important;
 }

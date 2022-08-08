@@ -1,5 +1,6 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Anime, Image } from 'src/app/services/anime.model';
+import { AnimeModalService } from '../anime-modal/anime-modal.component';
 
 @Component({
     selector: 'cba-card',
@@ -9,6 +10,8 @@ import { Anime, Image } from 'src/app/services/anime.model';
 export class CardComponent implements OnInit {
 
     @Input() anime!: Anime;
+
+    @Output('swipe') onSwipe: EventEmitter<boolean> = new EventEmitter();
     
     get langs() {
         return this.anime
@@ -23,7 +26,9 @@ export class CardComponent implements OnInit {
             });
     }
 
-    constructor() { }
+    constructor(
+        private srv: AnimeModalService
+    ) { }
 
     ngOnInit(): void {
 
@@ -58,5 +63,13 @@ export class CardComponent implements OnInit {
         parts.splice(0, 1);
 
         return dom + '/image/upload/' + mod + '/oth' + parts.join('/image/upload/oth');
+    }
+
+    modal() {
+        this.srv.openAnime(this.anime);
+    }
+
+    doSwipe(left: boolean) {
+        this.onSwipe.emit(left);
     }
 }
