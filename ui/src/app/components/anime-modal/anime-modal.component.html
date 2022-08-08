@@ -1,48 +1,50 @@
 <div class="overlay" *ngIf="open && anime">
     <div class="fade" (click)="close()"></div>
     <div class="container" [ngClass]="anime.platformId">
-        <div class="anime-image">
-            <img [src]="getBackgroundImage()" />
-        </div>
-        <div class="content">
-            <header>
-                <div class="title">
-                    <div class="langs">
-                        <div class="lang" *ngFor="let lang of langs">{{ lang }}</div>
-                        <div class="type">{{ anime.type }}&nbsp;</div>
-                        <div class="type mature" *ngIf="anime.mature">Mature</div>
+        <div class="scroll-container">
+            <div class="anime-image">
+                <img [src]="getBackgroundImage()" />
+            </div>
+            <div class="content">
+                <header>
+                    <div class="title">
+                        <div class="langs">
+                            <div class="lang" *ngFor="let lang of langs">{{ lang }}</div>
+                            <div class="type">{{ anime.type }}&nbsp;</div>
+                            <div class="type mature" *ngIf="anime.mature">Mature</div>
+                        </div>
+                        <h1>{{ anime.title }}</h1>
                     </div>
-                    <h1>{{ anime.title }}</h1>
+                    <img [src]="'/assets/' + anime.platformId + '-icon.png'" />
+                </header>
+                <p *ngIf="anime.description">{{ anime.description }}</p>
+                <p *ngIf="anime.languages.length > 0">
+                    <b>Audio Languages: </b>
+                    <span class="comma-list">
+                        <span *ngFor="let lang of anime.languages">{{ lang }}</span>
+                    </span>
+                </p>
+                <p *ngIf="anime.tags.length > 0">
+                    <b>Genres: </b>
+                    <span class="comma-list">
+                        <span *ngFor="let tag of anime.tags">{{ tag }}</span>
+                    </span>
+                </p>
+                <p *ngIf="anime.ratings.length > 0">
+                    <b>Ratings: </b>
+                    <span class="comma-list">
+                        <span class="rating" *ngFor="let tag of anime.ratings">{{ tag }}</span>
+                    </span>
+                </p>
+    
+                <div class="buttons">
+                    <button (click)="watchlist()">
+                        Add to watchlist
+                    </button>
+                    <a [href]="anime.link" target="_blank">
+                        Start Watching
+                    </a>
                 </div>
-                <img [src]="'/assets/' + anime.platformId + '-icon.png'" />
-            </header>
-            <p *ngIf="anime.description">{{ anime.description }}</p>
-            <p *ngIf="anime.languages.length > 0">
-                <b>Audio Languages: </b>
-                <span class="comma-list">
-                    <span *ngFor="let lang of anime.languages">{{ lang }}</span>
-                </span>
-            </p>
-            <p *ngIf="anime.tags.length > 0">
-                <b>Genres: </b>
-                <span class="comma-list">
-                    <span *ngFor="let tag of anime.tags">{{ tag }}</span>
-                </span>
-            </p>
-            <p *ngIf="anime.ratings.length > 0">
-                <b>Ratings: </b>
-                <span class="comma-list">
-                    <span class="rating" *ngFor="let tag of anime.ratings">{{ tag }}</span>
-                </span>
-            </p>
-
-            <div class="buttons">
-                <button (click)="watchlist()">
-                    Add to watchlist
-                </button>
-                <a [href]="anime.link" target="_blank">
-                    Start Watching
-                </a>
             </div>
         </div>
 

@@ -27,124 +27,131 @@
         flex-flow: row;
         z-index: 902;
         background-color: var(--bg-card);
-        padding: 20px;
         border-top: .25rem solid var(--color-vrv);
         max-height: 80vh;
-        overflow-x: hidden;
-        overflow-y: auto;
+        overflow: hidden;
 
-        .anime-image {
+        .scroll-container {
+            overflow-x: hidden;
+            overflow-y: auto;
+            padding: 20px;
             display: flex;
+            flex-flow: row;
 
-            img {
-                margin: auto 0;
-                max-height: 100%;
-                max-width: 250px;
-            }
-        }
-
-        .content {
-            display: flex;
-            flex-flow: column;
-            padding-right: 5px;
-
-            max-width: 43.125rem;
-
-            margin-left: 1rem;
-
-            header {
+            .anime-image {
                 display: flex;
-                flex-flow: row;
-
-                .title {
-                    flex: 1;
-                    
-                    .langs {
-                        display: flex;
-                        flex-flow: row;
-        
-                        .lang {
-                            padding: 0 5px;
-                            &:not(:first-child) {
-                                border-left: 1px solid var(--text-color-muted);
-                            }
-                        }
-
-                        .type:not(:first-child)::before {
-                            content: '- ';
-                            color: var(--text-color-muted);
-                        }
-
-                        .type {
-                            text-transform: capitalize;
-
-                            &.mature {
-                                color: var(--dgr-color);
-                            }
-                        }
-                    }
-        
-                    h1 {
-                        margin: 5px 0;
-                    }
-                }
-
+    
                 img {
-                    width: 45px;
-                    height: 45px;
-                    margin-left: 10px;
+                    margin: auto 0;
+                    max-height: 100%;
+                    max-width: 250px;
                 }
             }
-
-            p {
-                margin: 5px 0;
-
-                .comma-list {
-                    span {
-                        text-transform: capitalize;
-
-                        &.rating {
-                            text-transform: uppercase;
-                        }
-
-                        &:not(:first-child)::before {
-                            content: ", ";
-                        }
-                    }
-                }
-            }
-
-            .buttons {
+    
+            .content {
                 display: flex;
-                flex-flow: row wrap;
-                margin: 10px 0;
-
-                button, a {
-                    font-family: Roboto;
-                    background-color: transparent;
-                    color: var(--color-vrv);
-                    border: 2px solid var(--color-vrv);
-                    font-size: 1rem;
-                    padding: 15px;
-                    text-decoration: none;
-                    text-transform: uppercase;
-                    font-weight: bolder;
-                    cursor: pointer;
-                    text-align: center;
-                    margin: 5px 0;
-
-                    &:not(:last-child) {
-                        margin-right: 10px;
+                flex-flow: column;
+                padding-right: 5px;
+    
+                max-width: 43.125rem;
+    
+                margin-left: 1rem;
+    
+                header {
+                    display: flex;
+                    flex-flow: row;
+    
+                    .title {
+                        flex: 1;
+                        
+                        .langs {
+                            display: flex;
+                            flex-flow: row;
+            
+                            .lang {
+                                padding: 0 5px;
+                                &:not(:first-child) {
+                                    border-left: 1px solid var(--text-color-muted);
+                                }
+                            }
+    
+                            .type:not(:first-child)::before {
+                                content: '- ';
+                                color: var(--text-color-muted);
+                            }
+    
+                            .type {
+                                text-transform: capitalize;
+    
+                                &.mature {
+                                    color: var(--dgr-color);
+                                }
+                            }
+                        }
+            
+                        h1 {
+                            margin: 5px 0;
+                        }
                     }
-
-                    &:hover,
-                    &.active {
-                        background-color: var(--color-vrv);
-                        color: #000;
+    
+                    img {
+                        width: 45px;
+                        height: 45px;
+                        margin-left: 10px;
+                    }
+                }
+    
+                p {
+                    margin: 5px 0;
+    
+                    .comma-list {
+                        span {
+                            text-transform: capitalize;
+    
+                            &.rating {
+                                text-transform: uppercase;
+                            }
+    
+                            &:not(:first-child)::before {
+                                content: ", ";
+                            }
+                        }
+                    }
+                }
+    
+                .buttons {
+                    display: flex;
+                    flex-flow: row wrap;
+                    margin: 10px 0;
+    
+                    button, a {
+                        font-family: Roboto;
+                        background-color: transparent;
+                        color: var(--color-vrv);
+                        border: 2px solid var(--color-vrv);
+                        font-size: 1rem;
+                        padding: 15px;
+                        text-decoration: none;
+                        text-transform: uppercase;
+                        font-weight: bolder;
+                        cursor: pointer;
+                        text-align: center;
+                        margin: 5px 0;
+    
+                        &:not(:last-child) {
+                            margin-right: 10px;
+                        }
+    
+                        &:hover,
+                        &.active {
+                            background-color: var(--color-vrv);
+                            color: #000;
+                        }
                     }
                 }
             }
         }
+
 
         .close {
             position: absolute;
@@ -153,9 +160,10 @@
 
             width: 31px;
             height: 31px;
+            border-radius: 50%;
 
             color: var(--brd-color);
-            background-color: transparent;
+            background-color: var(--bg-card);
             border: none;
             outline: none;
             cursor: pointer;
@@ -164,6 +172,10 @@
             font-weight: bolder;
 
             transition: all 250ms;
+            text-align: center;
+            vertical-align: middle;
+            display: inline-flex;
+            align-items: center; 
 
             &:hover {
                 color: #fff;
@@ -182,27 +194,29 @@
 @media screen and (max-width: 600px) {
     .overlay {
         .container {
-            flex-flow: column;
+            .scroll-container {
+                flex-flow: column;
 
-            .anime-image {
-                img {
-                    margin: 0 auto;
-                }
-            }
-
-            .content {
-                margin-left: 0;
-                padding-right: 0;
-                header {
-                    margin-top: 10px;
+                .anime-image {
+                    img {
+                        margin: 0 auto;
+                    }
                 }
 
-                .buttons {
-                    flex-flow: column;
+                .content {
+                    margin-left: 0;
+                    padding-right: 0;
+                    header {
+                        margin-top: 10px;
+                    }
 
-                    button, a {
-                        margin: 5px 0 !important;
-                        flex: 1;
+                    .buttons {
+                        flex-flow: column;
+
+                        button, a {
+                            margin: 5px 0 !important;
+                            flex: 1;
+                        }
                     }
                 }
             }
