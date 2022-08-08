@@ -144,6 +144,7 @@ export class AnimeComponent implements OnInit, OnDestroy {
     }
 
     onSearch(filter: FilterSearch) {
+        this.filtersOpen = false;
         this.filter = filter;
         this.process();
         this.updateRoute();

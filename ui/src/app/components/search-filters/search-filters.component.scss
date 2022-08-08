@@ -15,10 +15,9 @@
     overflow-y: auto;
     
     .search {
-        margin: 0 auto;
+        margin: 5px 10px;
         display: flex;
         flex-flow: column;
-        width: 150px;
 
         input {
             outline: none;
@@ -27,20 +26,22 @@
             background-color: transparent;
             color: #fff;
             font-size: 16px;
+            text-align: center;
         }
     }
 
     .field {
         display: flex;
         flex-flow: column;
-        margin: 5px;
+        margin: 0 10px;
+        border-top: 1px solid var(--text-color-muted);
 
         .title {
             text-align: center;
             padding-bottom: 5px;
-            border-bottom: 1px solid var(--text-color-muted);
             text-transform: capitalize;
             position: relative;
+            margin-top: 10px;
 
             button {
                 position: absolute;
@@ -62,6 +63,7 @@
             overflow-x: hidden;
             overflow-y: auto;
             transition: all 250ms;
+            padding-bottom: 5px;
         }
 
         .toggles {
@@ -85,6 +87,7 @@
 
             button {
                 margin: 2px auto;
+                flex: 1;
             }
         }
 
@@ -104,9 +107,14 @@
             
             .options,
             .toggles {
+                padding-bottom: 0;
                 max-height: 0;
                 overflow: hidden;
             }
+        }
+
+        &:nth-child(2) {
+            border-top: none;
         }
     }
 

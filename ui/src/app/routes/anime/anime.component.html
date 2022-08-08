@@ -10,19 +10,6 @@
              [ngClass]="{ 'active': curIndex === i }"></div>
     </div>
 
-    <aside>
-        <div class="filters">
-            <cba-search-filters (searched)="onSearch($event)"></cba-search-filters>
-        </div>
-        <div class="counts">
-            {{ anime.length }} / {{ total }}
-        </div>
-        <div class="current-background" *ngIf="current">
-            <div class="title">Current Background</div>
-            <cba-card class="card" [anime]="current"></cba-card>
-        </div>
-    </aside>
-
     <main infiniteScroll 
           (scrolled)="onScroll()"
           [infiniteScrollDistance]="2"
@@ -49,6 +36,22 @@
             </div>
         </div>
     </main>
+
+    <div class="fade"></div>
+
+    <aside>
+        <div class="filters">
+            <cba-search-filters (searched)="onSearch($event)"></cba-search-filters>
+        </div>
+        <div class="counts">
+            {{ anime.length }} / {{ total }}
+        </div>
+        <div class="current-background" *ngIf="current">
+            <div class="title">Current Background</div>
+            <cba-card class="card" [anime]="current"></cba-card>
+        </div>
+    </aside>
+
     <button class="filter-btn" (click)="filtersOpen = !filtersOpen">
         <span *ngIf="filtersOpen">&lt;</span>
         <span *ngIf="!filtersOpen">&gt;</span>
