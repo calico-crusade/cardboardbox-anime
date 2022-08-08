@@ -69,6 +69,19 @@
                                 border-left: 1px solid var(--text-color-muted);
                             }
                         }
+
+                        .type:not(:first-child)::before {
+                            content: '- ';
+                            color: var(--text-color-muted);
+                        }
+
+                        .type {
+                            text-transform: capitalize;
+
+                            &.mature {
+                                color: var(--dgr-color);
+                            }
+                        }
                     }
         
                     h1 {
@@ -84,7 +97,17 @@
             }
 
             p {
-                margin: 0;
+                margin: 5px 0;
+
+                .comma-list {
+                    span {
+                        text-transform: capitalize;
+
+                        &:not(:first-child)::before {
+                            content: ", ";
+                        }
+                    }
+                }
             }
 
             .buttons {
@@ -158,6 +181,8 @@
             }
 
             .content {
+                margin-left: 0;
+                padding-right: 0;
                 header {
                     margin-top: 10px;
                 }

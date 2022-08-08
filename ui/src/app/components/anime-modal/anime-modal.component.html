@@ -9,12 +9,32 @@
                 <div class="title">
                     <div class="langs">
                         <div class="lang" *ngFor="let lang of langs">{{ lang }}</div>
+                        <div class="type">{{ anime.type }}&nbsp;</div>
+                        <div class="type mature" *ngIf="anime.mature">Mature</div>
                     </div>
                     <h1>{{ anime.title }}</h1>
                 </div>
                 <img [src]="'/assets/' + anime.platformId + '-icon.png'" />
             </header>
             <p>{{ anime.description }}</p>
+            <p *ngIf="anime.languages.length > 0">
+                <b>Audio Languages: </b>
+                <span class="comma-list">
+                    <span *ngFor="let lang of anime.languages">{{ lang }}</span>
+                </span>
+            </p>
+            <p *ngIf="anime.tags.length > 0">
+                <b>Genres: </b>
+                <span class="comma-list">
+                    <span *ngFor="let tag of anime.tags">{{ tag }}</span>
+                </span>
+            </p>
+            <p *ngIf="anime.ratings.length > 0">
+                <b>Ratings: </b>
+                <span class="comma-list">
+                    <span *ngFor="let tag of anime.ratings">{{ tag }}</span>
+                </span>
+            </p>
 
             <div class="buttons">
                 <button (click)="watchlist()">
