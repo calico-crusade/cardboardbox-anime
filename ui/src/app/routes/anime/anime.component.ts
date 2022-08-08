@@ -59,6 +59,17 @@ export class AnimeComponent implements OnInit, OnDestroy {
                 if (this.filter?.page === 1)
                     this.anime = [];
 
+                if (t.results.length === 0) return;
+
+                if (this.anime.length > 0) {
+                    const last = this.anime[this.anime.length - 1];
+                    const first = t.results[0];
+
+                    if (last.hashId === first.hashId) {
+                        t.results.splice(0, 1);
+                    }
+                }
+
                 this.anime.push(...t.results);
                 this.pages = t.pages;
                 this.total = t.count;
