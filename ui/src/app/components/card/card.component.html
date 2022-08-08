@@ -1,5 +1,5 @@
 <div class="card" [ngClass]="anime.platformId">
-    <a class="linkable" (click)="modal()" (swipeleft)="doSwipe(true)" (swiperight)="doSwipe(false)">
+    <a class="linkable" (click)="modal()">
         <div class="image" [ngClass]="anime.platformId + '-image'" [lazyLoad]="getImage()"></div>
         <div class="mature" *ngIf="anime.mature">Mature</div>
         <div class="details">
