@@ -151,7 +151,10 @@
             top: 0;
             right: 0;
 
-            color: var(--text-color-muted);
+            width: 31px;
+            height: 31px;
+
+            color: var(--brd-color);
             background-color: transparent;
             border: none;
             outline: none;
@@ -160,8 +163,11 @@
             font-size: 24px;
             font-weight: bolder;
 
+            transition: all 250ms;
+
             &:hover {
                 color: #fff;
+                transform: rotate(90deg);
             }
         }
 
