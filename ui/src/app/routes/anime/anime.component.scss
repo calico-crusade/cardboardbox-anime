@@ -107,6 +107,7 @@ $filter-margin: 5px;
         overflow-x: hidden;
         overflow-y: auto;
         z-index: 99;
+        touch-action: pan-y !important;
 
         .loading {
             margin: auto;

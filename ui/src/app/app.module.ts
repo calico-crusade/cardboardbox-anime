@@ -19,6 +19,7 @@ import { AuthInterceptor } from './services/auth.service';
 
 @Injectable()
 export class MyHammerConfig extends HammerGestureConfig {
+
     override overrides = {
         swipe: { direction: Hammer.DIRECTION_ALL }
     }
