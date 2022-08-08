@@ -18,14 +18,28 @@
         border-bottom: 2px solid var(--color-vrv);
         position: relative;
 
-        .logo {
-            margin: 10px auto;
+        a {
+            margin: 5px;
             cursor: pointer;
             display: flex;
             flex-flow: row;
             color: #fff;
             text-decoration: none;
 
+            .material-symbols-outlined {
+                font-size: 30px;
+            }
+        }
+
+        .login {
+            display: flex;
+
+            span {
+                margin: auto 0;
+            }
+        }
+
+        .logo {
             svg {
                 height: 24px;
                 .group-three {
@@ -51,16 +65,23 @@
         }
 
         .github {
-            position: absolute;
-            right: 10px;
             color: #fff;
-            top: 50%;
-            transform: translateY(-50%);
 
             path {
                 color: #fff;
                 fill: currentColor;
             }
+        }
+
+        .avatar {
+            height: 32px;
+            width: 32px;
+            border-radius: 50%;
+            margin: auto 5px;
+        }
+
+        .username {
+            margin: auto 5px;
         }
     }
 

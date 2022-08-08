@@ -30,7 +30,7 @@
     --color-vrvselect: rgb(128, 130, 133);
     --color-mondo: rgb(233, 55, 53);
     --color-vrv: #fd0;
-    --color-hidive: rgba(0,174,240,1);
+    --color-hidive: rgba(0, 174, 240, 1);
     --color-hidive-dark: rgb(0, 95, 133);
     --color-vrv-trans: rgba(255, 221, 0, 0.842);
     --color-funimation: #6030a1;
@@ -47,7 +47,8 @@
     flex: 1;
 }
 
-.crunchyroll-bg, .crunchyroll-bg-hover:hover {
+.crunchyroll-bg,
+.crunchyroll-bg-hover:hover {
     background-color: var(--color-crunchyroll) !important;
 }
 
@@ -56,7 +57,8 @@
     border-bottom-color: var(--color-crunchyroll) !important;
 }
 
-.mondo-bg, .mondo-bg-hover:hover {
+.mondo-bg,
+.mondo-bg-hover:hover {
     background-color: var(--color-mondo) !important;
 }
 
@@ -65,7 +67,8 @@
     border-bottom-color: var(--color-mondo) !important;
 }
 
-.vrvselect-bg, .vrvselect-bg-hover:hover {
+.vrvselect-bg,
+.vrvselect-bg-hover:hover {
     background-color: var(--color-vrvselect) !important;
 }
 
@@ -74,7 +77,8 @@
     border-bottom-color: var(--color-vrvselect) !important;
 }
 
-.funimation-bg, .funimation-bg-hover:hover {
+.funimation-bg,
+.funimation-bg-hover:hover {
     background-color: var(--color-funimation) !important;
 }
 
@@ -83,11 +87,20 @@
     border-bottom-color: var(--color-funimation) !important;
 }
 
-.hidive-bg, .hidive-bg-hover:hover {
+.hidive-bg,
+.hidive-bg-hover:hover {
     background-color: var(--color-hidive) !important;
 }
 
 .hidive-image {
     background-color: var(--color-funimation);
     border-bottom-color: var(--color-funimation) !important;
+}
+
+.material-symbols-outlined {
+    font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 48;
 }

@@ -1,17 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { PagedResults, Filters, FilterSearch } from './anime.model';
-import { environment } from 'src/environments/environment';
+import { ConfigObject } from './config.base';
 
 @Injectable({
     providedIn: 'root'
 })
-export class AnimeService {
-    private get apiUrl() { return environment.apiUrl; }
-
+export class AnimeService extends ConfigObject {
     constructor(
         private http: HttpClient
-    ) { }
+    ) { super(); }
 
     search(search: FilterSearch) {
         search.mature = +search.mature || 0;

@@ -9,7 +9,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.RegisterCba();
+builder.Services.RegisterCba(builder.Configuration);
 
 var app = builder.Build();
 
@@ -29,6 +29,7 @@ app.UseCors(c =>
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

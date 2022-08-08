@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
-import { NgModule } from '@angular/core';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { Injectable, NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule, HAMMER_GESTURE_CONFIG, HammerGestureConfig, HammerModule } from '@angular/platform-browser';
 
@@ -15,7 +15,9 @@ import { LazyLoadImageModule } from 'ng-lazyload-image';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 import { SearchFiltersComponent } from './components/search-filters/search-filters.component';
 import { AnimeModalComponent } from './components/anime-modal/anime-modal.component';
+import { AuthInterceptor } from './services/auth.service';
 
+@Injectable()
 export class MyHammerConfig extends HammerGestureConfig {
     override overrides = {
         swipe: { direction: Hammer.DIRECTION_ALL }
@@ -45,6 +47,10 @@ export class MyHammerConfig extends HammerGestureConfig {
         {
             provide: HAMMER_GESTURE_CONFIG,
             useClass: MyHammerConfig
+        }, {
+            provide: HTTP_INTERCEPTORS,
+            useClass: AuthInterceptor,
+            multi: true
         }
     ],
     bootstrap: [AppComponent]

@@ -21,7 +21,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Third Party", "Third Party"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CardboardBox.Anime.HiDive", "CardboardBox.Anime.HiDive\CardboardBox.Anime.HiDive.csproj", "{04CF4FA1-4C21-4F86-9589-F07164A89C92}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CardboardBox.Anime.Database", "CardboardBox.Anime.Database\CardboardBox.Anime.Database.csproj", "{90B2BCA8-95A5-4293-854E-03D26546CC95}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CardboardBox.Anime.Database", "CardboardBox.Anime.Database\CardboardBox.Anime.Database.csproj", "{90B2BCA8-95A5-4293-854E-03D26546CC95}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CardboardBox.Anime.Auth", "CardboardBox.Anime.Auth\CardboardBox.Anime.Auth.csproj", "{0DA0D32B-6F49-44BD-AF87-5A059ABB0DEE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -61,6 +63,10 @@ Global
 		{90B2BCA8-95A5-4293-854E-03D26546CC95}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{90B2BCA8-95A5-4293-854E-03D26546CC95}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{90B2BCA8-95A5-4293-854E-03D26546CC95}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0DA0D32B-6F49-44BD-AF87-5A059ABB0DEE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0DA0D32B-6F49-44BD-AF87-5A059ABB0DEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0DA0D32B-6F49-44BD-AF87-5A059ABB0DEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0DA0D32B-6F49-44BD-AF87-5A059ABB0DEE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
