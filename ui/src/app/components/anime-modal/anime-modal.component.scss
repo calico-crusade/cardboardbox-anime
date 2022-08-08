@@ -103,6 +103,10 @@
                     span {
                         text-transform: capitalize;
 
+                        &.rating {
+                            text-transform: uppercase;
+                        }
+
                         &:not(:first-child)::before {
                             content: ", ";
                         }
