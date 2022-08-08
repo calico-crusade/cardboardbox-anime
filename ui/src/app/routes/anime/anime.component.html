@@ -39,7 +39,7 @@
         </div>
         <div class="anime" *ngIf="anime.length > 0">
             <cba-card *ngFor="let ani of anime" [anime]="ani"
-                (swipe)="filtersOpen = !$event"></cba-card>
+                (subswipe)="filtersOpen = !$event"></cba-card>
             
             <div class="infinite-loading" *ngIf="loading">
                 <div class="loading no-animation">

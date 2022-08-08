@@ -11,7 +11,7 @@ export class CardComponent implements OnInit {
 
     @Input() anime!: Anime;
 
-    @Output('swipe') onSwipe: EventEmitter<boolean> = new EventEmitter();
+    @Output('subswipe') onSwipe: EventEmitter<boolean> = new EventEmitter();
     
     get langs() {
         return this.anime
