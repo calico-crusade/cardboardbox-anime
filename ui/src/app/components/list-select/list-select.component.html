@@ -1,0 +1,28 @@
+<div class="overlay" *ngIf="open && cur">
+    <div class="fade" (click)="cancel()"></div>
+    <div class="container">
+        <div class="scroll-container">
+            <div class="lists">
+                <h2>Your Lists:</h2>
+                <div class="button-list">
+                    <button class="btn" *ngFor="let list of lists" (click)="ok(list)">
+                        {{ list.title }} ({{ list.count }})
+                    </button>
+                </div>
+            </div>
+            <div class="new-lists">
+                <h2>New List:</h2>
+
+                <input class="ipt" placeholder="Title" [(ngModel)]="newTitle" />
+                <textarea class="ipt" placeholder="Description" [(ngModel)]="newDescription"></textarea>
+                <button class="btn" [disabled]="loading || newTitle.length <= 3" (click)="create()">
+                    {{ loading ? 'Loading...' : 'Create' }}
+                </button>
+            </div>
+        </div>
+
+        <button class="close" (click)="cancel()">
+            &times;
+        </button>
+    </div>
+</div>

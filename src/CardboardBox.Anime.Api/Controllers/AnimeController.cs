@@ -10,9 +10,9 @@ namespace CardboardBox.Anime.Api.Controllers
 	public class AnimeController : ControllerBase
 	{
 		private readonly IAnimeMongoService _db;
-		private readonly IAnimeDbService _sql;
+		private readonly IDbService _sql;
 
-		public AnimeController(IAnimeMongoService db, IAnimeDbService sql)
+		public AnimeController(IAnimeMongoService db, IDbService sql)
 		{
 			_db = db;
 			_sql = sql;
@@ -28,7 +28,7 @@ namespace CardboardBox.Anime.Api.Controllers
 		[HttpPost, Route("anime/v2"), ProducesDefaultResponseType(typeof(PaginatedResult<DbAnime>))]
 		public async Task<IActionResult> AllV2([FromBody] FilterSearch search)
 		{
-			var (total, anime) = await _sql.Search(search);
+			var (total, anime) = await _sql.Anime.Search(search);
 			return Ok(new
 			{
 				pages = Math.Ceiling((double)total / search.Size),
@@ -47,7 +47,7 @@ namespace CardboardBox.Anime.Api.Controllers
 		[HttpGet, Route("anime/v2/filters")]
 		public async Task<IActionResult> FiltersV2()
 		{
-			var filters = await _sql.Filters();
+			var filters = await _sql.Anime.Filters();
 			return Ok(filters);
 		}
 	}

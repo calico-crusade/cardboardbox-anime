@@ -4,19 +4,23 @@ using Microsoft.AspNetCore.Mvc;
 namespace CardboardBox.Anime.Api.Controllers
 {
 	using Auth;
+	using Database;
 
 	[ApiController]
 	public class AuthController : ControllerBase
 	{
 		private readonly IOAuthService _auth;
 		private readonly ITokenService _token;
+		private readonly IDbService _db;
 
 		public AuthController(
 			IOAuthService auth, 
-			ITokenService token)
+			ITokenService token,
+			IDbService db)
 		{
 			_auth = auth;
 			_token = token;
+			_db = db;
 		}
 
 		[HttpGet, Route("auth/{code}")]
@@ -30,10 +34,20 @@ namespace CardboardBox.Anime.Api.Controllers
 				});
 
 			var token = _token.GenerateToken(res);
+			var profile = new DbProfile
+			{
+				Avatar = res.User.Avatar,
+				Email = res.User.Email,
+				PlatformId = res.User.Id,
+				Username = res.User.Nickname,
+			};
+			var id = await _db.Profiles.Upsert(profile);
+
 			return Ok(new
 			{
 				user = res.User,
-				token
+				token,
+				id
 			});
 		}
 

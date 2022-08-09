@@ -53,7 +53,8 @@
               "src/assets"
             ],
             "styles": [
-              "src/styles.scss"
+              "src/styles/styles.scss",
+              "src/styles/overlay.scss"
             ],
             "scripts": []
           },

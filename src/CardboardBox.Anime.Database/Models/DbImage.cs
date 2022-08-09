@@ -1,5 +1,7 @@
 ﻿namespace CardboardBox.Anime.Database
 {
+	using Core.Models;
+
 	public class DbImage
 	{
 		[JsonPropertyName("width")]
@@ -16,5 +18,17 @@
 
 		[JsonPropertyName("platformId")]
 		public string PlatformId { get; set; } = "";
+
+		public static implicit operator DbImage(Image i)
+		{
+			return new DbImage
+			{
+				Width = i.Width,
+				Height = i.Height,
+				PlatformId = i.PlatformId,
+				Source = i.Source,
+				Type = i.Type,
+			};
+		}
 	}
 }

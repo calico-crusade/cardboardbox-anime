@@ -16,6 +16,7 @@ import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 import { SearchFiltersComponent } from './components/search-filters/search-filters.component';
 import { AnimeModalComponent } from './components/anime-modal/anime-modal.component';
 import { AuthInterceptor } from './services/auth.service';
+import { ListSelectComponent } from './components/list-select/list-select.component';
 
 @Injectable()
 export class MyHammerConfig extends HammerGestureConfig {
@@ -32,7 +33,8 @@ export class MyHammerConfig extends HammerGestureConfig {
         ErrorComponent,
         CardComponent,
         SearchFiltersComponent,
-        AnimeModalComponent
+        AnimeModalComponent,
+        ListSelectComponent
     ],
     imports: [
         BrowserModule,

@@ -1,5 +1,7 @@
 ﻿namespace CardboardBox.Anime.Database
 {
+	using Core.Models;
+
 	public class DbAnime : DbObject
 	{
 		[JsonPropertyName("hashId")]
@@ -40,5 +42,27 @@
 
 		[JsonPropertyName("images")]
 		public DbImage[] Images { get; set; } = Array.Empty<DbImage>();
+
+		public static implicit operator DbAnime(Anime a)
+		{
+			return new DbAnime
+			{
+				HashId = a.HashId,
+				AnimeId = a.AnimeId,
+				Link = a.Link,
+				Title = a.Title,
+				Description = a.Description,
+				PlatformId = a.PlatformId,
+				Type = a.Type,
+				Mature = a.Metadata.Mature,
+				Languages = a.Metadata.Languages.ToArray(),
+				LanguageTypes = a.Metadata.LanguageTypes.ToArray(),
+				Ratings = a.Metadata.Ratings.ToArray(),
+				Tags = a.Metadata.Tags.ToArray(),
+				Images = a.Images.Select(t => (DbImage)t).ToArray(),
+				CreatedAt = DateTime.Now,
+				UpdatedAt = DateTime.Now
+			};
+		}
 	}
 }

@@ -1,10 +1,14 @@
-﻿CREATE TYPE image AS (
+﻿-- CREATE image TYPE
+
+CREATE TYPE image AS (
     width bigint,
     height bigint,
     type text,
     source text,
     platform_id text
 );
+
+-- CREATE anime TABLE
 
 CREATE TABLE anime (
     id BIGSERIAL PRIMARY KEY,
@@ -33,3 +37,58 @@ ALTER TABLE anime ADD COLUMN fts tsvector GENERATED ALWAYS AS ( to_tsvector('eng
 CREATE INDEX fts_index ON anime USING GIN (fts);
 
 CREATE UNIQUE INDEX anime_uiq ON anime (hash_id);
+
+-- CREATE profiles TABLE
+
+CREATE TABLE profiles (
+    id BIGSERIAL PRIMARY KEY,
+
+    username text not null,
+    avatar text not null,
+    platform_id text not null,
+    admin bool not null,
+    email text not null,
+
+    created_at timestamp,
+    updated_at timestamp,
+    deleted_at timestamp
+);
+
+CREATE UNIQUE INDEX profiles_platform_id_uiq ON profiles (platform_id);
+
+CREATE UNIQUE INDEX profiles_email_uiq ON profiles (email);
+
+-- CREATE lists TABLE
+CREATE TABLE lists (
+    id BIGSERIAL PRIMARY KEY,
+
+    title text not null,
+    description text,
+    profile_id bigint not null,
+
+    created_at timestamp,
+    updated_at timestamp,
+    deleted_at timestamp,
+
+    CONSTRAINT fk_lists_profiles FOREIGN KEY(profile_id) REFERENCES profiles(id)
+);
+
+CREATE UNIQUE INDEX lists_uiq ON lists (title, profile_id);
+
+-- CREATE list_map TABLE
+
+CREATE TABLE list_map (
+    id BIGSERIAL PRIMARY KEY,
+
+    list_id bigint not null,
+    anime_id bigint not null,
+
+    created_at timestamp,
+    updated_at timestamp,
+    deleted_at timestamp,
+
+    CONSTRAINT fk_list_map_list_id FOREIGN KEY(list_id) REFERENCES lists(id),
+    CONSTRAINT fk_list_map_anime_id FOREIGN KEY(anime_id) REFERENCES anime(id)
+);
+
+CREATE UNIQUE INDEX list_map_uiq ON list_map (list_id, anime_id);

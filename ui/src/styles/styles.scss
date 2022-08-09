@@ -25,6 +25,7 @@
     --bg-header: #111111;
     --bg-sidebar: #1b1b1b;
     --bg-card: #302e42;
+    --bd-card-2: rgb(27, 26, 38);
 
     --color-crunchyroll: rgb(244, 117, 33);
     --color-vrvselect: rgb(128, 130, 133);
@@ -103,4 +104,45 @@
         'wght' 400,
         'GRAD' 0,
         'opsz' 48;
+}
+
+button.btn, a.btn {
+    font-family: Roboto;
+    background-color: transparent;
+    color: var(--color-vrv);
+    border: 2px solid var(--color-vrv);
+    font-size: 1rem;
+    padding: 15px;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-weight: bolder;
+    cursor: pointer;
+    text-align: center;
+    margin: 5px 0;
+
+    &:hover,
+    &.active {
+        background-color: var(--color-vrv);
+        color: #000;
+    }
+
+    &:disabled,
+    &[disabled] {
+        background-color: rgba(255, 255, 255, 0.5);
+        cursor: not-allowed;
+        color: #000;
+    }
+}
+
+input.ipt,
+textarea.ipt {
+    background-color: transparent;
+    outline: none;
+    border: none;
+    border-bottom: 2px solid var(--color-vrv);
+    font-size: 20px;
+    color: var(--text-color);
+    margin: 5px 0;
+    font-family: 'Roboto';
+    resize: none;
 }

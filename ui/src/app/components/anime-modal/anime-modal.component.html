@@ -38,10 +38,10 @@
                 </p>
     
                 <div class="buttons">
-                    <button (click)="watchlist()">
-                        Add to watchlist
+                    <button (click)="watchlist()" class="btn" *ngIf="!!curUser">
+                        Add to List
                     </button>
-                    <a [href]="anime.link" target="_blank">
+                    <a [href]="anime.link" class="btn" target="_blank">
                         Start Watching
                     </a>
                 </div>

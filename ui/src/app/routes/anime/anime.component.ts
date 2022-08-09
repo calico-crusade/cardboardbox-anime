@@ -1,8 +1,9 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
-import { Anime, FilterSearch, MatureType } from 'src/app/services/anime.model';
-import { AnimeService } from 'src/app/services/anime.service';
-import { UtilitiesService } from 'src/app/services/utilities.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { 
+    AnimeService, AuthService, UtilitiesService,
+    Anime, FilterSearch, MatureType, AuthUser
+} from './../../services';
 
 const STORE_TUT = 'showTut';
 
@@ -25,8 +26,9 @@ export class AnimeComponent implements OnInit, OnDestroy {
     total: number = 0;
     showTut: boolean = true;
     loading: boolean = true;
-
+    curUser?: AuthUser;
     filter?: FilterSearch;
+    listId?: number;
 
     get current() {
         if (this.bgs.length === 0) return undefined;
@@ -37,11 +39,17 @@ export class AnimeComponent implements OnInit, OnDestroy {
     constructor(
         private api: AnimeService,
         private util: UtilitiesService,
-        private router: Router
+        private router: Router,
+        private auth: AuthService,
+        private route: ActivatedRoute
     ) { }
 
     ngOnInit(): void {
         this.showTut = !localStorage.getItem(STORE_TUT);
+        this.auth.onLogin.subscribe(t => this.curUser = t);
+        this.route.params.subscribe(t => {
+            this.listId = t['id'];
+        });
     }
 
     process() {
@@ -100,7 +108,10 @@ export class AnimeComponent implements OnInit, OnDestroy {
             params[key] = vals.join(',');
         }
 
-        this.router.navigate([ '/anime' ], {
+        const parts = ['/anime'];
+        if (this.listId) parts.push(this.listId.toString());
+
+        this.router.navigate(parts, {
             queryParams: params
         });
     }
@@ -157,6 +168,7 @@ export class AnimeComponent implements OnInit, OnDestroy {
     onSearch(filter: FilterSearch) {
         this.filtersOpen = false;
         this.filter = filter;
+        this.filter.listId = this.listId;
         this.process();
         this.updateRoute();
     }

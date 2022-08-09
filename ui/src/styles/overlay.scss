@@ -1,0 +1,92 @@
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    
+    display: flex;
+    flex-flow: column;
+
+    z-index: 900;
+
+    .fade {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.85);
+        z-index: 901;
+    }
+
+    .container {
+        position: relative;
+        margin: auto;
+        display: flex;
+        flex-flow: row;
+        z-index: 902;
+        background-color: var(--bg-card);
+        border-top: .25rem solid var(--color-vrv);
+        max-height: 80vh;
+        overflow: hidden;
+
+        .scroll-container {
+            overflow-x: hidden;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-flow: row;
+        }
+
+        .close {
+            position: absolute;
+            top: 0;
+            right: 0;
+
+            width: 31px;
+            height: 31px;
+            border-radius: 50%;
+
+            color: var(--brd-color);
+            background-color: var(--bg-card);
+            border: none;
+            outline: none;
+            cursor: pointer;
+
+            font-size: 24px;
+            font-weight: bolder;
+
+            transition: all 250ms;
+            text-align: center;
+            vertical-align: middle;
+            display: inline-flex;
+            align-items: center; 
+
+            &:hover {
+                color: #fff;
+                transform: rotate(90deg);
+            }
+        }
+
+        &.crunchyroll { border-color: var(--color-crunchyroll); }
+        &.vrvselect { border-color: var(--color-vrvselect); }
+        &.hidive { border-color: var(--color-hidive); }
+        &.funimation { border-color: var(--color-funimation); }
+        &.mondo { border-color: var(--color-mondo); }
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .overlay {
+        .container {
+            .scroll-container {
+                flex-flow: column;
+            }
+
+            .close {
+                right: 10px;
+            }
+        }
+    }
+}

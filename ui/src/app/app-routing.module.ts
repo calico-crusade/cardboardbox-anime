@@ -8,6 +8,9 @@ const routes: Routes = [
         path: 'anime',
         component: AnimeComponent
     }, {
+        path: 'anime/:id',
+        component: AnimeComponent
+    }, {
         path: '',
         pathMatch: 'full',
         redirectTo: '/anime'

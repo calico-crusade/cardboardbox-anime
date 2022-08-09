@@ -88,7 +88,9 @@ namespace CardboardBox.Anime
 				[new[] { "comedy" }] = new[] { "comedy – animation" },
 				[new[] { "romance", "comedy" }] = new[] { "comedy – romance" },
 				[new[] { "anime" }] = new[] { "animation - anime" },
-				[new[] { "mystery", "thriller" }] = new[] { "mystery and thriller" }
+				[new[] { "mystery", "thriller" }] = new[] { "mystery and thriller" },
+				[new[] { "adventure" }] = new[] { "adventure - comic" },
+				[new[] { "action" }] = new[] { "action - sword and sandal", "action - comic" }
 			};
 
 			var delParan = (string item) =>

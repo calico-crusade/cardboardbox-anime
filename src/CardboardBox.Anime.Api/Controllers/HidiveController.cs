@@ -1,34 +1,34 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace CardboardBox.Anime.Api.Controllers
 {
 	using Database;
-	using Vrv;
+	using HiDive;
 
 	[ApiController]
-	public class VrvController : ControllerBase
+	public class HidiveController : ControllerBase
 	{
 		private readonly IDbService _db;
-		private readonly IVrvApiService _vrv;
+		private readonly IHiDiveApiService _hidive;
 
-		public VrvController(IDbService db, IVrvApiService vrv)
+		public HidiveController(IDbService db, IHiDiveApiService hidive)
 		{
 			_db = db;
-			_vrv = vrv;
+			_hidive = hidive;
 		}
 
-		[HttpPost, Route("vrv/load")]
-		public async Task<IActionResult> Load([FromBody] VrvLoadRequest pars)
+		[HttpGet, Route("hidive/load")]
+		public async Task<IActionResult> Load()
 		{
-			var data = _vrv.All(pars);
+			var data = _hidive.All();
 
-			await foreach(var item in data)
+			await foreach (var item in data)
 				await _db.Anime.Upsert(item.Clean());
 
 			return Ok();
 		}
 
-		[HttpGet, Route("vrv")]
+		[HttpGet, Route("hidive")]
 		public async Task<IActionResult> Get([FromQuery] int page = 1, [FromQuery] int size = 100, [FromQuery] bool asc = true)
 		{
 			var data = await _db.Anime.Search(new()
@@ -38,7 +38,7 @@ namespace CardboardBox.Anime.Api.Controllers
 				Ascending = asc,
 				Queryables = new()
 				{
-					Platforms = new[] { "crunchyroll", "vrvselect", "mondo" }
+					Platforms = new[] { "hidive" }
 				}
 			});
 

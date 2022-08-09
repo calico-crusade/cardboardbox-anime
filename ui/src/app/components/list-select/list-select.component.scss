@@ -1,0 +1,48 @@
+.scroll-container {
+    display: flex;
+    flex-flow: row;
+    padding: 0 !important;
+
+    .lists, .new-lists {
+        flex: 1;
+        width: 300px;
+        max-width: 80vw;
+        padding: 20px;
+        display: flex;
+        flex-flow: column;
+
+        h2 {
+            margin: 0 auto;
+        }
+
+        &:last-child {
+            background-color: var(--bd-card-2);
+        }
+    }
+
+    .lists {
+        display: flex;
+        flex-flow: column;
+
+        .button-list {
+            display: flex;
+            flex-flow: column;
+
+            .btn {
+                margin: 0;
+
+                &:not(:last-child) {
+                    border-bottom: none;
+                }
+
+                &:first-child:last-child {
+                    border-bottom: 2px solid var(--color-vrv);
+                }
+            }
+        }
+    }
+}
+
+.close {
+    background-color: var(--bg-card-2) !important;
+}

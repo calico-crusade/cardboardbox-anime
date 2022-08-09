@@ -20,6 +20,9 @@
 		[JsonPropertyName("mature")]
 		public MatureType Mature { get; set; } = MatureType.Both;
 
+		[JsonPropertyName("listId")]
+		public long? ListId { get; set; }
+
 		public enum MatureType : int
 		{
 			Both = 0,

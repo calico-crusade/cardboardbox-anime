@@ -1,6 +1,7 @@
 import { Component, Injectable, OnInit } from '@angular/core';
-import { Subject } from 'rxjs';
-import { Anime } from 'src/app/services/anime.model';
+import { lastValueFrom, Subject } from 'rxjs';
+import { AnimeService, Anime, AuthService, AuthUser } from './../../services';
+import { ListSelectService } from '../list-select/list-select.component';
 
 const DEF_IMG = '/assets/default-background.webp';
 
@@ -13,6 +14,7 @@ export class AnimeModalComponent implements OnInit {
 
     anime?: Anime;
     open: boolean = false;
+    curUser?: AuthUser;
 
     get langs() {
         if (!this.anime) return [];
@@ -30,7 +32,10 @@ export class AnimeModalComponent implements OnInit {
     }
 
     constructor(
-        private srv: AnimeModalService
+        private srv: AnimeModalService,
+        private lists: ListSelectService,
+        private api: AnimeService,
+        private auth: AuthService
     ) { }
 
     ngOnInit(): void {
@@ -38,6 +43,7 @@ export class AnimeModalComponent implements OnInit {
             this.anime = t;
             this.open = true;
         });
+        this.auth.onLogin.subscribe(t => this.curUser = t);
     }
 
     close() {
@@ -59,8 +65,22 @@ export class AnimeModalComponent implements OnInit {
         return last.source;
     }
 
-    watchlist() {
-        alert('Not implemented yet :(');
+    async watchlist() {
+        if (!this.anime || !this.curUser) return;
+
+        try {
+            const list = await this.lists.open();
+            if (!list) return;
+
+            const { id } = await lastValueFrom(this.api.mapPost({
+                listId: list.id,
+                animeId: this.anime?.id
+            }));
+
+            console.log('Anime added to watch list', { id });
+        } catch (e) {
+            console.log('Watch lists closed', { e });
+        }
     }
 }
 

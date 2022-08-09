@@ -64,7 +64,11 @@ namespace CardboardBox.Anime.Database
 			{
 				c.ForEntity<DbAnime>()
 				 .ForEntity<DbImage>()
-				 .ForEntity<DbFilter>();
+				 .ForEntity<DbFilter>()
+				 .ForEntity<DbProfile>()
+				 .ForEntity<DbList>()
+				 .ForEntity<DbListExt>()
+				 .ForEntity<DbListMap>();
 			});
 
 			MapConfig.StartMap();
@@ -72,7 +76,13 @@ namespace CardboardBox.Anime.Database
 			return services
 				.AddTransient<ISqlService, NpgsqlService>()
 				.AddTransient<IDbQueryBuilderService, DbQueryBuilderService>()
-				.AddTransient<IAnimeDbService, AnimeDbService>();
+
+				.AddTransient<IAnimeDbService, AnimeDbService>()
+				.AddTransient<IProfileDbService, ProfileDbService>()
+				.AddTransient<IListDbService, ListDbService>()
+				.AddTransient<IListMapDbService, ListMapDbService>()
+				
+				.AddTransient<IDbService, DbService>();
 		}
 	}
 }

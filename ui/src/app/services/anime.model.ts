@@ -28,36 +28,6 @@ export interface Anime {
     deletedAt?: Date;
 }
 
-export interface OldAnime {
-    id: string;
-    hashId: string;
-    animeId: string;
-    link: string;
-    title: string;
-    description: string;
-    type: string;
-    platformId: string;
-    
-    images: Image[];
-
-    metadata: {
-        languages: string[];
-        languageTypes: string[];
-        ratings: string[];
-        tags: string[];
-        mature: boolean;
-        seasons: {
-            episodeCount: number;
-            type: string;
-            order: number;
-            number: number;
-            altTitle?: string;
-            id: string;
-        }[],
-        ext: { [key: string]: string; }
-    }
-}
-
 export interface PagedResults {
     pages: number;
     count: number;
@@ -88,4 +58,37 @@ export interface FilterSearch {
     }
     asc: boolean;
     mature: MatureType;
+    listId?: number;
+}
+
+export interface Id { id: number ;}
+
+export interface DbObject {
+    id: number;
+
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt?: Date;
+}
+
+export interface ListPost {
+    title: string;
+    description: string;
+}
+
+export interface ListPut extends ListPost {
+    id: number;
+}
+
+export interface List extends ListPost, DbObject {
+    profileId: number;
+}
+
+export interface ListExt extends List {
+    count: number;
+}
+
+export interface ListMap {
+    animeId: number;
+    listId: number;
 }

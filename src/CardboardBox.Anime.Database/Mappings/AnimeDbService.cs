@@ -36,27 +36,37 @@ namespace CardboardBox.Anime.Database
 		public async Task<(int total, DbAnime[] results)> Search(FilterSearch search)
 		{
 			int offset = (search.Page - 1) * search.Size;
-			var query = $@"SELECT * 
-FROM anime 
+			var query = $@"SELECT a.* 
+FROM anime a
+{{1}}
 WHERE {{0}} 
-ORDER BY title {(search.Ascending ? "ASC" : "DESC")} 
+ORDER BY a.title {(search.Ascending ? "ASC" : "DESC")} 
 LIMIT {search.Size} 
 OFFSET {offset};";
-			var count = @"SELECT COUNT(*) FROM anime WHERE {0};";
+			var count = @"SELECT COUNT(*) FROM anime a {1} WHERE {0};";
+			var sub = "";
 
 			var parts = new List<string>();
 			var pars = new DynamicParameters();
 
 			if (!string.IsNullOrEmpty(search.Search))
 			{
-				parts.Add("fts @@ phraseto_tsquery('english', :search)");
+				parts.Add("a.fts @@ phraseto_tsquery('english', :search)");
 				pars.Add("search", search.Search);
 			}
 
 			if (search.Mature != FilterSearch.MatureType.Both)
 			{
-				parts.Add("mature = :mature");
+				parts.Add("a.mature = :mature");
 				pars.Add("mature", search.Mature == FilterSearch.MatureType.Mature);
+			}
+
+			if (search.ListId != null)
+			{
+				sub = @"JOIN list_map lm on a.id = lm.anime_id
+JOIN lists l on lm.list_id = l.id";
+				parts.Add("l.id = :listId");
+				pars.Add("listId", search.ListId);
 			}
 
 			var queries = search.Queryables;
@@ -78,14 +88,14 @@ OFFSET {offset};";
 			{
 				if (!any(vals)) continue;
 
-				parts.Add($"{key} && :{key}");
+				parts.Add($"a.{key} && :{key}");
 				pars.Add(key, vals);
 			}
 
 			foreach(var (key, vals) in ss)
 			{
 				if (!any(vals)) continue;
-				parts.Add($"{key} = ANY( :{key} )");
+				parts.Add($"a.{key} = ANY( :{key} )");
 				pars.Add(key, vals);
 			}
 
@@ -93,8 +103,8 @@ OFFSET {offset};";
 				parts.Add("1 = 1");
 
 			var where = string.Join(" AND ", parts);
-			var outputQuery = string.Format(query, where);
-			var countQuery = string.Format(count, where);
+			var outputQuery = string.Format(query, where, sub);
+			var countQuery = string.Format(count, where, sub);
 			var fullQuery = $"{outputQuery}\r\n{countQuery}";
 
 			using var con = _sql.CreateConnection();
