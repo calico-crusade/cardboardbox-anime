@@ -29,7 +29,7 @@ namespace CardboardBox.Anime.Api.Controllers
 			if (list == null) return NotFound();
 			if (list.ProfileId != profile.Id) return Unauthorized();
 
-			var id = await _db.ListMaps.Upsert(new DbListMap
+			await _db.ListMaps.Upsert(new DbListMap
 			{
 				AnimeId = map.AnimeId,
 				ListId = map.ListId,

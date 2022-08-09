@@ -5,7 +5,7 @@
             <div class="lists">
                 <h2>Your Lists:</h2>
                 <div class="button-list">
-                    <button class="btn" *ngFor="let list of lists" (click)="ok(list)">
+                    <button class="btn" [ngClass]="{ 'active': exists(list) }" *ngFor="let list of lists" (click)="ok(list)">
                         {{ list.title }} ({{ list.count }})
                     </button>
                 </div>

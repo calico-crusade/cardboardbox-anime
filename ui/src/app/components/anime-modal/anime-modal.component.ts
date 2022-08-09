@@ -1,6 +1,6 @@
 import { Component, Injectable, OnInit } from '@angular/core';
 import { lastValueFrom, Subject } from 'rxjs';
-import { AnimeService, Anime, AuthService, AuthUser } from './../../services';
+import { AnimeService, Anime, AuthService, AuthUser, ListExt } from './../../services';
 import { ListSelectService } from '../list-select/list-select.component';
 
 const DEF_IMG = '/assets/default-background.webp';
@@ -15,6 +15,7 @@ export class AnimeModalComponent implements OnInit {
     anime?: Anime;
     open: boolean = false;
     curUser?: AuthUser;
+    inLists: ListExt[] = [];
 
     get langs() {
         if (!this.anime) return [];
@@ -41,6 +42,11 @@ export class AnimeModalComponent implements OnInit {
     ngOnInit(): void {
         this.srv.onClicked.subscribe(t => {
             this.anime = t;
+            this.inLists = [];
+            if (!!this.curUser)
+                this.api
+                    .listsGetByAnime(t.id)
+                    .subscribe(t => this.inLists = t);
             this.open = true;
         });
         this.auth.onLogin.subscribe(t => this.curUser = t);
@@ -69,15 +75,33 @@ export class AnimeModalComponent implements OnInit {
         if (!this.anime || !this.curUser) return;
 
         try {
-            const list = await this.lists.open();
+            const list = await this.lists.open(this.inLists);
             if (!list) return;
 
-            const { id } = await lastValueFrom(this.api.mapPost({
+            const i = this.inLists.findIndex(t => t.id === list.id);
+            if (i !== -1) {
+                const exists = this.inLists[i];
+                await lastValueFrom(this.api.mapDelete(this.anime.id, exists.id));
+                this.inLists.splice(i, 1);
+                console.log('Anime removed from watch list', {
+                    list,
+                    exists,
+                    anime: this.anime
+                })
+                return;
+            }
+
+            await lastValueFrom(this.api.mapPost({
                 listId: list.id,
                 animeId: this.anime?.id
             }));
 
-            console.log('Anime added to watch list', { id });
+            this.inLists.push(list);
+
+            console.log('Anime added to watch list', { 
+                list,
+                anime: this.anime
+             });
         } catch (e) {
             console.log('Watch lists closed', { e });
         }

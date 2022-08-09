@@ -26,6 +26,16 @@ namespace CardboardBox.Anime.Api.Controllers
 			return Ok(lists);
 		}
 
+		[HttpGet, Route("lists/{animeId}")]
+		public async Task<IActionResult> GetByAnime(long animeId)
+		{
+			var user = this.UserFromIdentity();
+			if (user == null) return Unauthorized();
+
+			var lists = await _db.Lists.ByProfile(user.Id, animeId);
+			return Ok(lists);
+		}
+
 		[HttpPost, Route("lists")]
 		public async Task<IActionResult> Post([FromBody] ListPost list)
 		{

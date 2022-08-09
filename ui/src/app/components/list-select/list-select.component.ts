@@ -1,6 +1,6 @@
 import { Component, Injectable, OnInit } from '@angular/core';
 import { lastValueFrom, Subject, tap } from 'rxjs';
-import { AnimeService, ListExt } from './../../services';
+import { Anime, AnimeService, ListExt } from './../../services';
 
 @Component({
     selector: 'cba-list-select',
@@ -27,15 +27,9 @@ export class ListSelectComponent implements OnInit {
             this.cur = t;
             this.open = true;
         });
-        await this.reload();
-    }
-
-    private reload() {
-        return lastValueFrom(this.api
-            .listsGet()
-            .pipe(
-                tap(t => this.lists = t)
-            ));
+        this.api.lists.subscribe(t => {
+            this.lists = t;
+        });
     }
 
     cancel() {
@@ -48,19 +42,23 @@ export class ListSelectComponent implements OnInit {
         this.open = false;
     }
 
+    exists(item: ListExt) {
+        if (!this.cur || !this.cur.context) return false;
+
+        const exists = this.cur.context.find(t => t.id === item.id);
+        return !!exists;
+    }
+
     async create() {
         try {
             this.loading = true;
-            const { id } = await lastValueFrom(this.api.listsPost({
+            const list = await lastValueFrom(this.api.listsPost({
                 title: this.newTitle,
                 description: this.newDescription
             }));
 
             this.newTitle = '';
             this.newDescription = '';
-
-            const lists = await this.reload();
-            const list = lists.find(t => t.id == id);
 
             if (!list) {
                 this.loading = false;
@@ -79,6 +77,7 @@ export class ListSelectComponent implements OnInit {
 interface Target {
     res: (list: ListExt) => void;
     rej: (reason: string) => void;
+    context?: ListExt[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -88,9 +87,9 @@ export class ListSelectService {
 
     get onOpened() { return this._sub.asObservable(); }
 
-    open() {
+    open(context?: ListExt[]) {
         return new Promise<ListExt>((res, rej) => {
-            const target: Target = { res, rej };
+            const target: Target = { res, rej, context };
             this._sub.next(target);
         });
     }

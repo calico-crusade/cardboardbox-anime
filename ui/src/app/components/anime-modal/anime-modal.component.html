@@ -36,6 +36,12 @@
                         <span class="rating" *ngFor="let tag of anime.ratings">{{ tag }}</span>
                     </span>
                 </p>
+                <p *ngIf="inLists.length > 0">
+                    <b>In Lists: </b>
+                    <span class="comma-list">
+                        <span class="list" *ngFor="let list of inLists">{{ list.title }}</span>
+                    </span>
+                </p>
     
                 <div class="buttons">
                     <button (click)="watchlist()" class="btn" *ngIf="!!curUser">
