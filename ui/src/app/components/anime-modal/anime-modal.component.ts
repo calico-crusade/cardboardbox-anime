@@ -1,6 +1,6 @@
 import { Component, Injectable, OnInit } from '@angular/core';
 import { lastValueFrom, Subject } from 'rxjs';
-import { AnimeService, Anime, AuthService, AuthUser, ListExt } from './../../services';
+import { AnimeService, Anime, AuthService, AuthUser, ListMapItem, UtilitiesService, ListsMaps } from './../../services';
 import { ListSelectService } from '../list-select/list-select.component';
 
 const DEF_IMG = '/assets/default-background.webp';
@@ -15,7 +15,7 @@ export class AnimeModalComponent implements OnInit {
     anime?: Anime;
     open: boolean = false;
     curUser?: AuthUser;
-    inLists: ListExt[] = [];
+    map?: ListsMaps
 
     get langs() {
         if (!this.anime) return [];
@@ -32,6 +32,15 @@ export class AnimeModalComponent implements OnInit {
             });
     }
 
+    get inLists() {
+        if (!this.map || !this.map?.lists || !this.anime) return [];
+
+        const ani = this.map.animeMap[this.anime.id];
+        if (!ani) return [];
+
+        return ani.map(t => this.map?.lists[t]);
+    }
+
     constructor(
         private srv: AnimeModalService,
         private lists: ListSelectService,
@@ -42,14 +51,15 @@ export class AnimeModalComponent implements OnInit {
     ngOnInit(): void {
         this.srv.onClicked.subscribe(t => {
             this.anime = t;
-            this.inLists = [];
-            if (!!this.curUser)
-                this.api
-                    .listsGetByAnime(t.id)
-                    .subscribe(t => this.inLists = t);
             this.open = true;
         });
-        this.auth.onLogin.subscribe(t => this.curUser = t);
+
+        this.auth.onLogin.subscribe(t => {
+            this.curUser = t;
+            if (!this.curUser) return;
+
+            this.api.map.subscribe(t => this.map = t);
+        });
     }
 
     close() {
@@ -72,36 +82,14 @@ export class AnimeModalComponent implements OnInit {
     }
 
     async watchlist() {
-        if (!this.anime || !this.curUser) return;
+        if (!this.anime || !this.curUser || !this.map) return;
 
         try {
-            const list = await this.lists.open(this.inLists);
+            const list = await this.lists.open(this.anime);
             if (!list) return;
 
-            const i = this.inLists.findIndex(t => t.id === list.id);
-            if (i !== -1) {
-                const exists = this.inLists[i];
-                await lastValueFrom(this.api.mapDelete(this.anime.id, exists.id));
-                this.inLists.splice(i, 1);
-                console.log('Anime removed from watch list', {
-                    list,
-                    exists,
-                    anime: this.anime
-                })
-                return;
-            }
-
-            await lastValueFrom(this.api.mapPost({
-                listId: list.id,
-                animeId: this.anime?.id
-            }));
-
-            this.inLists.push(list);
-
-            console.log('Anime added to watch list', { 
-                list,
-                anime: this.anime
-             });
+            const { inList } = await lastValueFrom(this.api.mapsToggle(this.anime, list));
+            console.log('In watch list', { inList, list, anime: this.anime });
         } catch (e) {
             console.log('Watch lists closed', { e });
         }

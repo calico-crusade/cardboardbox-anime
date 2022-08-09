@@ -92,3 +92,8 @@ export interface ListMap {
     animeId: number;
     listId: number;
 }
+
+export interface ListMapItem {
+    listId: number;
+    animeIds: number[];
+}

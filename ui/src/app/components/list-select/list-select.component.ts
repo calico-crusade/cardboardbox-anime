@@ -1,6 +1,6 @@
 import { Component, Injectable, OnInit } from '@angular/core';
 import { lastValueFrom, Subject, tap } from 'rxjs';
-import { Anime, AnimeService, ListExt } from './../../services';
+import { Anime, AnimeService, AuthService, AuthUser, ListExt, ListsMaps, UtilitiesService } from './../../services';
 
 @Component({
     selector: 'cba-list-select',
@@ -11,15 +11,28 @@ export class ListSelectComponent implements OnInit {
 
     loading: boolean = false;
     open: boolean = false;
+    curUser?: AuthUser;
     cur?: Target;
-    lists: ListExt[] = [];
+    map?: ListsMaps;
 
     newTitle: string = '';
     newDescription: string = '';
 
+    get lists() {
+        if (!this.map?.lists) return [];
+
+        const output = [];
+        for(const key in this.map.lists)
+            output.push(this.map.lists[key]);
+        
+        return output;
+    }
+
     constructor(
         private srv: ListSelectService,
-        private api: AnimeService
+        private api: AnimeService,
+        private auth: AuthService,
+        private utils: UtilitiesService
     ) { }
 
     async ngOnInit() {
@@ -27,8 +40,12 @@ export class ListSelectComponent implements OnInit {
             this.cur = t;
             this.open = true;
         });
-        this.api.lists.subscribe(t => {
-            this.lists = t;
+        
+        this.auth.onLogin.subscribe(t => {
+            this.curUser = t;
+            if (!this.curUser) return;
+
+            this.api.map.subscribe(t => this.map = t);
         });
     }
 
@@ -43,10 +60,12 @@ export class ListSelectComponent implements OnInit {
     }
 
     exists(item: ListExt) {
-        if (!this.cur || !this.cur.context) return false;
+        if (!this.cur?.context || !this.map) return false;
 
-        const exists = this.cur.context.find(t => t.id === item.id);
-        return !!exists;
+        const ids = this.map.listsMap[item.id];
+        if (!ids) return false;
+
+        return this.utils.any(ids, this.cur.context.id);
     }
 
     async create() {
@@ -77,7 +96,7 @@ export class ListSelectComponent implements OnInit {
 interface Target {
     res: (list: ListExt) => void;
     rej: (reason: string) => void;
-    context?: ListExt[];
+    context?: Anime;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -87,7 +106,7 @@ export class ListSelectService {
 
     get onOpened() { return this._sub.asObservable(); }
 
-    open(context?: ListExt[]) {
+    open(context?: Anime) {
         return new Promise<ListExt>((res, rej) => {
             const target: Target = { res, rej, context };
             this._sub.next(target);

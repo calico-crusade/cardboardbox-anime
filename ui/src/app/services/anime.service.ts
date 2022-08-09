@@ -1,25 +1,31 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { PagedResults, Filters, FilterSearch, ListExt, ListPost, ListPut, Id, ListMap, Anime, List } from './anime.model';
+import { PagedResults, Filters, FilterSearch, ListExt, ListPost, ListPut, Id, ListMap, Anime, List, ListMapItem } from './anime.model';
 import { ConfigObject } from './config.base';
-import { BehaviorSubject, map, Observable, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, combineLatestWith, lastValueFrom, map, Observable, switchMap, tap } from 'rxjs';
+
+export type ListsMaps = {
+    lists: { [key: number]: ListExt },
+    listsMap: { [key: number]: number[] },
+    animeMap: { [key: number]: number[] }
+}
 
 @Injectable({
     providedIn: 'root'
 })
 export class AnimeService extends ConfigObject {
 
-    private _lists = new BehaviorSubject<ListExt[]>([]);
+    private _map = new BehaviorSubject<ListsMaps | undefined>(undefined);
 
-    get lists() { 
-        const cur = this._lists.getValue();
-        if (!cur || cur.length === 0)
-            return this.listsGet()
+    get map() {
+        const cur = this._map.getValue();
+        if (!cur)
+            return this.buildMap()
                 .pipe(
-                    switchMap(_ => this._lists.asObservable())
+                    switchMap(_ => this._map.asObservable())
                 );
 
-        return this._lists.asObservable(); 
+        return this._map.asObservable();
     }
 
     constructor(
@@ -35,20 +41,41 @@ export class AnimeService extends ConfigObject {
         return this.http.get<Filters>(`${this.apiUrl}/anime/v2/filters`);
     }
 
-    listsGet() { 
-        return this.http
-            .get<ListExt[]>(`${this.apiUrl}/lists`)
-            .pipe(
-                tap(t => this._lists.next(t))
-            ); 
+    buildMap() {
+        const mapOs = this.mapsGet();
+        const listOs = this.listsGet();
+
+        return mapOs.pipe(
+            combineLatestWith(listOs),
+            map(([ maps, lists ]) => {
+                const output: ListsMaps = {
+                    lists: { },
+                    listsMap: { },
+                    animeMap: { }
+                };
+
+                for(const map of maps) {
+                    const list = lists.find(t => t.id === map.listId);
+                    if (!list) continue;
+
+                    output.lists[list.id] = list;
+                    output.listsMap[list.id] = map.animeIds;
+
+                    for(const ai of map.animeIds) {
+                        if (!output.animeMap[ai])
+                            output.animeMap[ai] = [];
+
+                        output.animeMap[ai].push(list.id);
+                    }
+                }
+
+                return output;
+            }),
+            tap(t => this._map.next(t))
+        );
     }
 
-    listsGetByAnime(animeId: number): Observable<ListExt[]>;
-    listsGetByAnime(anime: Anime): Observable<ListExt[]>;
-    listsGetByAnime(anime: Anime | number) {
-        if (typeof anime !== 'number') anime = anime.id;
-        return this.http.get<ListExt[]>(`${this.apiUrl}/lists/${anime}`);
-    }
+    listsGet() { return this.http.get<ListExt[]>(`${this.apiUrl}/lists`); }
 
     listsPost(list: ListPost) { 
         return this.http
@@ -81,28 +108,19 @@ export class AnimeService extends ConfigObject {
             );
     }
 
-    mapPost(list: ListMap) { 
-        return this.http
-            .post(`${this.apiUrl}/list-map`, list)
-            .pipe(
-                switchMap(t => this.listsGet()
-                    .pipe(
-                        map(_ => t)
-                    ))
-            ); 
-    }
+    mapsGet() { return this.http.get<ListMapItem[]>(`${this.apiUrl}/list-map`); }
 
-    mapDelete(anime: number, list: number): Observable<any>;
-    mapDelete(anime: Anime, list: number): Observable<any>;
-    mapDelete(anime: Anime, list: List): Observable<any>;
-    mapDelete(anime: number, list: List): Observable<any>;
-    mapDelete(anime: number | Anime, list: number | List) {
+    mapsToggle(animeId: number, listId: number): Observable<{ inList: boolean }>;
+    mapsToggle(anime: Anime, listId: number): Observable<{ inList: boolean }>;
+    mapsToggle(animeId: number, list: List): Observable<{ inList: boolean }>;
+    mapsToggle(anime: Anime, list: List): Observable<{ inList: boolean }>;
+    mapsToggle(anime: number | Anime, list: number | List) {
         if (typeof anime !== 'number') anime = anime.id;
         if (typeof list !== 'number') list = list.id;
         return this.http
-            .delete(`${this.apiUrl}/list-map/${list}/${anime}`)
+            .get<{ inList: boolean }>(`${this.apiUrl}/list-map/${list}/${anime}`)
             .pipe(
-                switchMap(t => this.listsGet().pipe(map(_ => t)))
+                switchMap(t => this.buildMap().pipe(map(_ => t)))
             );
     }
 }

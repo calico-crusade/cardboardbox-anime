@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Anime, List, ListMap, ListMapItem } from './anime.model';
 
 @Injectable({
     providedIn: 'root'
@@ -45,5 +46,37 @@ export class UtilitiesService {
 
     rand<T>(data: T[]) {
         return data[this.ran(data.length)];
+    }
+
+    lists(maps: ListMapItem[], animeId: number): number[]
+    lists(maps: ListMapItem[], anime: Anime): number[]
+    lists(maps: ListMapItem[], anime: number | Anime) {
+        if (typeof anime !== 'number') anime = anime.id;
+
+        return maps
+            .filter(t => this.any(t.animeIds, anime))
+            .map(t => t.listId);
+    }
+
+    anime(maps: ListMapItem[], listId: number): number[]
+    anime(maps: ListMapItem[], list: List): number[]
+    anime(maps: ListMapItem[], list: number | List) {
+        if (typeof list !== 'number') list = list.id;
+        
+        const l = maps.find(t => t.listId === list);
+        if (!l) return [];
+        return l.animeIds;
+    }
+
+    exists(map: ListMapItem[], listId: number, animeId: number): boolean
+    exists(map: ListMapItem[], list: List, animeId: number): boolean;
+    exists(map: ListMapItem[], listId: number, anime: Anime): boolean;
+    exists(map: ListMapItem[], list: List, anime: Anime): boolean;
+    exists(map: ListMapItem[], list: number | List, anime: number | Anime) {
+        if (typeof list !== 'number') list = list.id;
+        if (typeof anime !== 'number') anime = anime.id;
+
+        const ids = this.anime(map, list);
+        return this.any(ids, anime);
     }
 }

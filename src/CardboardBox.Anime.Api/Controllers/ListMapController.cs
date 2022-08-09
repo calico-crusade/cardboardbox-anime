@@ -16,32 +16,18 @@ namespace CardboardBox.Anime.Api.Controllers
 			_db = db;
 		}
 
-		[HttpPost, Route("list-map")]
-		public async Task<IActionResult> Post([FromBody] ListMapPost map)
+		[HttpGet, Route("list-map")]
+		public async Task<IActionResult> Get()
 		{
 			var user = this.UserFromIdentity();
 			if (user == null) return Unauthorized();
 
-			var profile = await _db.Profiles.Fetch(user.Id);
-			if (profile == null) return Unauthorized();
-
-			var list = await _db.Lists.Fetch(map.ListId);
-			if (list == null) return NotFound();
-			if (list.ProfileId != profile.Id) return Unauthorized();
-
-			await _db.ListMaps.Upsert(new DbListMap
-			{
-				AnimeId = map.AnimeId,
-				ListId = map.ListId,
-				CreatedAt = DateTime.Now,
-				UpdatedAt = DateTime.Now
-			});
-
-			return Ok();
+			var data = await _db.ListMaps.Get(user.Id);
+			return Ok(data);
 		}
 
-		[HttpDelete, Route("list-map/{listId}/{animeId}")]
-		public async Task<IActionResult> Delete(long listId, long animeId)
+		[HttpGet, Route("list-map/{listId}/{animeId}")]
+		public async Task<IActionResult> Toggle(long listId, long animeId)
 		{
 			var user = this.UserFromIdentity();
 			if (user == null) return Unauthorized();
@@ -53,16 +39,11 @@ namespace CardboardBox.Anime.Api.Controllers
 			if (list == null) return NotFound();
 			if (list.ProfileId != profile.Id) return Unauthorized();
 
-			await _db.ListMaps.Upsert(new DbListMap
+			var active = await _db.ListMaps.Toggle(animeId, listId);
+			return Ok(new
 			{
-				AnimeId = animeId,
-				ListId = listId,
-				CreatedAt = DateTime.Now,
-				UpdatedAt = DateTime.Now,
-				DeletedAt = DateTime.Now
+				inList = active
 			});
-
-			return Ok();
 		}
 	}
 

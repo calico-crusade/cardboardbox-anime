@@ -68,7 +68,8 @@ namespace CardboardBox.Anime.Database
 				 .ForEntity<DbProfile>()
 				 .ForEntity<DbList>()
 				 .ForEntity<DbListExt>()
-				 .ForEntity<DbListMap>();
+				 .ForEntity<DbListMap>()
+				 .ForEntity<DbListMapStripped>();
 			});
 
 			MapConfig.StartMap();

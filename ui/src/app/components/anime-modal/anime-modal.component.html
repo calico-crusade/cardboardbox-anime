@@ -39,7 +39,7 @@
                 <p *ngIf="inLists.length > 0">
                     <b>In Lists: </b>
                     <span class="comma-list">
-                        <span class="list" *ngFor="let list of inLists">{{ list.title }}</span>
+                        <span class="list" *ngFor="let list of inLists">{{ list?.title }}</span>
                     </span>
                 </p>
     
