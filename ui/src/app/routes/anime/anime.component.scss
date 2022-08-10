@@ -115,7 +115,6 @@ $filter-margin: 5px;
             max-width: 1150px;
             width: 100%;
             margin: auto;
-
             .infinite-loading {
                 width: 100%;
                 display: flex;
@@ -127,10 +126,7 @@ $filter-margin: 5px;
             border-bottom: 2px solid var(--color-funimation);
             display: flex;
             flex-flow: column;
-
-            .title {
-                margin: 5px auto;
-            }
+            .title { margin: 5px auto; }
         }
     }
     .filter-btn {
