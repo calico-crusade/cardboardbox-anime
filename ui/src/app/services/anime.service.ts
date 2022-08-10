@@ -93,7 +93,7 @@ export class AnimeService extends ConfigObject {
     listsPut(list: ListPut) { 
         return this.http
             .put(`${this.apiUrl}/lists`, list).pipe(
-                switchMap(_ => this.listsGet())
+                switchMap(_ => this.buildMap())
             );
     }
 
@@ -104,7 +104,7 @@ export class AnimeService extends ConfigObject {
         return this.http
             .delete(`${this.apiUrl}/lists/${par}`)
             .pipe(
-                switchMap(_ => this.listsGet())
+                switchMap(_ => this.buildMap())
             );
     }
 

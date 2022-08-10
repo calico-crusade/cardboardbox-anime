@@ -1,15 +1,10 @@
 $card-size: 150px;
-
-:host {
-    margin: 10px auto;
-}
-
+:host { margin: 10px auto; }
 .card {
     color: #fff;
     background-color: var(--bg-card);
     display: flex;
     flex-flow: row;
-
     .linkable {
         position: relative;
         color: #fff;
@@ -21,7 +16,6 @@ $card-size: 150px;
         cursor: pointer;
         border-radius: 2px;
         overflow: hidden;
-
         .image {
             width: 100%;
             height: 200px;
@@ -30,24 +24,20 @@ $card-size: 150px;
             background-position: center;
             border-bottom: 3px solid var(--accent-1);
         }
-
         .mature {
             position: absolute;
             top: 160px;
             right: 10px;
-
             padding: 5px;
             border: 1px solid var(--dgr-color);
             background-color: var(--dgr-color-trans);
         }
-
         .details {
             display: flex;
             flex-flow: column;
             margin: 10px;
             margin-top: 15px;
             position: relative;
-
             .channel-icon {
                 width: 30px;
                 height: 30px;
@@ -55,42 +45,32 @@ $card-size: 150px;
                 border-radius: 50%;
                 position: absolute;
                 top: -31px;
-
                 img {
                     width: 20px;
                     margin: 5px;
                 }
             }
-
             .title {
                 height: 30px;
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
-
             .tags {
                 display: flex;
                 flex-flow: row;
                 margin-top: 5px;
-
                 .type {
                     color: var(--color-vrv);
                     margin-right: auto;
-
-                    &.movie {
-                        color: var(--accent-1);
-                    }
+                    &.movie { color: var(--accent-1); }
                 }
-
                 .langs {
                     color: var(--text-color);
-
                     &:last-child {
                         border-left: 1px solid var(--text-color-muted);
                         padding-left: 5px;
                         padding-right: 0 !important;
                     }
-
                     &:nth-child(2) {
                         border-left: none;
                         padding-right: 5px;
@@ -99,7 +79,6 @@ $card-size: 150px;
             }
         }
     }
-
     &.crunchyroll {
         .linkable {
             .image {
@@ -107,18 +86,14 @@ $card-size: 150px;
                 border-bottom-color: var(--color-crunchyroll);
             }
         }
-
         &:hover {
             .linkable {
                 .details {
-                    .channel-icon {
-                        background-color: var(--color-crunchyroll);
-                    }
+                    .channel-icon { background-color: var(--color-crunchyroll); }
                 }
             }
         }
     }
-
     &.mondo {
         .linkable {
             .image {
@@ -126,18 +101,14 @@ $card-size: 150px;
                 border-bottom-color: var(--color-mondo);
             }
         }
-
         &:hover {
             .linkable {
                 .details {
-                    .channel-icon {
-                        background-color: var(--color-mondo);
-                    }
+                    .channel-icon { background-color: var(--color-mondo); }
                 }
             }
         }
     }
-
     &.vrvselect {
         .linkable {
             .image {
@@ -145,18 +116,14 @@ $card-size: 150px;
                 border-bottom-color: var(--color-vrvselect);
             }
         }
-
         &:hover {
             .linkable {
                 .details {
-                    .channel-icon {
-                        background-color: var(--color-vrvselect);
-                    }
+                    .channel-icon { background-color: var(--color-vrvselect); }
                 }
             }
         }
     }
-
     &.funimation {
         .linkable {
             .image {
@@ -164,18 +131,14 @@ $card-size: 150px;
                 border-bottom-color: var(--color-funimation);
             }
         }
-
         &:hover {
             .linkable {
                 .details {
-                    .channel-icon {
-                        background-color: var(--color-funimation);
-                    }
+                    .channel-icon { background-color: var(--color-funimation); }
                 }
             }
         }
     }
-
     &.hidive {
         .linkable {
             .image {
@@ -184,26 +147,19 @@ $card-size: 150px;
                 border-bottom-color: var(--color-hidive) !important;
             }
         }
-
         &:hover {
             .linkable {
                 .details {
-                    .channel-icon {
-                        background-color: var(--color-hidive);
-                    }
+                    .channel-icon { background-color: var(--color-hidive); }
                 }
             }
         }
     }
-
     &:hover {
         background-color: var(--bg-sidebar);
-
         &.hidive {
             .linkable {
-                .image {
-                    background-color: var(--color-hidive-dark);
-                }
+                .image { background-color: var(--color-hidive-dark); }
             }
         }
     }

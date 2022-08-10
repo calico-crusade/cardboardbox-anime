@@ -1,33 +1,31 @@
-<div class="component-container" 
-    [ngClass]="{ 'open': filtersOpen }"
-    (swipeleft)="filtersOpen = false"
-    (swiperight)="filtersOpen = true">
+<div class="component-container" [ngClass]="{ 'open': filtersOpen }"
+    (swipeleft)="filtersOpen = false" (swiperight)="filtersOpen = true">
+    <!--The fading anime background images-->
     <div class="background-image">
         <div class="bg default" *ngIf="!bgs || bgs.length === 0"></div>
-        <div class="bg" 
-             *ngFor="let b of bgs; let i = index" 
-             [style.background-image]="b.src"
-             [ngClass]="{ 'active': curIndex === i }"></div>
+        <div class="bg" [ngClass]="{ 'active': curIndex === i }"
+             [style.background-image]="b.src" *ngFor="let b of bgs; let i = index" ></div>
     </div>
-
-    <main infiniteScroll 
-          (scrolled)="onScroll()"
-          [infiniteScrollDistance]="2"
-          [infiniteScrollThrottle]="50"
-          [scrollWindow]="false">
-
+    <!--Main content of the page-->
+    <main infiniteScroll (scrolled)="onScroll()" [scrollWindow]="false"
+          [infiniteScrollDistance]="2" [infiniteScrollThrottle]="50">
+        <!--Full-page loading icon for initial load-->
         <div class="loading" *ngIf="anime.length == 0 && loading">
             <img src="/assets/loading.gif" />
             <span>Loading...</span>
         </div>
+        <!--Error notice when there are no records-->
         <div class="loading no-animation" *ngIf="anime.length == 0 && !loading">
             <img src="/assets/error.gif" />
             <span>Your search returned no records</span>
         </div>
+        <div class="list" *ngIf="list">
+            <div class="title"><b>List: </b>{{ list.title }}</div>
+        </div>
+        <!--Collection of anime cards-->
         <div class="anime" *ngIf="anime.length > 0">
-            <cba-card *ngFor="let ani of anime" [anime]="ani"
-                (subswipe)="filtersOpen = !$event"></cba-card>
-            
+            <cba-card *ngFor="let ani of anime" [anime]="ani" (subswipe)="filtersOpen = !$event"></cba-card>
+            <!--The loading icon at the bottom when a request is going-->
             <div class="infinite-loading" *ngIf="loading">
                 <div class="loading no-animation">
                     <img src="/assets/loading.gif" />
@@ -36,37 +34,37 @@
             </div>
         </div>
     </main>
-
+    <!--The main-content overlay when the side menu is open-->
     <div class="fade" (click)="filtersOpen = false"></div>
-
+    <!--The side-bar with filters-->
     <aside>
+        <!--The anime filter content-->
         <div class="filters">
             <cba-search-filters (searched)="onSearch($event)"></cba-search-filters>
         </div>
-        <div class="counts">
-            {{ anime.length }} / {{ total }}
-        </div>
+        <!--Filter record counts-->
+        <div class="counts">{{ anime.length }} / {{ total }}</div>
+        <!--The card at the bottom of the filters-->
         <div class="current-background" *ngIf="current">
             <div class="title">Current Background</div>
             <cba-card class="card" [anime]="current"></cba-card>
         </div>
     </aside>
-
+    <!--The open and close side-menu button-->
     <button class="filter-btn" (click)="filtersOpen = !filtersOpen">
         <span *ngIf="filtersOpen">&lt;</span>
         <span *ngIf="!filtersOpen">&gt;</span>
     </button>
-
+    <!--The tutorial overlay-->
     <div class="tutorial" *ngIf="showTut">
         <div class="content">
             <h2>Tutorial</h2>
             <p>You can swipe horizontally to open and close the filters</p>
-            <button (click)="toggleTut()">
-                I Understand!
-            </button>
+            <button (click)="toggleTut()">I Understand!</button>
         </div>
     </div>
 
+    <!--Modals-->
     <cba-anime-modal></cba-anime-modal>
     <cba-list-select *ngIf="!!curUser"></cba-list-select>
 </div>

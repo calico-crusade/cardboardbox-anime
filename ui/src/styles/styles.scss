@@ -4,6 +4,7 @@
 
     --bg-main: #060606;
     --bg-menu: #010101;
+    --bg-accent: #1b1a26;
 
     --accent-1: #726ae4;
     --accent-2: #6665DD;
@@ -36,68 +37,39 @@
     --color-vrv-trans: rgba(255, 221, 0, 0.842);
     --color-funimation: #6030a1;
 }
-
 .component-container {
     width: 100%;
     height: 100%;
     display: flex;
     margin: 0;
+    background-color: var(--bg-accent);
 }
-
-.bump {
-    flex: 1;
-}
-
-.crunchyroll-bg,
-.crunchyroll-bg-hover:hover {
-    background-color: var(--color-crunchyroll) !important;
-}
-
+.bump { flex: 1; }
+.crunchyroll-bg, .crunchyroll-bg-hover:hover { background-color: var(--color-crunchyroll) !important; }
 .crunchyroll-image {
     background-color: var(--color-crunchyroll);
     border-bottom-color: var(--color-crunchyroll) !important;
 }
-
-.mondo-bg,
-.mondo-bg-hover:hover {
-    background-color: var(--color-mondo) !important;
-}
-
+.mondo-bg, .mondo-bg-hover:hover { background-color: var(--color-mondo) !important; }
 .mondo-image {
     background-color: var(--color-mondo);
     border-bottom-color: var(--color-mondo) !important;
 }
-
-.vrvselect-bg,
-.vrvselect-bg-hover:hover {
-    background-color: var(--color-vrvselect) !important;
-}
-
+.vrvselect-bg, .vrvselect-bg-hover:hover { background-color: var(--color-vrvselect) !important; }
 .vrvselect-image {
     background-color: var(--color-vrvselect);
     border-bottom-color: var(--color-vrvselect) !important;
 }
-
-.funimation-bg,
-.funimation-bg-hover:hover {
-    background-color: var(--color-funimation) !important;
-}
-
+.funimation-bg, .funimation-bg-hover:hover { background-color: var(--color-funimation) !important; }
 .funimation-image {
     background-color: var(--color-funimation);
     border-bottom-color: var(--color-funimation) !important;
 }
-
-.hidive-bg,
-.hidive-bg-hover:hover {
-    background-color: var(--color-hidive) !important;
-}
-
+.hidive-bg, .hidive-bg-hover:hover { background-color: var(--color-hidive) !important; }
 .hidive-image {
     background-color: var(--color-funimation);
     border-bottom-color: var(--color-funimation) !important;
 }
-
 .material-symbols-outlined {
     font-variation-settings:
         'FILL' 0,
@@ -105,7 +77,6 @@
         'GRAD' 0,
         'opsz' 48;
 }
-
 button.btn, a.btn {
     font-family: Roboto;
     background-color: transparent;
@@ -119,13 +90,11 @@ button.btn, a.btn {
     cursor: pointer;
     text-align: center;
     margin: 5px 0;
-
     &:hover,
     &.active {
         background-color: var(--color-vrv);
         color: #000;
     }
-
     &:disabled,
     &[disabled] {
         background-color: rgba(255, 255, 255, 0.5);
@@ -133,9 +102,7 @@ button.btn, a.btn {
         color: #000;
     }
 }
-
-input.ipt,
-textarea.ipt {
+input.ipt, textarea.ipt {
     background-color: transparent;
     outline: none;
     border: none;

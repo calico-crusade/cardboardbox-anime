@@ -1,6 +1,7 @@
 import { HttpClient, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, lastValueFrom, Observable } from 'rxjs';
+import { AnimeService } from './anime.service';
 import { AuthCodeResponse, AuthUser } from './auth.model';
 import { ConfigObject } from './config.base';
 
@@ -17,7 +18,8 @@ export class AuthService extends ConfigObject {
     get currentUser() { return this._loginSub.getValue(); }
 
     constructor(
-        private http: HttpClient
+        private http: HttpClient,
+        private api: AnimeService
     ) { super(); }
 
     async bump() {
@@ -25,6 +27,7 @@ export class AuthService extends ConfigObject {
 
         try {
             let me = await lastValueFrom(this.me());
+            await lastValueFrom(this.api.buildMap());
             this._loginSub.next(me);
             return true;
         } catch (e) {
@@ -44,6 +47,7 @@ export class AuthService extends ConfigObject {
         }
 
         this.token = auth.token;
+        await lastValueFrom(this.api.buildMap());
         this._loginSub.next(auth.user);
         return auth;
     }

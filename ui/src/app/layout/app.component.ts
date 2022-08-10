@@ -10,6 +10,7 @@ import { AuthService } from '../services/auth.service';
 export class AppComponent implements OnInit {
 
     user?: AuthUser;
+    menuOpen = false;
 
     get loggedIn() { return this.user; }
 
@@ -24,7 +25,11 @@ export class AppComponent implements OnInit {
 
     async login() {
         await this.auth.login();
+        this.menuOpen = false;
     }
 
-    logout() { this.auth.logout(); }
+    logout() { 
+        this.auth.logout();
+        this.menuOpen = false;
+    }
 }

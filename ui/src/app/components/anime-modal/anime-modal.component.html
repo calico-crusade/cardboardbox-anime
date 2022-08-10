@@ -1,9 +1,12 @@
 <div class="overlay" *ngIf="open && anime">
+    <!--Modal fade background-->
     <div class="fade" (click)="close()"></div>
+    <!--Modal content-->
     <div class="container" [ngClass]="anime.platformId">
         <div class="scroll-container">
             <div class="anime-image">
-                <img [src]="getBackgroundImage()" />
+                <!--The image-->
+                <img [src]="getImage()" />
             </div>
             <div class="content">
                 <header>
@@ -42,9 +45,8 @@
                         <span class="list" *ngFor="let list of inLists">{{ list?.title }}</span>
                     </span>
                 </p>
-    
                 <div class="buttons">
-                    <button (click)="watchlist()" class="btn" *ngIf="!!curUser">
+                    <button (click)="addToList()" class="btn" *ngIf="!!curUser">
                         Add to List
                     </button>
                     <a [href]="anime.link" class="btn" target="_blank">
@@ -53,9 +55,6 @@
                 </div>
             </div>
         </div>
-
-        <button class="close" (click)="close()">
-            &times;
-        </button>
+        <button class="close" (click)="close()">&times;</button>
     </div>
 </div>

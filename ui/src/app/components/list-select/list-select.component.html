@@ -12,7 +12,6 @@
             </div>
             <div class="new-lists">
                 <h2>New List:</h2>
-
                 <input class="ipt" placeholder="Title" [(ngModel)]="newTitle" />
                 <textarea class="ipt" placeholder="Description" [(ngModel)]="newDescription"></textarea>
                 <button class="btn" [disabled]="loading || newTitle.length <= 3" (click)="create()">
@@ -20,7 +19,6 @@
                 </button>
             </div>
         </div>
-
         <button class="close" (click)="cancel()">
             &times;
         </button>

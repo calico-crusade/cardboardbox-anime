@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AnimeComponent } from './routes/anime/anime.component';
 import { ErrorComponent } from './routes/error/error.component';
+import { ListsComponent } from './routes/lists/lists.component';
 
 const routes: Routes = [
     {
@@ -10,6 +11,9 @@ const routes: Routes = [
     }, {
         path: 'anime/:id',
         component: AnimeComponent
+    }, {
+        path: 'lists',
+        component: ListsComponent
     }, {
         path: '',
         pathMatch: 'full',

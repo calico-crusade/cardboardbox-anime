@@ -5,20 +5,17 @@
     display: flex;
     flex-flow: column;
 }
-
 .filters {
     margin-top: 10px;
     flex: 1;
     display: flex;
     flex-flow: column;
     overflow-x: hidden;
-    overflow-y: auto;
-    
+    overflow-y: auto;   
     .search {
         margin: 5px 10px;
         display: flex;
         flex-flow: column;
-
         input {
             outline: none;
             border: none;
@@ -29,33 +26,25 @@
             text-align: center;
         }
     }
-
     .field {
         display: flex;
         flex-flow: column;
         margin: 0 10px;
         border-top: 1px solid var(--text-color-muted);
-
         .title {
             text-align: center;
             padding-bottom: 5px;
             text-transform: capitalize;
             position: relative;
             margin-top: 10px;
-
             button {
                 position: absolute;
                 right: 0;
-
                 border: none;
                 padding: 0;
-
-                .close {
-                    display: none;
-                }
+                .close { display: none; }
             }
         }
-
         .options,
         .toggles {
             display: flex;
@@ -65,46 +54,33 @@
             transition: all 250ms;
             padding-bottom: 5px;
         }
-
         .toggles {
             margin: 2px auto;
-
             button {
                 &:first-child {
                     border-top-left-radius: 5px;
                     border-bottom-left-radius: 5px;
                 }
-
                 &:last-child {
                     border-top-right-radius: 5px;
                     border-bottom-right-radius: 5px;
                 }
             }
         }
-
         .options {
             flex-flow: row wrap;
-
             button {
                 margin: 2px auto;
                 flex: 1;
             }
         }
-
         &.closed {
-
             .title {
                 button {
-                    .close {
-                        display: inline;
-                    }
-
-                    .open {
-                        display: none;
-                    }
+                    .close { display: inline; }
+                    .open { display: none; }
                 }
             }
-            
             .options,
             .toggles {
                 padding-bottom: 0;
@@ -112,15 +88,9 @@
                 overflow: hidden;
             }
         }
-
-        &:nth-child(2) {
-            border-top: none;
-        }
+        &:nth-child(2) { border-top: none; }
     }
-
-    button.search {
-        margin: 5px auto;
-    }
+    button.search { margin: 5px auto; }
 }
 
 button {
@@ -131,13 +101,9 @@ button {
     padding: 5px 10px;
     cursor: pointer;
     text-transform: capitalize;
-
     &.active {
         background-color: var(--color-vrv-trans);
         color: #000;
     }
-
-    &:hover {
-        cursor: pointer;
-    }
+    &:hover { cursor: pointer; }
 }

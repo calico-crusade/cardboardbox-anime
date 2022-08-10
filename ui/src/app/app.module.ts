@@ -17,10 +17,11 @@ import { SearchFiltersComponent } from './components/search-filters/search-filte
 import { AnimeModalComponent } from './components/anime-modal/anime-modal.component';
 import { AuthInterceptor } from './services/auth.service';
 import { ListSelectComponent } from './components/list-select/list-select.component';
+import { IconComponent } from './components/icon/icon.component';
+import { ListsComponent } from './routes/lists/lists.component';
 
 @Injectable()
 export class MyHammerConfig extends HammerGestureConfig {
-
     override overrides = {
         swipe: { direction: Hammer.DIRECTION_ALL }
     }
@@ -34,7 +35,9 @@ export class MyHammerConfig extends HammerGestureConfig {
         CardComponent,
         SearchFiltersComponent,
         AnimeModalComponent,
-        ListSelectComponent
+        ListSelectComponent,
+        IconComponent,
+        ListsComponent
     ],
     imports: [
         BrowserModule,

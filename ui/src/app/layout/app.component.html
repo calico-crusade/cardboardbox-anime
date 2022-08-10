@@ -1,30 +1,66 @@
 <div class="app">
     <header>
         <a class="logo" href="/">
-            <span>Cardboard<b>Box</b> - Anime</span>
+            Cardboard<b>Box</b> - Anime
         </a>
-
         <div class="bump"></div>
-
-        <a class="login" *ngIf="!loggedIn" (click)="login()">
-            <span class="material-symbols-outlined">login</span>
+        <a class="menu" (click)="menuOpen = !menuOpen"  *ngIf="loggedIn">
+            <img [src]="user?.avatar" />
         </a>
-
-        <ng-container *ngIf="loggedIn">
-            <img class="avatar" [src]="user?.avatar" />
-            <span class="username">{{ user?.nickname }}</span>
-            <a class="logout" (click)="logout()">
-                <span class="material-symbols-outlined">logout</span>
-            </a>
-        </ng-container>
-
-        <a class="github" href="https://github.com/calico-crusade/cardboardbox-anime" target="_blank">
-            <svg height="32" aria-hidden="true" viewBox="0 0 16 16" version="1.1" width="32" data-view-component="true" class="octicon octicon-mark-github v-align-middle">
-                <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
-            </svg>
-        </a>
+        <a class="login-menu" (click)="menuOpen = !menuOpen"  *ngIf="!loggedIn">
+            <cba-icon>menu</cba-icon>
+        </a>        
     </header>
-    <main>
-        <router-outlet></router-outlet>
+    <main [ngClass]="{ 'open': menuOpen }">
+        <div class="content">
+            <router-outlet></router-outlet>
+        </div>
+        <div class="fade" (click)="menuOpen = false"></div>
+        <aside>
+            <a routerLink="/anime" routerLinkActive="active" (click)="menuOpen = false">
+                <span class="icon">
+                    <cba-icon>filter_alt</cba-icon>
+                </span>
+                <span class="title">Anime</span>
+            </a>
+            <ng-container *ngIf="loggedIn">
+                <a routerLink="/lists" routerLinkActive="active" (click)="menuOpen = false">
+                    <span class="icon">
+                        <cba-icon>list</cba-icon>
+                    </span>
+                    <span class="title">My Lists</span>
+                </a>
+                <a>
+                    <span class="icon">
+                        <cba-icon>person</cba-icon>
+                    </span>
+                    <span class="title">
+                        {{ user?.nickname }}
+                    </span>
+                </a>
+                <a (click)="logout()">
+                    <span class="icon">
+                        <cba-icon>logout</cba-icon>
+                    </span>
+                    <span class="title">Logout</span>
+                </a>
+            </ng-container>
+            <ng-container *ngIf="!loggedIn">
+                <a (click)="login()">
+                    <span class="icon">
+                        <cba-icon>login</cba-icon>
+                    </span>
+                    <span class="title">Login</span>
+                </a>
+            </ng-container>
+            <a href="https://github.com/calico-crusade/cardboardbox-anime" target="_blank">
+                <span class="icon">
+                    <svg height="24" width="24" aria-hidden="true" viewBox="0 0 16 16" version="1.1" data-view-component="true" class="octicon octicon-mark-github v-align-middle">
+                        <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+                    </svg>
+                </span>
+                <span class="title">Source Code</span>
+            </a>
+        </aside>
     </main>
 </div>

@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { 
     AnimeService, AuthService, UtilitiesService,
-    Anime, FilterSearch, MatureType, AuthUser
+    Anime, FilterSearch, MatureType, AuthUser, ListsMaps
 } from './../../services';
 
 const STORE_TUT = 'showTut';
@@ -29,11 +29,16 @@ export class AnimeComponent implements OnInit, OnDestroy {
     curUser?: AuthUser;
     filter?: FilterSearch;
     listId?: number;
+    map?: ListsMaps;
 
     get current() {
         if (this.bgs.length === 0) return undefined;
-
         return this.bgs[this.curIndex];
+    }
+
+    get list() {
+        if (!this.map || !this.listId) return undefined;
+        return this.map.lists[this.listId];
     }
 
     constructor(
@@ -46,7 +51,11 @@ export class AnimeComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.showTut = !localStorage.getItem(STORE_TUT);
-        this.auth.onLogin.subscribe(t => this.curUser = t);
+        this.auth.onLogin.subscribe(t => {
+            this.curUser = t;
+            if (!this.curUser) return;
+            this.api.map.subscribe(t => this.map = t);
+        });
         this.route.params.subscribe(t => {
             this.listId = t['id'];
         });
