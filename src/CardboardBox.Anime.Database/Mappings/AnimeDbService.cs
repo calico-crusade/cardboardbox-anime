@@ -9,7 +9,7 @@ namespace CardboardBox.Anime.Database
 	public interface IAnimeDbService
 	{
 		Task<long> Upsert(DbAnime anime);
-		Task<(int total, DbAnime[] results)> Search(FilterSearch search);
+		Task<(int total, DbAnime[] results)> Search(FilterSearch search, string? platformId = null);
 		Task<DbAnime[]> All();
 		Task<Filter[]> Filters();
 	}
@@ -33,13 +33,13 @@ namespace CardboardBox.Anime.Database
 			return _sql.ExecuteScalar<long>(_upsertQuery, anime);
 		}
 
-		public async Task<(int total, DbAnime[] results)> Search(FilterSearch search)
+		public async Task<(int total, DbAnime[] results)> Search(FilterSearch search, string? platformId = null)
 		{
 			int offset = (search.Page - 1) * search.Size;
 			var query = $@"SELECT a.* 
 FROM anime a
 {{1}}
-WHERE {{0}} 
+WHERE {{0}}
 ORDER BY a.title {(search.Ascending ? "ASC" : "DESC")} 
 LIMIT {search.Size} 
 OFFSET {offset};";
@@ -64,9 +64,15 @@ OFFSET {offset};";
 			if (search.ListId != null)
 			{
 				sub = @"JOIN list_map lm on a.id = lm.anime_id
-JOIN lists l on lm.list_id = l.id";
+JOIN lists l on lm.list_id = l.id
+JOIN profiles p ON p.id = l.profile_id";
 				parts.Add("l.id = :listId");
+				parts.Add("l.deleted_at IS NULL");
+				parts.Add("p.deleted_at IS NULL");
+				parts.Add("lm.deleted_at IS NULL");
+				parts.Add(@"(p.platform_id = :pPlatformId OR l.is_public = true)");
 				pars.Add("listId", search.ListId);
+				pars.Add("pPlatformId", platformId);
 			}
 
 			var queries = search.Queryables;
@@ -99,8 +105,7 @@ JOIN lists l on lm.list_id = l.id";
 				pars.Add(key, vals);
 			}
 
-			if (parts.Count == 0)
-				parts.Add("1 = 1");
+			parts.Add("a.deleted_at IS NULL");
 
 			var where = string.Join(" AND ", parts);
 			var outputQuery = string.Format(query, where, sub);

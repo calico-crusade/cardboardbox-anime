@@ -54,4 +54,14 @@ export class ListsComponent implements OnInit {
                 this.loading = false;
             });
     }
+
+    togglePublic(list: ListExt) {
+        this.loading = true;
+        list.isPublic = !list.isPublic;
+        this.api
+            .listsPut(list)
+            .subscribe(_ => {
+                this.loading = false;
+            });
+    }
 }

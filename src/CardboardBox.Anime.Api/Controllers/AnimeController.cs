@@ -2,6 +2,7 @@
 
 namespace CardboardBox.Anime.Api.Controllers
 {
+	using Auth;
 	using Core;
 	using Core.Models;
 	using Database;
@@ -28,7 +29,8 @@ namespace CardboardBox.Anime.Api.Controllers
 		[HttpPost, Route("anime/v2"), ProducesDefaultResponseType(typeof(PaginatedResult<DbAnime>))]
 		public async Task<IActionResult> AllV2([FromBody] FilterSearch search)
 		{
-			var (total, anime) = await _sql.Anime.Search(search);
+			var user = this.UserFromIdentity();
+			var (total, anime) = await _sql.Anime.Search(search, user?.Id);
 			return Ok(new
 			{
 				pages = Math.Ceiling((double)total / search.Size),

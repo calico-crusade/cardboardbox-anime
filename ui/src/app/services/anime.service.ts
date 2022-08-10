@@ -76,6 +76,14 @@ export class AnimeService extends ConfigObject {
     }
 
     listsGet() { return this.http.get<ListExt[]>(`${this.apiUrl}/lists`); }
+    
+    listsPublic(id: number): Observable<ListExt>;
+    listsPublic(list: ListPut): Observable<ListExt>;
+    listsPublic(list: number | ListPut) {
+        if (typeof list !== 'number') list = list.id;
+        return this.http.get<ListExt>(`${this.apiUrl}/lists/public/${list}`);
+    }
+
 
     listsPost(list: ListPost) { 
         return this.http

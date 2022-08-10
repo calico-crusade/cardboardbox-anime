@@ -10,6 +10,9 @@
 
 		[JsonPropertyName("profileId")]
 		public long ProfileId { get; set; }
+
+		[JsonPropertyName("isPublic")]
+		public bool IsPublic { get; set; } = false;
 	}
 
 	public class DbListExt : DbList

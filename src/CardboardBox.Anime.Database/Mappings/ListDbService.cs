@@ -9,6 +9,7 @@
 		Task<DbListExt[]> ByProfile(string id, long animeId);
 		Task Update(DbList list);
 		Task<DbList> Fetch(long id);
+		Task<DbListExt> Get(string? id, long listId);
 	}
 
 	public class ListDbService : OrmMapExtended<DbList>, IListDbService
@@ -27,7 +28,9 @@
 		SELECT
 			COUNT(*)
 		FROM list_map m 
-		WHERE m.list_id = l.id
+		WHERE 
+			m.list_id = l.id AND 
+			m.deleted_at IS NULL
 	) as count
 FROM lists l 
 JOIN profiles p ON p.id = l.profile_id 
@@ -47,7 +50,9 @@ WHERE
 		SELECT
 			COUNT(*)
 		FROM list_map m 
-		WHERE m.list_id = l.id
+		WHERE 
+			m.list_id = l.id AND
+			m.deleted_at IS NULL
 	) as count
 FROM lists l 
 JOIN profiles p ON p.id = l.profile_id 
@@ -60,6 +65,32 @@ WHERE
 	lm.deleted_at IS NULL";
 
 			return _sql.Get<DbListExt>(QUERY, new { id, animeId });
+		}
+
+		public Task<DbListExt> Get(string? id, long listId)
+		{
+			const string QUERY = @"
+SELECT
+	l.*,
+	(
+		SELECT
+			COUNT(*)
+		FROM list_map m 
+		WHERE 
+			m.list_id = l.id AND 
+			m.deleted_at IS NULL
+	) as count
+FROM lists l
+JOIN profiles p ON p.id = l.profile_id
+WHERE
+	l.deleted_at IS NULL AND
+	p.deleted_at IS NULL AND
+	l.id = :listId AND 
+	(
+		p.platform_id = :id OR
+		l.is_public = true
+	)";
+			return _sql.Fetch<DbListExt>(QUERY, new { id, listId });
 		}
 
 		public Task<long> Upsert(DbList list)

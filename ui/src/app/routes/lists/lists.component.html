@@ -12,6 +12,10 @@
             <button class="btn" (click)="remove(list)">
                 <cba-icon>delete</cba-icon>
             </button>
+            <button class="btn" [ngClass]="{ 'active': list.isPublic }" (click)="togglePublic(list)">
+                <cba-icon *ngIf="list.isPublic">public_off</cba-icon>
+                <cba-icon *ngIf="!list.isPublic">public</cba-icon>
+            </button>
         </div>
         <p *ngIf="lists.length == 0">
             You have no lists

@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { 
     AnimeService, AuthService, UtilitiesService,
-    Anime, FilterSearch, MatureType, AuthUser, ListsMaps
+    Anime, FilterSearch, MatureType, AuthUser, ListsMaps, ListExt
 } from './../../services';
 
 const STORE_TUT = 'showTut';
@@ -14,6 +14,8 @@ type VrvAnimeImage = Anime & { src: string; };
     styleUrls: ['./anime.component.scss']
 })
 export class AnimeComponent implements OnInit, OnDestroy {
+
+    private _list?: ListExt;
 
     defaultImage = '/assets/default-background.webp';
 
@@ -37,6 +39,7 @@ export class AnimeComponent implements OnInit, OnDestroy {
     }
 
     get list() {
+        if (this._list && this._list.id === this.listId) return this._list;
         if (!this.map || !this.listId) return undefined;
         return this.map.lists[this.listId];
     }
@@ -57,7 +60,7 @@ export class AnimeComponent implements OnInit, OnDestroy {
             this.api.map.subscribe(t => this.map = t);
         });
         this.route.params.subscribe(t => {
-            this.listId = t['id'];
+            this.listId = !t['id'] ? undefined : +t['id'];
         });
     }
 
@@ -73,6 +76,7 @@ export class AnimeComponent implements OnInit, OnDestroy {
         this.api
             .search(this.filter)
             .subscribe(t => {
+                this.resolveList();
                 this.loading = false;
                 if (this.filter?.page === 1)
                     this.anime = [];
@@ -94,6 +98,14 @@ export class AnimeComponent implements OnInit, OnDestroy {
 
                 if (!this.interval) this.handleBgs();
             });
+    }
+
+    resolveList() {
+        if (this.list && this.listId === this.list.id) return;
+        if (!this.listId) return;
+
+        this.api.listsPublic(this.listId)
+            .subscribe(t => this._list = t);
     }
 
     moveNext() {

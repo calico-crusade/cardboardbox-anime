@@ -65,6 +65,7 @@ CREATE TABLE lists (
     title text not null,
     description text,
     profile_id bigint not null,
+    is_public bool not null,
 
     created_at timestamp,
     updated_at timestamp,

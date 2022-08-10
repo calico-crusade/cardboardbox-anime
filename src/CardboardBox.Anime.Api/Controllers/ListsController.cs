@@ -36,6 +36,15 @@ namespace CardboardBox.Anime.Api.Controllers
 			return Ok(lists);
 		}
 
+		[HttpGet, Route("lists/public/{listId}"), AllowAnonymous]
+		public async Task<IActionResult> GetPublicList(long listId)
+		{
+			var user = this.UserFromIdentity();
+			var list = await _db.Lists.Get(user?.Id, listId);
+			if (list == null) return NotFound();
+			return Ok(list);
+		}
+
 		[HttpPost, Route("lists")]
 		public async Task<IActionResult> Post([FromBody] ListPost list)
 		{
@@ -70,6 +79,7 @@ namespace CardboardBox.Anime.Api.Controllers
 			if (current == null) return NotFound();
 			if (current.ProfileId != profile.Id) return Unauthorized();
 
+			current.IsPublic = list.IsPublic;
 			current.Title = list.Title;
 			current.Description = list.Description;
 			current.UpdatedAt = DateTime.Now;
@@ -99,5 +109,5 @@ namespace CardboardBox.Anime.Api.Controllers
 
 	public record class ListPost(string Title, string Description);
 	
-	public record class ListPut(string Title, string Description, long Id);
+	public record class ListPut(string Title, string Description, long Id, bool IsPublic);
 }

@@ -78,9 +78,10 @@ export interface ListPost {
 
 export interface ListPut extends ListPost {
     id: number;
+    isPublic: boolean;
 }
 
-export interface List extends ListPost, DbObject {
+export interface List extends ListPut, DbObject {
     profileId: number;
 }
 
