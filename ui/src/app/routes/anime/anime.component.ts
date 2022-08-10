@@ -73,6 +73,7 @@ export class AnimeComponent implements OnInit, OnDestroy {
         this.api
             .search(this.filter)
             .subscribe(t => {
+                this.loading = false;
                 if (this.filter?.page === 1)
                     this.anime = [];
 
@@ -90,7 +91,6 @@ export class AnimeComponent implements OnInit, OnDestroy {
                 this.anime.push(...t.results);
                 this.pages = t.pages;
                 this.total = t.count;
-                this.loading = false;
 
                 if (!this.interval) this.handleBgs();
             });
