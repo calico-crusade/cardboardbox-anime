@@ -1,4 +1,6 @@
 $card-size: 150px;
+$platforms: 'crunchyroll', 'vrvselect', 'mondo', 'funimation', 'hidive';
+
 :host { margin: 10px auto; }
 .card {
     color: #fff;
@@ -79,66 +81,30 @@ $card-size: 150px;
             }
         }
     }
-    &.crunchyroll {
-        .linkable {
-            .image {
-                background-color: var(--color-crunchyroll);
-                border-bottom-color: var(--color-crunchyroll);
-            }
-        }
-        &:hover {
+    @each $plat in $platforms {
+        &.#{$plat} {
             .linkable {
-                .details {
-                    .channel-icon { background-color: var(--color-crunchyroll); }
+                .image {
+                    background-color: var(--color-#{$plat});
+                    border-bottom-color: var(--color-#{$plat});
+                }
+            }
+            &:hover {
+                .linkable {
+                    .details {
+                        .channel-icon { background-color: var(--color-#{$plat}); }
+
+                        @each $p in $platforms {
+                            .#{$p}-bg-hover {
+                                background-color: var(--color-#{$p});
+                            }
+                        }
+                    }
                 }
             }
         }
     }
-    &.mondo {
-        .linkable {
-            .image {
-                background-color: var(--color-mondo);
-                border-bottom-color: var(--color-mondo);
-            }
-        }
-        &:hover {
-            .linkable {
-                .details {
-                    .channel-icon { background-color: var(--color-mondo); }
-                }
-            }
-        }
-    }
-    &.vrvselect {
-        .linkable {
-            .image {
-                background-color: var(--color-vrvselect);
-                border-bottom-color: var(--color-vrvselect);
-            }
-        }
-        &:hover {
-            .linkable {
-                .details {
-                    .channel-icon { background-color: var(--color-vrvselect); }
-                }
-            }
-        }
-    }
-    &.funimation {
-        .linkable {
-            .image {
-                background-color: var(--color-funimation);
-                border-bottom-color: var(--color-funimation);
-            }
-        }
-        &:hover {
-            .linkable {
-                .details {
-                    .channel-icon { background-color: var(--color-funimation); }
-                }
-            }
-        }
-    }
+
     &.hidive {
         .linkable {
             .image {
@@ -155,6 +121,8 @@ $card-size: 150px;
             }
         }
     }
+
+    
     &:hover {
         background-color: var(--bg-sidebar);
         &.hidive {

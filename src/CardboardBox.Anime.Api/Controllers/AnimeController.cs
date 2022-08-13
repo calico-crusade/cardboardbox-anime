@@ -60,7 +60,7 @@ namespace CardboardBox.Anime.Api.Controllers
 			return Ok(filters);
 		}
 
-		[HttpGet, Route("anime/load/{platform}"), Authorize]
+		[HttpGet, Route("anime/load/{platform}")]
 		public async Task<IActionResult> Load([FromRoute] string platform)
 		{
 			var service = ResolveService(platform);
@@ -76,7 +76,7 @@ namespace CardboardBox.Anime.Api.Controllers
 			return Ok();
 		}
 
-		[HttpPost, Route("anime/load/{platform}"), Authorize]
+		[HttpPost, Route("anime/load/{platform}")]
 		public async Task<IActionResult> Load([FromRoute] string platform, [FromBody] VrvLoadRequest vrv)
 		{
 			var service = ResolveService(platform);

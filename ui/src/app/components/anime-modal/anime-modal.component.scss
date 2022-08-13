@@ -55,7 +55,32 @@
         display: flex;
         flex-flow: row wrap;
         margin: 10px 0;
-        button:not(:last-child) { margin-right: 10px; }
+        button:not(:last-child),
+        a:not(:last-child) { margin-right: 10px; }
+
+        button, a {
+            display: flex;
+            flex-flow: row;
+            .btn-icon {
+                margin: 0 auto;
+                display: flex;
+                flex-flow: row;
+                align-items: center;
+                img {
+                    width: 20px;
+                    height: 20px;
+                    margin-right: 10px;
+                }
+                span {
+                    text-transform: uppercase;
+                }
+            }
+            &:hover {
+                img {
+                    filter: invert(100%);
+                }
+            }
+        }
     }
 }
 @media screen and (max-width: 600px) {
@@ -75,6 +100,12 @@
                         button, a {
                             margin: 5px 0 !important;
                             flex: 1;
+                        }
+
+                        :hover.btn-icon {
+                            img {
+                                filter: invert(100%);
+                            }
                         }
                     }
                 }

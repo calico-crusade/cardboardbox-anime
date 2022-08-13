@@ -64,6 +64,7 @@ namespace CardboardBox.Anime.Database
 			{
 				c.ForEntity<DbAnime>()
 				 .ForEntity<DbImage>()
+				 .ForEntity<DbExtension>()
 				 .ForEntity<DbFilter>()
 				 .ForEntity<DbProfile>()
 				 .ForEntity<DbList>()

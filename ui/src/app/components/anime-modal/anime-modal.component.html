@@ -47,10 +47,22 @@
                 </p>
                 <div class="buttons">
                     <button (click)="addToList()" class="btn" *ngIf="!!curUser">
-                        Add to List
+                        <div class="btn-icon">
+                            Add to List
+                        </div>
                     </button>
                     <a [href]="anime.link" class="btn" target="_blank">
-                        Start Watching
+                        <div class="btn-icon">
+                            <img [src]="'/assets/' + anime.platformId + '-icon.png'" />
+                            <span>Start Watching</span>
+                        </div>
+                    </a>
+                    
+                    <a *ngFor="let other of anime.otherPlatforms" [href]="other.link" class="btn" target="_blank">
+                        <div class="btn-icon">
+                            <img [src]="'/assets/' + other.platformId + '-icon.png'" />
+                            <span>Start Watching</span>
+                        </div>
                     </a>
                 </div>
             </div>

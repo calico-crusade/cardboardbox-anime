@@ -8,6 +8,13 @@ CREATE TYPE image AS (
     platform_id text
 );
 
+-- CREATE extensio TYPE
+
+CREATE TYPE ext AS (
+    type text,
+    value text
+)
+
 -- CREATE anime TABLE
 
 CREATE TABLE anime (
@@ -26,6 +33,7 @@ CREATE TABLE anime (
     ratings text[] not null,
     tags text[] not null,
     images image[] not null,
+    ext ext[] not null,
 
     created_at timestamp,
     updated_at timestamp,

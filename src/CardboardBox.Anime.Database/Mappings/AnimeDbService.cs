@@ -36,14 +36,26 @@ namespace CardboardBox.Anime.Database
 		public async Task<(int total, DbAnime[] results)> Search(FilterSearch search, string? platformId = null)
 		{
 			int offset = (search.Page - 1) * search.Size;
-			var query = $@"SELECT a.* 
+			var query = $@"CREATE TEMP TABLE titles AS
+SELECT 
+	DISTINCT a.title
 FROM anime a
 {{1}}
 WHERE {{0}}
 ORDER BY a.title {(search.Ascending ? "ASC" : "DESC")} 
 LIMIT {search.Size} 
-OFFSET {offset};";
-			var count = @"SELECT COUNT(*) FROM anime a {1} WHERE {0};";
+OFFSET {offset};
+
+SELECT
+	DISTINCT
+	a.*
+FROM anime a
+JOIN titles t ON t.title = a.title
+ORDER BY a.title {(search.Ascending ? "ASC" : "DESC")}, a.platform_id ASC;
+
+SELECT COUNT(DISTINCT a.title) FROM anime a {{1}} WHERE {{0}};
+
+DROP TABLE titles;";
 			var sub = "";
 
 			var parts = new List<string>();
@@ -108,9 +120,7 @@ JOIN profiles p ON p.id = l.profile_id";
 			parts.Add("a.deleted_at IS NULL");
 
 			var where = string.Join(" AND ", parts);
-			var outputQuery = string.Format(query, where, sub);
-			var countQuery = string.Format(count, where, sub);
-			var fullQuery = $"{outputQuery}\r\n{countQuery}";
+			var fullQuery = string.Format(query, where, sub);
 
 			using var con = _sql.CreateConnection();
 
@@ -119,7 +129,31 @@ JOIN profiles p ON p.id = l.profile_id";
 			var results = (await reader.ReadAsync<DbAnime>()).ToArray();
 			var total = await reader.ReadSingleAsync<int>();
 
-			return (total, results);
+			return (total, GroupPlatforms(results).ToArray());
+		}
+
+		public IEnumerable<DbAnime> GroupPlatforms(IEnumerable<DbAnime> anime)
+		{
+			DbAnime? previous = null;
+			foreach(var item in anime)
+			{
+				if (previous == null)
+				{
+					previous = item;
+					continue;
+				}
+
+				if (previous.Title != item.Title)
+				{
+					yield return previous;
+					previous = item;
+					continue;
+				}
+
+				previous.OtherPlatforms.Add(item);
+			}
+
+			if (previous != null) yield return previous;
 		}
 
 		public async Task<Filter[]> Filters()

@@ -43,6 +43,12 @@
 		[JsonPropertyName("images")]
 		public DbImage[] Images { get; set; } = Array.Empty<DbImage>();
 
+		[JsonPropertyName("ext")]
+		public DbExtension[] Ext { get; set; } = Array.Empty<DbExtension>();
+
+		[JsonPropertyName("otherPlatforms")]
+		public List<DbAnime> OtherPlatforms { get; set; } = new();
+
 		public static implicit operator DbAnime(Anime a)
 		{
 			return new DbAnime
@@ -60,6 +66,7 @@
 				Ratings = a.Metadata.Ratings.ToArray(),
 				Tags = a.Metadata.Tags.ToArray(),
 				Images = a.Images.Select(t => (DbImage)t).ToArray(),
+				Ext = a.Metadata.Ext.Select(t => new DbExtension { Type = t.Key, Value = t.Value }).ToArray(),
 				CreatedAt = DateTime.Now,
 				UpdatedAt = DateTime.Now
 			};

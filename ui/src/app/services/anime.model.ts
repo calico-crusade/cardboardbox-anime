@@ -22,6 +22,12 @@ export interface Anime {
     mature: boolean;
     
     images: Image[];
+    ext: {
+        type: string;
+        value: string;
+    }[];
+
+    otherPlatforms: Anime[];
 
     createdAt: Date;
     updatedAt: Date;

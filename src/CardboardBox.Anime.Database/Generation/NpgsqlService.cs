@@ -24,6 +24,7 @@ namespace CardboardBox.Anime.Database.Generation
 			con.ReloadTypes();
 
 			con.TypeMapper.MapComposite<DbImage>("image");
+			con.TypeMapper.MapComposite<DbExtension>("ext");
 
 			return con;
 		}
