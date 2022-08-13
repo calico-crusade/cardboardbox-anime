@@ -34,11 +34,11 @@ export class AnimeService extends ConfigObject {
 
     search(search: FilterSearch) {
         search.mature = +search.mature || 0;
-        return this.http.post<PagedResults>(`${this.apiUrl}/anime/v2`, search);
+        return this.http.post<PagedResults>(`${this.apiUrl}/anime`, search);
     }
 
     filters() {
-        return this.http.get<Filters>(`${this.apiUrl}/anime/v2/filters`);
+        return this.http.get<Filters>(`${this.apiUrl}/anime/filters`);
     }
 
     buildMap() {

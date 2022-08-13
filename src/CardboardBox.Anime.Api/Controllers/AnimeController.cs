@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CardboardBox.Anime.Api.Controllers
 {
@@ -7,26 +8,39 @@ namespace CardboardBox.Anime.Api.Controllers
 	using Core.Models;
 	using Database;
 
+	using Funimation;
+	using HiDive;
+	using Vrv;
+
 	[ApiController]
 	public class AnimeController : ControllerBase
 	{
-		private readonly IAnimeMongoService _db;
 		private readonly IDbService _sql;
+		private readonly IFunimationApiService _fun;
+		private readonly IHiDiveApiService _hidive;
+		private readonly IVrvApiService _vrv;
 
-		public AnimeController(IAnimeMongoService db, IDbService sql)
+		public AnimeController(IDbService sql, IFunimationApiService fun, IHiDiveApiService hidive, IVrvApiService vrv)
 		{
-			_db = db;
 			_sql = sql;
+			_fun = fun;
+			_hidive = hidive;
+			_vrv = vrv;
 		}
 
-		[HttpPost, Route("anime"), ProducesDefaultResponseType(typeof(PaginatedResult<Anime>))]
-		public async Task<IActionResult> All([FromBody] FilterSearch search)
+		private IAnimeApiService[]? ResolveService(string platform)
 		{
-			var data = await _db.All(search);
-			return Ok(data);
+			return platform.ToLower().Trim() switch
+			{
+				"funimation" => new[] { _fun },
+				"hidive" => new[] { _hidive },
+				"vrv" => new[] { _vrv },
+				"all" => new IAnimeApiService[] { _fun, _hidive, _vrv },
+				_ => Array.Empty<IAnimeApiService>(),
+			};
 		}
 
-		[HttpPost, Route("anime/v2"), ProducesDefaultResponseType(typeof(PaginatedResult<DbAnime>))]
+		[HttpPost, Route("anime"), ProducesDefaultResponseType(typeof(PaginatedResult<DbAnime>))]
 		public async Task<IActionResult> AllV2([FromBody] FilterSearch search)
 		{
 			var user = this.UserFromIdentity();
@@ -40,17 +54,42 @@ namespace CardboardBox.Anime.Api.Controllers
 		}
 
 		[HttpGet, Route("anime/filters")]
-		public async Task<IActionResult> Filters()
-		{
-			var filters = await _db.Filters();
-			return Ok(filters);
-		}
-
-		[HttpGet, Route("anime/v2/filters")]
 		public async Task<IActionResult> FiltersV2()
 		{
 			var filters = await _sql.Anime.Filters();
 			return Ok(filters);
+		}
+
+		[HttpGet, Route("anime/load/{platform}"), Authorize]
+		public async Task<IActionResult> Load([FromRoute] string platform)
+		{
+			var service = ResolveService(platform);
+			if (service == null || service.Length == 0) return NotFound();
+
+			await Task.WhenAll(service.Select(async t =>
+			{
+				var data = t.All();
+				await foreach (var item in data)
+					await _sql.Anime.Upsert(item.Clean());
+			}));
+			
+			return Ok();
+		}
+
+		[HttpPost, Route("anime/load/{platform}"), Authorize]
+		public async Task<IActionResult> Load([FromRoute] string platform, [FromBody] VrvLoadRequest vrv)
+		{
+			var service = ResolveService(platform);
+			if (service == null || service.Length == 0) return NotFound();
+
+			await Task.WhenAll(service.Select(async t =>
+			{
+				var data = t is IVrvApiService v ? v.All(vrv) : t.All();
+				await foreach (var item in data)
+					await _sql.Anime.Upsert(item.Clean());
+			}));
+
+			return Ok();
 		}
 	}
 }

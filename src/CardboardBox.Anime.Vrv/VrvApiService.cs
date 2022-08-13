@@ -10,7 +10,7 @@ namespace CardboardBox.Anime.Vrv
 
 	public interface IVrvApiService : IAnimeApiService
 	{
-		Task<VrvResourceResult?> Fetch(string query, string sort = "alphabetical", int n = 100, Dictionary<string, string>? pars = null);
+		Task<VrvResourceResult?> Fetch(string query, string sort = "alphabetical", int n = 200, Dictionary<string, string>? pars = null);
 		IAsyncEnumerable<Anime> All(VrvLoadRequest? request);
 	}
 
@@ -32,7 +32,7 @@ namespace CardboardBox.Anime.Vrv
 			_config = config;
 		}
 
-		public Task<VrvResourceResult?> Fetch(string query, string sort = "alphabetical", int n = 100, Dictionary<string, string>? pars = null)
+		public Task<VrvResourceResult?> Fetch(string query, string sort = "alphabetical", int n = 200, Dictionary<string, string>? pars = null)
 		{
 			var url = _vrvConfig.ResourceList
 				.SetQueryParam("q", query)
