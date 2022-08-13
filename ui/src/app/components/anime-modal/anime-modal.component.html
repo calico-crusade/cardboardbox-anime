@@ -45,6 +45,15 @@
                         <span class="list" *ngFor="let list of inLists">{{ list?.title }}</span>
                     </span>
                 </p>
+                <p *ngIf="anime.otherPlatforms.length > 0">
+                    <b>Other Platforms: </b>
+                    <span class="comma-list">
+                        <ng-container *ngFor="let p of anime.otherPlatforms; let i = index">
+                            <i *ngIf="i !== 0">,&nbsp;</i>
+                            <a [href]="p.link">{{ p.platformId }} ({{ getLangs(p).join(' | ') }})</a>
+                        </ng-container>
+                    </span>
+                </p>
                 <div class="buttons">
                     <button (click)="addToList()" class="btn" *ngIf="!!curUser">
                         <div class="btn-icon">
@@ -53,14 +62,6 @@
                     </button>
                     <a [href]="anime.link" class="btn" target="_blank">
                         <div class="btn-icon">
-                            <img [src]="'/assets/' + anime.platformId + '-icon.png'" />
-                            <span>Start Watching</span>
-                        </div>
-                    </a>
-                    
-                    <a *ngFor="let other of anime.otherPlatforms" [href]="other.link" class="btn" target="_blank">
-                        <div class="btn-icon">
-                            <img [src]="'/assets/' + other.platformId + '-icon.png'" />
                             <span>Start Watching</span>
                         </div>
                     </a>

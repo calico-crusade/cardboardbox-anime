@@ -34,16 +34,7 @@ export class AnimeModalComponent implements OnInit {
     get langs() {
         if (!this.anime) return [];
 
-        return this.anime
-            .languageTypes
-            .filter(t => t !== 'Unknown')
-            .map(t => {
-                switch(t) {
-                    case 'Dubbed': return 'Dub';
-                    case 'Subbed': return 'Sub';
-                    default: return t;
-                }
-            });
+        return this.getLangs(this.anime);
     }
 
     /** 
@@ -62,6 +53,20 @@ export class AnimeModalComponent implements OnInit {
         private api: AnimeService,
         private auth: AuthService
     ) { }
+
+    getLangs(anime: Anime) {
+        return anime
+            .languageTypes
+            .filter(t => t !== 'Unknown')
+            .map(t => {
+                switch(t) {
+                    case 'Dubbed': return 'Dub';
+                    case 'Subbed': return 'Sub';
+                    default: return t;
+                }
+            })
+            .sort();
+    }
 
     ngOnInit(): void {
         //When the modal gets opened

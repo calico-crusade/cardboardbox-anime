@@ -23,16 +23,21 @@ export class CardComponent implements OnInit {
      * Converts @see {@link Anime.languageTypes} from "Dubbed/Subbed" to "Dub/Sub" and removes "Unknown" 
      */
     get langs() {
-        return this.anime
-            .languageTypes
-            .filter(t => t !== 'Unknown')
-            .map(t => {
-                switch(t) {
-                    case 'Dubbed': return 'Dub';
-                    case 'Subbed': return 'Sub';
-                    default: return t;
-                }
-            });
+        return [
+            this.anime.languageTypes,
+            ...this.anime.otherPlatforms.map(t => t.languageTypes)
+        ]
+        .flat()
+        .filter((v, i, s) => s.indexOf(v) === i)
+        .filter(t => t !== 'Unknown')
+        .map(t => {
+            switch(t) {
+                case 'Dubbed': return 'Dub';
+                case 'Subbed': return 'Sub';
+                default: return t;
+            }
+        })
+        .sort();
     }
 
     constructor(

@@ -49,6 +49,11 @@
                 &.rating { text-transform: uppercase; }
                 &:not(:first-child)::before { content: ", "; }
             }
+
+            a {
+                color: var(--text-color);
+                text-transform: capitalize;
+            }
         }
     }
     .buttons {
