@@ -38,11 +38,11 @@ namespace CardboardBox.Anime.Database
 			int offset = (search.Page - 1) * search.Size;
 			var query = $@"CREATE TEMP TABLE titles AS
 SELECT 
-	DISTINCT a.title
+	DISTINCT LOWER(a.title) as title
 FROM anime a
 {{1}}
 WHERE {{0}}
-ORDER BY a.title {(search.Ascending ? "ASC" : "DESC")} 
+ORDER BY LOWER(a.title) {(search.Ascending ? "ASC" : "DESC")} 
 LIMIT {search.Size} 
 OFFSET {offset};
 
@@ -50,10 +50,10 @@ SELECT
 	DISTINCT
 	a.*
 FROM anime a
-JOIN titles t ON t.title = a.title
+JOIN titles t ON LOWER(t.title) = LOWER(a.title)
 ORDER BY a.title {(search.Ascending ? "ASC" : "DESC")}, a.platform_id ASC;
 
-SELECT COUNT(DISTINCT a.title) FROM anime a {{1}} WHERE {{0}};
+SELECT COUNT(DISTINCT LOWER(a.title)) FROM anime a {{1}} WHERE {{0}};
 
 DROP TABLE titles;";
 			var sub = "";
@@ -143,7 +143,7 @@ JOIN profiles p ON p.id = l.profile_id";
 					continue;
 				}
 
-				if (previous.Title != item.Title)
+				if (previous.Title.ToLower() != item.Title.ToLower())
 				{
 					yield return previous;
 					previous = item;
