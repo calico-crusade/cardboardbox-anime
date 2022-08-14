@@ -50,7 +50,7 @@
                     <span class="comma-list">
                         <ng-container *ngFor="let p of anime.otherPlatforms; let i = index">
                             <i *ngIf="i !== 0">,&nbsp;</i>
-                            <a [href]="p.link">{{ p.platformId }} ({{ getLangs(p).join(' | ') }})</a>
+                            <a [href]="p.link" target="_blank">{{ p.platformId }} ({{ getLangs(p).join(' | ') }})</a>
                         </ng-container>
                     </span>
                 </p>
