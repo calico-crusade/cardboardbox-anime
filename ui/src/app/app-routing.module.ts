@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { AnimeComponent } from './routes/anime/anime.component';
 import { ErrorComponent } from './routes/error/error.component';
 import { ListsComponent } from './routes/lists/lists.component';
+import { PublicListsComponent } from './routes/public-lists/public-lists.component';
 
 const routes: Routes = [
     {
@@ -14,6 +15,9 @@ const routes: Routes = [
     }, {
         path: 'lists',
         component: ListsComponent
+    }, {
+        path: 'public-lists',
+        component: PublicListsComponent
     }, {
         path: '',
         pathMatch: 'full',

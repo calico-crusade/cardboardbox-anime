@@ -1,0 +1,42 @@
+<div class="component-container">
+    <div class="content">
+        <div class="lists">
+            <a class="list" *ngFor="let list of results" [routerLink]="['/anime', list.listId ]">
+                <div class="user">
+                    <img class="user-avatar" [src]="list.profileAvatar" />
+                    <span>{{ list.profileUsername }}</span>
+                </div>
+                <div class="details">
+                    <div class="title">{{ list.listTitle }}</div>
+                    <div class="desc" [innerHTML]="list.listDescription"></div>
+                    <div class="tags">
+                        <div class="tag">
+                            <span>Platforms: </span>
+                            <div class="data">
+                                <img class="platforms" *ngFor="let plat of list.listPlatforms" [src]="'/assets/' + plat + '-icon.png'" />
+                            </div>
+                        </div>
+                        <div class="tag">
+                            <span>Languages: </span>
+                            <div class="data">
+                                {{ list.listLanguageTypes.join(', ') }}
+                            </div>
+                        </div>
+                        <div class="tag">
+                            <span>Video Types: </span>
+                            <div class="data">
+                                {{ list.listVideoTypes.join(', ') }}
+                            </div>
+                        </div>
+                        <div class="tag">
+                            <span>Tags: </span>
+                            <div class="data">
+                                {{ list.listTags.join(', ') }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>

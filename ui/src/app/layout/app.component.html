@@ -23,6 +23,12 @@
                 </span>
                 <span class="title">Anime</span>
             </a>
+            <a routerLink="/public-lists" routerLinkActive="active" (click)="menuOpen = false">
+                <span class="icon">
+                    <cba-icon>public</cba-icon>
+                </span>
+                <span class="title">Public Lists</span>
+            </a>
             <ng-container *ngIf="loggedIn">
                 <a routerLink="/lists" routerLinkActive="active" (click)="menuOpen = false">
                     <span class="icon">

@@ -1,0 +1,97 @@
+.component-container {
+    .content {
+        flex: 1;
+        display: flex;
+        flex-flow: column;
+        overflow-y: auto;
+        overflow-x: hidden;
+
+        .lists {
+            display: flex;
+            flex-flow: column;
+            margin: auto;
+
+            .list {
+                display: flex;
+                flex-flow: row;
+                padding: 20px;
+                margin: 10px 0;
+                background-color: var(--bg-card);
+                max-width: 650px;
+                cursor: pointer;
+                color: var(--text-color);
+                text-decoration: none;
+
+                .user {
+                    display: flex;
+                    flex-flow: column;
+                    position: relative;
+
+                    img {
+                        width: 75px;
+                        height: 75px;
+                        border-radius: 50%;
+                        margin-bottom: 30px;
+                    }
+
+                    span {
+                        top: 85px;
+                        position: absolute;
+                        max-width: 100%;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                    }
+                }
+    
+                .details {
+                    margin-left: 15px;
+                    display: flex;
+                    flex-flow: column;
+
+                    .title {
+                        font-weight: bold;
+                    }
+
+                    .desc {
+                        font-size: 1.2rem;
+                        font-weight: lighter;
+                    }
+
+                    .tags {
+                        display: flex;
+                        flex-flow: column;
+                        font-size: 0.8rem;
+
+                        .tag {
+                            flex: 1;
+                            display: flex;
+                            flex-flow: row;
+
+                            span {
+                                margin: auto 0;
+                                min-width: 75px;
+                            }
+
+                            .data {
+                                display: flex;
+                                flex-flow: row;
+                                margin-left: 10px;
+                                margin-top: 5px;
+                                text-transform: capitalize;
+
+                                img {
+                                    width: 25px;
+                                    height: 25px;
+                                    margin: 5px;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+
+    }
+}

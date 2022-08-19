@@ -70,7 +70,9 @@ namespace CardboardBox.Anime.Database
 				 .ForEntity<DbList>()
 				 .ForEntity<DbListExt>()
 				 .ForEntity<DbListMap>()
-				 .ForEntity<DbListMapStripped>();
+				 .ForEntity<DbListMapStripped>()
+				 
+				 .ForEntity<CompPublicList>();
 			});
 
 			MapConfig.StartMap();

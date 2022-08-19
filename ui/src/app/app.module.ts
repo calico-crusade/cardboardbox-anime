@@ -19,6 +19,7 @@ import { AuthInterceptor } from './services/auth.service';
 import { ListSelectComponent } from './components/list-select/list-select.component';
 import { IconComponent } from './components/icon/icon.component';
 import { ListsComponent } from './routes/lists/lists.component';
+import { PublicListsComponent } from './routes/public-lists/public-lists.component';
 
 @Injectable()
 export class MyHammerConfig extends HammerGestureConfig {
@@ -37,7 +38,8 @@ export class MyHammerConfig extends HammerGestureConfig {
         AnimeModalComponent,
         ListSelectComponent,
         IconComponent,
-        ListsComponent
+        ListsComponent,
+        PublicListsComponent
     ],
     imports: [
         BrowserModule,

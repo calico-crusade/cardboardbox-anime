@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { PagedResults, Filters, FilterSearch, ListExt, ListPost, ListPut, Id, ListMap, Anime, List, ListMapItem } from './anime.model';
+import { PagedResults, Filters, FilterSearch, ListExt, ListPost, ListPut, Id, ListMap, Anime, List, ListMapItem, PublicLists } from './anime.model';
 import { ConfigObject } from './config.base';
 import { BehaviorSubject, combineLatestWith, lastValueFrom, map, Observable, switchMap, tap } from 'rxjs';
 
@@ -77,9 +77,16 @@ export class AnimeService extends ConfigObject {
 
     listsGet() { return this.http.get<ListExt[]>(`${this.apiUrl}/lists`); }
     
+    listsPublic(): Observable<PublicLists>;
+    listsPublic(page: number, size: number): Observable<PublicLists>;
     listsPublic(id: number): Observable<ListExt>;
     listsPublic(list: ListPut): Observable<ListExt>;
-    listsPublic(list: number | ListPut) {
+    listsPublic(list?: number | ListPut, size?: number) {
+        if (!list) return this.http.get<PublicLists>(`${this.apiUrl}/lists/public`);
+
+        if (typeof list === 'number' && size && typeof size === 'number')
+            return this.http.get<PublicLists>(`${this.apiUrl}/lists/public`, { params: { page: list, size } });
+
         if (typeof list !== 'number') list = list.id;
         return this.http.get<ListExt>(`${this.apiUrl}/lists/public/${list}`);
     }

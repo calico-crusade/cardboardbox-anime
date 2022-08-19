@@ -36,6 +36,17 @@ namespace CardboardBox.Anime.Api.Controllers
 			return Ok(lists);
 		}
 
+		[HttpGet, Route("lists/public"), AllowAnonymous]
+		public async Task<IActionResult> GetPublicLists([FromQuery] long page = 1, [FromQuery] long size = 100)
+		{
+			var (results, total) = await _db.Lists.PublicLists(page, size);
+			return Ok(new
+			{
+				results,
+				total
+			});
+		}
+
 		[HttpGet, Route("lists/public/{listId}"), AllowAnonymous]
 		public async Task<IActionResult> GetPublicList(long listId)
 		{

@@ -104,3 +104,24 @@ export interface ListMapItem {
     listId: number;
     animeIds: number[];
 }
+
+export interface PublicLists {
+    results: PublicList[];
+    total: number;
+}
+
+export interface PublicList {
+    listId: number;
+    listTitle: string;
+    listDescription: string;
+    listLastUpdate: Date;
+    listCount: number;
+    listTags: string[];
+    listLanguages: string[];
+    listLanguageTypes: string[];
+    listVideoTypes: string[];
+    listPlatforms: string[];
+    profileId: number;
+    profileUsername: string;
+    profileAvatar: string;
+}

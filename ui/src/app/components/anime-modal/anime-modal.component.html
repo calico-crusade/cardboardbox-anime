@@ -20,7 +20,7 @@
                     </div>
                     <img [src]="'/assets/' + anime.platformId + '-icon.png'" />
                 </header>
-                <p *ngIf="anime.description">{{ anime.description }}</p>
+                <p *ngIf="anime.description" [innerHTML]="anime.description"></p>
                 <p *ngIf="anime.languages.length > 0">
                     <b>Audio Languages: </b>
                     <span class="comma-list">
