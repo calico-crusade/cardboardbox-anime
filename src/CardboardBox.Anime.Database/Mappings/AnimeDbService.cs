@@ -10,6 +10,7 @@ namespace CardboardBox.Anime.Database
 	{
 		Task<long> Upsert(DbAnime anime);
 		Task<(int total, DbAnime[] results)> Search(FilterSearch search, string? platformId = null);
+		Task<DbAnime[]> Random(FilterSearch search, string? platformId = null);
 		Task<DbAnime[]> All();
 		Task<Filter[]> Filters();
 	}
@@ -130,6 +131,100 @@ JOIN profiles p ON p.id = l.profile_id";
 			var total = await reader.ReadSingleAsync<int>();
 
 			return (total, GroupPlatforms(results).ToArray());
+		}
+
+		public async Task<DbAnime[]> Random(FilterSearch search, string? platformId = null)
+		{
+			var query = $@"CREATE TEMP TABLE titles AS
+SELECT
+	*
+FROM (
+	SELECT 
+		DISTINCT LOWER(a.title) as title
+	FROM anime a
+	{{1}}
+	WHERE {{0}}
+) x
+ORDER BY random()
+LIMIT 1;
+
+SELECT
+	DISTINCT
+	a.*
+FROM anime a
+JOIN titles t ON LOWER(t.title) = LOWER(a.title)
+ORDER BY a.title {(search.Ascending ? "ASC" : "DESC")}, a.platform_id ASC;;
+
+DROP TABLE titles;";
+			var sub = "";
+
+			var parts = new List<string>();
+			var pars = new DynamicParameters();
+
+			if (!string.IsNullOrEmpty(search.Search))
+			{
+				parts.Add("a.fts @@ phraseto_tsquery('english', :search)");
+				pars.Add("search", search.Search);
+			}
+
+			if (search.Mature != FilterSearch.MatureType.Both)
+			{
+				parts.Add("a.mature = :mature");
+				pars.Add("mature", search.Mature == FilterSearch.MatureType.Mature);
+			}
+
+			if (search.ListId != null)
+			{
+				sub = @"JOIN list_map lm on a.id = lm.anime_id
+JOIN lists l on lm.list_id = l.id
+JOIN profiles p ON p.id = l.profile_id";
+				parts.Add("l.id = :listId");
+				parts.Add("l.deleted_at IS NULL");
+				parts.Add("p.deleted_at IS NULL");
+				parts.Add("lm.deleted_at IS NULL");
+				parts.Add(@"(p.platform_id = :pPlatformId OR l.is_public = true)");
+				pars.Add("listId", search.ListId);
+				pars.Add("pPlatformId", platformId);
+			}
+
+			var queries = search.Queryables;
+			var qs = new Dictionary<string, string[]?>
+			{
+				["languages"] = queries.Languages,
+				["language_types"] = queries.Types,
+				["tags"] = queries.Tags
+			};
+
+			var ss = new Dictionary<string, string[]?>
+			{
+				["platform_id"] = queries.Platforms,
+				["type"] = queries.VideoTypes
+			};
+
+			var any = (string[]? ar) => ar?.Any() ?? false;
+			foreach (var (key, vals) in qs)
+			{
+				if (!any(vals)) continue;
+
+				parts.Add($"a.{key} && :{key}");
+				pars.Add(key, vals);
+			}
+
+			foreach (var (key, vals) in ss)
+			{
+				if (!any(vals)) continue;
+				parts.Add($"a.{key} = ANY( :{key} )");
+				pars.Add(key, vals);
+			}
+
+			parts.Add("a.deleted_at IS NULL");
+
+			var where = string.Join(" AND ", parts);
+			var fullQuery = string.Format(query, where, sub);
+
+			var results = await _sql.Get<DbAnime>(fullQuery, pars);
+
+			return GroupPlatforms(results).ToArray();
 		}
 
 		public IEnumerable<DbAnime> GroupPlatforms(IEnumerable<DbAnime> anime)

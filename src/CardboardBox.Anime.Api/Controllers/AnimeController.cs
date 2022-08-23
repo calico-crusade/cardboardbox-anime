@@ -53,6 +53,16 @@ namespace CardboardBox.Anime.Api.Controllers
 			});
 		}
 
+		[HttpPost, Route("anime/random"), ProducesDefaultResponseType(typeof(DbAnime[]))]
+		public async Task<IActionResult> Random([FromBody] FilterSearch search)
+		{
+			search.Size = 1;
+			search.Page = 1;
+			var user = this.UserFromIdentity();
+			var results = await _sql.Anime.Random(search, user?.Id) ?? Array.Empty<DbAnime>();
+			return Ok(results);
+		}
+
 		[HttpGet, Route("anime/filters")]
 		public async Task<IActionResult> FiltersV2()
 		{

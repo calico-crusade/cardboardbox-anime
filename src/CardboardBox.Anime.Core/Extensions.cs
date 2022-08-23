@@ -63,7 +63,7 @@ namespace CardboardBox.Anime
 			var total = (int)count / size;
 			var data = ag.Facets.First(t => t.Name == "data").Output<T>();
 
-			return new (total, count, data);
+			return new (total, (int)count, data.ToArray());
 		}
 
 		public static async Task<List<T>> ToList<T>(this Task<IAsyncCursor<T>> task)
@@ -154,5 +154,31 @@ namespace CardboardBox.Anime
 		}
 	}
 
-	public record class PaginatedResult<T>(int Pages, long Count, IReadOnlyList<T> Results);
+	public class PaginatedResult<T>
+	{
+		[JsonPropertyName("pages")]
+		public int Pages { get; set; }
+
+		[JsonPropertyName("count")]
+		public int Count { get; set; }
+
+		[JsonPropertyName("results")]
+		public T[] Results { get; set; } = Array.Empty<T>();
+
+		public PaginatedResult() { }
+
+		public PaginatedResult(int pages, int count, T[] results)
+		{
+			Pages = pages;
+			Count = count;
+			Results = results;
+		}
+
+		public void Deconstruct(out int pages, out int count, out T[] results)
+		{
+			pages = Pages;
+			count = Count;
+			results = Results;
+		}
+	}
 }

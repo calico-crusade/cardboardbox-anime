@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CardboardBox.Discord" Version="1.0.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CardboardBox.Anime.Database\CardboardBox.Anime.Database.csproj" />
+    <ProjectReference Include="..\CardboardBox.Anime.Holybooks\CardboardBox.Anime.Holybooks.csproj" />
+  </ItemGroup>
+
+</Project>

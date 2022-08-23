@@ -33,3 +33,12 @@ services:
       - 8892:80
     depends_on:
       - cba-api
+  cba-bot:
+    image: ghcr.io/calico-crusade/cardboardbox-anime/bot:latest
+    restart: always
+    environment:
+      - Discord:PublicKey=${DISCORD_KEY}
+      - Discord:AppId=${DISCORD_APPID}
+      - Discord:Token=${DISCORD_TOKEN}
+    depends_on:
+      - cba-api
