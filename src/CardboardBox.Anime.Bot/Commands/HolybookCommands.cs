@@ -77,6 +77,15 @@ namespace CardboardBox.Anime.Bot.Commands
 					.Union(anime.OtherPlatforms)
 					.Select(t => $"[{t.PlatformId}]({t.Link})");
 
+				var platImgs = new Dictionary<string, string>
+				{
+					["mondo"] = "https://cdn.discordapp.com/attachments/1009959055026028556/1011774163238789190/mondo-icon.png",
+					["funimation"] = "https://cdn.discordapp.com/attachments/1009959055026028556/1011774164270596187/funimation-icon.png",
+					["vrvselect"] = "https://cdn.discordapp.com/attachments/1009959055026028556/1011774163536597012/vrvselect-icon.png",
+					["crunchyroll"] = "https://cdn.discordapp.com/attachments/1009959055026028556/1011774163926659152/crunchyroll-icon.png",
+					["hidive"] = "https://cdn.discordapp.com/attachments/1009959055026028556/1011774164593545276/hidive-icon.png"
+				};
+
 				var e = new EmbedBuilder()
 					.WithTitle(anime.Title ?? "")
 					.WithDescription(anime.Description ?? "")
@@ -84,6 +93,7 @@ namespace CardboardBox.Anime.Bot.Commands
 					.WithImageUrl(anime.Images.FirstOrDefault(t => t.Type == "wallpaper")?.Source ?? anime.Images.OrderByDescending(t => t.Width).FirstOrDefault()?.Source ?? "")
 					.WithCurrentTimestamp()
 					.WithUrl(anime.Link)
+					.WithThumbnailUrl(platImgs[anime.PlatformId])
 					.WithFooter("CardboardBox")
 					.AddOptField("Genres", string.Join(", ", anime.Tags), true)
 					.AddOptField("Languages", string.Join(", ", anime.Languages), true)
