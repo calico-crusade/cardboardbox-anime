@@ -47,7 +47,7 @@
 		public DbExtension[] Ext { get; set; } = Array.Empty<DbExtension>();
 
 		[JsonPropertyName("otherPlatforms")]
-		public List<DbAnime>? OtherPlatforms { get; set; } = new();
+		public List<DbAnime> OtherPlatforms { get; set; } = new();
 
 		public static implicit operator DbAnime(Anime a)
 		{

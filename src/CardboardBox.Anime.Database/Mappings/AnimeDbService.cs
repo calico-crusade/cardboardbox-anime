@@ -31,7 +31,9 @@ namespace CardboardBox.Anime.Database
 				(v) => v.With(t => t.Id).With(t => t.CreatedAt).With(t => t.OtherPlatforms),
 				(v) => v.Id);
 
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 			anime.OtherPlatforms = null;
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
 			return _sql.ExecuteScalar<long>(_upsertQuery, anime);
 		}
