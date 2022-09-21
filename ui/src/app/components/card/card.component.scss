@@ -51,6 +51,13 @@ $platforms: 'crunchyroll', 'vrvselect', 'mondo', 'funimation', 'hidive', 'vrv-cr
                     width: 20px;
                     margin: 5px;
                 }
+
+                &.other {
+                    &.vrv-crunchyroll-bg-hover {
+                        display: none;
+                        
+                    }
+                }
             }
             .title {
                 height: 30px;

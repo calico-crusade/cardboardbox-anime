@@ -6,7 +6,7 @@
             <div class="channel-icon" [ngClass]="anime.platformId + '-bg-hover'">
                 <img [src]="'/assets/' + anime.platformId + '-icon.png'" />
             </div>
-            <div class="channel-icon" *ngFor="let plat of anime.otherPlatforms; let i = index" 
+            <div class="channel-icon other" *ngFor="let plat of anime.otherPlatforms; let i = index" 
                  [style.margin-left]="(i + 1) * 35 + 'px'" [ngClass]="plat.platformId + '-bg-hover'">
                 <img [src]="'/assets/' + plat.platformId + '-icon.png'" />
             </div>
