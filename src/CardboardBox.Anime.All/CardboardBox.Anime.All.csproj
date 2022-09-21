@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CardboardBox.Anime.Auth\CardboardBox.Anime.Auth.csproj" />
+    <ProjectReference Include="..\CardboardBox.Anime.Crunchyroll\CardboardBox.Anime.Crunchyroll.csproj" />
     <ProjectReference Include="..\CardboardBox.Anime.Database\CardboardBox.Anime.Database.csproj" />
     <ProjectReference Include="..\CardboardBox.Anime.Funimation\CardboardBox.Anime.Funimation.csproj" />
     <ProjectReference Include="..\CardboardBox.Anime.HiDive\CardboardBox.Anime.HiDive.csproj" />

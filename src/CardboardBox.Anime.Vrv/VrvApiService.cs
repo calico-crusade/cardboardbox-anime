@@ -84,6 +84,9 @@ namespace CardboardBox.Anime.Vrv
 
 		public Anime ConvertItem(VrvResourceResult.Item item)
 		{
+			if (item.ChannelId == "crunchyroll")
+				item.ChannelId = "vrv-crunchyroll";
+
 			return new Anime
 			{
 				HashId = $"{item.ChannelId}-{item.Id}-{item.Title}".MD5Hash(),
@@ -92,19 +95,19 @@ namespace CardboardBox.Anime.Vrv
 				Title = item.Title,
 				Description = item.Description,
 				PlatformId = item.ChannelId,
-				Type = DeteremineType(item.Type),
+				Type = DetermineType(item.Type),
 				Metadata = item.Type == "series" ? ConvertMetadata(item.SeriesMetadata) : ConvertMetadata(item.MovieListingMetadata),
 				Images = ConvertImages(item.Images).ToList()
 			};
 		}
 
-		public string DeteremineType(string type)
+		public string DetermineType(string type)
 		{
-			switch(type)
+			return type switch
 			{
-				case "series": return "series";
-				default: return "movie";
-			}
+				"series" => "series",
+				_ => "movie",
+			};
 		}
 
 		public IEnumerable<Image> ConvertImages(VrvResourceResult.Images images)

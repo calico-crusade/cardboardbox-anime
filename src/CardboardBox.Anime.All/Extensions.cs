@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace CardboardBox.Anime
 {
 	using Auth;
+	using Crunchyroll;
 	using Core;
 	using Core.Models;
 	using Database;
@@ -26,6 +27,7 @@ namespace CardboardBox.Anime
 				.AddTransient<IVrvApiService, VrvApiService>()
 				.AddTransient<IFunimationApiService, FunimationApiService>()
 				.AddTransient<IHiDiveApiService, HiDiveApiService>()
+				.AddTransient<ICrunchyrollApiService, CrunchyrollApiService>()
 				.AddMongo<Anime, AnimeConfig>()
 				.AddTransient<IAnimeMongoService, AnimeMongoService>();
 		}

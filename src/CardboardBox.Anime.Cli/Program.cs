@@ -18,7 +18,7 @@ return await new ServiceCollection()
 	)
 	.AddSingleton<IConfiguration>(config)
 
-	.RegisterCba()
+	.RegisterCba(config)
 
 	.AddSingleton<IRunner, Runner>()
 	.BuildServiceProvider()

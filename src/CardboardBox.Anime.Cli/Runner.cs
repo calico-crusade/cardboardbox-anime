@@ -6,6 +6,7 @@ using AImage = CardboardBox.Anime.Core.Models.Image;
 
 namespace CardboardBox.Anime.Cli
 {
+	using Crunchyroll;
 	using Core;
 	using Core.Models;
 	using Database;
@@ -31,6 +32,7 @@ namespace CardboardBox.Anime.Cli
 		private readonly IAnimeMongoService _mongo;
 		private readonly IHiDiveApiService _hidive;
 		private readonly IAnimeDbService _db;
+		private readonly ICrunchyrollApiService _crunchy;
 
 		public Runner(
 			IVrvApiService vrv, 
@@ -39,7 +41,8 @@ namespace CardboardBox.Anime.Cli
 			IApiService api,
 			IAnimeMongoService mongo,
 			IHiDiveApiService hidive,
-			IAnimeDbService db)
+			IAnimeDbService db,
+			ICrunchyrollApiService crunchy)
 		{
 			_vrv = vrv;
 			_logger = logger;
@@ -48,6 +51,7 @@ namespace CardboardBox.Anime.Cli
 			_mongo = mongo;
 			_hidive = hidive;
 			_db = db;
+			_crunchy = crunchy;
 		}
 
 		public async Task<int> Run(string[] args)
@@ -71,6 +75,7 @@ namespace CardboardBox.Anime.Cli
 					case "clean": await Clean(); break;
 					case "hidive": await Hidive(); break;
 					case "migrate": await Migrate(); break;
+					case "crunchy": await LoadCrunchy(); break;
 					default: _logger.LogInformation("Invalid command: " + command); break;
 				}
 
@@ -82,6 +87,40 @@ namespace CardboardBox.Anime.Cli
 				_logger.LogError(ex, "Error occurred while processing command: " + string.Join(" ", args));
 				return 1;
 			}
+		}
+
+		public async Task Crunchy()
+		{
+			const string token = "eyJhbGciOiJSUzI1NiIsImtpZCI6ImNraVIzeGpGQ2ZfMDJqdl9HRE9YZWciLCJ0eXAiOiJKV1QifQ.eyJhbm9ueW1vdXNfaWQiOiI2OGFlNWVmNy0xZWNhLTQ5ZTMtYWY1Mi0zODY1ZTJhYjgwMzAiLCJjbGllbnRfaWQiOiJjcl9iYWNrZW5kIiwiY2xpZW50X3RhZyI6IjEuMC4wIGJldGEiLCJjb3VudHJ5IjoiVVMiLCJldHBfdXNlcl9pZCI6ImVmOWUyMDdlLTU2YmMtNWYxZC1iNjFlLTE4Y2U3NTljMzEyYiIsImV4cCI6MTY2Mzc0OTk0MSwianRpIjoiYWEwZjhmMGUtYWE0ZC00NWZiLWI2ODAtMjE2Y2Q0NDlhYzc2IiwibWF0dXJpdHkiOiJNMiIsIm9hdXRoX3Njb3BlcyI6ImFjY291bnQgY29udGVudCBvZmZsaW5lX2FjY2VzcyByZXZpZXdzIHRhbGtib3giLCJydF9pZCI6ImNjbGMwZjVhc2hrZHNpdDBoYWwwIiwic2NvcGVzIjp7ImNyIjp7ImFjY19pZCI6ImVmOWUyMDdlLTU2YmMtNWYxZC1iNjFlLTE4Y2U3NTljMzEyYiIsImV4dF9pZCI6IjkwNzEyNjkifX0sInN0YXR1cyI6IkFDVElWRSIsInRudCI6ImNyIn0.GyPfPTmb7em-Bp6PKiLFwZDh8ARWtcdbreFLe-DSRS0E5SjI4naC-P2-ycbtdAFCqz1iIRnm3KCG39qBf54a_tt6I9z8sOPnE3hEfUL2XQhg5UN_En_zEyWgAQD1KI5PQPEfQURcG_uSbZfD0dA8lI5yZyzMvJdcsKjtOT_ugYE6nWiXej5djwnOlIJ_E_CaUeDNFq9EkK5qhXAM6JqNQA9wyF2Ygwd_3Nsk40Fji5iTJ0ixtZ80afPmGLnOlFG8MBTptxgvzUkiDm8fYZrD_MDwjGdGjuVJYnChcey7akGUV7YVrUuBc900STjOdNVL8g_srbZaTFNkPvY-fKhxXA";
+
+			var data = await _crunchy.All(token).ToListAsync();
+			if (data == null)
+			{
+				_logger.LogError("Failed to fetch crunchy data");
+				return;
+			}
+
+			var ser = JsonSerializer.Serialize(data);
+			await File.WriteAllTextAsync("crunchy.json", ser);
+
+			_logger.LogInformation($"Data Results: {data?.Count}");
+		}
+
+		public async Task LoadCrunchy()
+		{
+			using var io = File.OpenRead("crunchy.json");
+			var data = await JsonSerializer.DeserializeAsync<Anime[]>(io);
+
+			if (data == null)
+			{
+				_logger.LogError("Data failed to load");
+				return;
+			}	
+
+			foreach (var anime in data)
+				await _db.Upsert(anime);
+
+			_logger.LogInformation("Finsihed loading crunchyroll anime");
 		}
 
 		public async Task Hidive()

@@ -8,6 +8,7 @@ namespace CardboardBox.Anime.Api.Controllers
 	using Core.Models;
 	using Database;
 
+	using Crunchyroll;
 	using Funimation;
 	using HiDive;
 	using Vrv;
@@ -15,17 +16,24 @@ namespace CardboardBox.Anime.Api.Controllers
 	[ApiController]
 	public class AnimeController : ControllerBase
 	{
+		private readonly ICrunchyrollApiService _crunchy;
 		private readonly IDbService _sql;
 		private readonly IFunimationApiService _fun;
 		private readonly IHiDiveApiService _hidive;
 		private readonly IVrvApiService _vrv;
 
-		public AnimeController(IDbService sql, IFunimationApiService fun, IHiDiveApiService hidive, IVrvApiService vrv)
+		public AnimeController(
+			IDbService sql, 
+			IFunimationApiService fun, 
+			IHiDiveApiService hidive, 
+			IVrvApiService vrv,
+			ICrunchyrollApiService crunchy)
 		{
 			_sql = sql;
 			_fun = fun;
 			_hidive = hidive;
 			_vrv = vrv;
+			_crunchy = crunchy;
 		}
 
 		private IAnimeApiService[]? ResolveService(string platform)
@@ -98,6 +106,16 @@ namespace CardboardBox.Anime.Api.Controllers
 				await foreach (var item in data)
 					await _sql.Anime.Upsert(item.Clean());
 			}));
+
+			return Ok();
+		}
+
+		[HttpPost, Route("anime/load/crunchyroll/with-token")]
+		public async Task<IActionResult> LoadCrunchyroll([FromBody] string token)
+		{
+			var data = _crunchy.All(token);
+			await foreach (var item in data)
+				await _sql.Anime.Upsert(item.Clean());
 
 			return Ok();
 		}

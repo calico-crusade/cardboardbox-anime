@@ -27,9 +27,11 @@ namespace CardboardBox.Anime.Database
 		{
 			_upsertQuery ??= _query.Upsert<DbAnime, long>(TableName,
 				(v) => v.With(t => t.HashId),
-				(v) => v.With(t => t.Id),
-				(v) => v.With(t => t.Id).With(t => t.CreatedAt),
+				(v) => v.With(t => t.Id).With(t => t.OtherPlatforms),
+				(v) => v.With(t => t.Id).With(t => t.CreatedAt).With(t => t.OtherPlatforms),
 				(v) => v.Id);
+
+			anime.OtherPlatforms = null;
 
 			return _sql.ExecuteScalar<long>(_upsertQuery, anime);
 		}

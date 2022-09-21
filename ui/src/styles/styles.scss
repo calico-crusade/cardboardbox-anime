@@ -29,6 +29,7 @@
     --bd-card-2: rgb(27, 26, 38);
 
     --color-crunchyroll: rgb(244, 117, 33);
+    --color-vrv-crunchyroll: rgb(244, 117, 33);
     --color-vrvselect: rgb(128, 130, 133);
     --color-mondo: rgb(233, 55, 53);
     --color-vrv: #fd0;
@@ -45,6 +46,11 @@
     background-color: var(--bg-accent);
 }
 .bump { flex: 1; }
+.vrv-crunchyroll-bg, .vrv-crunchyroll-bg-hover:hover { background-color: var(--color-crunchyroll) !important; }
+.vrv-crunchyroll-image {
+    background-color: var(--color-crunchyroll);
+    border-bottom-color: var(--color-crunchyroll) !important;
+}
 .crunchyroll-bg, .crunchyroll-bg-hover:hover { background-color: var(--color-crunchyroll) !important; }
 .crunchyroll-image {
     background-color: var(--color-crunchyroll);
