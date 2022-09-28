@@ -3,29 +3,39 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AnimeService, Chapter } from './../../services';
 
+export type MENU_TYPE = 'chapters' | 'settings' | 'none';
+
 @Component({
     templateUrl: './lightnovel.component.html',
     styleUrls: ['./lightnovel.component.scss']
 })
 export class LightnovelComponent implements OnInit, OnDestroy, AfterViewInit {
 
+    private _fontSize?: number;
+
     id!: string;
     page: number = 1;
     size: number = 100;
     loading: boolean = false;
-    open: boolean = true;
-
+    menu: MENU_TYPE = 'none';
     chapters: Chapter[] = [];
     pages: number = 0;
     count: number = 0;
-
     inView: number = 0;
 
-    @ViewChildren('chapter') 
-    chapterEls!: QueryList<ElementRef>;
+    get fontSize() {
+        if (this._fontSize) return this._fontSize;
+        const val = localStorage.getItem('ln-fontsize');
+        if (!val) return 16;
+        return this._fontSize = +val;
+    }
+    set fontSize(val: number) {
+        this._fontSize = val;
+        localStorage.setItem('ln-fontsize', val.toString());
+    }
 
-    @ViewChild('chapterScroll')
-    main!: ElementRef;
+    @ViewChildren('chapter') chapterEls!: QueryList<ElementRef>;
+    @ViewChild('chapterScroll') main!: ElementRef;
 
     constructor(
         private route: ActivatedRoute,
@@ -63,8 +73,6 @@ export class LightnovelComponent implements OnInit, OnDestroy, AfterViewInit {
             this.chapters = [];
             this.process();
         });
-
-
     }
 
     private process() {
@@ -99,5 +107,14 @@ export class LightnovelComponent implements OnInit, OnDestroy, AfterViewInit {
 
     onVisible(index: number) {
         this.inView = index;
+    }
+
+    toggle(target: MENU_TYPE) {
+        if (this.menu === target) {
+            this.menu = 'none';
+            return;
+        }
+
+        this.menu = target;
     }
 }

@@ -1,7 +1,9 @@
-<div class="component-container" [ngClass]="{ 'open': open }"
-     (swipeleft)="open = false" (swiperight)="open = true">
-    <aside>
-        <div class="loaded-chapters" infiniteScroll (scrolled)="onScroll()" [scrollWindow]="false"
+<div class="component-container" [ngClass]="{ 'open': menu != 'none' }"
+     (swipeleft)="toggle('none')" (swiperight)="toggle('chapters')">
+    <aside [ngSwitch]="menu">
+        <div class="sidebar loaded-chapters" 
+             *ngSwitchCase="'chapters'"
+             infiniteScroll (scrolled)="onScroll()" [scrollWindow]="false"
              [infiniteScrollDistance]="2" [infiniteScrollThrottle]="50">
             <h1>Chapters: </h1>
             <button class="chap" 
@@ -11,8 +13,19 @@
                 {{ chap.chapter }}
             </button>
         </div>
-    </aside>
+        <div class="sidebar settings" *ngSwitchCase="'settings'">
+            <h1>Settings: </h1>
 
+            <div class="opt">
+                <div class="label">Font Size: </div>
+                <div class="value btn-grp">
+                    <button (click)="fontSize = fontSize - 1">-</button>
+                    <button disabled>{{ fontSize }}px</button>
+                    <button (click)="fontSize = fontSize + 1">+</button>
+                </div>
+            </div>
+        </div>
+    </aside>
 
     <main infiniteScroll (scrolled)="onScroll()" [scrollWindow]="false"
           [infiniteScrollDistance]="2" [infiniteScrollThrottle]="50">
@@ -36,7 +49,9 @@
                  #chapter observe (visible)="onVisible(i)">
                 <h2>{{ chap.chapter }}</h2>
                 <hr />
-                <div class="chapter-content" [innerHTML]="chap.content"></div>
+                <div class="chapter-content" 
+                     [innerHTML]="chap.content"
+                     [style.font-size]="fontSize + 'px'"></div>
             </div>
             <div class="infinite-loading" *ngIf="loading">
                 <div class="loading no-animation">
@@ -48,10 +63,15 @@
     </main>
 
     <!--The main-content overlay when the side menu is open-->
-    <div class="fade" (click)="open = false"></div>
+    <div class="fade" (click)="toggle('none')"></div>
 
-    <button class="side-toggle" (click)="open = !open">
-        <span *ngIf="open">&lt;</span>
-        <span *ngIf="!open">&gt;</span>
-    </button>
+    <div class="side-toggle">
+        <button (click)="toggle('chapters')">
+            <cba-icon>bookmarks</cba-icon>
+        </button>
+        <button (click)="toggle('settings')">
+            <cba-icon>tune</cba-icon>
+        </button>
+    </div>
+
 </div>

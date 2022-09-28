@@ -1,4 +1,5 @@
 $side-width: 300px;
+$btn-rd: 5px;
 
 .component-container {
     overflow: hidden;
@@ -6,7 +7,7 @@ $side-width: 300px;
 
     aside {
         width: $side-width;
-        margin-left: -#{$side-width};
+        margin-left: -#{$side-width + 2px};
         display: flex;
         flex-flow: column;
         overflow: hidden;
@@ -14,12 +15,7 @@ $side-width: 300px;
         border-right: 2px solid var(--color-vrv);
         transition: all 250ms;
 
-        .loaded-chapters {
-
-            h1 {
-                margin: 10px 0;
-            }
-
+        .sidebar {
             flex: 1;
             overflow-y: auto;
             overflow-x: hidden;
@@ -27,24 +23,70 @@ $side-width: 300px;
             flex-flow: column;
             margin: 5px;
 
-            button {
-                text-align: left;
-                background-color: transparent;
-                outline: none;
-                border: none;
-                border-bottom: 1px solid var(--color-vrv);
-                color: var(--text-color);
-                font-family: 'Roboto';
-                font-size: 16px;
-                cursor: pointer;
+            h1 {
+                margin: 10px 0;
+            }
 
-                &:last-child {
-                    border-bottom: none;
+            &.loaded-chapters {
+                button {
+                    text-align: left;
+                    background-color: transparent;
+                    outline: none;
+                    border: none;
+                    border-bottom: 1px solid var(--color-vrv);
+                    color: var(--text-color);
+                    font-family: 'Roboto';
+                    font-size: 16px;
+                    cursor: pointer;
+    
+                    &:last-child {
+                        border-bottom: none;
+                    }
+    
+                    &.inview {
+                        background-color: var(--color-vrv);
+                        color: #000;
+                    }
                 }
+            }
 
-                &.inview {
-                    background-color: var(--color-vrv);
-                    color: #000;
+            &.settings {
+
+                .opt {
+                    display: flex;
+                    flex-flow: row;
+
+                    .label {
+                        flex: 1;
+                    }
+
+                    .btn-grp {
+                        display: flex;
+                        flex-flow: row;
+    
+                        button {
+    
+                            background-color: transparent;
+                            outline: none;
+                            border: 1px solid var(--color-vrv);
+                            cursor: pointer;
+                            color: var(--text-color);
+    
+                            &:first-child {
+                                border-top-left-radius: $btn-rd;
+                                border-bottom-left-radius: $btn-rd;
+                            }
+    
+                            &:last-child {
+                                border-top-right-radius: $btn-rd;
+                                border-bottom-right-radius: $btn-rd;
+                            }
+
+                            &:disabled {
+                                cursor: not-allowed;
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -79,17 +121,25 @@ $side-width: 300px;
     }
 
     .side-toggle {
+        display: flex;
+        flex-flow: column;
+
         position: absolute;
         top: 0;
         left: 0;
         transition: all 250ms;
         background-color: var(--color-vrv);
-        outline: none;
-        border: none;
+        
         border-bottom-right-radius: 5px;
-        width: 25px;
-        height: 25px;
-        cursor: pointer;
+
+        button {
+            background-color: transparent;
+            outline: none;
+            border: none;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+        }
     }
 
     &.open {
