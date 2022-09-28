@@ -29,6 +29,12 @@
                 </span>
                 <span class="title">Public Lists</span>
             </a>
+            <a routerLink="/ln" routerLinkActive="active" (click)="menuOpen = false">
+                <span class="icon">
+                    <cba-icon>menu_book</cba-icon>
+                </span>
+                <span class="title">Light Novels</span>
+            </a>
             <ng-container *ngIf="loggedIn">
                 <a routerLink="/lists" routerLinkActive="active" (click)="menuOpen = false">
                     <span class="icon">
