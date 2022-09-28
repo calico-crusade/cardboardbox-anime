@@ -14,6 +14,8 @@ namespace CardboardBox.Anime
 	using HiDive;
 	using Vrv;
 
+	using LightNovel.Core;
+
 	public static class Extensions
 	{
 		public static IServiceCollection RegisterCba(this IServiceCollection services, IConfiguration config)
@@ -29,7 +31,9 @@ namespace CardboardBox.Anime
 				.AddTransient<IHiDiveApiService, HiDiveApiService>()
 				.AddTransient<ICrunchyrollApiService, CrunchyrollApiService>()
 				.AddMongo<Anime, AnimeConfig>()
-				.AddTransient<IAnimeMongoService, AnimeMongoService>();
+				.AddTransient<IAnimeMongoService, AnimeMongoService>()
+				
+				.AddTransient<ILightNovelApiService, LightNovelApiService>();
 		}
 	}
 }

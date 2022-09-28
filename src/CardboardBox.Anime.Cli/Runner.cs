@@ -14,6 +14,8 @@ namespace CardboardBox.Anime.Cli
 	using HiDive;
 	using Vrv;
 
+	using LightNovel.Core;
+
 	public interface IRunner
 	{
 		Task<int> Run(string[] args);
@@ -33,6 +35,8 @@ namespace CardboardBox.Anime.Cli
 		private readonly IHiDiveApiService _hidive;
 		private readonly IAnimeDbService _db;
 		private readonly ICrunchyrollApiService _crunchy;
+		private readonly ILightNovelApiService _ln;
+		private readonly IChapterDbService _lnDb;
 
 		public Runner(
 			IVrvApiService vrv, 
@@ -42,7 +46,9 @@ namespace CardboardBox.Anime.Cli
 			IAnimeMongoService mongo,
 			IHiDiveApiService hidive,
 			IAnimeDbService db,
-			ICrunchyrollApiService crunchy)
+			ICrunchyrollApiService crunchy,
+			ILightNovelApiService ln,
+			IChapterDbService lbDn)
 		{
 			_vrv = vrv;
 			_logger = logger;
@@ -52,6 +58,8 @@ namespace CardboardBox.Anime.Cli
 			_hidive = hidive;
 			_db = db;
 			_crunchy = crunchy;
+			_ln = ln;
+			_lnDb = lbDn;
 		}
 
 		public async Task<int> Run(string[] args)
@@ -76,6 +84,7 @@ namespace CardboardBox.Anime.Cli
 					case "hidive": await Hidive(); break;
 					case "migrate": await Migrate(); break;
 					case "crunchy": await LoadCrunchy(); break;
+					case "ln": await LoadLightNovel(); break;
 					default: _logger.LogInformation("Invalid command: " + command); break;
 				}
 
@@ -328,6 +337,23 @@ namespace CardboardBox.Anime.Cli
 
 			foreach(var a in all.Results)
 				await _db.Upsert(convertAnime(a));
+		}
+
+		public async Task LoadLightNovel()
+		{
+			const string PATH = @"C:\Users\Cardboard\Desktop\chaps.json";
+			var chaps = await _ln.FromJson(PATH);
+
+			if (chaps == null)
+			{
+				_logger.LogError("No chapters found to load!");
+				return;
+			}
+
+			foreach (var chap in _ln.FromChapters(chaps))
+				await _lnDb.Upsert(chap);
+
+			_logger.LogInformation("Book uploaded!");
 		}
 	}
 }

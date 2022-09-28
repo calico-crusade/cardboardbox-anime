@@ -95,7 +95,7 @@ namespace CardboardBox.Anime.Crunchyroll
 			{
 				HashId = $"{item.ChannelId}-{item.Id}-{item.Title}".MD5Hash(),
 				AnimeId = item.Id,
-				Link = item.Type == "series" ? "https://beta.crunchyroll.com/series/" + item.Id : "https://beta.crunchyroll.com/watch/" + item.Id,
+				Link = item.Type == "series" ? "https://crunchyroll.com/series/" + item.Id : "https://crunchyroll.com/watch/" + item.Id,
 				Title = item.Title,
 				Description = item.Description,
 				PlatformId = item.ChannelId,

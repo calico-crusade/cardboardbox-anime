@@ -101,3 +101,23 @@ CREATE TABLE list_map (
 );
 
 CREATE UNIQUE INDEX list_map_uiq ON list_map (list_id, anime_id);
+
+-- CREATE light_novels TABLE
+CREATE TABLE light_novels (
+    id BIGSERIAL PRIMARY KEY,
+
+    hash_id text not null,
+    book_id text not null,
+    book text not null,
+    chapter text not null,
+    content text not null,
+    url text not null,
+    next_url text,
+    ordinal bigint not null,
+
+    created_at timestamp,
+    updated_at timestamp,
+    deleted_at timestamp
+);
+
+CREATE UNIQUE INDEX light_novels_uiq ON light_novels (book_id, hash_id);

@@ -34,10 +34,10 @@ export interface Anime {
     deletedAt?: Date;
 }
 
-export interface PagedResults {
+export interface PagedResults<T> {
     pages: number;
     count: number;
-    results: Anime[];
+    results: T[];
 }
 
 export type AvailableParams = 'platforms' | 'languages' | 'ratings' | 'types' | 'tags' | 'video types';
@@ -124,4 +124,23 @@ export interface PublicList {
     profileId: number;
     profileUsername: string;
     profileAvatar: string;
+}
+
+export interface Chapter extends DbObject {
+    hashId: string;
+    bookId: string;
+    book: string;
+    chapter: string;
+    content: string;
+    url: string;
+    nextUrl: string;
+    ordinal: number;
+}
+
+export interface Book {
+    id: string;
+    title: string;
+    chapters: number;
+    updatedAt: Date;
+    createdAt: Date;
 }

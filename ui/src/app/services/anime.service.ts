@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { PagedResults, Filters, FilterSearch, ListExt, ListPost, ListPut, Id, ListMap, Anime, List, ListMapItem, PublicLists } from './anime.model';
+import { PagedResults, Filters, FilterSearch, ListExt, ListPost, ListPut, Id, ListMap, Anime, List, ListMapItem, PublicLists, Chapter, Book } from './anime.model';
 import { ConfigObject } from './config.base';
 import { BehaviorSubject, combineLatestWith, lastValueFrom, map, Observable, switchMap, tap } from 'rxjs';
 
@@ -34,7 +34,7 @@ export class AnimeService extends ConfigObject {
 
     search(search: FilterSearch) {
         search.mature = +search.mature || 0;
-        return this.http.post<PagedResults>(`${this.apiUrl}/anime`, search);
+        return this.http.post<PagedResults<Anime>>(`${this.apiUrl}/anime`, search);
     }
 
     filters() {
@@ -137,5 +137,13 @@ export class AnimeService extends ConfigObject {
             .pipe(
                 switchMap(t => this.buildMap().pipe(map(_ => t)))
             );
+    }
+
+    lightnovel(id: string, page: number = 1, size: number = 10) {
+        return this.http.get<PagedResults<Chapter>>(`${this.apiUrl}/ln/${id}`, { params: { page, size }});
+    }
+
+    lightnovels(page: number = 1, size: number = 100) {
+        return this.http.get<PagedResults<Book>>(`${this.apiUrl}/ln`, { params: { page, size }});
     }
 }

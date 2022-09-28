@@ -1,0 +1,39 @@
+.component-container {
+    overflow: hidden;
+    main {
+        flex: 1;
+        display: flex;
+        flex-flow: column;
+        overflow-y: auto;
+        overflow-x: hidden;
+
+        .book {
+            background-color: var(--bg-card);
+            display: flex;
+            flex-flow: column;
+            max-width: 700px;
+            margin: 5px auto;
+
+
+            a {
+                color: var(--text-color);
+                text-decoration: none;
+                text-align: center;
+                margin: 5px;
+                cursor: pointer;
+
+                h2 {
+
+                }
+
+                p {
+
+                }
+            }
+
+            &:hover {
+                background-color: var(--bg-sidebar);
+            }
+        }
+    }
+}

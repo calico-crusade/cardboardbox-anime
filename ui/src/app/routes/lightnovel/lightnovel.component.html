@@ -1,0 +1,57 @@
+<div class="component-container" [ngClass]="{ 'open': open }"
+     (swipeleft)="open = false" (swiperight)="open = true">
+    <aside>
+        <div class="loaded-chapters" infiniteScroll (scrolled)="onScroll()" [scrollWindow]="false"
+             [infiniteScrollDistance]="2" [infiniteScrollThrottle]="50">
+            <h1>Chapters: </h1>
+            <button class="chap" 
+                    *ngFor="let chap of chapters; let i = index" 
+                    (click)="jump(i)"
+                    [ngClass]="{ 'inview': inView === i }">
+                {{ chap.chapter }}
+            </button>
+        </div>
+    </aside>
+
+
+    <main infiniteScroll (scrolled)="onScroll()" [scrollWindow]="false"
+          [infiniteScrollDistance]="2" [infiniteScrollThrottle]="50">
+        <header *ngIf="chapters.length > 0">
+            <h1>{{ chapters[0].book }}</h1>
+        </header>
+
+        <!--Full-page loading icon for initial load-->
+        <div class="loading" *ngIf="chapters.length == 0 && loading">
+            <img src="/assets/loading.gif" />
+            <span>Loading...</span>
+        </div>
+        <!--Error notice when there are no records-->
+        <div class="loading no-animation" *ngIf="chapters.length == 0 && !loading">
+            <img src="/assets/error.gif" />
+            <span>Could not find book by that ID!</span>
+        </div>
+
+        <div class="chapters" *ngIf="chapters.length > 0" #chapterScroll>
+            <div class="chapter" *ngFor="let chap of chapters; let i = index" 
+                 #chapter observe (visible)="onVisible(i)">
+                <h2>{{ chap.chapter }}</h2>
+                <hr />
+                <div class="chapter-content" [innerHTML]="chap.content"></div>
+            </div>
+            <div class="infinite-loading" *ngIf="loading">
+                <div class="loading no-animation">
+                    <img src="/assets/loading.gif" />
+                    <span>Loading...</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!--The main-content overlay when the side menu is open-->
+    <div class="fade" (click)="open = false"></div>
+
+    <button class="side-toggle" (click)="open = !open">
+        <span *ngIf="open">&lt;</span>
+        <span *ngIf="!open">&gt;</span>
+    </button>
+</div>

@@ -72,6 +72,9 @@ namespace CardboardBox.Anime.Database
 				 .ForEntity<DbListMap>()
 				 .ForEntity<DbListMapStripped>()
 				 
+				 .ForEntity<DbChapter>()
+				 .ForEntity<DbBook>()
+				 
 				 .ForEntity<CompPublicList>();
 			});
 
@@ -85,6 +88,7 @@ namespace CardboardBox.Anime.Database
 				.AddTransient<IProfileDbService, ProfileDbService>()
 				.AddTransient<IListDbService, ListDbService>()
 				.AddTransient<IListMapDbService, ListMapDbService>()
+				.AddTransient<IChapterDbService, ChapterDbService>()
 				
 				.AddTransient<IDbService, DbService>();
 		}

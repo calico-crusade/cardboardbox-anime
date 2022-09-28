@@ -1,0 +1,11 @@
+<div class="component-container">
+    <main infiniteScroll (scrolled)="onScroll()" [scrollWindow]="false"
+          [infiniteScrollDistance]="2" [infiniteScrollThrottle]="50">
+        <div class="book" *ngFor="let res of results">
+            <a [routerLink]="[ '/ln', res.id ]">
+                <h2>{{ res.title }}</h2>
+                <p>{{ res.chapters }} Chapters - Last Updated: {{ res.updatedAt | date:'medium' }}</p>
+            </a>
+        </div>
+    </main>
+</div>

@@ -20,6 +20,9 @@ import { ListSelectComponent } from './components/list-select/list-select.compon
 import { IconComponent } from './components/icon/icon.component';
 import { ListsComponent } from './routes/lists/lists.component';
 import { PublicListsComponent } from './routes/public-lists/public-lists.component';
+import { LightnovelComponent } from './routes/lightnovel/lightnovel.component';
+import { ObserveDirective } from './components/observe.directive';
+import { LightnovelsComponent } from './routes/lightnovels/lightnovels.component';
 
 @Injectable()
 export class MyHammerConfig extends HammerGestureConfig {
@@ -39,7 +42,11 @@ export class MyHammerConfig extends HammerGestureConfig {
         ListSelectComponent,
         IconComponent,
         ListsComponent,
-        PublicListsComponent
+        PublicListsComponent,
+        LightnovelComponent,
+
+        ObserveDirective,
+         LightnovelsComponent
     ],
     imports: [
         BrowserModule,
