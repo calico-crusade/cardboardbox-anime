@@ -4,6 +4,8 @@
             Cardboard<b>Box</b> - Anime
         </a>
         <div class="bump"></div>
+        <span class="title">{{ title }}</span>
+        <div class="bump"></div>
         <a class="menu" (click)="menuOpen = !menuOpen"  *ngIf="loggedIn">
             <img [src]="user?.avatar" />
         </a>

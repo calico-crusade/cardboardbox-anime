@@ -1,7 +1,7 @@
-import { Component, ElementRef, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { ActivatedRoute, Router } from '@angular/router';
-import { AnimeService, Chapter } from './../../services';
+import { ActivatedRoute } from '@angular/router';
+import { AnimeService, AuthService, Chapter } from './../../services';
 
 export type MENU_TYPE = 'chapters' | 'settings' | 'none';
 
@@ -9,7 +9,7 @@ export type MENU_TYPE = 'chapters' | 'settings' | 'none';
     templateUrl: './lightnovel.component.html',
     styleUrls: ['./lightnovel.component.scss']
 })
-export class LightnovelComponent implements OnInit {
+export class LightnovelComponent implements OnInit, OnDestroy {
 
     private _fontSize?: number;
 
@@ -41,7 +41,8 @@ export class LightnovelComponent implements OnInit {
     constructor(
         private route: ActivatedRoute,
         private api: AnimeService,
-        private title: Title
+        private title: Title,
+        private auth: AuthService
     ) { }
 
 
@@ -51,6 +52,11 @@ export class LightnovelComponent implements OnInit {
             this.chapters = [];
             this.process();
         });
+    }
+
+    ngOnDestroy(): void {
+        this.title.setTitle('CardboardBox | Anime');
+        this.auth.title = undefined;
     }
 
     private process() {
@@ -63,8 +69,10 @@ export class LightnovelComponent implements OnInit {
                 this.pages = pages;
                 this.loading = false;
 
-                if (this.chapters.length > 0)
+                if (this.chapters.length > 0) {
                     this.title.setTitle('CBA - ' + this.chapters[0].book);
+                    this.auth.title = this.chapters[0].book;
+                }
             });
     }
 
@@ -80,7 +88,7 @@ export class LightnovelComponent implements OnInit {
             return;
         }
 
-        el.nativeElement.scrollIntoView({behavior: "smooth", block: "start", inline: "nearest"});
+        el.nativeElement.scrollIntoView({behavior: "auto", block: "start", inline: "nearest"});
     }
 
     onVisible(index: number) {

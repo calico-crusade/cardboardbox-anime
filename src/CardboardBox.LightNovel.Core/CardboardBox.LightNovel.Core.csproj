@@ -14,4 +14,8 @@
     <ProjectReference Include="..\CardboardBox.Anime.Database\CardboardBox.Anime.Database.csproj" />
   </ItemGroup>
 
+
+	<ItemGroup>
+		<Compile Include="./../global.cs" />
+	</ItemGroup>
 </Project>

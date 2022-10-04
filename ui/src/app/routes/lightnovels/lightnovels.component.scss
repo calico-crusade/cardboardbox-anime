@@ -6,14 +6,15 @@
         flex-flow: column;
         overflow-y: auto;
         overflow-x: hidden;
+        padding: 10px;
 
         .book {
             background-color: var(--bg-card);
             display: flex;
             flex-flow: column;
-            max-width: 700px;
             margin: 5px auto;
-
+            max-width: 700px;
+            width: 100%;
 
             a {
                 color: var(--text-color);
@@ -33,6 +34,10 @@
 
             &:hover {
                 background-color: var(--bg-sidebar);
+            }
+
+            &:first-child {
+                margin-top: 0;
             }
         }
     }

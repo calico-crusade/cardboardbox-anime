@@ -13,4 +13,8 @@
     <PackageReference Include="HtmlAgilityPack" Version="1.11.43" />
   </ItemGroup>
 
+	<ItemGroup>
+		<Compile Include="./../global.cs" />
+	</ItemGroup>
+
 </Project>

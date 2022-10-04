@@ -1,9 +1,9 @@
-﻿using CardboardBox.Http;
-using HtmlAgilityPack;
-using System.Web;
+﻿using System.Web;
 
 namespace CardboardBox.LightNovel.Core
 {
+	using Sources;
+
 	public static class Extensions
 	{
 		public static async Task<HtmlDocument> GetHtml(this IApiService api, string url, Action<HttpRequestMessage>? config = null)
@@ -54,6 +54,56 @@ namespace CardboardBox.LightNovel.Core
 				return text[start..];
 
 			return text.Substring(start, length);
+		}
+
+		public static string GetRootUrl(this string url)
+		{
+			if (!Uri.TryCreate(url, UriKind.RelativeOrAbsolute, out var uri))
+				throw new UriFormatException(url);
+
+			return uri.GetRootUrl();
+		}
+
+		public static string GetRootUrl(this Uri uri)
+		{
+			var port = uri.IsDefaultPort ? "" : ":" + uri.Port; 
+			return $"{uri.Scheme}://{uri.Host}{port}";
+		}
+
+		public static string? InnerText(this HtmlDocument doc, string xpath)
+		{
+			return doc.DocumentNode.SelectSingleNode(xpath)?.InnerText?.HTMLDecode();
+		}
+
+		public static string? InnerHtml(this HtmlDocument doc, string xpath)
+		{
+			return doc.DocumentNode.SelectSingleNode(xpath)?.InnerHtml?.HTMLDecode();
+		}
+
+		public static string? Attribute(this HtmlDocument doc, string xpath, string attr)
+		{
+			return doc.DocumentNode.SelectSingleNode(xpath)?.GetAttributeValue(attr, "")?.HTMLDecode();
+		}
+
+		public static bool IsWhiteSpace(this string? value)
+		{
+			var isWs = (char c) => char.IsWhiteSpace(c) || c == '\u00A0';
+			if (value == null || value.Length == 0) return true;
+
+			for (var i = 0; i < value.Length; i++)
+				if (!isWs(value[i])) return false;
+
+			return true;
+		}
+
+		public static IServiceCollection AddLightNovel(this IServiceCollection services)
+		{
+			return services
+				.AddTransient<ISource1Service, Source1Service>()
+				.AddTransient<ISource2Service, Source2Service>()
+
+				.AddTransient<ILightNovelApiService, LightNovelApiService>()
+				.AddTransient<IPdfService, PdfService>();
 		}
 	}
 }

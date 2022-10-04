@@ -1,5 +1,4 @@
 ﻿using iText.Html2pdf;
-using Microsoft.Extensions.Logging;
 
 namespace CardboardBox.LightNovel.Core
 {

@@ -11,6 +11,7 @@ export class AppComponent implements OnInit {
 
     user?: AuthUser;
     menuOpen = false;
+    title?: string;
 
     get loggedIn() { return this.user; }
 
@@ -20,6 +21,7 @@ export class AppComponent implements OnInit {
 
     async ngOnInit() {
         this.auth.onLogin.subscribe(t => this.user = t);
+        this.auth.onTitleChange.subscribe(t => this.title = t);
         await this.auth.bump();
     }
 

@@ -37,7 +37,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CardboardBox.Anime.Crunchyr
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LightNovel", "LightNovel", "{C935AC61-5110-4891-AC61-70359429F260}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CardboardBox.LightNovel.Core", "CardboardBox.LightNovel.Core\CardboardBox.LightNovel.Core.csproj", "{A914ABB3-9275-45EC-98C1-FD615ADD9835}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CardboardBox.LightNovel.Core", "CardboardBox.LightNovel.Core\CardboardBox.LightNovel.Core.csproj", "{A914ABB3-9275-45EC-98C1-FD615ADD9835}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{64846183-815B-4A48-B116-C91F15BF6FDC}"
+	ProjectSection(SolutionItems) = preProject
+		global.cs = global.cs
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

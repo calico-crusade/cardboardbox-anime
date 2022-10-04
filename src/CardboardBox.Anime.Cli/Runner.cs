@@ -345,10 +345,12 @@ namespace CardboardBox.Anime.Cli
 
 		public async Task LoadLightNovel()
 		{
-			const string FIRST_CHAPTER = "";
-			const string ROOT_URL = "";
+			const string FIRST_CHAPTER = "https://www.scribblehub.com/read/163923-the-sword-saints-second-life-as-a-fox-girl/chapter/163926/";
+			const int SRC = 1;
 
-			var chaps = await _ln.Chapters(FIRST_CHAPTER, ROOT_URL);
+			var src = _ln.Sources()[SRC];
+
+			var chaps = src.DbChapters(FIRST_CHAPTER);
 
 			if (chaps == null)
 			{
@@ -356,7 +358,7 @@ namespace CardboardBox.Anime.Cli
 				return;
 			}
 
-			foreach (var chap in _ln.FromChapters(chaps))
+			await foreach (var chap in chaps)
 				await _lnDb.Upsert(chap);
 
 			_logger.LogInformation("Book uploaded!");

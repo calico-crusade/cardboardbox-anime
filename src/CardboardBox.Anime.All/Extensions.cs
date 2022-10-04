@@ -33,8 +33,7 @@ namespace CardboardBox.Anime
 				.AddMongo<Anime, AnimeConfig>()
 				.AddTransient<IAnimeMongoService, AnimeMongoService>()
 				
-				.AddTransient<ILightNovelApiService, LightNovelApiService>()
-				.AddTransient<IPdfService, PdfService>();
+				.AddLightNovel();
 		}
 	}
 }

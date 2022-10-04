@@ -104,6 +104,7 @@ $btn-rd: 5px;
 
 
     main {
+        position: relative;
         flex: 1;
         overflow-y: auto;
         overflow-x: hidden;
@@ -112,6 +113,7 @@ $btn-rd: 5px;
         flex-flow: column;
 
         header {
+            position: sticky;
             max-width: 700px;
             margin: 5px auto;
             padding: 0 5px;

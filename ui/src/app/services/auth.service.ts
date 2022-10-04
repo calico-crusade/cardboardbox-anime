@@ -13,9 +13,16 @@ const SKIP_URIS: string[] = [];
 export class AuthService extends ConfigObject {
 
     private _loginSub = new BehaviorSubject<AuthUser | undefined>(undefined);
+    private _titleSub = new BehaviorSubject<string | undefined>(undefined);
 
     get onLogin() { return this._loginSub.asObservable(); }
     get currentUser() { return this._loginSub.getValue(); }
+
+    get onTitleChange() { return this._titleSub.asObservable(); }
+    get title() { return this._titleSub.getValue(); }
+    set title(title: string | undefined) {
+        this._titleSub.next(title);
+    }
 
     constructor(
         private http: HttpClient,
