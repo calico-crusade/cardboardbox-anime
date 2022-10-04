@@ -37,6 +37,7 @@ namespace CardboardBox.Anime.Cli
 		private readonly ICrunchyrollApiService _crunchy;
 		private readonly ILightNovelApiService _ln;
 		private readonly IChapterDbService _lnDb;
+		private readonly IPdfService _pdf;
 
 		public Runner(
 			IVrvApiService vrv, 
@@ -48,7 +49,8 @@ namespace CardboardBox.Anime.Cli
 			IAnimeDbService db,
 			ICrunchyrollApiService crunchy,
 			ILightNovelApiService ln,
-			IChapterDbService lbDn)
+			IChapterDbService lbDn,
+			IPdfService pdf)
 		{
 			_vrv = vrv;
 			_logger = logger;
@@ -60,6 +62,7 @@ namespace CardboardBox.Anime.Cli
 			_crunchy = crunchy;
 			_ln = ln;
 			_lnDb = lbDn;
+			_pdf = pdf;
 		}
 
 		public async Task<int> Run(string[] args)
@@ -85,6 +88,7 @@ namespace CardboardBox.Anime.Cli
 					case "migrate": await Migrate(); break;
 					case "crunchy": await LoadCrunchy(); break;
 					case "ln": await LoadLightNovel(); break;
+					case "conv": await ToPdf(); break;
 					default: _logger.LogInformation("Invalid command: " + command); break;
 				}
 
@@ -341,8 +345,10 @@ namespace CardboardBox.Anime.Cli
 
 		public async Task LoadLightNovel()
 		{
-			const string PATH = @"C:\Users\Cardboard\Desktop\chaps.json";
-			var chaps = await _ln.FromJson(PATH);
+			const string FIRST_CHAPTER = "";
+			const string ROOT_URL = "";
+
+			var chaps = await _ln.Chapters(FIRST_CHAPTER, ROOT_URL);
 
 			if (chaps == null)
 			{
@@ -354,6 +360,12 @@ namespace CardboardBox.Anime.Cli
 				await _lnDb.Upsert(chap);
 
 			_logger.LogInformation("Book uploaded!");
+		}
+
+		public async Task ToPdf()
+		{
+			const string ID = "445C5E7AC91435D2155BC1D1DAAE8EB8";
+			await _pdf.ToPdf(ID);
 		}
 	}
 }

@@ -35,5 +35,25 @@ namespace CardboardBox.LightNovel.Core
 		{
 			return HttpUtility.HtmlDecode(text);
 		}
+
+		public static string PurgePathChars(this string text)
+		{
+			var chars = Path.GetInvalidFileNameChars()
+				.Union(Path.GetInvalidPathChars())
+				.ToArray();
+
+			foreach(var c in chars)
+				text = text.Replace(c.ToString(), "");
+
+			return text;
+		}
+
+		public static string SafeSubString(this string text, int length, int start = 0)
+		{
+			if (start + length > text.Length)
+				return text[start..];
+
+			return text.Substring(start, length);
+		}
 	}
 }

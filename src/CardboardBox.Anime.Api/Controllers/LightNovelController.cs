@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CardboardBox.Anime.Api.Controllers
 {
 	using Database;
 
-	[ApiController]
+	[ApiController, Authorize]
 	public class LightNovelController : ControllerBase
 	{
 		private readonly IChapterDbService _ln;
