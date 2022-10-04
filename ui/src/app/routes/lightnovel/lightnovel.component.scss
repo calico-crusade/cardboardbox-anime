@@ -6,6 +6,7 @@ $btn-rd: 5px;
     position: relative;
 
     aside {
+        position: relative;
         width: $side-width;
         margin-left: -#{$side-width + 2px};
         display: flex;
@@ -16,12 +17,17 @@ $btn-rd: 5px;
         transition: all 250ms;
 
         .sidebar {
-            flex: 1;
+            position: absolute;
+            top: 0;
+            left: -#{$side-width};
+            width: $side-width - 5px;
+            height: 100%;
+            margin: 5px;
             overflow-y: auto;
             overflow-x: hidden;
             display: flex;
             flex-flow: column;
-            margin: 5px;
+            transition: all 250ms;
 
             h1 {
                 margin: 10px 0;
@@ -89,6 +95,10 @@ $btn-rd: 5px;
                     }
                 }
             }
+
+            &.open {
+                left: 0;
+            }
         }
     }
 
@@ -133,12 +143,15 @@ $btn-rd: 5px;
         border-bottom-right-radius: 5px;
 
         button {
+            color: #000;
             background-color: transparent;
             outline: none;
             border: none;
             width: 30px;
             height: 30px;
             cursor: pointer;
+            margin: 0;
+            padding: 1px 4px;
         }
     }
 
@@ -155,7 +168,7 @@ $btn-rd: 5px;
 
 @media only screen and (max-width: 1000px) {
     aside {
-        position: absolute;
+        position: absolute !important;
         top: 0;
         left: 0;
         z-index: 99;

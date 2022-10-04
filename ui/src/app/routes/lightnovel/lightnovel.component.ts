@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { Component, ElementRef, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AnimeService, Chapter } from './../../services';
@@ -9,7 +9,7 @@ export type MENU_TYPE = 'chapters' | 'settings' | 'none';
     templateUrl: './lightnovel.component.html',
     styleUrls: ['./lightnovel.component.scss']
 })
-export class LightnovelComponent implements OnInit, OnDestroy, AfterViewInit {
+export class LightnovelComponent implements OnInit {
 
     private _fontSize?: number;
 
@@ -35,37 +35,15 @@ export class LightnovelComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     @ViewChildren('chapter') chapterEls!: QueryList<ElementRef>;
+    @ViewChildren('chapbtn') chapterBtnEls!: QueryList<ElementRef>;
     @ViewChild('chapterScroll') main!: ElementRef;
 
     constructor(
         private route: ActivatedRoute,
-        private router: Router,
         private api: AnimeService,
         private title: Title
     ) { }
 
-    ngAfterViewInit() {
-        const el = this.main?.nativeElement;
-        if (!el) {
-            console.error('Intersection observer target element is null!');
-            return;
-        }
-
-        const obsv = new IntersectionObserver((els) => {
-            console.log('Intersection Observer', {
-                els
-            });
-        });
-
-        obsv.observe(el);
-        console.log('Intersection Observer Target', {
-            el
-        });
-    }
-
-    ngOnDestroy() {
-        
-    }
 
     ngOnInit(): void {
         this.route.params.subscribe(t => {
@@ -107,6 +85,14 @@ export class LightnovelComponent implements OnInit, OnDestroy, AfterViewInit {
 
     onVisible(index: number) {
         this.inView = index;
+
+        const chap = this.chapterBtnEls.get(index);
+        if (!chap) {
+            console.warn(`Couldn't find chapter button for: ${index}`, { btns: this.chapterBtnEls });
+            return;
+        }
+
+        chap.nativeElement.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"})
     }
 
     toggle(target: MENU_TYPE) {

@@ -1,19 +1,19 @@
 <div class="component-container" [ngClass]="{ 'open': menu != 'none' }"
      (swipeleft)="toggle('none')" (swiperight)="toggle('chapters')">
-    <aside [ngSwitch]="menu">
-        <div class="sidebar loaded-chapters" 
-             *ngSwitchCase="'chapters'"
+    <aside>
+        <div class="sidebar loaded-chapters" [ngClass]="{ 'open': menu === 'chapters' }"
              infiniteScroll (scrolled)="onScroll()" [scrollWindow]="false"
              [infiniteScrollDistance]="2" [infiniteScrollThrottle]="50">
             <h1>Chapters: </h1>
             <button class="chap" 
                     *ngFor="let chap of chapters; let i = index" 
+                    #chapbtn
                     (click)="jump(i)"
                     [ngClass]="{ 'inview': inView === i }">
                 {{ chap.chapter }}
             </button>
         </div>
-        <div class="sidebar settings" *ngSwitchCase="'settings'">
+        <div class="sidebar settings" [ngClass]="{ 'open': menu === 'settings' }">
             <h1>Settings: </h1>
 
             <div class="opt">
