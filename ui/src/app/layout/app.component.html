@@ -6,12 +6,12 @@
         <div class="bump"></div>
         <span class="title">{{ title }}</span>
         <div class="bump"></div>
-        <a class="menu" (click)="menuOpen = !menuOpen"  *ngIf="loggedIn">
-            <img [src]="user?.avatar" />
-        </a>
-        <a class="login-menu" (click)="menuOpen = !menuOpen"  *ngIf="!loggedIn">
+        <button class="menu" (click)="menuOpen = !menuOpen"  *ngIf="loggedIn">
+            <img [src]="user?.avatar" alt="User Avatar" />
+        </button>
+        <button class="login-menu" (click)="menuOpen = !menuOpen"  *ngIf="!loggedIn">
             <cba-icon>menu</cba-icon>
-        </a>        
+        </button>        
     </header>
     <main [ngClass]="{ 'open': menuOpen }">
         <div class="content">
@@ -44,28 +44,28 @@
                     </span>
                     <span class="title">My Lists</span>
                 </a>
-                <a>
+                <button>
                     <span class="icon">
                         <cba-icon>person</cba-icon>
                     </span>
                     <span class="title">
                         {{ user?.nickname }}
                     </span>
-                </a>
-                <a (click)="logout()">
+                </button>
+                <button (click)="logout()">
                     <span class="icon">
                         <cba-icon>logout</cba-icon>
                     </span>
                     <span class="title">Logout</span>
-                </a>
+                </button>
             </ng-container>
             <ng-container *ngIf="!loggedIn">
-                <a (click)="login()">
+                <button (click)="login()">
                     <span class="icon">
                         <cba-icon>login</cba-icon>
                     </span>
                     <span class="title">Login</span>
-                </a>
+                </button>
             </ng-container>
             <a href="https://github.com/calico-crusade/cardboardbox-anime" target="_blank">
                 <span class="icon">
@@ -83,7 +83,7 @@
             </a>
             <a href="https://discord.gg/RV9MvvYXsp" target="_blank">
                 <span class="icon">
-                    <img src="/assets/discord-icon.png" />
+                    <img src="/assets/discord-icon.png" alt="Discord Logo" />
                 </span>
                 <span class="title">Discord Server</span>
             </a>

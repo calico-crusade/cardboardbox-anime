@@ -6,7 +6,7 @@
         <div class="scroll-container">
             <div class="anime-image">
                 <!--The image-->
-                <img [src]="getImage()" />
+                <img [src]="getImage()" [alt]="anime.title"/>
             </div>
             <div class="content">
                 <header>
@@ -18,7 +18,7 @@
                         </div>
                         <h1>{{ anime.title }}</h1>
                     </div>
-                    <img [src]="'/assets/' + anime.platformId + '-icon.png'" />
+                    <img [src]="'/assets/' + anime.platformId + '-icon.png'" [alt]="anime.platformId + ' logo'"/>
                 </header>
                 <p *ngIf="anime.description" [innerHTML]="anime.description"></p>
                 <p *ngIf="anime.languages.length > 0">

@@ -1,14 +1,14 @@
 <div class="card" [ngClass]="anime.platformId">
-    <a class="linkable" (click)="modal()">
+    <button class="linkable" (click)="modal()">
         <div class="image" [ngClass]="anime.platformId + '-image'" [lazyLoad]="getImage()"></div>
         <div class="mature" *ngIf="anime.mature">Mature</div>
         <div class="details">
             <div class="channel-icon" [ngClass]="anime.platformId + '-bg-hover'">
-                <img [src]="'/assets/' + anime.platformId + '-icon.png'" />
+                <img [src]="'/assets/' + anime.platformId + '-icon.png'" [alt]="anime.platformId + ' Icon'"/>
             </div>
             <div class="channel-icon other" *ngFor="let plat of anime.otherPlatforms; let i = index" 
                  [style.margin-left]="(i + 1) * 35 + 'px'" [ngClass]="plat.platformId + '-bg-hover'">
-                <img [src]="'/assets/' + plat.platformId + '-icon.png'" />
+                <img [src]="'/assets/' + plat.platformId + '-icon.png'" [alt]="plat.platformId + ' Icon'" />
             </div>
             <div class="title">{{ anime.title }}</div>
             <div class="tags" [ngSwitch]="anime.type">
@@ -18,5 +18,5 @@
                 <div class="langs" *ngFor="let lang of langs">{{ lang }}</div>
             </div>
         </div>
-    </a>
+    </button>
 </div>

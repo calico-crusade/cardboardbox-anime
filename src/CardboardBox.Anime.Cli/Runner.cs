@@ -345,7 +345,7 @@ namespace CardboardBox.Anime.Cli
 
 		public async Task LoadLightNovel()
 		{
-			const string FIRST_CHAPTER = "https://www.scribblehub.com/read/163923-the-sword-saints-second-life-as-a-fox-girl/chapter/163926/";
+			const string FIRST_CHAPTER = "";
 			const int SRC = 1;
 
 			var src = _ln.Sources()[SRC];

@@ -3,7 +3,7 @@
         <div class="lists">
             <a class="list" *ngFor="let list of results" [routerLink]="['/anime', list.listId ]">
                 <div class="user">
-                    <img class="user-avatar" [src]="list.profileAvatar" />
+                    <img class="user-avatar" [src]="list.profileAvatar" alt="User Avatar"/>
                     <span>{{ list.profileUsername }}</span>
                 </div>
                 <div class="details">
@@ -13,7 +13,7 @@
                         <div class="tag">
                             <span>Platforms: </span>
                             <div class="data">
-                                <img class="platforms" *ngFor="let plat of list.listPlatforms" [src]="'/assets/' + plat + '-icon.png'" />
+                                <img class="platforms" *ngFor="let plat of list.listPlatforms" [src]="'/assets/' + plat + '-icon.png'" [alt]="plat + ' Icon'" />
                             </div>
                         </div>
                         <div class="tag">

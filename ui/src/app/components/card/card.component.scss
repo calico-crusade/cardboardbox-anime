@@ -8,6 +8,7 @@ $platforms: 'crunchyroll', 'vrvselect', 'mondo', 'funimation', 'hidive', 'vrv-cr
     display: flex;
     flex-flow: row;
     .linkable {
+        font-family: 'Roboto';
         position: relative;
         color: #fff;
         width: $card-size;
@@ -18,6 +19,12 @@ $platforms: 'crunchyroll', 'vrvselect', 'mondo', 'funimation', 'hidive', 'vrv-cr
         cursor: pointer;
         border-radius: 2px;
         overflow: hidden;
+        background-color: transparent;
+        outline: none;
+        border: none;
+        padding: 0;
+        text-align: left;
+
         .image {
             width: 100%;
             height: 200px;
@@ -40,6 +47,7 @@ $platforms: 'crunchyroll', 'vrvselect', 'mondo', 'funimation', 'hidive', 'vrv-cr
             margin: 10px;
             margin-top: 15px;
             position: relative;
+            width: calc(100% - 20px);
             .channel-icon {
                 width: 30px;
                 height: 30px;

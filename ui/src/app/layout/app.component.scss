@@ -16,13 +16,18 @@
         display: flex;
         flex-flow: row;
         border-bottom: 2px solid var(--color-vrv);
-        a {
+        a, button {
             margin: auto 5px;
             cursor: pointer;
             display: flex;
             color: #fff;
             text-decoration: none;
             white-space: pre;
+            border: none;
+            outline: none;
+            background-color: transparent;
+            padding: 0;
+
             b {
                 color: var(--color-mondo);
             }
@@ -81,7 +86,10 @@
             display: flex;
             flex-flow: column;
             transition: all 250ms;
-            a {
+            a, button {
+                border: none;
+                outline: none;
+                background-color: transparent;
                 display: flex;
                 flex-flow: row;
                 color: var(--text-color);
@@ -90,6 +98,7 @@
                 font-size: 20px;
                 cursor: pointer;
                 border-left: 2px solid var(--bg-card);
+                text-align: left;
                 .icon {
                     margin: auto 0;
                     width: 24px;
