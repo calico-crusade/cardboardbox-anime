@@ -3,8 +3,6 @@ global using CardboardBox.Http;
 
 global using HtmlAgilityPack;
 
-global using System.IO.Compression;
-
 global using System.Text;
 global using System.Text.Json;
 global using System.Text.Json.Serialization;

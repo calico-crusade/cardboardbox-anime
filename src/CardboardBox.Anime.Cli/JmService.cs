@@ -94,40 +94,42 @@ namespace CardboardBox.Anime.Cli
 
 			_logger.LogInformation($"Starting processing of vol {vol} of {title} - {path}");
 
-			var epub = EpubBuilder.Create(title).Start(path);
-
-			await epub.AddStylesheetFromFile("stylesheet.css", "stylesheet.css");
-			await epub.AddCoverImage("cover.jpg", CoverImage(vol));
-
-			await epub.AddChapter("Color Illustrations", async c =>
+			using (var io = File.Create(path))
+			await using (var epub = EpubBuilder.Create(title, io))
 			{
-				var inserts = Directory.GetFiles(Forwards(vol));
-				foreach (var file in inserts)
-					await c.AddImage(Path.GetFileName(file), file);
+				var bob = await epub.Start();
 
-				var contents = ContentsImage(vol);
-				if (File.Exists(contents))
-					await c.AddImage("Contents.jpg", contents);
-			});
+				await bob.AddStylesheetFromFile("stylesheet.css", "stylesheet.css");
+				await bob.AddCoverImage("cover.jpg", CoverImage(vol));
 
-			for(var i = 0; i < chaps.Length; i++)
-			{
-				var chap = chaps[i];
-				await epub.AddChapter(chap.Chapter, async (c) =>
+				await bob.AddChapter("Color Illustrations", async c =>
 				{
-					await c.AddRawPage($"chapter{i}.xhtml", $"<h1>{chap.Chapter}</h1>{CleanContents(chap.Content, chap.Chapter)}");
+					var inserts = Directory.GetFiles(Forwards(vol));
+					foreach (var file in inserts)
+						await c.AddImage(Path.GetFileName(file), file);
+
+					var contents = ContentsImage(vol);
+					if (File.Exists(contents))
+						await c.AddImage("Contents.jpg", contents);
+				});
+
+				for (var i = 0; i < chaps.Length; i++)
+				{
+					var chap = chaps[i];
+					await bob.AddChapter(chap.Chapter, async (c) =>
+					{
+						await c.AddRawPage($"chapter{i}.xhtml", $"<h1>{chap.Chapter}</h1>{CleanContents(chap.Content, chap.Chapter)}");
+					});
+				}
+
+				await bob.AddChapter("Inserts", async c =>
+				{
+					var inserts = Directory.GetFiles(Inserts(vol));
+					foreach (var file in inserts)
+						await c.AddImage(Path.GetFileName(file), file);
 				});
 			}
-
-			await epub.AddChapter("Inserts", async c =>
-			{
-				var inserts = Directory.GetFiles(Inserts(vol));
-				foreach (var file in inserts)
-					await c.AddImage(Path.GetFileName(file), file);
-			});
-
-			await epub.Finish();
-
+		
 			_logger.LogInformation($"Finished making vol {vol}");
 		}
 

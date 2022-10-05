@@ -49,7 +49,7 @@
 		public async Task AddPage(string name, Stream stream)
 		{
 			//Add to the manifest & add the actual file to the zip
-			await Builder.AddFile(name, stream, EpubBuilder.FileType.Page);
+			await Builder.AddFile(name, stream, FileType.Page);
 
 			//Add to the spine
 			Builder.Content.SpineReferences.Add(name);
@@ -82,7 +82,7 @@
 		public async Task AddImage(string name, Stream stream)
 		{
 			name = name.FixFileName();
-			var relPath = await Builder.AddFile(name, stream, EpubBuilder.FileType.Image);
+			var relPath = await Builder.AddFile(name, stream, FileType.Image);
 
 			var html = GenerateInsert(relPath, name.Replace(".", ""));
 			var nwp = Path.GetFileNameWithoutExtension(name) + ".xhtml";

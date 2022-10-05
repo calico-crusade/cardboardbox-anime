@@ -1,16 +1,16 @@
 ﻿namespace CardboardBox.Epub
 {
+	using Management;
 	using Metadata;
 
 	public interface IEpubBuilder : IEpubBuilderStylesheets, IEpubBuilderImage, IEpubBuilderCover, IEpubBuilderMetadata, IEpubBuilderChapters
-	{
-		Task Finish();
+	{ 
+	
 	}
 
-	public interface IEpub
+	public interface IEpub : IAsyncDisposable
 	{
-		IEpubBuilder Start(string outputPath);
-		//IEpubBuilder Start(Stream output);
+		Task<IEpubBuilder> Start();
 	}
 
 	public partial class EpubBuilder : IEpub, IEpubBuilder
@@ -19,6 +19,8 @@
 		public const string EPUB_TYPE_COVER = "cover";
 		public const string HTML_BODY_CLASS_NOMARGIN = "nomargin center";
 
+		private readonly IManagementSystem _files;
+
 		public string ContentDirectory { get; set; } = "OEPBS";
 		public string MetaInfoDirectory { get; set; } = "META-INF";
 
@@ -26,53 +28,39 @@
 		public string ImagesDirectory { get; set; } = "Images";
 		public string TextDirectory { get; set; } = "Text";
 
-		public bool LeaveOpen { get; set; } = true;
-
-		public string TempDirectory { get; set; }
-		public string? OutputPath { get; set; }
-
 		public ContentOpf Content { get; set; }
 		public Ncx Ncx { get; set; }
 
 		public List<string> GlobalStylesheets { get; set; } = new();
 
-		private EpubBuilder(string title, string? id = null)
+		private EpubBuilder(IManagementSystem file, string title, string? id)
 		{
 			id ??= Guid.NewGuid().ToString();
+			_files = file;
 			Content = new ContentOpf(new MetaData(title, id));
 			Ncx = new Ncx(title, id);
-			TempDirectory = Path.Combine(Path.GetTempPath(), "cba-epub-" + Guid.NewGuid().ToString());
 		}
 
-		public IEpubBuilder Start(string outputPath)
+		public async Task<IEpubBuilder> Start()
 		{
-			LeaveOpen = false;
-			OutputPath = outputPath;
-
-			if (!Directory.Exists(TempDirectory))
-				Directory.CreateDirectory(TempDirectory);
-
+			_files.Initialize();
+			//Ensure the Table of Contents gets added towards the beginning of the document
+			Content.SpineReferences.Add("toc.xhtml");
+			//Ensure mimetype is first file in zip
+			await AddEntry("mimetype", GenerateMimetype());
 			return this;
 		}
 
-		public async Task Finish()
+		public async ValueTask DisposeAsync()
 		{
 			//Add Table of Contents
 			await AddFile("toc.xhtml", GenerateToc().ToStream(), FileType.Nav);
-			Content.SpineReferences.Add("toc.xhtml");
 
 			await AddEntry(Path.Combine(MetaInfoDirectory, "container.xml"), GenerateContainer());
 			await AddEntry(Path.Combine(ContentDirectory, "content.opf"), GenerateContentOpf());
 			await AddEntry(Path.Combine(ContentDirectory, "toc.ncx"), GenerateNcx());
-			await AddEntry("mimetype", GenerateMimetype());
 
-			var output = OutputPath ?? "output.epub";
-			if (File.Exists(output))
-				File.Delete(output);
-
-			ZipFile.CreateFromDirectory(TempDirectory, output, CompressionLevel.Fastest, false);
-
-			new DirectoryInfo(TempDirectory).Delete(true);
+			await _files.Finish();
 		}
 
 		public async Task AddEntry(string filename, string content)
@@ -89,14 +77,7 @@
 
 		public async Task AddEntry(string filename, Stream content)
 		{
-			var path = Path.Combine(TempDirectory, filename);
-
-			var dir = Path.GetDirectoryName(path);
-			if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
-				Directory.CreateDirectory(dir);
-
-			using var io = File.Create(path);
-			await content.CopyToAsync(io);
+			await _files.Add(filename, content);
 		}
 
 		public async Task<string> AddFile(string name, Stream stream, FileType type)
@@ -129,18 +110,16 @@
 			return relPath;
 		}
 
-		public enum FileType
+		public static IEpub Create(string title, string output, string? id = null, string? workingDir = null)
 		{
-			Image = 1,
-			Cover = 2,
-			Stylesheet = 3,
-			Page = 4,
-			Nav = 5
+			var io = new FileSystemService(output, workingDir);
+			return new EpubBuilder(io, title, id);
 		}
 
-		public static IEpub Create(string title, string? id = null)
+		public static IEpub Create(string title, Stream target, string? id = null)
 		{
-			return new EpubBuilder(title, id);
+			var file = new MemorySystemService(target);
+			return new EpubBuilder(file, title, id);
 		}
 	}
 }
