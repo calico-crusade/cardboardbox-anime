@@ -39,8 +39,6 @@ namespace CardboardBox.Epub.Management
 			if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
 				Directory.CreateDirectory(dir);
 
-			Console.WriteLine("Doing stuff in: " + path);
-
 			using var io = File.Create(path);
 			await content.CopyToAsync(io);
 		}
