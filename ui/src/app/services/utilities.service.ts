@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Anime, List, ListMap, ListMapItem } from './anime.model';
+import { Anime, List, ListMapItem } from './anime.model';
 
 @Injectable({
     providedIn: 'root'

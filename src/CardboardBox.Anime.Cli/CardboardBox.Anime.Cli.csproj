@@ -13,12 +13,20 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CardboardBox.Anime.All\CardboardBox.Anime.All.csproj" />
+    <ProjectReference Include="..\CardboardBox.Epub\CardboardBox.Epub.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="stylesheet.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
+
+	<ItemGroup>
+		<Compile Include="./../global.cs" />
+	</ItemGroup>
 
 </Project>

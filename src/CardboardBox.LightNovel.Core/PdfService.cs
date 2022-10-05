@@ -3,6 +3,7 @@
 namespace CardboardBox.LightNovel.Core
 {
 	using Anime.Database;
+	using Epub;
 
 	public interface IPdfService
 	{

@@ -44,6 +44,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		global.cs = global.cs
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CardboardBox.Epub", "CardboardBox.Epub\CardboardBox.Epub.csproj", "{E9AFB036-A25D-439D-983A-BFDF873029F5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -106,6 +108,10 @@ Global
 		{A914ABB3-9275-45EC-98C1-FD615ADD9835}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A914ABB3-9275-45EC-98C1-FD615ADD9835}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A914ABB3-9275-45EC-98C1-FD615ADD9835}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E9AFB036-A25D-439D-983A-BFDF873029F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E9AFB036-A25D-439D-983A-BFDF873029F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E9AFB036-A25D-439D-983A-BFDF873029F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E9AFB036-A25D-439D-983A-BFDF873029F5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -121,6 +127,7 @@ Global
 		{F12D1CEE-7D8A-4BD3-A6EE-70C43594F4BD} = {1910D6AC-09FF-4281-8278-11482CBE65E5}
 		{E03EA59A-5113-4948-A036-C5D8997B242F} = {54046D76-A0A0-4EBA-BF99-B1DDB6479448}
 		{A914ABB3-9275-45EC-98C1-FD615ADD9835} = {C935AC61-5110-4891-AC61-70359429F260}
+		{E9AFB036-A25D-439D-983A-BFDF873029F5} = {C935AC61-5110-4891-AC61-70359429F260}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F429A525-1A87-4D64-8900-FDC4C26EE386}

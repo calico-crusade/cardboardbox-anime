@@ -14,6 +14,7 @@ namespace CardboardBox.Anime.Cli
 	using HiDive;
 	using Vrv;
 
+	using Epub;
 	using LightNovel.Core;
 
 	public interface IRunner
@@ -38,6 +39,7 @@ namespace CardboardBox.Anime.Cli
 		private readonly ILightNovelApiService _ln;
 		private readonly IChapterDbService _lnDb;
 		private readonly IPdfService _pdf;
+		private readonly IJmService _jm;
 
 		public Runner(
 			IVrvApiService vrv, 
@@ -50,7 +52,8 @@ namespace CardboardBox.Anime.Cli
 			ICrunchyrollApiService crunchy,
 			ILightNovelApiService ln,
 			IChapterDbService lbDn,
-			IPdfService pdf)
+			IPdfService pdf,
+			IJmService jm)
 		{
 			_vrv = vrv;
 			_logger = logger;
@@ -63,6 +66,7 @@ namespace CardboardBox.Anime.Cli
 			_ln = ln;
 			_lnDb = lbDn;
 			_pdf = pdf;
+			_jm = jm;
 		}
 
 		public async Task<int> Run(string[] args)
@@ -89,6 +93,7 @@ namespace CardboardBox.Anime.Cli
 					case "crunchy": await LoadCrunchy(); break;
 					case "ln": await LoadLightNovel(); break;
 					case "conv": await ToPdf(); break;
+					case "epub": await ToEpub(); break;
 					default: _logger.LogInformation("Invalid command: " + command); break;
 				}
 
@@ -368,6 +373,36 @@ namespace CardboardBox.Anime.Cli
 		{
 			const string ID = "445C5E7AC91435D2155BC1D1DAAE8EB8";
 			await _pdf.ToPdf(ID);
+		}
+
+		public async Task ToEpub()
+		{
+			//const string ID = "445C5E7AC91435D2155BC1D1DAAE8EB8";
+
+			//var (_, chaps) = await _lnDb.Chapters(ID, 1, 50);
+
+			//if (chaps.Length == 0) return;
+
+			//var title = chaps[0].Book;
+			//var path = title.PurgePathChars() + ".epub";
+
+			//var epub = EpubBuilder.Create(title).Start(path);
+
+			//await epub.AddStylesheetFromFile("stylesheet.css", "stylesheet.css");
+			//await epub.AddCoverImage("cover.png", @"C:\Users\Cardboard\Desktop\cover.png");
+
+			//for (var i = 0; i < chaps.Length; i++)
+			//{
+			//	var chap = chaps[i];
+			//	await epub.AddChapter(chap.Chapter, async (c) =>
+			//	{
+			//		await c.AddRawPage($"chapter{i}.xhtml", $"<h1>{chap.Chapter}</h1>{chap.Content}");
+			//	});
+			//}
+
+			//await epub.Finish();
+
+			await _jm.Run();
 		}
 	}
 }

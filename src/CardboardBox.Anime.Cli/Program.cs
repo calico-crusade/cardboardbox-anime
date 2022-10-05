@@ -20,6 +20,8 @@ return await new ServiceCollection()
 
 	.RegisterCba(config)
 
+	.AddTransient<IJmService, JmService>()
+
 	.AddSingleton<IRunner, Runner>()
 	.BuildServiceProvider()
 	.GetRequiredService<IRunner>()

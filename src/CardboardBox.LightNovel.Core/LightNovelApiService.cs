@@ -28,6 +28,5 @@
 		}
 
 		public ISourceService[] Sources() => new[] { (ISourceService)_src1, _src2 };
-
 	}
 }
