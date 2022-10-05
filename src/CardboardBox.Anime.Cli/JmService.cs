@@ -94,47 +94,45 @@ namespace CardboardBox.Anime.Cli
 
 			_logger.LogInformation($"Starting processing of vol {vol} of {title} - {path}");
 
-			using (var io = File.Create(path))
-			await using (var epub = EpubBuilder.Create(title, io))
+			await using var epub = EpubBuilder.Create(title, path);
+			var bob = await epub.Start();
+
+			await bob.AddStylesheetFromFile("stylesheet.css", "stylesheet.css");
+			await bob.AddCoverImage("cover.jpg", CoverImage(vol));
+
+			await bob.AddChapter("Color Illustrations", async c =>
 			{
-				var bob = await epub.Start();
+				var inserts = Directory.GetFiles(Forwards(vol));
+				foreach (var file in inserts)
+					await c.AddImage(Path.GetFileName(file), file);
 
-				await bob.AddStylesheetFromFile("stylesheet.css", "stylesheet.css");
-				await bob.AddCoverImage("cover.jpg", CoverImage(vol));
+				var contents = ContentsImage(vol);
+				if (File.Exists(contents))
+					await c.AddImage("Contents.jpg", contents);
+			});
 
-				await bob.AddChapter("Color Illustrations", async c =>
+			for (var i = 0; i < chaps.Length; i++)
+			{
+				var chap = chaps[i];
+				await bob.AddChapter(chap.Chapter, async (c) =>
 				{
-					var inserts = Directory.GetFiles(Forwards(vol));
-					foreach (var file in inserts)
-						await c.AddImage(Path.GetFileName(file), file);
-
-					var contents = ContentsImage(vol);
-					if (File.Exists(contents))
-						await c.AddImage("Contents.jpg", contents);
-				});
-
-				for (var i = 0; i < chaps.Length; i++)
-				{
-					var chap = chaps[i];
-					await bob.AddChapter(chap.Chapter, async (c) =>
-					{
-						await c.AddRawPage($"chapter{i}.xhtml", $"<h1>{chap.Chapter}</h1>{CleanContents(chap.Content, chap.Chapter)}");
-					});
-				}
-
-				await bob.AddChapter("Inserts", async c =>
-				{
-					var inserts = Directory.GetFiles(Inserts(vol));
-					foreach (var file in inserts)
-						await c.AddImage(Path.GetFileName(file), file);
+					await c.AddRawPage($"chapter{i}.xhtml", $"<h1>{chap.Chapter}</h1>{CleanContents(chap.Content, chap.Chapter)}");
 				});
 			}
+
+			await bob.AddChapter("Inserts", async c =>
+			{
+				var inserts = Directory.GetFiles(Inserts(vol));
+				foreach (var file in inserts)
+					await c.AddImage(Path.GetFileName(file), file);
+			});
 		
 			_logger.LogInformation($"Finished making vol {vol}");
 		}
-
+		
 		public string CleanContents(string content, string chap)
 		{
+			//This is purely to fix some malformed data within the files
 			content = content
 				.Replace("<hr>", "")
 				.Replace("<hr/>", "")
@@ -150,14 +148,11 @@ namespace CardboardBox.Anime.Cli
 				if (fis == -1 || nis == -1) break;
 
 				if (nis < fie)
-				{
 					content = content.Insert(nis, "</p>");
-					_logger.LogWarning($"Found culpret: {chap} FIS: {fis} - NIS: {nis} - FIE: {fie}");
-				}
 
 				if (fie == -1)
 				{
-					_logger.LogWarning("What?");
+					content += "</p>";
 					break;
 				}
 

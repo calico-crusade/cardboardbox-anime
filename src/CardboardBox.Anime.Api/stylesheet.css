@@ -1,0 +1,228 @@
+﻿body {
+	line-height: 1.2em;
+	font-size: 1em;
+}
+
+	body.nomargin {
+		margin: 0em;
+		padding: 0em;
+	}
+
+	body.center {
+		text-align: center;
+	}
+
+img {
+	max-width: 100%;
+}
+
+	img.cover {
+		text-indent: 0em;
+		max-height: 98%;
+		width: auto !important;
+		clear: both;
+	}
+
+	img.insert {
+		max-height: 98%;
+		width: auto !important;
+		clear: both;
+		page-break-inside: avoid;
+		overflow: hidden;
+	}
+
+.chibi {
+	clear: both;
+	page-break-inside: avoid;
+	overflow: hidden;
+	text-align: right;
+}
+
+	.chibi img {
+		width: 240px;
+	}
+
+.main {
+	font-weight: normal;
+	letter-spacing: 0;
+	orphans: 1;
+	widows: 1;
+	word-spacing: 0;
+}
+
+
+p {
+	display: block;
+	margin-top: 0em;
+	margin-bottom: 0em;
+	margin-left: 0em;
+	margin-right: 0em;
+	text-indent: 20pt;
+}
+
+	p.noindent {
+		text-indent: 0;
+	}
+
+	p.centerp {
+		text-align: center;
+	}
+
+	p.section-marking {
+		margin-top: 1em;
+		margin-bottom: 1em;
+	}
+
+		p.section-marking img {
+			height: 1em;
+		}
+
+	p.section-break {
+		margin-top: 1em;
+	}
+
+.tbmargin {
+	margin-top: 1em;
+	margin-bottom: 1em;
+}
+
+p.theend {
+	text-align: right;
+	font-weight: bold;
+}
+
+p.afterwardheader {
+	margin-top: 2em;
+	margin-bottom: 1em;
+}
+
+p.signature {
+	text-align: right;
+}
+
+blockquote {
+	margin-top: 1em;
+	margin-bottom: 1em;
+	margin-left: 1em;
+	margin-right: 1em;
+}
+
+	blockquote p {
+		margin-left: 0;
+		margin-right: 0;
+	}
+
+li {
+	font-size: 1em;
+}
+
+	li p {
+		text-indent: 0em;
+	}
+
+ul {
+	margin-top: 1em;
+	margin-bottom: 1em;
+}
+
+ol {
+	margin-top: 1em;
+	margin-bottom: 1em;
+	text-align: left;
+}
+
+h1 {
+	font-size: 1.55em;
+	margin-top: 2em;
+	margin-bottom: 1em;
+	line-height: 1.2em;
+	text-indent: 20pt;
+}
+
+.chapter-header {
+	text-align: center;
+}
+
+	.chapter-header img {
+		height: 3em;
+		margin-bottom: 1em;
+	}
+
+
+
+h2 {
+	font-size: 1.15em;
+	margin-top: 1.5em;
+	margin-bottom: .5em;
+	line-height: 1.2em;
+}
+
+table {
+	margin-top: 1.5em;
+	margin-bottom: 1.5em;
+	font-size: 0.9em;
+	border-collapse: collapse;
+}
+
+tr td {
+	vertical-align: top;
+	padding: 0.2em;
+}
+
+nav[hidden], ol[hidden] {
+	display: none;
+	visibility: hidden;
+}
+
+.disclaimer-rw {
+	font-size: 0.7em;
+	text-indent: 0;
+	text-align: center !important;
+	margin-top: 1.5em;
+}
+
+sup {
+	vertical-align: super;
+	font-size: 0.9em;
+	line-height: 100% !important;
+}
+
+sub {
+	vertical-align: sub;
+	font-size: 0.9em;
+	line-height: 100% !important;
+}
+
+h1.toc-title {
+	font-size: 1.55em;
+	margin-top: 10%;
+	margin-bottom: 2em;
+	text-align: center;
+	text-indent: 0em;
+	line-height: 1.2em;
+}
+
+.toc-front {
+	text-indent: 0em;
+	margin-top: 6pt;
+}
+
+.toc-chapter {
+	text-indent: -66pt;
+	margin-top: 6pt;
+	font-weight: normal;
+	margin-bottom: 0;
+	margin-left: 66pt;
+}
+
+.toc-appendix {
+	text-indent: 0em;
+	margin-top: 6pt;
+	margin-bottom: 6pt;
+}
+
+ol.none {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}

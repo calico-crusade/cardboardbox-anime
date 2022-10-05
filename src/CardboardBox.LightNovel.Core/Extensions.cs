@@ -6,10 +6,10 @@ namespace CardboardBox.LightNovel.Core
 
 	public static class Extensions
 	{
+		public const string USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36";
+
 		public static async Task<HtmlDocument> GetHtml(this IApiService api, string url, Action<HttpRequestMessage>? config = null)
 		{
-			const string USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36";
-
 			var req = await api.Create(url)
 				.Accept("text/html")
 				.With(c =>
@@ -29,6 +29,29 @@ namespace CardboardBox.LightNovel.Core
 			doc.Load(io);
 
 			return doc;
+		}
+
+		public static async Task<(Stream data, long length, string filename, string type)> GetData(this IApiService api, string url, Action<HttpRequestMessage>? config = null)
+		{
+			var req = await api.Create(url)
+				.Accept("*/*")
+				.With(c =>
+				{
+					c.Headers.Add("user-agent", USER_AGENT);
+					config?.Invoke(c);
+				})
+				.Result();
+			if (req == null)
+				throw new NullReferenceException($"Request returned null for: {url}");
+
+			req.EnsureSuccessStatusCode();
+
+			var headers = req.Content.Headers;
+			var path = headers?.ContentDisposition?.FileName ?? headers?.ContentDisposition?.Parameters?.FirstOrDefault()?.Value ?? "";
+			var type = headers?.ContentType?.ToString() ?? "";
+			var length = headers?.ContentLength ?? 0;
+
+			return (await req.Content.ReadAsStreamAsync(), length, path, type);
 		}
 
 		public static string HTMLDecode(this string text)
