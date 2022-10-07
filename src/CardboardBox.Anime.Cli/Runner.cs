@@ -442,7 +442,7 @@ namespace CardboardBox.Anime.Cli
 			const string ID = "445C5E7AC91435D2155BC1D1DAAE8EB8";
 			const int SOURCE_ID = 0;
 			var src = _ln.Sources()[SOURCE_ID];
-			var book = await _lnDb.Book(ID);
+			var book = await _lnDb.BookById(ID);
 			if (book == null)
 			{
 				_logger.LogWarning($"Could not find book with ID: {ID}");

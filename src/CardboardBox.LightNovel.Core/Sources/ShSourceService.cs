@@ -1,9 +1,13 @@
 ﻿namespace CardboardBox.LightNovel.Core.Sources
 {
-	public interface ISource2Service : ISourceService { }
-	public class Source2Service : SourceService, ISource2Service
+	public interface IShSourceService : ISourceService { }
+	public class ShSourceService : SourceService, IShSourceService
 	{
-		public Source2Service(IApiService api, ILogger<Source2Service> logger) : base(api, logger) { }
+		public override string Name => "sh";
+
+		public override string RootUrl => "https://www.scribblehub.com";
+
+		public ShSourceService(IApiService api, ILogger<ShSourceService> logger) : base(api, logger) { }
 
 		public override string? GetChapter(HtmlDocument doc)
 		{

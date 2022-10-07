@@ -1,15 +1,13 @@
-﻿using ICSharpCode.SharpZipLib.Zip;
-using Microsoft.AspNetCore.Authorization;
+﻿using ICSharpCode.SharpZipLib.Core;
+using ICSharpCode.SharpZipLib.Zip;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CardboardBox.Anime.Api.Controllers
 {
 	using Database;
-	using ICSharpCode.SharpZipLib.Core;
 	using LightNovel.Core;
 
 	[ApiController]
-	//[Authorize]
 	public class LightNovelController : ControllerBase
 	{
 		private readonly IChapterDbService _ln;
@@ -47,6 +45,16 @@ namespace CardboardBox.Anime.Api.Controllers
 			});
 		}
 
+		[HttpGet, Route("ln/{bookId}/chapters")]
+		[ProducesDefaultResponseType(typeof(ChaptersResponse))]
+		[ProducesResponseType(404)]
+		public async Task<IActionResult> Chapters([FromRoute] string bookId)
+		{
+			var (book, chaps) = await _ln.ChapterList(bookId);
+			if (book == null || chaps == null || chaps.Length == 0) return NotFound();
+			return Ok(new ChaptersResponse(book, chaps));
+		}
+
 		[HttpPost, Route("ln/{bookId}/epub"), DisableRequestSizeLimit]
 		public async Task<IActionResult> Epub([FromRoute] string bookId, [FromBody] EpubSettings[] settings)
 		{
@@ -73,5 +81,29 @@ namespace CardboardBox.Anime.Api.Controllers
 
 			return File(ms, "application/zip", "epubs.zip");
 		}
+
+		[HttpGet, Route("ln/load/{bookId}"), ProducesDefaultResponseType(typeof(ChapterLoadResponse))]
+		public async Task<IActionResult> RefreshBook([FromRoute] string bookId)
+		{
+			var (id, count) = await _api.LoadFromBookId(bookId);
+			if (count == -1) return BadRequest(new ChapterLoadResponse(null, false, 0, "Could not find the correct source!"));
+			if (count <= 1) return NotFound(new ChapterLoadResponse(id, false, count, "No new chapters detected!"));
+
+			return Ok(new ChapterLoadResponse(id, false, count));
+		}
+
+		[HttpPost, Route("ln/load"), ProducesDefaultResponseType(typeof(ChapterLoadResponse))]
+		public async Task<IActionResult> LoadFromUrl([FromBody] string url)
+		{
+			var (id, isNew, count) = await _api.LoadFromUrl(url);
+			if (count == -1) return BadRequest(new ChapterLoadResponse(null, false, 0, "Could not find the correct source!"));
+			if (count == 0 && isNew) return StatusCode(500, new ChapterLoadResponse(id, isNew, count, "Attempted to load new book, but couldn't find any chapters. Do you have the right source?"));
+			if (count <= 1 && !isNew) return NotFound(new ChapterLoadResponse(id, isNew, count, "No new chapters detected!"));
+
+			return Ok(new ChapterLoadResponse(id, isNew, count));
+		}
 	}
+
+	public record class ChapterLoadResponse(string? BookId, bool IsNew, int? Count, string? Message = null);
+	public record class ChaptersResponse(DbBook Book, DbChapterLimited[] Chapters);
 }

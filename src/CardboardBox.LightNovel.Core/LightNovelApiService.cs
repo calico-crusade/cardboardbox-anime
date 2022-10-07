@@ -11,19 +11,23 @@ namespace CardboardBox.LightNovel.Core
 		Task<Chapter[]?> FromJson(string path);
 		Task<(string[] files, string wrkDir)> GenerateEpubs(string bookId, EpubSettings[] settings, string? workDir = null);
 		ISourceService[] Sources();
+		ISourceService? Source(string url);
+
+		Task<(string? id, int? added)> LoadFromBookId(string bookId);
+		Task<(string? id, bool isNew, int? added)> LoadFromUrl(string url);
 	}
 
 	public class LightNovelApiService : ILightNovelApiService
 	{
-		private readonly ISource1Service _src1;
-		private readonly ISource2Service _src2;
+		private readonly ILnpSourceService _src1;
+		private readonly IShSourceService _src2;
 		private readonly IChapterDbService _db;
 		private readonly IApiService _api;
 		private readonly ILogger _logger;
 
 		public LightNovelApiService(
-			ISource1Service src1,
-			ISource2Service src2,
+			ILnpSourceService src1,
+			IShSourceService src2,
 			IChapterDbService db,
 			IApiService api,
 			ILogger<LightNovelApiService> logger)
@@ -42,6 +46,73 @@ namespace CardboardBox.LightNovel.Core
 		}
 
 		public ISourceService[] Sources() => new[] { (ISourceService)_src1, _src2 };
+
+		public ISourceService? Source(string url)
+		{
+			var root = url.GetRootUrl().ToLower();
+
+			return Sources()
+				.Where(t => t.RootUrl.ToLower() == root)
+				.FirstOrDefault();
+		}
+
+		public async Task<(string? id, bool isNew, int? added)> LoadFromUrl(string url)
+		{
+			var src = Source(url);
+			if (src == null) return (null, true, -1);
+
+			var book = await _db.BookByUrl(url);
+
+			if (book == null)
+			{
+				var (id, added) = await LoadNewBook(src, url);
+				return (id, true, added);
+			}
+
+			var newChaps = await PickupNewChapters(src, book);
+			return (book.Id, false, newChaps);
+		}
+
+		public async Task<(string? id, int? added)> LoadFromBookId(string bookId)
+		{
+			var book = await _db.BookById(bookId);
+
+			if (book == null) return (null, 0);
+
+			var src = Source(book.LastChapterUrl);
+			if (src == null) return (null, -1);
+
+			var newChaps = await PickupNewChapters(src, book);
+			return (book.Id, newChaps);
+		}
+
+		public async Task<(string? bookId, int? added)> LoadNewBook(ISourceService source, string url)
+		{
+			var chaps = source.DbChapters(url);
+			DbChapter? last = null;
+			int count = 0;
+			await foreach (var chap in chaps)
+			{
+				if (count == 0 && string.IsNullOrWhiteSpace(chap.Book)) return (null, 0);
+				await _db.Upsert(last = chap);
+				count++;
+			}
+			return (last?.BookId, count);
+		}
+
+		public async Task<int> PickupNewChapters(ISourceService src, DbBook book)
+		{
+			var newChaps = src.DbChapters(book.LastChapterUrl);
+			int count = 0;
+			await foreach(var item in newChaps)
+			{
+				item.Ordinal = book.LastChapterOrdinal + count;
+				await _db.Upsert(item);
+				count++;
+			}
+
+			return count;
+		}
 
 		public IEnumerable<(DbChapter[] chunk, EpubSettings settings)> Chunks(DbChapter[] chaps, EpubSettings[] settings)
 		{

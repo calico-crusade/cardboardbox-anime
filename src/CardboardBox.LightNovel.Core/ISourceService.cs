@@ -5,6 +5,9 @@
 
 	public interface ISourceService
 	{
+		string Name { get; }
+		string RootUrl { get; }
+
 		IAsyncEnumerable<Chapter> Chapters(string firstUrl);
 
 		IAsyncEnumerable<DbChapter> DbChapters(string firstUrl);
@@ -14,6 +17,9 @@
 	{
 		public readonly IApiService _api;
 		public readonly ILogger _logger;
+
+		public abstract string Name { get; }
+		public abstract string RootUrl { get; }
 
 		public SourceService(IApiService api, ILogger logger)
 		{

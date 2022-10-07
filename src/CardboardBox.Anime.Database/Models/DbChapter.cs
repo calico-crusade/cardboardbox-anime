@@ -53,4 +53,16 @@
 		[JsonPropertyName("lastChapterOrdinal")]
 		public int LastChapterOrdinal { get; set; }
 	}
+
+	public class DbChapterLimited : DbObject
+	{
+		[JsonPropertyName("hashId")]
+		public string HashId { get; set; } = string.Empty;
+
+		[JsonPropertyName("chapter")]
+		public string Chapter { get; set; } = string.Empty;
+
+		[JsonPropertyName("ordinal")]
+		public int Ordinal { get; set; }
+	}
 }

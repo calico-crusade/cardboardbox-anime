@@ -13,7 +13,11 @@ namespace CardboardBox.Anime.Database
 
 		Task<(int total, DbBook[] results)> Books(int page = 1, int size = 100);
 
-		Task<DbBook?> Book(string id);
+		Task<DbBook?> BookById(string id);
+
+		Task<DbBook?> BookByUrl(string url);
+
+		Task<(DbBook? book, DbChapterLimited[] chapters)> ChapterList(string bookId);
 	}
 
 	public class ChapterDbService : OrmMapExtended<DbChapter>, IChapterDbService
@@ -91,7 +95,7 @@ SELECT COUNT(DISTINCT book) from light_novels;";
 			return (total, res);
 		}
 
-		public async Task<DbBook?> Book(string id)
+		public async Task<DbBook?> BookById(string id)
 		{
 			const string QUERY = @"WITH books AS (
     SELECT
@@ -113,6 +117,73 @@ FROM books b
 WHERE b.id = :id";
 
 			return await _sql.Fetch<DbBook>(QUERY, new { id });
+		}
+
+		public async Task<DbBook?> BookByUrl(string url)
+		{
+			const string QUERY = @"WITH books AS (
+    SELECT
+    DISTINCT
+    book_id as id,
+    book as title
+    FROM light_novels
+	WHERE
+		url = :url
+)
+SELECT
+    id,
+    title,
+    ( SELECT COUNT(*) FROM light_novels l WHERE b.id = l.book_id ) as chapters,
+    ( SELECT MIN(l.created_at) FROM light_novels l WHERE b.id = l.book_id ) as created_at,
+    ( SELECT MAX(l.updated_at) FROM light_novels l WHERE b.id = l.book_id ) as updated_at,
+	( SELECT l.url FROM light_novels l WHERE b.id = l.book_id AND l.next_url = '' ) as last_chapter_url,
+	( SELECT l.id FROM light_novels l WHERE b.id = l.book_id AND l.next_url = '' ) as last_chapter_id,
+	( SELECT l.ordinal FROM light_novels l WHERE b.id = l.book_id AND l.next_url = '' ) as last_chapter_ordinal
+FROM books b";
+
+			return await _sql.Fetch<DbBook>(QUERY, new { url });
+		}
+
+		public async Task<(DbBook? book, DbChapterLimited[] chapters)> ChapterList(string bookId)
+		{
+			const string QUERY = @"WITH books AS (
+    SELECT
+    DISTINCT
+    book_id as id,
+    book as title
+    FROM light_novels
+)
+SELECT
+    id,
+    title,
+    ( SELECT COUNT(*) FROM light_novels l WHERE b.id = l.book_id ) as chapters,
+    ( SELECT MIN(l.created_at) FROM light_novels l WHERE b.id = l.book_id ) as created_at,
+    ( SELECT MAX(l.updated_at) FROM light_novels l WHERE b.id = l.book_id ) as updated_at,
+	( SELECT l.url FROM light_novels l WHERE b.id = l.book_id AND l.next_url = '' ) as last_chapter_url,
+	( SELECT l.id FROM light_novels l WHERE b.id = l.book_id AND l.next_url = '' ) as last_chapter_id,
+	( SELECT l.ordinal FROM light_novels l WHERE b.id = l.book_id AND l.next_url = '' ) as last_chapter_ordinal
+FROM books b
+WHERE b.id = :bookId;
+
+SELECT
+	id,
+	created_at,
+	updated_at,
+	deleted_at,
+	hash_id,
+	chapter,
+	ordinal
+FROM light_novels
+WHERE
+	book_id = :bookId
+ORDER BY ordinal";
+
+			using var con = _sql.CreateConnection();
+			using var rdr = await con.QueryMultipleAsync(QUERY, new { bookId });
+
+			var res = await rdr.ReadFirstOrDefaultAsync<DbBook>();
+			var chaps = (await rdr.ReadAsync<DbChapterLimited>()).ToArray();
+			return (res, chaps);
 		}
 	}
 }

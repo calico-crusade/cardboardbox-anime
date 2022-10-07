@@ -1,10 +1,13 @@
 ﻿namespace CardboardBox.LightNovel.Core.Sources
 {
-	public interface ISource1Service : ISourceService { }
+	public interface ILnpSourceService : ISourceService { }
 
-	public class Source1Service : SourceService, ISource1Service
+	public class LnpSourceService : SourceService, ILnpSourceService
 	{
-		public Source1Service(IApiService api, ILogger<Source1Service> logger) : base(api, logger) { }
+		public override string Name => "lnp";
+		public override string RootUrl => "https://www.lightnovelpub.com";
+
+		public LnpSourceService(IApiService api, ILogger<LnpSourceService> logger) : base(api, logger) { }
 
 		public override string? GetTitle(HtmlDocument doc)
 		{
@@ -19,6 +22,8 @@
 		public override string? GetContent(HtmlDocument doc)
 		{
 			var chapter = doc.DocumentNode.SelectSingleNode("//div[@id='chapter-container']");
+			if (chapter == null || chapter.ChildNodes == null) return null;
+
 			foreach (var child in chapter.ChildNodes.ToArray())
 			{
 				if (child.Name == "div")

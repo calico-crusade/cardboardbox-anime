@@ -74,6 +74,7 @@ namespace CardboardBox.Anime.Database
 				 
 				 .ForEntity<DbChapter>()
 				 .ForEntity<DbBook>()
+				 .ForEntity<DbChapterLimited>()
 				 
 				 .ForEntity<CompPublicList>();
 			});

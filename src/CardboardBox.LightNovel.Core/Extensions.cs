@@ -110,8 +110,8 @@ namespace CardboardBox.LightNovel.Core
 		public static IServiceCollection AddLightNovel(this IServiceCollection services)
 		{
 			return services
-				.AddTransient<ISource1Service, Source1Service>()
-				.AddTransient<ISource2Service, Source2Service>()
+				.AddTransient<ILnpSourceService, LnpSourceService>()
+				.AddTransient<IShSourceService, ShSourceService>()
 
 				.AddTransient<ILightNovelApiService, LightNovelApiService>()
 				.AddTransient<IPdfService, PdfService>();
