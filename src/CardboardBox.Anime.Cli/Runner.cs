@@ -425,7 +425,7 @@ namespace CardboardBox.Anime.Cli
 			};
 
 			var settings = ranges.Select((t, i) => genSet(i, t.Item1, t.Item2)).ToArray();
-			var epubs = await _ln.GenerateEpubs(BOOK_ID, settings);
+			var (epubs, dir) = await _ln.GenerateEpubs(BOOK_ID, settings);
 
 			foreach (var epub in epubs)
 			{
@@ -433,6 +433,8 @@ namespace CardboardBox.Anime.Cli
 				if (File.Exists(name)) File.Delete(name);
 				File.Move(epub, name);
 			}
+
+			new DirectoryInfo(dir).Delete(true);
 		}
 
 		public async Task PickupNew()

@@ -50,7 +50,9 @@ namespace CardboardBox.Anime.Api.Controllers
 		[HttpPost, Route("ln/{bookId}/epub"), DisableRequestSizeLimit]
 		public async Task<IActionResult> Epub([FromRoute] string bookId, [FromBody] EpubSettings[] settings)
 		{
-			var ids = await _api.GenerateEpubs(bookId, settings);
+			var (ids, dir) = await _api.GenerateEpubs(bookId, settings);
+
+			if (ids.Length == 0) return NoContent();
 
 			var ms = new MemoryStream();
 			using (var o = new ZipOutputStream(ms))
@@ -64,6 +66,8 @@ namespace CardboardBox.Anime.Api.Controllers
 					await o.CloseEntryAsync(CancellationToken.None);
 				}
 			}
+
+			new DirectoryInfo(dir).Delete(true);
 
 			ms.Position = 0;
 

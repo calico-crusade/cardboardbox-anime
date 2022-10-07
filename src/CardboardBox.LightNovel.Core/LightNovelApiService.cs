@@ -9,7 +9,7 @@ namespace CardboardBox.LightNovel.Core
 	public interface ILightNovelApiService
 	{
 		Task<Chapter[]?> FromJson(string path);
-		Task<string[]> GenerateEpubs(string bookId, EpubSettings[] settings, string? workDir = null);
+		Task<(string[] files, string wrkDir)> GenerateEpubs(string bookId, EpubSettings[] settings, string? workDir = null);
 		ISourceService[] Sources();
 	}
 
@@ -70,23 +70,24 @@ namespace CardboardBox.LightNovel.Core
 				yield return (cur.ToArray(), settings.Last());
 		}
 
-		public async Task<string[]> GenerateEpubs(string bookId, EpubSettings[] settings, string? workDir = null)
+		public async Task<(string[] files, string wrkDir)> GenerateEpubs(string bookId, EpubSettings[] settings, string? workDir = null)
 		{
-			if (settings.All(t => t.SkipGeneration)) return Array.Empty<string>();
-
 			workDir ??= Path.GetTempPath();
+			var dir = Path.Combine(workDir, "cba-epub-host-" + Guid.NewGuid().ToString());
+
+			if (settings.All(t => t.SkipGeneration)) return (Array.Empty<string>(), dir);
+
 			var (_, chaps) = await _db.Chapters(bookId, 1, 9999);
-			if (chaps.Length == 0) return Array.Empty<string>();
+			if (chaps.Length == 0) return (Array.Empty<string>(), dir);
 
 			var chunks = Chunks(chaps, settings.OrderBy(t => t.Start).ToArray());
-			var dir = Path.Combine(workDir, "cba-epub-host-" + Guid.NewGuid().ToString());
 
 			if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
 
 			var tasks = chunks
 				.Where(t => !t.settings.SkipGeneration)
 				.Select(t => Volume(t.chunk, t.settings, dir));
-			return await Task.WhenAll(tasks);
+			return (await Task.WhenAll(tasks), dir);
 		}
 
 		public async Task<string> Volume(DbChapter[] chaps, EpubSettings settings, string dir)
