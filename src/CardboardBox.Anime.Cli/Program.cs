@@ -1,7 +1,5 @@
 ﻿using CardboardBox.Anime;
 using CardboardBox.Anime.Cli;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
 var config = new ConfigurationBuilder()
@@ -19,8 +17,6 @@ return await new ServiceCollection()
 	.AddSingleton<IConfiguration>(config)
 
 	.RegisterCba(config)
-
-	.AddTransient<IJmService, JmService>()
 
 	.AddSingleton<IRunner, Runner>()
 	.BuildServiceProvider()

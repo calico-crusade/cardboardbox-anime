@@ -12,6 +12,8 @@ namespace CardboardBox.Anime.Database
 		Task<(int total, DbChapter[] results)> Chapters(string bookId, int page = 1, int size = 10);
 
 		Task<(int total, DbBook[] results)> Books(int page = 1, int size = 100);
+
+		Task<DbBook?> Book(string id);
 	}
 
 	public class ChapterDbService : OrmMapExtended<DbChapter>, IChapterDbService
@@ -70,7 +72,10 @@ SELECT
     title,
     ( SELECT COUNT(*) FROM light_novels l WHERE b.id = l.book_id ) as chapters,
     ( SELECT MIN(l.created_at) FROM light_novels l WHERE b.id = l.book_id ) as created_at,
-    ( SELECT MAX(l.updated_at) FROM light_novels l WHERE b.id = l.book_id ) as updated_at
+    ( SELECT MAX(l.updated_at) FROM light_novels l WHERE b.id = l.book_id ) as updated_at,
+	( SELECT l.url FROM light_novels l WHERE b.id = l.book_id AND l.next_url = '' ) as last_chapter_url,
+	( SELECT l.id FROM light_novels l WHERE b.id = l.book_id AND l.next_url = '' ) as last_chapter_id,
+	( SELECT l.ordinal FROM light_novels l WHERE b.id = l.book_id AND l.next_url = '' ) as last_chapter_ordinal
 FROM books b
 ORDER BY title ASC
 LIMIT {size}
@@ -84,6 +89,30 @@ SELECT COUNT(DISTINCT book) from light_novels;";
 			var res = (await rdr.ReadAsync<DbBook>()).ToArray();
 			var total = await rdr.ReadSingleAsync<int>();
 			return (total, res);
+		}
+
+		public async Task<DbBook?> Book(string id)
+		{
+			const string QUERY = @"WITH books AS (
+    SELECT
+    DISTINCT
+    book_id as id,
+    book as title
+    FROM light_novels
+)
+SELECT
+    id,
+    title,
+    ( SELECT COUNT(*) FROM light_novels l WHERE b.id = l.book_id ) as chapters,
+    ( SELECT MIN(l.created_at) FROM light_novels l WHERE b.id = l.book_id ) as created_at,
+    ( SELECT MAX(l.updated_at) FROM light_novels l WHERE b.id = l.book_id ) as updated_at,
+	( SELECT l.url FROM light_novels l WHERE b.id = l.book_id AND l.next_url = '' ) as last_chapter_url,
+	( SELECT l.id FROM light_novels l WHERE b.id = l.book_id AND l.next_url = '' ) as last_chapter_id,
+	( SELECT l.ordinal FROM light_novels l WHERE b.id = l.book_id AND l.next_url = '' ) as last_chapter_ordinal
+FROM books b
+WHERE b.id = :id";
+
+			return await _sql.Fetch<DbBook>(QUERY, new { id });
 		}
 	}
 }

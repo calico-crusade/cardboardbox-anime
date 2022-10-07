@@ -34,5 +34,11 @@
 
 		[JsonPropertyName("translator")]
 		public string? Translator { get; set; }
+
+		[JsonPropertyName("illustrator")]
+		public string? Illustrator { get; set; }
+
+		[JsonPropertyName("skipGeneration")]
+		public bool SkipGeneration { get; set; } = false;
 	}
 }

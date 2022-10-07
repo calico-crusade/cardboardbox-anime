@@ -2,6 +2,9 @@
 {
 	public class MetaData
 	{
+		public const string COLLECTION_TYPE_SERIES = "series";
+		public const string COLLECTION_TYPE_SET = "set";
+
 		public const string XMLNS = "http://purl.org/dc/elements/1.1/";
 
 		public static XNamespace DcNs => "dc";
@@ -9,6 +12,11 @@
 		public string Title { get; set; }
 		public string Language { get; set; } = "en";
 		public string Id { get; set; }
+
+		public string? CollectionTitle { get; set; }
+		public int? CollectionPosition { get; set; }
+		public string? CollectionType { get; set; } = COLLECTION_TYPE_SERIES;
+
 		public string? Publisher { get; set; } = "CardboardBox";
 		public string? Rights { get; set; }
 		public string? Cover { get; set; }
@@ -41,6 +49,13 @@
 			if (!string.IsNullOrEmpty(Rights)) lines.Add($"<dc:rights>{Rights}</dc:rights>");
 			if (!string.IsNullOrEmpty(Cover)) lines.Add($"<meta name=\"cover\" content=\"{Cover}\" />");
 			if (Date != null) lines.Add($"<dc:date>{Date?.ToShortDateString()}</dc:date>");
+
+			if (!string.IsNullOrEmpty(CollectionTitle))
+			{
+				lines.Add($"<meta property=\"belongs-to-collection\" id=\"bto01\">{CollectionTitle}</meta>");
+				lines.Add($"<meta refines=\"#bto01\" property=\"collection-type\">{CollectionType}</meta>");
+				if (CollectionPosition != null) lines.Add($"<meta refines=\"#bto01\" property=\"group-position\">{CollectionPosition}</meta>");
+			}
 
 			for (var i = 0; i < Creators.Count; i++)
 			{

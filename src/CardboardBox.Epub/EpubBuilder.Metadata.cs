@@ -23,6 +23,8 @@
 		IEpubBuilder Editor(string name, string? fileAs = null);
 
 		IEpubBuilder Metadata(XElement element);
+
+		IEpubBuilder BelongsTo(string title, int position, string type = MetaData.COLLECTION_TYPE_SET);
 	}
 
 	public partial class EpubBuilder
@@ -91,6 +93,14 @@
 		public IEpubBuilder Metadata(XElement element)
 		{
 			Content.Meta.Extras.Add(element);
+			return this;
+		}
+
+		public IEpubBuilder BelongsTo(string title, int position, string type = MetaData.COLLECTION_TYPE_SET)
+		{
+			Content.Meta.CollectionTitle = title;
+			Content.Meta.CollectionType = type;
+			Content.Meta.CollectionPosition = position;
 			return this;
 		}
 	}

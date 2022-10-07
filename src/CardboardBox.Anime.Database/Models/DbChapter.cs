@@ -43,5 +43,14 @@
 
 		[JsonPropertyName("createdAt")]
 		public DateTime CreatedAt { get; set; }
+
+		[JsonPropertyName("lastChapterUrl")]
+		public string LastChapterUrl { get; set; } = string.Empty;
+
+		[JsonPropertyName("lastChapterId")]
+		public int LastChapterId { get; set; }
+
+		[JsonPropertyName("lastChapterOrdinal")]
+		public int LastChapterOrdinal { get; set; }
 	}
 }

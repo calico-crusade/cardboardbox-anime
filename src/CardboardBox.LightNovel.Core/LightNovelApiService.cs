@@ -9,7 +9,7 @@ namespace CardboardBox.LightNovel.Core
 	public interface ILightNovelApiService
 	{
 		Task<Chapter[]?> FromJson(string path);
-		Task<string[]> GenerateEpubs(string bookId, EpubSettings[] settings);
+		Task<string[]> GenerateEpubs(string bookId, EpubSettings[] settings, string? workDir = null);
 		ISourceService[] Sources();
 	}
 
@@ -70,32 +70,43 @@ namespace CardboardBox.LightNovel.Core
 				yield return (cur.ToArray(), settings.Last());
 		}
 
-		public async Task<string[]> GenerateEpubs(string bookId, EpubSettings[] settings)
+		public async Task<string[]> GenerateEpubs(string bookId, EpubSettings[] settings, string? workDir = null)
 		{
+			if (settings.All(t => t.SkipGeneration)) return Array.Empty<string>();
+
+			workDir ??= Path.GetTempPath();
 			var (_, chaps) = await _db.Chapters(bookId, 1, 9999);
-			if (chaps.Length == 0)
-				return Array.Empty<string>();
+			if (chaps.Length == 0) return Array.Empty<string>();
 
 			var chunks = Chunks(chaps, settings.OrderBy(t => t.Start).ToArray());
-			var dir = Path.Combine("wwwroot", "cba-epub-host-" + Guid.NewGuid().ToString());
+			var dir = Path.Combine(workDir, "cba-epub-host-" + Guid.NewGuid().ToString());
 
-			if (!Directory.Exists(dir))
-				Directory.CreateDirectory(dir);
+			if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
 
-			var tasks = chunks.Select(t => Volume(t.chunk, t.settings, dir));
+			var tasks = chunks
+				.Where(t => !t.settings.SkipGeneration)
+				.Select(t => Volume(t.chunk, t.settings, dir));
 			return await Task.WhenAll(tasks);
 		}
 
 		public async Task<string> Volume(DbChapter[] chaps, EpubSettings settings, string dir)
 		{
-			var title = chaps.First().Book;
-			var path = Path.Combine(dir, $"{title.SnakeName()}-vol-{settings.Vol}.epub");
+			var seriesTitle = chaps.First().Book;
+			var title = $"{seriesTitle} Vol {settings.Vol}";
+			var path = Path.Combine(dir, $"{title.SnakeName()}.epub");
 			var wrk = Path.Combine(dir, $"vol-{settings.Vol}");
 
-			_logger.LogInformation($"Processing Novel Request: {title} - Volume: {settings.Vol} ({settings.Start} - {settings.Stop}) - Output: {path}");
+			_logger.LogInformation($"Processing Novel Request: {title} ({settings.Start} - {settings.Stop}) - Output: {path}");
 
 			await using var epub = EpubBuilder.Create(title, path, null, wrk);
 			var bob = await epub.Start();
+
+			bob.BelongsTo(seriesTitle, settings.Vol);
+			if (!string.IsNullOrEmpty(settings.Author)) bob.Author(settings.Author);
+			if (!string.IsNullOrEmpty(settings.Publisher)) bob.Publisher(settings.Publisher);
+			if (!string.IsNullOrEmpty(settings.Editor)) bob.Editor(settings.Editor);
+			if (!string.IsNullOrEmpty(settings.Illustrator)) bob.Illustrator(settings.Illustrator);
+			if (!string.IsNullOrEmpty(settings.Translator)) bob.Translator(settings.Translator);
 
 			await HandleCoverImage(bob, settings);
 			await HandleStyleSheet(bob, settings);
@@ -157,7 +168,7 @@ namespace CardboardBox.LightNovel.Core
 				return;
 			}
 
-			var (dataIn, _, _, _) = await _api.GetData(settings.StylesheetUrl);
+			var (dataIn, _, _, _) = await GetData(settings.StylesheetUrl);
 			using var data = dataIn;
 			await bob.AddStylesheet("stylesheet.css", data);
 		}
@@ -170,7 +181,7 @@ namespace CardboardBox.LightNovel.Core
 			{
 				foreach (var image in urls)
 				{
-					var (dataIn, _, file, type) = await _api.GetData(image);
+					var (dataIn, _, file, type) = await GetData(image);
 					var name = DetermineName(image, file, type);
 					using var data = dataIn;
 					await c.AddImage(name, data);
@@ -182,7 +193,7 @@ namespace CardboardBox.LightNovel.Core
 		{
 			if (string.IsNullOrEmpty(settings.CoverUrl)) return;
 
-			var (dataIn, _, file, type) = await _api.GetData(settings.CoverUrl);
+			var (dataIn, _, file, type) = await GetData(settings.CoverUrl);
 			var name = DetermineName(settings.CoverUrl, file, type);
 			await bob.AddCoverImage(name, dataIn);
 		}
@@ -233,10 +244,12 @@ namespace CardboardBox.LightNovel.Core
 			while (i < content.Length)
 			{
 				var fis = content.IndexOf(start, i);
+				if (fis == -1) break;
+
 				var nis = content.IndexOf(start, fis + start.Length);
 				var fie = content.IndexOf(stop, fis);
 
-				if (fis == -1 || nis == -1) break;
+				if (nis == -1) break;
 
 				if (nis < fie)
 					content = content.Insert(nis, stop);
@@ -250,6 +263,32 @@ namespace CardboardBox.LightNovel.Core
 				i = fie + 1;
 			}
 			return content;
+		}
+
+		public Task<(Stream stream, long length, string filename, string type)> GetData(string url)
+		{
+			if (url.ToLower().StartsWith("file://")) return GetDataFromFile(url.Remove(0, 7));
+			return _api.GetData(url);
+		}
+
+		public Task<(Stream stream, long length, string filename, string type)> GetDataFromFile(string path)
+		{
+			var fileInfo = new FileInfo(path);
+			var name = Path.GetFileName(path);
+			var ext = Path.GetExtension(path).ToLower().TrimStart('.');
+			var type = ext switch
+			{
+				"jpg" => "image/jpeg",
+				"jpeg" => "image/jpeg",
+				"png" => "image/png",
+				"css" => "text/css",
+				"html" => "text/html",
+				"webp" => "image/webp",
+				_ => throw new NotSupportedException($"File Extension \"{ext}\" mime-type is unknown")
+			};
+
+			var stream = (Stream)File.OpenRead(path);
+			return Task.FromResult((stream, fileInfo.Length, name, type));
 		}
 	}
 }

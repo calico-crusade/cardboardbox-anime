@@ -39,7 +39,6 @@ namespace CardboardBox.Anime.Cli
 		private readonly ILightNovelApiService _ln;
 		private readonly IChapterDbService _lnDb;
 		private readonly IPdfService _pdf;
-		private readonly IJmService _jm;
 
 		public Runner(
 			IVrvApiService vrv, 
@@ -52,8 +51,7 @@ namespace CardboardBox.Anime.Cli
 			ICrunchyrollApiService crunchy,
 			ILightNovelApiService ln,
 			IChapterDbService lbDn,
-			IPdfService pdf,
-			IJmService jm)
+			IPdfService pdf)
 		{
 			_vrv = vrv;
 			_logger = logger;
@@ -66,7 +64,6 @@ namespace CardboardBox.Anime.Cli
 			_ln = ln;
 			_lnDb = lbDn;
 			_pdf = pdf;
-			_jm = jm;
 		}
 
 		public async Task<int> Run(string[] args)
@@ -94,6 +91,7 @@ namespace CardboardBox.Anime.Cli
 					case "ln": await LoadLightNovel(); break;
 					case "conv": await ToPdf(); break;
 					case "epub": await ToEpub(); break;
+					case "pickup": await PickupNew(); break;
 					default: _logger.LogInformation("Invalid command: " + command); break;
 				}
 
@@ -377,32 +375,95 @@ namespace CardboardBox.Anime.Cli
 
 		public async Task ToEpub()
 		{
-			//const string ID = "445C5E7AC91435D2155BC1D1DAAE8EB8";
+			const string JM_IMG_DIR = @"C:\Users\Cardboard\Desktop\JM";
+			var cvi = (int volume) => $"{JM_IMG_DIR}\\Vol{volume}\\Cover.jpg";
+			var coi = (int volume) => $"{JM_IMG_DIR}\\Vol{volume}\\Contents.jpg";
+			var ini = (int volume) => $"{JM_IMG_DIR}\\Vol{volume}\\Inserts";
+			var frd = (int volume) => $"{JM_IMG_DIR}\\Vol{volume}\\Forwards";
 
-			//var (_, chaps) = await _lnDb.Chapters(ID, 1, 50);
+			var genSet = (int index, int start, int end) =>
+			{
+				var vol = index + 1;
+				var toUris = (string dir) => Directory.GetFiles(dir).Select(t => "file://" + t).ToArray();
 
-			//if (chaps.Length == 0) return;
+				var forwards = toUris(frd(vol));
+				var contents = coi(vol);
+				if (File.Exists(contents))
+					forwards = forwards.Append("file://" + contents).ToArray();
 
-			//var title = chaps[0].Book;
-			//var path = title.PurgePathChars() + ".epub";
+				return new EpubSettings
+				{
+					Start = start,
+					Stop = end,
+					Vol = vol,
+					Translator = "Supreme Tentacle",
+					Editor = "Joker",
+					Author = "Ryuyu",
+					Publisher = "Cardboard Box",
+					Illustrator = "Dabu Ryu",
+					CoverUrl = "file://" + cvi(vol),
+					ForwardUrls = forwards,
+					InsertUrls = toUris(ini(vol))
+				};
+			};
 
-			//var epub = EpubBuilder.Create(title).Start(path);
+			const string BOOK_ID = "445C5E7AC91435D2155BC1D1DAAE8EB8";
+			var ranges = new[]
+			{
+				(1, 42),
+				(43, 88),
+				(89, 122),
+				(123, 158),
+				(159, 185),
+				(186, 224),
+				(225, 266),
+				(267, 290),
+				(291, 324),
+				(325, 358),
+				(359, 391),
+				(391, 422)
+			};
 
-			//await epub.AddStylesheetFromFile("stylesheet.css", "stylesheet.css");
-			//await epub.AddCoverImage("cover.png", @"C:\Users\Cardboard\Desktop\cover.png");
+			var settings = ranges.Select((t, i) => genSet(i, t.Item1, t.Item2)).ToArray();
+			var epubs = await _ln.GenerateEpubs(BOOK_ID, settings);
 
-			//for (var i = 0; i < chaps.Length; i++)
-			//{
-			//	var chap = chaps[i];
-			//	await epub.AddChapter(chap.Chapter, async (c) =>
-			//	{
-			//		await c.AddRawPage($"chapter{i}.xhtml", $"<h1>{chap.Chapter}</h1>{chap.Content}");
-			//	});
-			//}
+			foreach (var epub in epubs)
+			{
+				var name = Path.GetFileName(epub);
+				if (File.Exists(name)) File.Delete(name);
+				File.Move(epub, name);
+			}
+		}
 
-			//await epub.Finish();
+		public async Task PickupNew()
+		{
+			const string ID = "445C5E7AC91435D2155BC1D1DAAE8EB8";
+			const int SOURCE_ID = 0;
+			var src = _ln.Sources()[SOURCE_ID];
+			var book = await _lnDb.Book(ID);
+			if (book == null)
+			{
+				_logger.LogWarning($"Could not find book with ID: {ID}");
+				return;
+			}
 
-			await _jm.Run();
+			var cur = src.DbChapters(book.LastChapterUrl);
+
+			int count = 0;
+			await foreach(var item in cur)
+			{
+				item.Ordinal = book.LastChapterOrdinal + count;
+				await _lnDb.Upsert(item);
+				count++;
+			}
+
+			if (count == 1)
+			{
+				_logger.LogInformation($"No new chapters for: {book.Title}");
+				return;
+			}
+
+			_logger.LogInformation($"New chapters loaded: {book.Title} - {count - 1}");
 		}
 	}
 }
