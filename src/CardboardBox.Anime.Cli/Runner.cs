@@ -1,7 +1,4 @@
-﻿using CardboardBox.Http;
-using Microsoft.Extensions.Logging;
-using System.Text.Json;
-using SLImage = SixLabors.ImageSharp.Image;
+﻿using SLImage = SixLabors.ImageSharp.Image;
 using AImage = CardboardBox.Anime.Core.Models.Image;
 
 namespace CardboardBox.Anime.Cli
@@ -14,7 +11,6 @@ namespace CardboardBox.Anime.Cli
 	using HiDive;
 	using Vrv;
 
-	using Epub;
 	using LightNovel.Core;
 
 	public interface IRunner
@@ -26,7 +22,6 @@ namespace CardboardBox.Anime.Cli
 	{
 		private const string VRV_JSON = "vrv2.json";
 		private const string FUN_JSON = "fun.json";
-		private const string VRV_FORMAT_JSON = "vrv-formatted.json";
 
 		private readonly IVrvApiService _vrv;
 		private readonly IFunimationApiService _fun;
@@ -37,8 +32,9 @@ namespace CardboardBox.Anime.Cli
 		private readonly IAnimeDbService _db;
 		private readonly ICrunchyrollApiService _crunchy;
 		private readonly ILightNovelApiService _ln;
-		private readonly IChapterDbService _lnDb;
+		private readonly IChapterDbService _chapDb;
 		private readonly IPdfService _pdf;
+		private readonly ILnDbService _lnDb;
 
 		public Runner(
 			IVrvApiService vrv, 
@@ -50,8 +46,9 @@ namespace CardboardBox.Anime.Cli
 			IAnimeDbService db,
 			ICrunchyrollApiService crunchy,
 			ILightNovelApiService ln,
-			IChapterDbService lbDn,
-			IPdfService pdf)
+			IChapterDbService chapDb,
+			IPdfService pdf, 
+			ILnDbService lnDb)
 		{
 			_vrv = vrv;
 			_logger = logger;
@@ -62,8 +59,9 @@ namespace CardboardBox.Anime.Cli
 			_db = db;
 			_crunchy = crunchy;
 			_ln = ln;
-			_lnDb = lbDn;
+			_chapDb = chapDb;
 			_pdf = pdf;
+			_lnDb = lnDb;
 		}
 
 		public async Task<int> Run(string[] args)
@@ -92,6 +90,7 @@ namespace CardboardBox.Anime.Cli
 					case "conv": await ToPdf(); break;
 					case "epub": await ToEpub(); break;
 					case "pickup": await PickupNew(); break;
+					case "lnmigr": await DoJm(); break;
 					default: _logger.LogInformation("Invalid command: " + command); break;
 				}
 
@@ -362,7 +361,7 @@ namespace CardboardBox.Anime.Cli
 			}
 
 			await foreach (var chap in chaps)
-				await _lnDb.Upsert(chap);
+				await _chapDb.Upsert(chap);
 
 			_logger.LogInformation("Book uploaded!");
 		}
@@ -442,7 +441,7 @@ namespace CardboardBox.Anime.Cli
 			const string ID = "445C5E7AC91435D2155BC1D1DAAE8EB8";
 			const int SOURCE_ID = 0;
 			var src = _ln.Sources()[SOURCE_ID];
-			var book = await _lnDb.BookById(ID);
+			var book = await _chapDb.BookById(ID);
 			if (book == null)
 			{
 				_logger.LogWarning($"Could not find book with ID: {ID}");
@@ -455,7 +454,7 @@ namespace CardboardBox.Anime.Cli
 			await foreach(var item in cur)
 			{
 				item.Ordinal = book.LastChapterOrdinal + count;
-				await _lnDb.Upsert(item);
+				await _chapDb.Upsert(item);
 				count++;
 			}
 
@@ -466,6 +465,192 @@ namespace CardboardBox.Anime.Cli
 			}
 
 			_logger.LogInformation($"New chapters loaded: {book.Title} - {count - 1}");
+		}
+
+		public async Task MigrateBooks()
+		{
+			var (_, books) = await _chapDb.Books();
+
+			await Task.WhenAll(books.Select(MigrateBook));
+		}
+
+		public async Task MigrateBook(DbBook book)
+		{
+			try
+			{
+				var src = _ln.Source(book.LastChapterUrl);
+				if (src == null)
+				{
+					_logger.LogWarning($"Could not find source for: {book.Title} - {book.LastChapterUrl}");
+					return;
+				}
+
+				var seriesUrl = src.SeriesFromChapter(book.LastChapterUrl);
+				var data = await src.GetSeriesInfo(seriesUrl);
+
+				if (data == null)
+				{
+					_logger.LogWarning($"Could not find series data for: {book.Title} - {book.LastChapterUrl}");
+					return;
+				}
+
+				var id = await _lnDb.Series.Upsert(new Series
+				{
+					HashId = book.Title.MD5Hash(),
+					Title = book.Title,
+					Url = seriesUrl,
+					LastChapterUrl = book.LastChapterUrl,
+					Image = data.Image,
+					Genre = data.Genre,
+					Tags = data.Tags,
+					Authors = new[] { data.Author ?? "" },
+					Illustrators = Array.Empty<string>(),
+					Editors = Array.Empty<string>(),
+					Translators = Array.Empty<string>(),
+					Description = data.Description
+				});
+				var (_, chaps) = await _chapDb.Chapters(book.Id, 1, 10000);
+
+				foreach (var chap in chaps)
+				{
+					await _lnDb.Pages.Upsert(new Page
+					{
+						SeriesId = id,
+						HashId = chap.HashId,
+						Url = chap.Url,
+						NextUrl = string.IsNullOrEmpty(chap.NextUrl) ? null : chap.NextUrl,
+						Content = chap.Content,
+						Mimetype = "application/html",
+						Title = chap.Chapter,
+						Ordinal = chap.Ordinal
+					});
+				}
+
+				_logger.LogInformation($"Finished migrating: {book.Title}::{id} - {chaps.Length} pages");
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"Error occurred while processing: {book.Title}");
+				throw;
+			}
+		}
+
+		public async Task DoJm()
+		{
+			const long SERIES_ID = 8;
+			var scaffold = await _lnDb.Series.Scaffold(SERIES_ID);
+
+			const string JM_IMG_DIR = @"C:\Users\Cardboard\Desktop\JM";
+			const string JM_IMG_URL = "https://static.index-0.com/jm/volumeart";
+			var cvi = (int volume) => ($"{JM_IMG_DIR}\\Vol{volume}\\Cover.jpg", $"{JM_IMG_URL}/Vol{volume}/Cover.jpg");
+			var coi = (int volume) => ($"{JM_IMG_DIR}\\Vol{volume}\\Contents.jpg", $"{JM_IMG_URL}/Vol{volume}/Contents.jpg");
+			var ini = (int volume) => ($"{JM_IMG_DIR}\\Vol{volume}\\Inserts", $"{JM_IMG_URL}/Vol{volume}/Inserts");
+			var frd = (int volume) => ($"{JM_IMG_DIR}\\Vol{volume}\\Forwards", $"{JM_IMG_URL}/Vol{volume}/Forwards");
+			var toUris = ((string dir, string url) a) => Directory.GetFiles(a.dir).Select(t => $"{a.url}/{Path.GetFileName(t)}").ToArray();
+
+			
+			var series = await _lnDb.Series.Fetch(SERIES_ID);
+			var (_, _, pages) = await _lnDb.Pages.Paginate(SERIES_ID, 1, 1000);
+
+			var ranges = new[]
+			{
+				(1, 42),
+				(43, 88),
+				(89, 122),
+				(123, 158),
+				(159, 185),
+				(186, 224),
+				(225, 266),
+				(267, 290),
+				(291, 324),
+				(325, 358),
+				(359, 391),
+				(391, (int?)null)
+			};
+			var doChunks = (Page[] pages, (int start, int? stop)[] ranges) =>
+			{
+				var output = new List<Page[]>();
+				int r = 0;
+				var cur = new List<Page>();
+
+				for (var i = 0; i < pages.Length; i++)
+				{
+					if (r >= ranges.Length) break;
+
+					var page = pages[i];
+					var (start, stop) = ranges[r];
+					if (i + 1 < start || (stop != null && i + 1 > stop))
+					{
+						r++;
+						output.Add(cur.ToArray());
+						cur.Clear();
+					}
+
+					cur.Add(page);
+				}
+
+				if (cur.Count > 0)
+					output.Add(cur.ToArray());
+
+				return output.ToArray();
+			};
+
+			var chunks = doChunks(pages, ranges);
+
+			if (chunks.Length != ranges.Length)
+			{
+				_logger.LogWarning($"Chunks ({chunks.Length}) / Ranges Mismatch ({ranges.Length})");
+				return;
+			}
+
+			series.Illustrators = new[] { "Dabu Ryu" };
+			series.Translators = new[] { "Supreme Tentacle", "Yuuki" };
+			series.Editors = new[] { "Joker", "SpeedPheonix" };
+
+			await _lnDb.Series.Upsert(series);
+
+			for (var i = 0; i < ranges.Length; i++)
+			{
+				var (start, stop) = ranges[i];
+				var vol = i + 1;
+				var forwards = toUris(frd(vol));
+				var inserts = toUris(ini(vol));
+				var (cdir, curl) = coi(vol);
+				if (File.Exists(cdir))
+					forwards = forwards.Append($"{curl}/{Path.GetFileName(cdir)}").ToArray();
+
+				var title = $"{series.Title} Vol {vol}";
+
+				var id = await _lnDb.Books.Upsert(new Book
+				{
+					SeriesId = SERIES_ID,
+					CoverImage = cvi(vol).Item2,
+					Forwards = forwards,
+					Inserts = inserts,
+					Title = title,
+					HashId = title.MD5Hash(),
+					Ordinal = vol
+				});
+
+				var pageChunk = chunks[i];
+				for(var p = 0; p < pageChunk.Length; p++)
+				{
+					var page = pageChunk[p];
+					var chapId = await _lnDb.Chapters.Upsert(new Chapter
+					{
+						HashId = $"{page.Title}-{i}-{p}".MD5Hash(),
+						Title = page.Title,
+						Ordinal = p,
+						BookId = id
+					});
+					await _lnDb.ChapterPages.Upsert(new ChapterPage
+					{
+						ChapterId = chapId,
+						PageId = page.Id,
+						Ordinal = 0
+					});
+				}
+			}
 		}
 	}
 }

@@ -2,6 +2,8 @@
 
 namespace CardboardBox.LightNovel.Core
 {
+	using Anime.Database.Mapping;
+	using Database;
 	using Sources;
 
 	public static class Extensions
@@ -56,7 +58,7 @@ namespace CardboardBox.LightNovel.Core
 
 		public static string HTMLDecode(this string text)
 		{
-			return HttpUtility.HtmlDecode(text);
+			return HttpUtility.HtmlDecode(text).Trim('\n');
 		}
 
 		public static string SafeSubString(this string text, int length, int start = 0)
@@ -107,14 +109,54 @@ namespace CardboardBox.LightNovel.Core
 			return true;
 		}
 
+		public static IEnumerable<T> SkipLast<T>(this IEnumerable<T> data, int count = 1)
+		{
+			return data.Reverse().Skip(count).Reverse();
+		}
+
+		public static Dictionary<T, V[]> ToGDictionary<T, V>(this IEnumerable<V> data, Func<V, T> keySelector) where T : notnull
+		{
+			return data
+				.GroupBy(t => keySelector(t))
+				.ToDictionary(t => t.Key, t => t.ToArray());
+		}
+
+		public static Dictionary<T, V[]> ToGDictionary<T, V, O>(this IEnumerable<V> data, Func<V, T> keySelector, Func<V, O> order, bool asc = true) where T : notnull
+		{
+			return data
+				.GroupBy(t => keySelector(t))
+				.ToDictionary(t => t.Key, t =>
+				{
+					if (asc) return t.OrderBy(order).ToArray();
+					return t.OrderByDescending(order).ToArray();
+				});
+		}
+
 		public static IServiceCollection AddLightNovel(this IServiceCollection services)
 		{
+			MapConfig.AddMap(c =>
+			{
+				c.ForEntity<Book>()
+				 .ForEntity<Chapter>()
+				 .ForEntity<Page>()
+				 .ForEntity<Series>()
+				 .ForEntity<ChapterPage>();
+			});
+
 			return services
 				.AddTransient<ILnpSourceService, LnpSourceService>()
 				.AddTransient<IShSourceService, ShSourceService>()
 
 				.AddTransient<ILightNovelApiService, LightNovelApiService>()
-				.AddTransient<IPdfService, PdfService>();
+				.AddTransient<IPdfService, PdfService>()
+				
+				.AddTransient<IDbBookService, DbBookService>()
+				.AddTransient<IDbChapterService, DbChapterService>()
+				.AddTransient<IDbPageService, DbPageService>()
+				.AddTransient<IDbSeriesService, DbSeriesService>()
+				.AddTransient<IDbChapterPageService, DbChapterPageService>()
+				
+				.AddTransient<ILnDbService, LnDbService>();
 		}
 	}
 }

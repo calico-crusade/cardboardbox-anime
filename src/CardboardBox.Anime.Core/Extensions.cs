@@ -157,10 +157,10 @@ namespace CardboardBox.Anime
 	public class PaginatedResult<T>
 	{
 		[JsonPropertyName("pages")]
-		public int Pages { get; set; }
+		public long Pages { get; set; }
 
 		[JsonPropertyName("count")]
-		public int Count { get; set; }
+		public long Count { get; set; }
 
 		[JsonPropertyName("results")]
 		public T[] Results { get; set; } = Array.Empty<T>();
@@ -174,7 +174,14 @@ namespace CardboardBox.Anime
 			Results = results;
 		}
 
-		public void Deconstruct(out int pages, out int count, out T[] results)
+		public PaginatedResult(long pages, long count, T[] results)
+		{
+			Pages = pages;
+			Count = count;
+			Results = results;
+		}
+
+		public void Deconstruct(out long pages, out long count, out T[] results)
 		{
 			pages = Pages;
 			count = Count;

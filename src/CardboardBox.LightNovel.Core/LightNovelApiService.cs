@@ -8,7 +8,7 @@ namespace CardboardBox.LightNovel.Core
 
 	public interface ILightNovelApiService
 	{
-		Task<Chapter[]?> FromJson(string path);
+		Task<SourceChapter[]?> FromJson(string path);
 		Task<(string[] files, string wrkDir)> GenerateEpubs(string bookId, EpubSettings[] settings, string? workDir = null);
 		ISourceService[] Sources();
 		ISourceService? Source(string url);
@@ -39,10 +39,10 @@ namespace CardboardBox.LightNovel.Core
 			_logger = logger;
 		}
 
-		public async Task<Chapter[]?> FromJson(string path)
+		public async Task<SourceChapter[]?> FromJson(string path)
 		{
 			using var io = File.OpenRead(path);
-			return await JsonSerializer.DeserializeAsync<Chapter[]>(io).AsTask();
+			return await JsonSerializer.DeserializeAsync<SourceChapter[]>(io).AsTask();
 		}
 
 		public ISourceService[] Sources() => new[] { (ISourceService)_src1, _src2 };

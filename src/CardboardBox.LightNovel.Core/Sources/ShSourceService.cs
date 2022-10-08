@@ -51,5 +51,57 @@
 		{
 			return doc.InnerText("//div[@class='chp_byauthor']/a");
 		}
+
+		public override string? SeriesTitle(HtmlDocument doc)
+		{
+			return doc.InnerText("//div[@class='fic_title']");
+		}
+
+		public override string? SeriesAuthor(HtmlDocument doc)
+		{
+			return doc.InnerText("//span/a/span[@class='auth_name_fic']");
+		}
+
+		public override string? SeriesDescription(HtmlDocument doc)
+		{
+			return doc.InnerHtml("//div[@class='fic_row details']/div[@class='wi_fic_desc']");
+		}
+
+		public override string? SeriesImage(HtmlDocument doc)
+		{
+			return doc.Attribute("//div[@class='novel-cover']/div[@class='fic_image']/img", "src");
+		}
+
+		public override string[] SeriesTags(HtmlDocument doc)
+		{
+			return doc.DocumentNode
+				.SelectNodes("//a[@id='etagme']")
+				.Select(t => t.InnerText.HTMLDecode())
+				.ToArray();
+		}
+
+		public override string[] SeriesGenres(HtmlDocument doc)
+		{
+			return doc.DocumentNode
+				.SelectNodes("//span[@property='genre']/a")
+				.Select(t => t.InnerText.HTMLDecode())
+				.ToArray();
+		}
+
+		public override string SeriesFromChapter(string url)
+		{
+			//https://www.scribblehub.com/series/395252/lieforged-gale/
+			//https://www.scribblehub.com/read/395252-lieforged-gale/chapter/395256/
+
+			//https://www.scribblehub.com/read/62666-living-as-i-please-as-a-loli-demon-king/chapter/62668/
+			//https://www.scribblehub.com/series/62666/living-as-i-please-as-a-loli-demon-king/
+
+			var regex = new Regex("https://www.scribblehub.com/read/([0-9]{1,})-(.*?)/chapter/([0-9]{1,})(/?)");
+			var parts = regex.Match(url);
+			var id = parts.Groups[1].Value;
+			var name = parts.Groups[2].Value;
+
+			return $"https://www.scribblehub.com/series/{id}/{name}/";
+		}
 	}
 }

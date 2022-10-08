@@ -24,6 +24,7 @@ namespace CardboardBox.Anime
 
 			return services
 				.AddCardboardHttp()
+				.AddLightNovel()
 				.AddDatabase()
 				.AddOAuth(config)
 				.AddTransient<IVrvApiService, VrvApiService>()
@@ -31,9 +32,7 @@ namespace CardboardBox.Anime
 				.AddTransient<IHiDiveApiService, HiDiveApiService>()
 				.AddTransient<ICrunchyrollApiService, CrunchyrollApiService>()
 				.AddMongo<Anime, AnimeConfig>()
-				.AddTransient<IAnimeMongoService, AnimeMongoService>()
-				
-				.AddLightNovel();
+				.AddTransient<IAnimeMongoService, AnimeMongoService>();
 		}
 	}
 }

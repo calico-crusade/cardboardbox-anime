@@ -8,9 +8,13 @@
 		string Name { get; }
 		string RootUrl { get; }
 
-		IAsyncEnumerable<Chapter> Chapters(string firstUrl);
+		IAsyncEnumerable<SourceChapter> Chapters(string firstUrl);
 
 		IAsyncEnumerable<DbChapter> DbChapters(string firstUrl);
+
+		Task<TempSeriesInfo?> GetSeriesInfo(string url);
+
+		string SeriesFromChapter(string url);
 	}
 
 	public abstract class SourceService : ISourceService
@@ -27,7 +31,7 @@
 			_logger = logger;
 		}
 
-		public virtual async IAsyncEnumerable<Chapter> Chapters(string firstUrl)
+		public virtual async IAsyncEnumerable<SourceChapter> Chapters(string firstUrl)
 		{
 			string rootUrl = firstUrl.GetRootUrl(),
 				   url = firstUrl;
@@ -55,7 +59,7 @@
 				yield return last = FromChapter(chapter, last);
 		}
 
-		public static DbChapter FromChapter(Chapter chapter, DbChapter? last)
+		public static DbChapter FromChapter(SourceChapter chapter, DbChapter? last)
 		{
 			return new DbChapter
 			{
@@ -70,7 +74,7 @@
 			};
 		}
 
-		public virtual async Task<Chapter> GetChapter(string url, string rootUrl)
+		public virtual async Task<SourceChapter> GetChapter(string url, string rootUrl)
 		{
 			if (url.StartsWith("/"))
 				url = $"{rootUrl.TrimEnd('/')}{url}";
@@ -91,12 +95,40 @@
 				!validUrl)
 				next = "";
 
-			return new Chapter(title ?? string.Empty, chapter ?? string.Empty, content ?? string.Empty, next, url);
+			return new SourceChapter(title ?? string.Empty, chapter ?? string.Empty, content ?? string.Empty, next, url);
 		}
 
 		public abstract string? GetTitle(HtmlDocument doc);
 		public abstract string? GetChapter(HtmlDocument doc);
 		public abstract string? GetContent(HtmlDocument doc);
 		public abstract string? GetNextLink(HtmlDocument doc);
+
+		public virtual async Task<TempSeriesInfo?> GetSeriesInfo(string url)
+		{
+			var doc = await _api.GetHtml(url);
+			if (doc == null) return null;
+
+			string? title = SeriesTitle(doc),
+					author = SeriesAuthor(doc),
+					descrip = SeriesDescription(doc),
+					image = SeriesImage(doc);
+			string[] tags = SeriesTags(doc),
+					 genres = SeriesGenres(doc);
+
+			if (string.IsNullOrEmpty(title)) return null;
+
+			return new TempSeriesInfo(title, descrip, author, image, genres, tags);
+		}
+
+		public abstract string? SeriesTitle(HtmlDocument doc);
+		public abstract string? SeriesAuthor(HtmlDocument doc);
+		public abstract string? SeriesDescription(HtmlDocument doc);
+		public abstract string? SeriesImage(HtmlDocument doc);
+		public abstract string[] SeriesTags(HtmlDocument doc);
+		public abstract string[] SeriesGenres(HtmlDocument doc);
+
+		public abstract string SeriesFromChapter(string url);
 	}
+
+	public record class TempSeriesInfo(string Title, string? Description, string? Author, string? Image, string[] Genre, string[] Tags);
 }

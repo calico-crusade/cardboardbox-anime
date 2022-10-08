@@ -66,10 +66,12 @@ SELECT COUNT(*) FROM light_novels WHERE book_id = :bookId;";
 			var query = $@"
 WITH books AS (
     SELECT
-    DISTINCT
-    book_id as id,
-    book as title
-    FROM light_novels
+        DISTINCT
+        book_id as id,
+        book as title,
+        MAX(ordinal) as last_ordinal
+    FROM light_novels a
+    GROUP BY a.book_id, a.book
 )
 SELECT
     id,
@@ -77,9 +79,9 @@ SELECT
     ( SELECT COUNT(*) FROM light_novels l WHERE b.id = l.book_id ) as chapters,
     ( SELECT MIN(l.created_at) FROM light_novels l WHERE b.id = l.book_id ) as created_at,
     ( SELECT MAX(l.updated_at) FROM light_novels l WHERE b.id = l.book_id ) as updated_at,
-	( SELECT l.url FROM light_novels l WHERE b.id = l.book_id AND l.next_url = '' ) as last_chapter_url,
-	( SELECT l.id FROM light_novels l WHERE b.id = l.book_id AND l.next_url = '' ) as last_chapter_id,
-	( SELECT l.ordinal FROM light_novels l WHERE b.id = l.book_id AND l.next_url = '' ) as last_chapter_ordinal
+	( SELECT l.url FROM light_novels l WHERE b.id = l.book_id AND l.ordinal = b.last_ordinal ) as last_chapter_url,
+	( SELECT l.id FROM light_novels l WHERE b.id = l.book_id AND l.ordinal = b.last_ordinal ) as last_chapter_id,
+	( SELECT l.ordinal FROM light_novels l WHERE b.id = l.book_id AND l.ordinal = b.last_ordinal ) as last_chapter_ordinal
 FROM books b
 ORDER BY title ASC
 LIMIT {size}
@@ -99,10 +101,12 @@ SELECT COUNT(DISTINCT book) from light_novels;";
 		{
 			const string QUERY = @"WITH books AS (
     SELECT
-    DISTINCT
-    book_id as id,
-    book as title
-    FROM light_novels
+        DISTINCT
+        book_id as id,
+        book as title,
+        MAX(ordinal) as last_ordinal
+    FROM light_novels a
+    GROUP BY a.book_id, a.book
 )
 SELECT
     id,
@@ -110,9 +114,9 @@ SELECT
     ( SELECT COUNT(*) FROM light_novels l WHERE b.id = l.book_id ) as chapters,
     ( SELECT MIN(l.created_at) FROM light_novels l WHERE b.id = l.book_id ) as created_at,
     ( SELECT MAX(l.updated_at) FROM light_novels l WHERE b.id = l.book_id ) as updated_at,
-	( SELECT l.url FROM light_novels l WHERE b.id = l.book_id AND l.next_url = '' ) as last_chapter_url,
-	( SELECT l.id FROM light_novels l WHERE b.id = l.book_id AND l.next_url = '' ) as last_chapter_id,
-	( SELECT l.ordinal FROM light_novels l WHERE b.id = l.book_id AND l.next_url = '' ) as last_chapter_ordinal
+	( SELECT l.url FROM light_novels l WHERE b.id = l.book_id AND l.ordinal = b.last_ordinal ) as last_chapter_url,
+	( SELECT l.id FROM light_novels l WHERE b.id = l.book_id AND l.ordinal = b.last_ordinal ) as last_chapter_id,
+	( SELECT l.ordinal FROM light_novels l WHERE b.id = l.book_id AND l.ordinal = b.last_ordinal ) as last_chapter_ordinal
 FROM books b
 WHERE b.id = :id";
 
@@ -123,12 +127,13 @@ WHERE b.id = :id";
 		{
 			const string QUERY = @"WITH books AS (
     SELECT
-    DISTINCT
-    book_id as id,
-    book as title
-    FROM light_novels
-	WHERE
-		url = :url
+        DISTINCT
+        book_id as id,
+        book as title,
+        MAX(ordinal) as last_ordinal
+    FROM light_novels a
+	WHERE a.url = :url
+    GROUP BY a.book_id, a.book
 )
 SELECT
     id,
@@ -136,9 +141,9 @@ SELECT
     ( SELECT COUNT(*) FROM light_novels l WHERE b.id = l.book_id ) as chapters,
     ( SELECT MIN(l.created_at) FROM light_novels l WHERE b.id = l.book_id ) as created_at,
     ( SELECT MAX(l.updated_at) FROM light_novels l WHERE b.id = l.book_id ) as updated_at,
-	( SELECT l.url FROM light_novels l WHERE b.id = l.book_id AND l.next_url = '' ) as last_chapter_url,
-	( SELECT l.id FROM light_novels l WHERE b.id = l.book_id AND l.next_url = '' ) as last_chapter_id,
-	( SELECT l.ordinal FROM light_novels l WHERE b.id = l.book_id AND l.next_url = '' ) as last_chapter_ordinal
+	( SELECT l.url FROM light_novels l WHERE b.id = l.book_id AND l.ordinal = b.last_ordinal ) as last_chapter_url,
+	( SELECT l.id FROM light_novels l WHERE b.id = l.book_id AND l.ordinal = b.last_ordinal ) as last_chapter_id,
+	( SELECT l.ordinal FROM light_novels l WHERE b.id = l.book_id AND l.ordinal = b.last_ordinal ) as last_chapter_ordinal
 FROM books b";
 
 			return await _sql.Fetch<DbBook>(QUERY, new { url });

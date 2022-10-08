@@ -102,8 +102,23 @@ namespace CardboardBox.Anime.Api.Controllers
 
 			return Ok(new ChapterLoadResponse(id, isNew, count));
 		}
+
+		[HttpGet, Route("ln/refresh"), ProducesDefaultResponseType(typeof(RefreshResponse[]))]
+		public async Task<IActionResult> Refresh()
+		{
+			var (_, books) = await _ln.Books();
+			var resp = await Task.WhenAll(books
+				.Select(async c =>
+				{
+					var (id, count) = await _api.LoadFromBookId(c.Id);
+					return new RefreshResponse(c, new ChapterLoadResponse(c.Id, false, count));
+				}));
+
+			return Ok(resp);
+		}
 	}
 
 	public record class ChapterLoadResponse(string? BookId, bool IsNew, int? Count, string? Message = null);
+	public record class RefreshResponse(DbBook Book, ChapterLoadResponse Response);
 	public record class ChaptersResponse(DbBook Book, DbChapterLimited[] Chapters);
 }

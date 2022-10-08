@@ -32,6 +32,13 @@ namespace CardboardBox.Anime.Database.Generation
 		string SelectId<T>(string tableName);
 		string Select<T>(string tableName, Action<PropertyExpressionBuilder<T>> columns);
 		string Select(string tableName, params PropertyMap[] columns);
+
+		string Pagniate<T, TSort>(string tableName, 
+			Action<PropertyExpressionBuilder<T>> columns, 
+			Expression<Func<T, TSort>> order, 
+			bool asc = true,
+			string sizeName = "size", 
+			string offsetName = "offset");
 	}
 
 	public class DbQueryBuilderService : IDbQueryBuilderService
@@ -253,6 +260,30 @@ WHERE
 	{string.Join(" AND\r\n\t", cols)}";
 		}
 		#endregion
+
+		public string Pagniate<T, TSort>(string tableName, 
+			Action<PropertyExpressionBuilder<T>> columns, 
+			Expression<Func<T, TSort>> order, bool asc = true,
+			string sizeName = "size", string offsetName = "offset")
+		{
+			var propNames = GetPropertyNames(columns);
+			var map = GetPropertyMap(propNames, Array.Empty<string>(), false, true);
+			var cols = map.Select(t => t.applyEquals ? $"{t.Snake} = {t.Value}" : $"{t.Snake} {t.Value}");
+			var where = map.Length == 0 ? "" : "WHERE " + string.Join(" AND\r\n\t", cols);
+			var sortProp = Extensions.GetPropertyInfo(order);
+			var sortCol = GetPropertyMap(new[] { GetPropertyName(sortProp) }, Array.Empty<string>()).First();
+
+			return $@"SELECT
+	*
+FROM {tableName}
+{where}
+ORDER BY {sortCol.Snake} {(asc ? "ASC" : "DESC")}
+LIMIT :{sizeName}
+OFFSET :{offsetName};
+
+SELECT COUNT(*) FROM {tableName} {where};";
+
+		}
 	}
 
 	public record class PropertyName(string Original, string Snake);

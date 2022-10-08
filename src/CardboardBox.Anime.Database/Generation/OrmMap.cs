@@ -1,4 +1,6 @@
-﻿namespace CardboardBox.Anime.Database.Generation
+﻿using Dapper;
+
+namespace CardboardBox.Anime.Database.Generation
 {
 	public abstract class OrmMap<T>
 	{
@@ -38,6 +40,7 @@
 		private string? _insertReturnQuery;
 		private string? _insertQuery;
 		private string? _updateQuery;
+		private string? _paginateQuery;
 
 		public OrmMapExtended(
 			IDbQueryBuilderService query,
@@ -65,6 +68,28 @@
 		{
 			_updateQuery ??= _query.Update<T>(TableName);
 			return _sql.Execute(_updateQuery, obj);
+		}
+
+		public virtual async Task<PaginatedResult<T>> Paginate(string query, object? pars = null, int page = 1, int size = 100)
+		{
+			var p = new DynamicParameters(pars);
+			p.Add("offset", (page - 1) * size);
+			p.Add("size", size);
+
+			using var con = _sql.CreateConnection();
+			using var rdr = await con.QueryMultipleAsync(query, p);
+
+			var res = (await rdr.ReadAsync<T>()).ToArray();
+			var total = await rdr.ReadSingleAsync<long>();
+
+			var pages = (long)Math.Ceiling((double)total / size);
+			return new PaginatedResult<T>(pages, total, res);
+		}
+
+		public virtual Task<PaginatedResult<T>> Paginate(int page = 1, int size = 100)
+		{
+			_paginateQuery ??= _query.Pagniate<T, long>(TableName, (c) => { }, t => t.Id);
+			return Paginate(_paginateQuery, null, page, size);
 		}
 	}
 }
