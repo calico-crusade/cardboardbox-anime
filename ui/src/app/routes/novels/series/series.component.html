@@ -1,0 +1,85 @@
+<cba-container [loading]="loading" [error]="error" [handle-scroll]="true">
+    <div class="container" *ngIf="series">
+        <main>
+            <div class="image">
+                <img [src]="series.image" fallback alt="Series Cover Image" />
+            </div>
+            <div class="details">
+                <h1>{{ series.title }}</h1>
+                <div class="attribution" *ngIf="series.authors.length > 0">
+                    <div class="type">Author<span *ngIf="series.authors.length > 1">s</span>: </div>
+                    <div class="value">
+                        <span *ngFor="let val of series.authors">{{ val }}</span>
+                    </div>
+                </div>
+                <div class="attribution" *ngIf="series.illustrators.length > 0">
+                    <div class="type">Illustrator<span *ngIf="series.illustrators.length > 1">s</span>: </div>
+                    <div class="value">
+                        <span *ngFor="let val of series.illustrators">{{ val }}</span>
+                    </div>
+                </div>
+                <div class="attribution" *ngIf="series.editors.length > 0">
+                    <div class="type">Editor<span *ngIf="series.editors.length > 1">s</span>: </div>
+                    <div class="value">
+                        <span *ngFor="let val of series.editors">{{ val }}</span>
+                    </div>
+                </div>
+                <div class="attribution" *ngIf="series.translators.length > 0">
+                    <div class="type">Translator<span *ngIf="series.translators.length > 1">s</span>: </div>
+                    <div class="value">
+                        <span *ngFor="let val of series.translators">{{ val }}</span>
+                    </div>
+                </div>
+                <div class="attribution" *ngIf="series.url">
+                    <div class="type">Data Source: </div>
+                    <div class="value">
+                        <a [href]="series.url" target="_blank">{{ source }}</a>
+                    </div>
+                </div>
+                <div class="attribution">
+                    <div class="type">Description: </div>
+                </div>
+                <div class="description" [innerHTML]="series.description"></div>
+            </div>
+        </main>
+        <main>
+            <div class="details">
+                <div class="tags" *ngIf="series.genre.length > 0">
+                    <span class="header">Genre<span *ngIf="series.genre.length > 1">s</span>: </span>
+                    <span class="tag" *ngFor="let val of series.genre">{{ val }}</span>
+                </div>
+                <div class="tags" *ngIf="series.tags.length > 0">
+                    <span class="header">Tag<span *ngIf="series.tags.length > 1">s</span>: </span>
+                    <span class="tag" *ngFor="let val of series.tags">{{ val }}</span>
+                </div>
+            </div>
+        </main>
+        <div class="splitter">
+            <h1>Books: </h1>
+            <button (click)="download()" [disabled]="downloading">
+                <cba-icon *ngIf="!downloading">download</cba-icon>
+                <cba-icon *ngIf="downloading">sync</cba-icon>
+                <span>Download Epubs</span>
+            </button>
+        </div>
+        <article>
+            <div class="book-container" *ngFor="let book of books">
+                <a class="book" [routerLink]="[ '/series', series.id, 'book' , book.book.id ]">
+                    <div class="float-ribbon"></div>
+    
+                    <div class="image">
+                        <img [src]="book.book.coverImage" fallback />
+                    </div>
+    
+                    <div class="float-number">
+                        <span>#{{ book.book.ordinal }}</span>
+                    </div>
+    
+                    <div class="details">
+                        <h2>{{ book.book.title }}</h2>
+                    </div>
+                </a>
+            </div>
+        </article>
+    </div>
+</cba-container>

@@ -1,0 +1,48 @@
+<div class="component-container">
+    <div class="center"
+         infiniteScroll (scrolled)="onScroll()" [scrollWindow]="false"
+         [infiniteScrollDistance]="1" [infiniteScrollThrottle]="50">
+        <main *ngIf="loading && books.length == 0" class="loading">
+            <img src="/assets/loading.gif" alt="Loading Icon" />
+            <span>Loading...</span>
+        </main>
+        <main *ngIf="!loading && total == 0" class="loading">
+            <img src="/assets/error.gif" alt="Loading Icon" />
+            <span>I couldn't find any novels to show you!</span>
+        </main>
+        <main *ngIf="books.length > 0" class="content">
+            <div class="book" *ngFor="let book of books">
+                <a class="image" [routerLink]="['/series', book.id]">
+                    <img [src]="book.image" fallback />
+                </a>
+                <div class="details">
+                    <a [routerLink]="['/series', book.id]">
+                        <h1>{{ book.title }}</h1>
+                        <h2>Author: {{ book.authors.join(', ') }}</h2>
+                        <div class="description" [innerHTML]="book.description"></div>
+                    </a>
+                    <div class="tags" #genreTarget>
+                        <span class="header">Genres:</span>
+                        <span class="tag" [ngClass]="{ 'hidden': i > 4 }" *ngFor="let tag of book.genre; let i = index">{{ tag }}</span>
+                        <button class="tag-more" *ngIf="book.genre.length > 5" (click)="showMore(genreTarget, $event)">More...</button>
+                    </div>
+                    <div class="tags" #tagTarget>
+                        <span class="header">Tags:</span>
+                        <span class="tag" [ngClass]="{ 'hidden': i > 4 }" *ngFor="let tag of book.tags; let i = index">{{ tag }}</span>
+                        <button class="tag-more" *ngIf="book.tags.length > 5" (click)="showMore(tagTarget, $event)">More...</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="loader" *ngIf="loading">
+                <img src="/assets/loading.gif" alt="Loading Icon" />
+                <span>Loading...</span>
+            </div>
+
+            <div class="loader" *ngIf="!loading">
+                <img src="/assets/error.gif" alt="Loading Icon" />
+                <span>You've reached the end!!</span>
+            </div>
+        </main>
+    </div>
+</div>

@@ -1,0 +1,13 @@
+<div class="component-container">
+    <main *ngIf="loading" class="loading">
+        <img src="/assets/loading.gif" alt="Loading Icon" />
+        <span>Loading...</span>
+    </main>
+    <main *ngIf="!loading && error" class="loading">
+        <img src="/assets/error.gif" alt="Loading Icon" />
+        <span>{{ error }}</span>
+    </main>
+    <main *ngIf="!loading && !error" class="content" [ngClass]="{ 'scroll': handleScroll }">
+        <ng-content></ng-content>
+    </main>
+</div>

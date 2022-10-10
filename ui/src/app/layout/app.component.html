@@ -31,20 +31,28 @@
                 </span>
                 <span class="title">Public Lists</span>
             </a>
-            <!-- <a routerLink="/ln" routerLinkActive="active" (click)="menuOpen = false">
-                <span class="icon">
-                    <cba-icon>menu_book</cba-icon>
-                </span>
-                <span class="title">Light Novels</span>
-            </a> -->
             <ng-container *ngIf="loggedIn">
+                <a routerLink="/series" routerLinkActive="active" (click)="menuOpen = false">
+                    <span class="icon">
+                        <cba-icon>menu_book</cba-icon>
+                    </span>
+                    <span class="title">Novels</span>
+                </a>
                 <a routerLink="/lists" routerLinkActive="active" (click)="menuOpen = false">
                     <span class="icon">
                         <cba-icon>list</cba-icon>
                     </span>
                     <span class="title">My Lists</span>
                 </a>
-                <button>
+                <a *ngIf="isAdmin" routerLink="/admin" routerLinkActive="active" (click)="menuOpen = false">
+                    <span class="icon">
+                        <cba-icon>person</cba-icon>
+                    </span>
+                    <span class="title">
+                        {{ user?.nickname }}
+                    </span>
+                </a>
+                <button *ngIf="!isAdmin">
                     <span class="icon">
                         <cba-icon>person</cba-icon>
                     </span>

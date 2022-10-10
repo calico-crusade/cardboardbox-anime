@@ -24,7 +24,8 @@ app.UseCors(c =>
 {
 	c.AllowAnyHeader()
 	 .AllowAnyMethod()
-	 .AllowAnyOrigin();
+	 .AllowAnyOrigin()
+	 .WithExposedHeaders("Content-Disposition");
 });
 
 app.UseStaticFiles();

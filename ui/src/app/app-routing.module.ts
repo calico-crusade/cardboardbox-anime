@@ -7,6 +7,14 @@ import { LightnovelsComponent } from './routes/lightnovels/lightnovels.component
 import { ListsComponent } from './routes/lists/lists.component';
 import { PublicListsComponent } from './routes/public-lists/public-lists.component';
 
+import {
+    BookComponent,
+    SeriesComponent,
+    SeriesListComponent
+} from './routes/novels';
+import { AdminComponent } from './routes/admin/admin.component';
+import { AdminGuard } from './services/admin.guard';
+
 const routes: Routes = [
     {
         path: 'anime',
@@ -26,6 +34,19 @@ const routes: Routes = [
     }, {
         path: 'ln',
         component: LightnovelsComponent
+    }, {
+        path: 'series',
+        component: SeriesListComponent
+    }, {
+        path: 'series/:id',
+        component: SeriesComponent
+    }, {
+        path: 'series/:seriesId/book/:id',
+        component: BookComponent
+    }, {
+       path: 'admin',
+       component: AdminComponent,
+       canActivate: [ AdminGuard ] 
     }, {
         path: '',
         pathMatch: 'full',

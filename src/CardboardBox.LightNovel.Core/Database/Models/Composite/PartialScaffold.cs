@@ -6,15 +6,15 @@
 		public Series Series { get; set; } = new();
 
 		[JsonPropertyName("books")]
-		public BookScaffold[] Books { get; set; } = Array.Empty<BookScaffold>();
+		public PartialBookScaffold[] Books { get; set; } = Array.Empty<PartialBookScaffold>();
+	}
 
-		public class BookScaffold
-		{
-			[JsonPropertyName("book")]
-			public Book Book { get; set; } = new();
+	public class PartialBookScaffold
+	{
+		[JsonPropertyName("book")]
+		public Book Book { get; set; } = new();
 
-			[JsonPropertyName("chapters")]
-			public Chapter[] Chapters { get; set; } = Array.Empty<Chapter>();
-		}
+		[JsonPropertyName("chapters")]
+		public Chapter[] Chapters { get; set; } = Array.Empty<Chapter>();
 	}
 }

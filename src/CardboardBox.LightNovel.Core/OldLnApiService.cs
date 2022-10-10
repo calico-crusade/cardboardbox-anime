@@ -1,12 +1,11 @@
-﻿using System.Text.RegularExpressions;
-
-namespace CardboardBox.LightNovel.Core
+﻿namespace CardboardBox.LightNovel.Core
 {
 	using Anime.Database;
 	using Epub;
 	using Sources;
 
-	public interface ILightNovelApiService
+	[Obsolete]
+	public interface IOldLnApiService
 	{
 		Task<SourceChapter[]?> FromJson(string path);
 		Task<(string[] files, string wrkDir)> GenerateEpubs(string bookId, EpubSettings[] settings, string? workDir = null);
@@ -17,7 +16,8 @@ namespace CardboardBox.LightNovel.Core
 		Task<(string? id, bool isNew, int? added)> LoadFromUrl(string url);
 	}
 
-	public class LightNovelApiService : ILightNovelApiService
+	[Obsolete]
+	public class OldLnApiService : IOldLnApiService
 	{
 		private readonly ILnpSourceService _src1;
 		private readonly IShSourceService _src2;
@@ -25,12 +25,12 @@ namespace CardboardBox.LightNovel.Core
 		private readonly IApiService _api;
 		private readonly ILogger _logger;
 
-		public LightNovelApiService(
+		public OldLnApiService(
 			ILnpSourceService src1,
 			IShSourceService src2,
 			IChapterDbService db,
 			IApiService api,
-			ILogger<LightNovelApiService> logger)
+			ILogger<OldLnApiService> logger)
 		{
 			_src1 = src1;
 			_src2 = src2;
@@ -104,7 +104,7 @@ namespace CardboardBox.LightNovel.Core
 		{
 			var newChaps = src.DbChapters(book.LastChapterUrl);
 			int count = 0;
-			await foreach(var item in newChaps)
+			await foreach (var item in newChaps)
 			{
 				item.Ordinal = book.LastChapterOrdinal + count;
 				await _db.Upsert(item);
@@ -190,7 +190,7 @@ namespace CardboardBox.LightNovel.Core
 
 		public async Task HandleChapter(IEpubBuilder bob, DbChapter[] chaps)
 		{
-			for(var i = 0; i < chaps.Length; i++)
+			for (var i = 0; i < chaps.Length; i++)
 			{
 				var chap = chaps[i];
 				await bob.AddChapter(chap.Chapter, async c =>
@@ -276,8 +276,8 @@ namespace CardboardBox.LightNovel.Core
 
 		public string CleanContents(string content, string chap)
 		{
-			var pats = new[] 
-			{ 
+			var pats = new[]
+			{
 				" class=\"(.*?)\"",
 				"<a (.*?)>(.*?)</a>",
 				" style=\"(.*?)\""
@@ -297,7 +297,7 @@ namespace CardboardBox.LightNovel.Core
 
 				content = FixMissingTags(content, "p");
 				content = FixMissingTags(content, "span");
-				
+
 				return content;
 			}
 			catch (Exception ex)

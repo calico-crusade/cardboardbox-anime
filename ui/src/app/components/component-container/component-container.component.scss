@@ -1,0 +1,34 @@
+.component-container {
+    position: relative;
+    display: flex;
+    flex-flow: column;
+    overflow: hidden;
+
+    .content {
+        flex: 1;
+        overflow: hidden;
+        max-height: 100%;
+        max-width: 100vw;
+
+        display: flex;
+        flex-flow: row;
+
+        &.scroll {
+            overflow-y: auto;
+        }
+    }
+
+    .loading {
+        margin: auto;
+        display: flex;
+        flex-flow: row;
+
+        img {
+            width: 45px;
+        }
+
+        span {
+            margin: auto 5px;
+        }
+    }
+}

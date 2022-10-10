@@ -1,17 +1,66 @@
-﻿using CardboardBox.Database;
-using CardboardBox.Http;
-using HtmlAgilityPack;
-using System.Linq.Expressions;
-using System.Net;
+﻿using System.Linq.Expressions;
 using System.Security.Cryptography;
-using System.Text;
+using System.Web;
 
-namespace CardboardBox.Anime
+namespace CardboardBox
 {
-	using Core.Models;
+	using AnimeM = Anime.Core.Models.Anime;
 
 	public static class Extensions
 	{
+		public const string USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36";
+
+		public static AnimeM Clean(this AnimeM anime)
+		{
+			var replaces = new Dictionary<string[], string[]>
+			{
+				[new[] { "sci-fi", "fantasy" }] = new[] { "sci fi and fantasy" },
+				[new[] { "sci-fi", "action" }] = new[] { "science fiction - action" },
+				[new[] { "sci-fi" }] = new[] { "sci fi", "animation - science fiction", "science fiction", "science fiction - comic" },
+				[new[] { "action", "adventure" }] = new[] { "action and adventure", "action/adventure" },
+				[new[] { "live-action" }] = new[] { "live action" },
+				[new[] { "comedy" }] = new[] { "comedy – animation" },
+				[new[] { "romance", "comedy" }] = new[] { "comedy – romance" },
+				[new[] { "anime" }] = new[] { "animation - anime" },
+				[new[] { "mystery", "thriller" }] = new[] { "mystery and thriller" },
+				[new[] { "adventure" }] = new[] { "adventure - comic" },
+				[new[] { "action" }] = new[] { "action - sword and sandal", "action - comic" }
+			};
+
+			var delParan = (string item) =>
+			{
+				if (!item.Contains('(')) return item.ToLower().Trim();
+				return item.Split('(').First().Trim().ToLower();
+			};
+
+			var tagFix = (string item) =>
+			{
+				var value = item.ToLower().Trim();
+				foreach (var (key, vals) in replaces)
+					if (vals.Contains(value)) return key;
+				return new[] { value };
+			};
+
+			anime.Metadata.Languages = anime.Metadata.Languages.Select(delParan).Distinct().ToList();
+			anime.Metadata.Ratings = anime.Metadata.Ratings.Select(t => t.ToLower().Trim().Split('|')).SelectMany(t => t).Distinct().ToList();
+			anime.Metadata.Tags = anime.Metadata.Tags.Select(tagFix).SelectMany(t => t).Distinct().ToList();
+
+			anime.Images = anime.Images.Select(t =>
+			{
+				if (t.Source.Contains("https:")) return t;
+				t.Source = t.Source.Replace("https", "https:");
+				return t;
+			}).ToList();
+
+			return anime;
+		}
+
+		public static IEnumerable<AnimeM> Clean(this IEnumerable<AnimeM> anime)
+		{
+			foreach (var item in anime)
+				yield return item.Clean();
+		}
+
 		public static T Bind<T>(this IConfiguration config, string? section = null)
 		{
 			var i = Activator.CreateInstance<T>();
@@ -76,57 +125,6 @@ namespace CardboardBox.Anime
 			return Task.WhenAll(tasks);
 		}
 
-		public static Anime Clean(this Anime anime)
-		{
-			var replaces = new Dictionary<string[], string[]>
-			{
-				[new[] { "sci-fi", "fantasy" }] = new[] { "sci fi and fantasy" },
-				[new[] { "sci-fi", "action" }] = new[] { "science fiction - action" },
-				[new[] { "sci-fi" }] = new[] { "sci fi", "animation - science fiction", "science fiction", "science fiction - comic" },
-				[new[] { "action", "adventure" }] = new[] { "action and adventure", "action/adventure" },
-				[new[] { "live-action" }] = new[] { "live action" },
-				[new[] { "comedy" }] = new[] { "comedy – animation" },
-				[new[] { "romance", "comedy" }] = new[] { "comedy – romance" },
-				[new[] { "anime" }] = new[] { "animation - anime" },
-				[new[] { "mystery", "thriller" }] = new[] { "mystery and thriller" },
-				[new[] { "adventure" }] = new[] { "adventure - comic" },
-				[new[] { "action" }] = new[] { "action - sword and sandal", "action - comic" }
-			};
-
-			var delParan = (string item) =>
-			{
-				if (!item.Contains('(')) return item.ToLower().Trim();
-				return item.Split('(').First().Trim().ToLower();
-			};
-
-			var tagFix = (string item) =>
-			{
-				var value = item.ToLower().Trim();
-				foreach (var (key, vals) in replaces)
-					if (vals.Contains(value)) return key;
-				return new[] { value };
-			};
-
-			anime.Metadata.Languages = anime.Metadata.Languages.Select(delParan).Distinct().ToList();
-			anime.Metadata.Ratings = anime.Metadata.Ratings.Select(t => t.ToLower().Trim().Split('|')).SelectMany(t => t).Distinct().ToList();
-			anime.Metadata.Tags = anime.Metadata.Tags.Select(tagFix).SelectMany(t => t).Distinct().ToList();
-
-			anime.Images = anime.Images.Select(t =>
-			{
-				if (t.Source.Contains("https:")) return t;
-				t.Source = t.Source.Replace("https", "https:");
-				return t;
-			}).ToList();
-
-			return anime;
-		}
-
-		public static IEnumerable<Anime> Clean(this IEnumerable<Anime> anime)
-		{
-			foreach (var item in anime)
-				yield return item.Clean();
-		}
-
 		public static async Task<HtmlDocument?> GetHtml(this IHttpBuilder builder)
 		{
 			using var resp = await builder.Result();
@@ -148,9 +146,174 @@ namespace CardboardBox.Anime
 			return node.InnerHtml.ParseHtml().DocumentNode;
 		}
 
-		public static string HtmlDecode(this string data)
+		public static string HTMLDecode(this string text)
 		{
-			return WebUtility.HtmlDecode(data);
+			return HttpUtility.HtmlDecode(text).Trim('\n');
+		}
+
+		public static string SafeSubString(this string text, int length, int start = 0)
+		{
+			if (start + length > text.Length)
+				return text[start..];
+
+			return text.Substring(start, length);
+		}
+
+		public static string GetRootUrl(this string url)
+		{
+			if (!Uri.TryCreate(url, UriKind.RelativeOrAbsolute, out var uri))
+				throw new UriFormatException(url);
+
+			return uri.GetRootUrl();
+		}
+
+		public static string GetRootUrl(this Uri uri)
+		{
+			var port = uri.IsDefaultPort ? "" : ":" + uri.Port;
+			return $"{uri.Scheme}://{uri.Host}{port}";
+		}
+
+		public static string? InnerText(this HtmlDocument doc, string xpath)
+		{
+			return doc.DocumentNode.SelectSingleNode(xpath)?.InnerText?.HTMLDecode();
+		}
+
+		public static string? InnerHtml(this HtmlDocument doc, string xpath)
+		{
+			return doc.DocumentNode.SelectSingleNode(xpath)?.InnerHtml?.HTMLDecode();
+		}
+
+		public static string? Attribute(this HtmlDocument doc, string xpath, string attr)
+		{
+			return doc.DocumentNode.SelectSingleNode(xpath)?.GetAttributeValue(attr, "")?.HTMLDecode();
+		}
+
+		public static bool IsWhiteSpace(this string? value)
+		{
+			var isWs = (char c) => char.IsWhiteSpace(c) || c == '\u00A0';
+			if (value == null || value.Length == 0) return true;
+
+			for (var i = 0; i < value.Length; i++)
+				if (!isWs(value[i])) return false;
+
+			return true;
+		}
+
+		public static IEnumerable<T> SkipLast<T>(this IEnumerable<T> data, int count = 1)
+		{
+			return data.Reverse().Skip(count).Reverse();
+		}
+
+		public static Dictionary<T, V[]> ToGDictionary<T, V>(this IEnumerable<V> data, Func<V, T> keySelector) where T : notnull
+		{
+			return data
+				.GroupBy(t => keySelector(t))
+				.ToDictionary(t => t.Key, t => t.ToArray());
+		}
+
+		public static Dictionary<T, V[]> ToGDictionary<T, V, O>(this IEnumerable<V> data, Func<V, T> keySelector, Func<V, O> order, bool asc = true) where T : notnull
+		{
+			return data
+				.GroupBy(t => keySelector(t))
+				.ToDictionary(t => t.Key, t =>
+				{
+					if (asc) return t.OrderBy(order).ToArray();
+					return t.OrderByDescending(order).ToArray();
+				});
+		}
+
+		public static async Task<HtmlDocument> GetHtml(this IApiService api, string url, Action<HttpRequestMessage>? config = null)
+		{
+			var req = await api.Create(url)
+				.Accept("text/html")
+				.With(c =>
+				{
+					c.Headers.Add("user-agent", USER_AGENT);
+					config?.Invoke(c);
+				})
+				.Result();
+
+			if (req == null)
+				throw new NullReferenceException($"Request returned null for: {url}");
+
+			req.EnsureSuccessStatusCode();
+
+			using var io = await req.Content.ReadAsStreamAsync();
+			var doc = new HtmlDocument();
+			doc.Load(io);
+
+			return doc;
+		}
+
+		public static async Task<(Stream data, long length, string filename, string type)> GetData(this IApiService api, string url, Action<HttpRequestMessage>? config = null)
+		{
+			var req = await api.Create(url)
+				.Accept("*/*")
+				.With(c =>
+				{
+					c.Headers.Add("user-agent", USER_AGENT);
+					config?.Invoke(c);
+				})
+				.Result();
+			if (req == null)
+				throw new NullReferenceException($"Request returned null for: {url}");
+
+			req.EnsureSuccessStatusCode();
+
+			var headers = req.Content.Headers;
+			var path = headers?.ContentDisposition?.FileName ?? headers?.ContentDisposition?.Parameters?.FirstOrDefault()?.Value ?? "";
+			var type = headers?.ContentType?.ToString() ?? "";
+			var length = headers?.ContentLength ?? 0;
+
+			return (await req.Content.ReadAsStreamAsync(), length, path, type);
+		}
+
+		public static async Task<T[]> Await<T>(this IEnumerable<Task<T>> tasks)
+		{
+			return await Task.WhenAll(tasks);
+		}
+
+		public static async Task<(T1 item1, T2 item2, T3 item3, T4 item4)[]> QueryAsync<T1, T2, T3, T4>(this ISqlService sql, string query, object? parameters = null, string splitOn = "split")
+		{
+			using var con = sql.CreateConnection();
+			return (await con.QueryAsync<T1, T2, T3, T4, (T1, T2, T3, T4)>(query,
+				(a, b, c, d) => (a, b, c, d),
+				parameters,
+				splitOn: splitOn)).ToArray();
+		}
+
+		public static async Task<(T1 item1, T2 item2, T3 item3)[]> QueryAsync<T1, T2, T3>(this ISqlService sql, string query, object? parameters = null, string splitOn = "split")
+		{
+			using var con = sql.CreateConnection();
+			return (await con.QueryAsync<T1, T2, T3, (T1, T2, T3)>(query,
+				(a, b, c) => (a, b, c),
+				parameters,
+				splitOn: splitOn)).ToArray();
+		}
+
+		public static async Task<(T1 item1, T2 item2)[]> QueryAsync<T1, T2>(this ISqlService sql, string query, object? parameters = null, string splitOn = "split")
+		{
+			using var con = sql.CreateConnection();
+			return (await con.QueryAsync<T1, T2, (T1, T2)>(query,
+				(a, b) => (a, b),
+				parameters,
+				splitOn: splitOn)).ToArray();
+		}
+
+		public static void Each<T>(this IEnumerable<T> data, Action<T> action)
+		{
+			foreach(var item in data) 
+				action(item);
+		}
+
+		public static void Each<T>(this IEnumerable<T> data, Action<int, T> action)
+		{
+			int count = 0;
+			foreach(var item in data)
+			{
+				action(count, item);
+				count++;
+			}
 		}
 	}
 

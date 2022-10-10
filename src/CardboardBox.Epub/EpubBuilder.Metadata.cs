@@ -24,7 +24,7 @@
 
 		IEpubBuilder Metadata(XElement element);
 
-		IEpubBuilder BelongsTo(string title, int position, string type = MetaData.COLLECTION_TYPE_SET);
+		IEpubBuilder BelongsTo(string title, long position, string type = MetaData.COLLECTION_TYPE_SET);
 	}
 
 	public partial class EpubBuilder
@@ -96,7 +96,7 @@
 			return this;
 		}
 
-		public IEpubBuilder BelongsTo(string title, int position, string type = MetaData.COLLECTION_TYPE_SET)
+		public IEpubBuilder BelongsTo(string title, long position, string type = MetaData.COLLECTION_TYPE_SET)
 		{
 			Content.Meta.CollectionTitle = title;
 			Content.Meta.CollectionType = type;

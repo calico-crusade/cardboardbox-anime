@@ -9,4 +9,5 @@ export interface AuthUser {
     avatar: string;
     id: string;
     email: string;
+    roles: string[];
 }

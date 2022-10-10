@@ -31,7 +31,7 @@ namespace CardboardBox.Anime.Cli
 		private readonly IHiDiveApiService _hidive;
 		private readonly IAnimeDbService _db;
 		private readonly ICrunchyrollApiService _crunchy;
-		private readonly ILightNovelApiService _ln;
+		private readonly IOldLnApiService _ln;
 		private readonly IChapterDbService _chapDb;
 		private readonly IPdfService _pdf;
 		private readonly ILnDbService _lnDb;
@@ -45,7 +45,7 @@ namespace CardboardBox.Anime.Cli
 			IHiDiveApiService hidive,
 			IAnimeDbService db,
 			ICrunchyrollApiService crunchy,
-			ILightNovelApiService ln,
+			IOldLnApiService ln,
 			IChapterDbService chapDb,
 			IPdfService pdf, 
 			ILnDbService lnDb)
@@ -148,7 +148,18 @@ namespace CardboardBox.Anime.Cli
 
 		public async Task Test()
 		{
-			await _mongo.RegisterIndexes();
+			var books = await _lnDb.Books.BySeries(8);
+			foreach(var book in books)
+			{
+				for(var i = 0; i < book.Forwards.Length; i++)
+				{
+					var f = book.Forwards[i];
+					if (f.Contains("Contents.jpg/Contents.jpg"))
+						book.Forwards[i] = f.Replace("Contents.jpg/Contents.jpg", "Contents.jpg");
+				}
+
+				await _lnDb.Books.Upsert(book);
+			}
 		}
 
 		public async Task Load()

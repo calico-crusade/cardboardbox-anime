@@ -14,7 +14,7 @@
 		public string Id { get; set; }
 
 		public string? CollectionTitle { get; set; }
-		public int? CollectionPosition { get; set; }
+		public long? CollectionPosition { get; set; }
 		public string? CollectionType { get; set; } = COLLECTION_TYPE_SERIES;
 
 		public string? Publisher { get; set; } = "CardboardBox";

@@ -11,11 +11,11 @@ namespace CardboardBox.Anime.Api.Controllers
 	public class LightNovelController : ControllerBase
 	{
 		private readonly IChapterDbService _ln;
-		private readonly ILightNovelApiService _api;
+		private readonly IOldLnApiService _api;
 
 		public LightNovelController(
 			IChapterDbService ln, 
-			ILightNovelApiService api)
+			IOldLnApiService api)
 		{
 			_ln = ln;
 			_api = api;

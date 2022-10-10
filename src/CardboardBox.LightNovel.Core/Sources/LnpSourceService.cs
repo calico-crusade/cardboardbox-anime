@@ -1,5 +1,7 @@
 ﻿namespace CardboardBox.LightNovel.Core.Sources
 {
+	using Anime;
+
 	public interface ILnpSourceService : ISourceService { }
 
 	public class LnpSourceService : SourceService, ILnpSourceService
@@ -86,6 +88,11 @@
 		public override string SeriesFromChapter(string url)
 		{
 			return string.Join("/", url.Split('/').SkipLast());
+		}
+
+		public override string? SeriesFirstChapter(HtmlDocument doc)
+		{
+			return RootUrl + "/" + doc.Attribute("//a[@id='readchapterbtn']", "href");
 		}
 	}
 }

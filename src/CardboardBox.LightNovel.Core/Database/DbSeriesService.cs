@@ -1,6 +1,5 @@
 ﻿namespace CardboardBox.LightNovel.Core.Database
 {
-	using Anime;
 	using Anime.Database.Generation;
 
 	public interface IDbSeriesService : ILnOrmMap<Series>
@@ -8,11 +7,13 @@
 		Task<PaginatedResult<Series>> Paginate(int page = 1, int size = 100);
 		Task<PartialScaffold?> PartialScaffold(long seriesId);
 		Task<FullScaffold?> Scaffold(long seriesId);
+		Task<Series?> FromUrl(string url);
 	}
 
 	public class DbSeriesService : LnOrmMap<Series>, IDbSeriesService
 	{
 		private string? _paginateQuery;
+		private string? _fromUrlQuery;
 
 		public override string TableName => "ln_series";
 
@@ -28,11 +29,12 @@
 		{
 			const string QUERY = @"SELECT * FROM ln_series WHERE id = :seriesId;
 
-SELECT * FROM ln_books WHERE series_id = :seriesId;
+SELECT * FROM ln_books WHERE series_id = :seriesId ORDER BY ordinal;
 
 SELECT c.* FROM ln_chapters c
 JOIN ln_books b ON b.id = c.book_id
-WHERE b.series_id = :seriesId;";
+WHERE b.series_id = :seriesId
+ORDER BY b.ordinal, c.ordinal;";
 
 			using var con = _sql.CreateConnection();
 			using var rdr = await con.QueryMultipleAsync(QUERY, new { seriesId });
@@ -49,7 +51,7 @@ WHERE b.series_id = :seriesId;";
 				Books = books.Select(t =>
 				{
 					var chaps = chapters.ContainsKey(t.Id) ? chapters[t.Id] : Array.Empty<Chapter>();
-					return new PartialScaffold.BookScaffold
+					return new PartialBookScaffold
 					{
 						Book = t,
 						Chapters = chaps
@@ -74,7 +76,7 @@ SELECT
 FROM ln_chapters c 
 JOIN ln_books b ON b.id = c.book_id 
 WHERE b.series_id = :seriesId
-ORDER BY c.ordinal;";
+ORDER BY b.ordinal, c.ordinal;";
 
 			const string QUERY2 = @"
 SELECT 
@@ -86,7 +88,7 @@ JOIN ln_chapter_pages cp ON cp.page_id = p.id
 JOIN ln_chapters c ON c.id = cp.chapter_id
 JOIN ln_books b ON b.id = c.book_id
 WHERE b.series_id = :seriesId
-ORDER BY cp.ordinal";
+ORDER BY b.ordinal, c.ordinal, cp.ordinal";
 
 			using var con = _sql.CreateConnection();
 			using var rdr = await con.QueryMultipleAsync(QUERY, new { seriesId });
@@ -97,7 +99,7 @@ ORDER BY cp.ordinal";
 			var books = (await rdr.ReadAsync<Book>()).OrderBy(t => t.Ordinal).ToArray();
 			var chapters = (await rdr.ReadAsync<Chapter>()).ToGDictionary(t => t.BookId, t => t.Ordinal);
 
-			var map = (await con.QueryAsync<Page, ChapterPage, FullScaffold.PageScaffold>(QUERY2, (p, c) => new FullScaffold.PageScaffold
+			var map = (await con.QueryAsync<Page, ChapterPage, PageScaffold>(QUERY2, (p, c) => new PageScaffold
 			{
 				Page = p,
 				Map = c
@@ -106,17 +108,23 @@ ORDER BY cp.ordinal";
 			return new FullScaffold
 			{
 				Series = series,
-				Books = books.Select(t => new FullScaffold.BookScaffold
+				Books = books.Select(t => new BookScaffold
 				{
 					Book = t,
-					Chapters = !chapters.ContainsKey(t.Id) ? Array.Empty<FullScaffold.ChapterScaffold>() :
-						chapters[t.Id].Select(a => new FullScaffold.ChapterScaffold
+					Chapters = !chapters.ContainsKey(t.Id) ? Array.Empty<ChapterScaffold>() :
+						chapters[t.Id].Select(a => new ChapterScaffold
 						{
 							Chapter = a,
-							Pages = !map.ContainsKey(a.Id) ? Array.Empty<FullScaffold.PageScaffold>() : map[a.Id]
+							Pages = !map.ContainsKey(a.Id) ? Array.Empty<PageScaffold>() : map[a.Id]
 						}).ToArray()
 				}).ToArray()
 			};
+		}
+
+		public Task<Series?> FromUrl(string url)
+		{
+			_fromUrlQuery ??= _query.Select<Series>(TableName, t => t.With(a => a.Url));
+			return _sql.Fetch<Series?>(_fromUrlQuery, new { url });
 		}
 	}
 }

@@ -1,0 +1,23 @@
+<cba-container [loading]="loading">
+    <div class="center">
+        <div class="item">
+            <input [(ngModel)]="url" placeholder="Item Url" />
+            <button (click)="load(url)">
+                <cba-icon>upload_file</cba-icon>
+                <span>Load Url</span>
+            </button>
+        </div>
+
+        <div class="item">
+            <input [(ngModel)]="id" placeholder="Item Id" type="number" />
+            <button (click)="load(id)">
+                <cba-icon>upload_file</cba-icon>
+                <span>Load Url</span>
+            </button>
+        </div>
+
+        <div class="res" *ngIf="res">
+            <pre>{{ res | json }}</pre>
+        </div>
+    </div>
+</cba-container>

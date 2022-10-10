@@ -13,6 +13,12 @@ export class AppComponent implements OnInit {
     menuOpen = false;
     title?: string;
 
+    get isAdmin() {
+        if (!this.user) return false;
+        const roles = this.user.roles || [];
+        return roles.indexOf('Admin') !== -1;
+    }
+
     get loggedIn() { return this.user; }
 
     constructor(

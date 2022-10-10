@@ -111,24 +111,26 @@
 			string? title = SeriesTitle(doc),
 					author = SeriesAuthor(doc),
 					descrip = SeriesDescription(doc),
-					image = SeriesImage(doc);
+					image = SeriesImage(doc),
+					firstChap = SeriesFirstChapter(doc);
 			string[] tags = SeriesTags(doc),
 					 genres = SeriesGenres(doc);
 
 			if (string.IsNullOrEmpty(title)) return null;
 
-			return new TempSeriesInfo(title, descrip, author, image, genres, tags);
+			return new TempSeriesInfo(title, descrip, author, image, firstChap, genres, tags);
 		}
 
 		public abstract string? SeriesTitle(HtmlDocument doc);
 		public abstract string? SeriesAuthor(HtmlDocument doc);
 		public abstract string? SeriesDescription(HtmlDocument doc);
 		public abstract string? SeriesImage(HtmlDocument doc);
+		public abstract string? SeriesFirstChapter(HtmlDocument doc);
 		public abstract string[] SeriesTags(HtmlDocument doc);
 		public abstract string[] SeriesGenres(HtmlDocument doc);
 
 		public abstract string SeriesFromChapter(string url);
 	}
 
-	public record class TempSeriesInfo(string Title, string? Description, string? Author, string? Image, string[] Genre, string[] Tags);
+	public record class TempSeriesInfo(string Title, string? Description, string? Author, string? Image, string? FirstChapterUrl, string[] Genre, string[] Tags);
 }

@@ -1,5 +1,8 @@
 ﻿namespace CardboardBox.LightNovel.Core.Sources
 {
+	using Anime;
+	using System.Threading.Tasks;
+
 	public interface IShSourceService : ISourceService { }
 	public class ShSourceService : SourceService, IShSourceService
 	{
@@ -90,18 +93,17 @@
 
 		public override string SeriesFromChapter(string url)
 		{
-			//https://www.scribblehub.com/series/395252/lieforged-gale/
-			//https://www.scribblehub.com/read/395252-lieforged-gale/chapter/395256/
-
-			//https://www.scribblehub.com/read/62666-living-as-i-please-as-a-loli-demon-king/chapter/62668/
-			//https://www.scribblehub.com/series/62666/living-as-i-please-as-a-loli-demon-king/
-
 			var regex = new Regex("https://www.scribblehub.com/read/([0-9]{1,})-(.*?)/chapter/([0-9]{1,})(/?)");
 			var parts = regex.Match(url);
 			var id = parts.Groups[1].Value;
 			var name = parts.Groups[2].Value;
 
 			return $"https://www.scribblehub.com/series/{id}/{name}/";
+		}
+
+		public override string? SeriesFirstChapter(HtmlDocument doc)
+		{
+			return doc.Attribute("//div[@class='read_buttons']/a", "href");
 		}
 	}
 }

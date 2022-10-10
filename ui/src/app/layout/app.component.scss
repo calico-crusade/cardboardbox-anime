@@ -59,6 +59,8 @@
         .content {
             flex: 1;
             z-index: 0;
+            overflow: hidden;
+            position: relative;
         }
         .fade {
             position: absolute;

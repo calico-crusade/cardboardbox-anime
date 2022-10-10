@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace CardboardBox.Anime.Api.Controllers
 {
@@ -33,7 +34,6 @@ namespace CardboardBox.Anime.Api.Controllers
 					error = res?.Error ?? "Login Failed"
 				});
 
-			var token = _token.GenerateToken(res);
 			var profile = new DbProfile
 			{
 				Avatar = res.User.Avatar,
@@ -42,6 +42,11 @@ namespace CardboardBox.Anime.Api.Controllers
 				Username = res.User.Nickname,
 			};
 			var id = await _db.Profiles.Upsert(profile);
+
+			profile = await _db.Profiles.Fetch(res.User.Id);
+
+			var roles = profile.Admin ? new[] { "Admin" } : Array.Empty<string>();
+			var token = _token.GenerateToken(res, roles);
 
 			return Ok(new
 			{
@@ -57,7 +62,16 @@ namespace CardboardBox.Anime.Api.Controllers
 			var user = this.UserFromIdentity();
 			if (user == null) return Unauthorized();
 
-			return Ok(user);
+			var roles = User.Claims.Where(t => t.Type == ClaimTypes.Role).Select(t => t.Value).ToArray();
+
+			return Ok(new
+			{
+				roles,
+				nickname = user.Nickname,
+				avatar = user.Avatar,
+				id = user.Id,
+				email = user.Email
+			});
 		}
 	}
 }

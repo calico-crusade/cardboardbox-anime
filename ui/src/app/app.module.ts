@@ -23,6 +23,15 @@ import { PublicListsComponent } from './routes/public-lists/public-lists.compone
 import { LightnovelComponent } from './routes/lightnovel/lightnovel.component';
 import { ObserveDirective } from './components/observe.directive';
 import { LightnovelsComponent } from './routes/lightnovels/lightnovels.component';
+import { ImageFallbackDirective } from './image-fallback.directive';
+import { ComponentContainerComponent } from './components/component-container/component-container.component';
+
+import {
+    BookComponent,
+    SeriesComponent,
+    SeriesListComponent
+} from './routes/novels';
+import { AdminComponent } from './routes/admin/admin.component';
 
 @Injectable()
 export class MyHammerConfig extends HammerGestureConfig {
@@ -46,7 +55,13 @@ export class MyHammerConfig extends HammerGestureConfig {
         LightnovelComponent,
 
         ObserveDirective,
-         LightnovelsComponent
+        LightnovelsComponent,
+        ImageFallbackDirective,
+        SeriesComponent,
+        SeriesListComponent,
+        ComponentContainerComponent,
+        BookComponent,
+        AdminComponent,
     ],
     imports: [
         BrowserModule,

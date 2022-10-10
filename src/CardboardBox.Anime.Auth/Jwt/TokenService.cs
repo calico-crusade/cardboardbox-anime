@@ -9,7 +9,7 @@ namespace CardboardBox.Anime.Auth
 	public interface ITokenService
 	{
 		TokenResult ParseToken(string token);
-		string GenerateToken(TokenResponse resp);
+		string GenerateToken(TokenResponse resp, params string[] roles);
 	}
 
 	public class TokenService : ITokenService
@@ -50,7 +50,7 @@ namespace CardboardBox.Anime.Auth
 			return new(principals, securityToken);
 		}
 
-		public string GenerateToken(TokenResponse resp)
+		public string GenerateToken(TokenResponse resp, params string[] roles)
 		{
 			return new JwtToken(GetKey())
 				.SetAudience(_config["OAuth:Audience"])
@@ -60,6 +60,7 @@ namespace CardboardBox.Anime.Auth
 				.AddClaim(ClaimTypes.Email, resp.User.Email)
 				.AddClaim(ClaimTypes.UserData, resp.User.Avatar)
 				.AddClaim(ClaimTypes.PrimarySid, resp.Provider)
+				.AddClaim(roles.Select(t => new Claim(ClaimTypes.Role, t)).ToArray())
 				.Write();
 		}
 	}

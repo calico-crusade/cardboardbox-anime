@@ -27,6 +27,7 @@ namespace CardboardBox.Anime
 				.AddLightNovel()
 				.AddDatabase()
 				.AddOAuth(config)
+				.AddTransient<IFileCacheService, FileCacheService>()
 				.AddTransient<IVrvApiService, VrvApiService>()
 				.AddTransient<IFunimationApiService, FunimationApiService>()
 				.AddTransient<IHiDiveApiService, HiDiveApiService>()
