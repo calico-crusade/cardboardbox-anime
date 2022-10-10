@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AnimeService, PublicList } from './../../services';
+import { AnimeService, PublicList } from '../../../services';
 
 const DEFAULT_PAGE = 1,
       DEFAULT_SIZE = 100;

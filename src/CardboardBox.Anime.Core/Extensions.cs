@@ -175,17 +175,33 @@ namespace CardboardBox
 
 		public static string? InnerText(this HtmlDocument doc, string xpath)
 		{
-			return doc.DocumentNode.SelectSingleNode(xpath)?.InnerText?.HTMLDecode();
+			return doc.DocumentNode.InnerText(xpath);
 		}
 
 		public static string? InnerHtml(this HtmlDocument doc, string xpath)
 		{
-			return doc.DocumentNode.SelectSingleNode(xpath)?.InnerHtml?.HTMLDecode();
+			return doc.DocumentNode.InnerHtml(xpath);
 		}
 
 		public static string? Attribute(this HtmlDocument doc, string xpath, string attr)
 		{
-			return doc.DocumentNode.SelectSingleNode(xpath)?.GetAttributeValue(attr, "")?.HTMLDecode();
+			return doc.DocumentNode.Attribute(xpath, attr);
+		}
+
+		public static string? InnerText(this HtmlNode doc, string xpath)
+		{
+			
+			return doc.SelectSingleNode(xpath)?.InnerText?.HTMLDecode();
+		}
+
+		public static string? InnerHtml(this HtmlNode doc, string xpath)
+		{
+			return doc.SelectSingleNode(xpath)?.InnerHtml?.HTMLDecode();
+		}
+
+		public static string? Attribute(this HtmlNode doc, string xpath, string attr)
+		{
+			return doc.SelectSingleNode(xpath)?.GetAttributeValue(attr, "")?.HTMLDecode();
 		}
 
 		public static bool IsWhiteSpace(this string? value)
@@ -314,6 +330,16 @@ namespace CardboardBox
 				action(count, item);
 				count++;
 			}
+		}
+
+		public static async Task Each<T>(this Task<T[]> tasks, Action<T> action)
+		{
+			(await tasks).Each(action);
+		}
+
+		public static async Task Each<T>(this Task<T[]> tasks, Action<int, T> action)
+		{
+			(await tasks).Each(action);
 		}
 	}
 

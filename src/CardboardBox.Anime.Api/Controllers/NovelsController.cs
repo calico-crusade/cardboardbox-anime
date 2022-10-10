@@ -64,7 +64,8 @@ namespace CardboardBox.Anime.Api.Controllers
 			return Ok(data);
 		}
 
-		[HttpGet, Route("novels/load"), AdminAuthorize]
+		[HttpGet, Route("novels/load")]
+		[AdminAuthorize]
 		[ProducesResponseType(typeof(ErrorResponse), 400), ProducesResponseType(typeof(ErrorResponse), 404)]
 		[ProducesResponseType(401)]
 		[ProducesDefaultResponseType(typeof(LoadResponse))]

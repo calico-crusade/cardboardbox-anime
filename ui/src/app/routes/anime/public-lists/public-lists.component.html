@@ -1,7 +1,7 @@
 <div class="component-container">
     <div class="content">
         <div class="lists">
-            <a class="list" *ngFor="let list of results" [routerLink]="['/anime', list.listId ]">
+            <a class="list" *ngFor="let list of results" [routerLink]="['/anime', 'all', list.listId ]">
                 <div class="user">
                     <img class="user-avatar" [src]="list.profileAvatar" alt="User Avatar"/>
                     <span>{{ list.profileUsername }}</span>

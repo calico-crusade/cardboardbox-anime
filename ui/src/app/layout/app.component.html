@@ -19,13 +19,13 @@
         </div>
         <div class="fade" (click)="menuOpen = false"></div>
         <aside>
-            <a routerLink="/anime" routerLinkActive="active" (click)="menuOpen = false">
+            <a routerLink="/anime/all" routerLinkActive="active" (click)="menuOpen = false">
                 <span class="icon">
                     <cba-icon>filter_alt</cba-icon>
                 </span>
                 <span class="title">Anime</span>
             </a>
-            <a routerLink="/public-lists" routerLinkActive="active" (click)="menuOpen = false">
+            <a routerLink="/anime/lists/public" routerLinkActive="active" (click)="menuOpen = false">
                 <span class="icon">
                     <cba-icon>public</cba-icon>
                 </span>
@@ -38,7 +38,7 @@
                     </span>
                     <span class="title">Novels</span>
                 </a>
-                <a routerLink="/lists" routerLinkActive="active" (click)="menuOpen = false">
+                <a routerLink="/anime/lists/mine" routerLinkActive="active" (click)="menuOpen = false">
                     <span class="icon">
                         <cba-icon>list</cba-icon>
                     </span>

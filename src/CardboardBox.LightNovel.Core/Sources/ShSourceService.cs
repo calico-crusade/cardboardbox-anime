@@ -22,7 +22,8 @@
 			var attempts = new[]
 			{
 				(HtmlDocument doc) => doc.DocumentNode.SelectSingleNode("//div[@class='chapter-inner chapter-content']"),
-				(HtmlDocument doc) => doc.DocumentNode.SelectSingleNode("//div[@class='chp_raw']")
+				(HtmlDocument doc) => doc.DocumentNode.SelectSingleNode("//div[@class='chp_raw']"),
+				(HtmlDocument doc) => doc.DocumentNode.SelectSingleNode("//div[@class='chp_raw']/div")
 			};
 
 			foreach(var attempt in attempts)
@@ -39,7 +40,10 @@
 						content.RemoveChild(child);
 				}
 
-				return content.InnerHtml.HTMLDecode();
+				var outputContent = content.InnerHtml.Trim('\r').Trim('\n');
+				if (string.IsNullOrEmpty(outputContent)) continue;
+
+				return outputContent;
 			}
 
 			return null;

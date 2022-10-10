@@ -1,5 +1,5 @@
 import { Directive, HostBinding, Input, HostListener } from "@angular/core";
-import { LightNovelService } from "./services";
+import { LightNovelService } from "../services";
 
 @Directive({
     selector: 'img[fallback]'

@@ -1,8 +1,5 @@
 ﻿namespace CardboardBox.LightNovel.Core
 {
-	using Anime;
-	using Anime.Database;
-
 	public interface ISourceService
 	{
 		string Name { get; }
@@ -10,11 +7,16 @@
 
 		IAsyncEnumerable<SourceChapter> Chapters(string firstUrl);
 
-		IAsyncEnumerable<DbChapter> DbChapters(string firstUrl);
-
 		Task<TempSeriesInfo?> GetSeriesInfo(string url);
 
 		string SeriesFromChapter(string url);
+	}
+
+	public interface ISourceVolumeService : ISourceService
+	{
+		IAsyncEnumerable<SourceVolume> Volumes(string seriesUrl);
+
+		Task<SourceChapter?> GetChapter(string url, string bookTitle);
 	}
 
 	public abstract class SourceService : ISourceService
@@ -50,28 +52,6 @@
 
 				url = chap.NextUrl;
 			}
-		}
-
-		public virtual async IAsyncEnumerable<DbChapter> DbChapters(string firstUrl)
-		{
-			DbChapter? last = null;
-			await foreach(var chapter in Chapters(firstUrl))
-				yield return last = FromChapter(chapter, last);
-		}
-
-		public static DbChapter FromChapter(SourceChapter chapter, DbChapter? last)
-		{
-			return new DbChapter
-			{
-				HashId = chapter.Url.MD5Hash(),
-				BookId = chapter.BookTitle.MD5Hash(),
-				Book = chapter.BookTitle,
-				Chapter = chapter.ChapterTitle,
-				Content = chapter.Content,
-				Url = chapter.Url,
-				NextUrl = chapter.NextUrl,
-				Ordinal = (last?.Ordinal ?? 0) + 1
-			};
 		}
 
 		public virtual async Task<SourceChapter> GetChapter(string url, string rootUrl)
@@ -116,9 +96,11 @@
 			string[] tags = SeriesTags(doc),
 					 genres = SeriesGenres(doc);
 
+			var authors = string.IsNullOrEmpty(author) ? Array.Empty<string>() : new[] { author };
+
 			if (string.IsNullOrEmpty(title)) return null;
 
-			return new TempSeriesInfo(title, descrip, author, image, firstChap, genres, tags);
+			return new TempSeriesInfo(title, descrip, authors, image, firstChap, genres, tags);
 		}
 
 		public abstract string? SeriesTitle(HtmlDocument doc);
@@ -132,5 +114,5 @@
 		public abstract string SeriesFromChapter(string url);
 	}
 
-	public record class TempSeriesInfo(string Title, string? Description, string? Author, string? Image, string? FirstChapterUrl, string[] Genre, string[] Tags);
+	public record class TempSeriesInfo(string Title, string? Description, string[] Authors, string? Image, string? FirstChapterUrl, string[] Genre, string[] Tags);
 }

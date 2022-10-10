@@ -8,6 +8,7 @@
 		Task<PartialScaffold?> PartialScaffold(long seriesId);
 		Task<FullScaffold?> Scaffold(long seriesId);
 		Task<Series?> FromUrl(string url);
+		Task Delete(long seriesId);
 	}
 
 	public class DbSeriesService : LnOrmMap<Series>, IDbSeriesService
@@ -125,6 +126,26 @@ ORDER BY b.ordinal, c.ordinal, cp.ordinal";
 		{
 			_fromUrlQuery ??= _query.Select<Series>(TableName, t => t.With(a => a.Url));
 			return _sql.Fetch<Series?>(_fromUrlQuery, new { url });
+		}
+
+		public Task Delete(long seriesId)
+		{
+			const string QUERY = @"
+DELETE FROM ln_chapter_pages WHERE chapter_id IN (
+    SELECT c.id FROM ln_chapters c
+    JOIN ln_books b ON c.book_id = b.id
+    WHERE b.series_id = :seriesId
+);
+
+DELETE FROM ln_chapters WHERE book_id IN (
+    SELECT id FROM ln_books WHERE series_id = :seriesId
+);
+
+DELETE FROM ln_books WHERE series_id = :seriesId;
+DELETE FROM ln_pages WHERE series_id = :seriesId;
+DELETE FROM ln_series WHERE id = :seriesId;";
+
+			return _sql.Execute(QUERY, new { seriesId });
 		}
 	}
 }

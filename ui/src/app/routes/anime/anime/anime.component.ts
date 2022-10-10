@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { 
     AnimeService, AuthService, UtilitiesService,
     Anime, FilterSearch, MatureType, AuthUser, ListsMaps, ListExt
-} from './../../services';
+} from '../../../services';
 
 const STORE_TUT = 'showTut';
 
@@ -129,7 +129,7 @@ export class AnimeComponent implements OnInit, OnDestroy {
             params[key] = vals.join(',');
         }
 
-        const parts = ['/anime'];
+        const parts = ['/anime', 'all'];
         if (this.listId) parts.push(this.listId.toString());
 
         this.router.navigate(parts, {

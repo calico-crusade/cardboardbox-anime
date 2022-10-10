@@ -6,7 +6,7 @@
     <div class="content" *ngIf="curUser && !loading">
         <h1>Your Lists: ({{ lists.length }})</h1>
         <div class="list" *ngFor="let list of lists">
-            <a class="btn" [routerLink]="['/anime', list.id ]">
+            <a class="btn" [routerLink]="['/anime', 'all', list.id ]">
                 {{ list.title }} ({{ list.count }})
             </a>
             <button class="btn" (click)="remove(list)">

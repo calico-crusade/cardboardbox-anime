@@ -1,6 +1,6 @@
 import { HttpClient, HttpResponse } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { Observable, tap } from "rxjs";
+import { Observable, of, tap } from "rxjs";
 import { ConfigObject } from "../config.base";
 import { NovelBook, NovelChapter, NovelSeries, PagesResult, Scaffold, SeriesResult } from "./lightnovels.model";
 import { saveAs } from "file-saver";
@@ -11,6 +11,8 @@ import { saveAs } from "file-saver";
 })
 export class LightNovelService extends ConfigObject {
 
+    private _scaffoldCache: { [key: number]: Scaffold } = {};
+
     constructor(
         private http: HttpClient
     ) { super(); }
@@ -20,7 +22,8 @@ export class LightNovelService extends ConfigObject {
     }
 
     seriesById(seriesId: number) {
-        return this.http.get<Scaffold>(`${this.apiUrl}/novels/${seriesId}`);
+        const url = `${this.apiUrl}/novels/${seriesId}`;
+        return this.cacheItem(seriesId, url, this._scaffoldCache);
     }
 
     booksBySeriesId(seriesId: number) {
@@ -77,5 +80,19 @@ export class LightNovelService extends ConfigObject {
     load(item: string | number) {
         let params: { [key: string]: any } = typeof item === 'string' ? { url: item } : { seriesId: item };
         return this.http.get<{ count: number, isNew: boolean }>(`${this.apiUrl}/novels/load`, { params });
+    }
+
+    invalidateCache() {
+        this._scaffoldCache = {};
+    }
+
+    private cacheItem<T>(id: number, url: string, cache: { [key: number]: T }) {
+        if (cache[id]) return of(cache[id]);
+
+        return this.http
+            .get<T>(url)
+            .pipe(
+                tap(t => { cache[id] = t; })
+            );
     }
 }

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ListsMaps, AuthUser, AnimeService, AuthService, ListExt } from './../../services';
+import { ListsMaps, AuthUser, AnimeService, AuthService, ListExt } from '../../../services';
 
 @Component({
     selector: 'cba-lists',

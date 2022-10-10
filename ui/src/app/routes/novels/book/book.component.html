@@ -1,1 +1,74 @@
-<p>book works!</p>
+<cba-container [loading]="loading" [error]="error" [handle-scroll]="true">
+    <div class="book" *ngIf="book && series">
+        <header>
+            <div class="image">
+                <img [src]="book.coverImage" alt="Cover Image" />
+            </div>
+            <div class="details">
+                <h1>{{ book.title }}</h1>
+                <h2><a [routerLink]="[ '/series', seriesId ]">{{ series.title }}</a> - <b>Book: #{{ book.ordinal }}</b></h2>
+                <ng-container *ngFor="let atr of attribution">
+                    <div class="attribution" *ngIf="atr.value.length > 0">
+                        <div class="type">{{ atr.type }}<span *ngIf="atr.value.length > 1">s</span>: </div>
+                        <div class="value">
+                            <span *ngFor="let val of atr.value">{{ val }}</span>
+                        </div>
+                    </div>
+                </ng-container>
+                <div class="attribution" *ngIf="series.url">
+                    <div class="type">Data Source: </div>
+                    <div class="value">
+                        <a [href]="series.url" target="_blank">{{ source }}</a>
+                    </div>
+                </div>
+                <div class="attribution">
+                    <div class="type">Chapters: </div>
+                    <div class="value">{{ chapters.length }}</div>
+                </div>
+                <div class="bump"></div>
+                <div class="buttons">
+                    <button *ngIf="prevBook" [routerLink]="[ '/series', seriesId, 'book', prevBook.id ]">
+                        <cba-icon>arrow_back</cba-icon>
+                        <span>Previous Book</span>
+                    </button>
+                    <button *ngIf="!prevBook" disabled>
+                        <cba-icon>arrow_back</cba-icon>
+                        <span>Previous Book</span>
+                    </button>
+
+                    <button (click)="download()" [disabled]="downloading">
+                        <cba-icon *ngIf="!downloading">download</cba-icon>
+                        <cba-icon *ngIf="downloading">sync</cba-icon>
+                        <span>Download Epub</span>
+                    </button>
+
+                    <button *ngIf="nextBook" [routerLink]="[ '/series', seriesId, 'book', nextBook.id ]">
+                        <cba-icon>arrow_forward</cba-icon>
+                        <span>Next Book</span>
+                    </button>
+                    <button *ngIf="!nextBook" disabled>
+                        <cba-icon>arrow_forward</cba-icon>
+                        <span>Next Book</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+        <main>
+            <h1>Chapters: </h1>
+            <div class="chapter-list">
+                <div class="chapter" *ngFor="let chap of chapters">
+                    {{ chap.title }}
+                </div>
+            </div>
+            <h1>Images: </h1>
+            <div class="image-list">
+                <a class="image-container" *ngFor="let img of book.forwards" [href]="img" target="_blank">
+                    <img [src]="img" alt="Book Image" fallback />
+                </a>
+                <a class="image-container" *ngFor="let img of book.inserts" [href]="img" target="_blank">
+                    <img [src]="img" alt="Book Image" fallback />
+                </a>
+            </div>
+        </main>
+    </div>
+</cba-container>

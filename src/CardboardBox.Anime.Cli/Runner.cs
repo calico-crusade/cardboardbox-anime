@@ -12,6 +12,8 @@ namespace CardboardBox.Anime.Cli
 	using Vrv;
 
 	using LightNovel.Core;
+	using LightNovel.Core.Sources;
+	using LightNovel.Core.Sources.Utilities;
 
 	public interface IRunner
 	{
@@ -35,6 +37,9 @@ namespace CardboardBox.Anime.Cli
 		private readonly IChapterDbService _chapDb;
 		private readonly IPdfService _pdf;
 		private readonly ILnDbService _lnDb;
+		private readonly INovelApiService _napi;
+		private readonly INovelUpdatesService _info;
+		private readonly IReLibSourceService _reL;
 
 		public Runner(
 			IVrvApiService vrv, 
@@ -47,8 +52,11 @@ namespace CardboardBox.Anime.Cli
 			ICrunchyrollApiService crunchy,
 			IOldLnApiService ln,
 			IChapterDbService chapDb,
-			IPdfService pdf, 
-			ILnDbService lnDb)
+			IPdfService pdf,
+			ILnDbService lnDb,
+			INovelApiService napi,
+			INovelUpdatesService info,
+			IReLibSourceService reL)
 		{
 			_vrv = vrv;
 			_logger = logger;
@@ -62,6 +70,9 @@ namespace CardboardBox.Anime.Cli
 			_chapDb = chapDb;
 			_pdf = pdf;
 			_lnDb = lnDb;
+			_napi = napi;
+			_info = info;
+			_reL = reL;
 		}
 
 		public async Task<int> Run(string[] args)
@@ -148,18 +159,7 @@ namespace CardboardBox.Anime.Cli
 
 		public async Task Test()
 		{
-			var books = await _lnDb.Books.BySeries(8);
-			foreach(var book in books)
-			{
-				for(var i = 0; i < book.Forwards.Length; i++)
-				{
-					var f = book.Forwards[i];
-					if (f.Contains("Contents.jpg/Contents.jpg"))
-						book.Forwards[i] = f.Replace("Contents.jpg/Contents.jpg", "Contents.jpg");
-				}
-
-				await _lnDb.Books.Upsert(book);
-			}
+			await _lnDb.Series.Delete(46);
 		}
 
 		public async Task Load()
@@ -514,7 +514,7 @@ namespace CardboardBox.Anime.Cli
 					Image = data.Image,
 					Genre = data.Genre,
 					Tags = data.Tags,
-					Authors = new[] { data.Author ?? "" },
+					Authors = data.Authors,
 					Illustrators = Array.Empty<string>(),
 					Editors = Array.Empty<string>(),
 					Translators = Array.Empty<string>(),
