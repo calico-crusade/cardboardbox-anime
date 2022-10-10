@@ -1,6 +1,8 @@
 ﻿namespace CardboardBox.LightNovel.Core.Database
 {
 	using Anime.Database.Generation;
+	using System;
+	using System.Linq.Expressions;
 
 	public interface IDbPageService : ILnOrmMap<Page>
 	{
@@ -13,6 +15,8 @@
 		private string? _paginateQuery;
 
 		public override string TableName => "ln_pages";
+
+		public override Expression<Func<Page, long>> FkId => t => t.SeriesId;
 
 		public DbPageService(IDbQueryBuilderService query, ISqlService sql) : base(query, sql) { }
 

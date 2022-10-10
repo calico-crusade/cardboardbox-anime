@@ -1,6 +1,8 @@
 ﻿namespace CardboardBox.LightNovel.Core.Database
 {
 	using Anime.Database.Generation;
+	using System;
+	using System.Linq.Expressions;
 
 	public interface IDbChapterService : ILnOrmMap<Chapter>
 	{
@@ -13,6 +15,8 @@
 		private string? _byBookQuery;
 
 		public override string TableName => "ln_chapters";
+
+		public override Expression<Func<Chapter, long>> FkId => t => t.BookId;
 
 		public DbChapterService(IDbQueryBuilderService query, ISqlService sql) : base(query, sql) { }
 

@@ -284,9 +284,14 @@ namespace CardboardBox
 			return (await req.Content.ReadAsStreamAsync(), length, path, type);
 		}
 
-		public static async Task<T[]> Await<T>(this IEnumerable<Task<T>> tasks)
+		public static Task<T[]> Await<T>(this IEnumerable<Task<T>> tasks)
 		{
-			return await Task.WhenAll(tasks);
+			return Task.WhenAll(tasks);
+		}
+
+		public static Task Await(this IEnumerable<Task> tasks)
+		{
+			return Task.WhenAll(tasks);
 		}
 
 		public static async Task<(T1 item1, T2 item2, T3 item3, T4 item4)[]> QueryAsync<T1, T2, T3, T4>(this ISqlService sql, string query, object? parameters = null, string splitOn = "split")

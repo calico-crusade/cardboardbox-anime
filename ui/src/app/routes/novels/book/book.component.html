@@ -2,7 +2,7 @@
     <div class="book" *ngIf="book && series">
         <header>
             <div class="image">
-                <img [src]="book.coverImage" alt="Cover Image" />
+                <img [src]="book.coverImage" alt="Cover Image" fallback />
             </div>
             <div class="details">
                 <h1>{{ book.title }}</h1>

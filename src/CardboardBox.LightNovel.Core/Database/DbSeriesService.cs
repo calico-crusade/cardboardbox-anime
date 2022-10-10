@@ -2,19 +2,25 @@
 {
 	using Anime.Database.Generation;
 
-	public interface IDbSeriesService : ILnOrmMap<Series>
+	public interface IDbSeriesService
 	{
 		Task<PaginatedResult<Series>> Paginate(int page = 1, int size = 100);
 		Task<PartialScaffold?> PartialScaffold(long seriesId);
 		Task<FullScaffold?> Scaffold(long seriesId);
 		Task<Series?> FromUrl(string url);
 		Task Delete(long seriesId);
+		Task<long> Upsert(Series series);
+		Task<Series> Fetch(long id);
+		Task<long> Insert(Series obj);
+		Task Update(Series obj);
+		Task<Series[]> All();
 	}
 
-	public class DbSeriesService : LnOrmMap<Series>, IDbSeriesService
+	public class DbSeriesService : OrmMapExtended<Series>, IDbSeriesService
 	{
 		private string? _paginateQuery;
 		private string? _fromUrlQuery;
+		private string? _upsertQuery;
 
 		public override string TableName => "ln_series";
 
@@ -146,6 +152,17 @@ DELETE FROM ln_pages WHERE series_id = :seriesId;
 DELETE FROM ln_series WHERE id = :seriesId;";
 
 			return _sql.Execute(QUERY, new { seriesId });
+		}
+
+		public Task<long> Upsert(Series item)
+		{
+			_upsertQuery ??= _query.Upsert<Series, long>(TableName,
+				(v) => v.With(t => t.HashId),
+				(v) => v.With(t => t.Id),
+				(v) => v.With(t => t.Id).With(t => t.CreatedAt),
+				(v) => v.Id);
+
+			return _sql.ExecuteScalar<long>(_upsertQuery, item);
 		}
 	}
 }

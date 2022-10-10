@@ -47,7 +47,7 @@ CREATE TABLE ln_books (
     updated_at timestamp not null default CURRENT_TIMESTAMP,
     deleted_at timestamp,
    
-    CONSTRAINT uiq_ln_books_hash UNIQUE(hash_id)
+    CONSTRAINT uiq_ln_books_hash UNIQUE(hash_id, series_id)
 );
 
 -- CREATE ln_chapters TABLE
@@ -64,7 +64,7 @@ CREATE TABLE ln_chapters (
     updated_at timestamp not null default CURRENT_TIMESTAMP,
     deleted_at timestamp,
 
-    CONSTRAINT uiq_ln_chapters_hash UNIQUE (hash_id)
+    CONSTRAINT uiq_ln_chapters_hash UNIQUE (hash_id, book_id)
 );
 
 -- CREATE ln_pages TABLE
@@ -86,7 +86,7 @@ CREATE TABLE ln_pages (
     updated_at timestamp not null default CURRENT_TIMESTAMP,
     deleted_at timestamp,
 
-    CONSTRAINT uiq_ln_pages_hash UNIQUE(hash_id)
+    CONSTRAINT uiq_ln_pages_hash UNIQUE(hash_id, series_id)
 );
 
 -- CREATE ln_chapter_pages TABLE

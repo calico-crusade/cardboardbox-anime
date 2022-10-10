@@ -1,4 +1,6 @@
-﻿namespace CardboardBox.LightNovel.Core.Database
+﻿using System.Linq.Expressions;
+
+namespace CardboardBox.LightNovel.Core.Database
 {
 	using Anime.Database.Generation;
 
@@ -19,12 +21,14 @@
 	{
 		private string? _upsertQuery;
 
+		public abstract Expression<Func<T, long>> FkId { get; }
+
 		public LnOrmMap(IDbQueryBuilderService query, ISqlService sql) : base(query, sql) { }
 
 		public Task<long> Upsert(T item)
 		{
 			_upsertQuery ??= _query.Upsert<T, long>(TableName,
-				(v) => v.With(t => t.HashId),
+				(v) => v.With(t => t.HashId).With(FkId),
 				(v) => v.With(t => t.Id),
 				(v) => v.With(t => t.Id).With(t => t.CreatedAt),
 				(v) => v.Id);
