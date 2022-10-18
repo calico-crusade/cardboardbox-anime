@@ -36,7 +36,7 @@ namespace CardboardBox.LightNovel.Core
 			if (bookIds.Length == 0) throw new ArgumentException("Please specify at least 1 book to generate", nameof(bookIds));
 			if (bookIds.Length == 1) return await GenerateOneBook(bookIds[0]);
 
-			var pubs = (await bookIds.Select(GenerateRawBook).Await())
+			var pubs = (await bookIds.Select(GenerateRawBook).WhenAll())
 				.Where(t => t != null)
 				.Select(t => t ?? ("", ""))
 				.ToArray();

@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\CardboardBox.Anime.AI\CardboardBox.Anime.AI.csproj" />
     <ProjectReference Include="..\CardboardBox.Anime.Database\CardboardBox.Anime.Database.csproj" />
     <ProjectReference Include="..\CardboardBox.Anime.Holybooks\CardboardBox.Anime.Holybooks.csproj" />
   </ItemGroup>

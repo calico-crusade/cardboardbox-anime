@@ -1,4 +1,5 @@
-﻿using CardboardBox.Anime.Holybooks;
+﻿using CardboardBox.Anime.AI;
+using CardboardBox.Anime.Holybooks;
 using CardboardBox.Discord;
 using Discord;
 using Discord.WebSocket;
@@ -12,16 +13,19 @@ namespace CardboardBox.Anime.Bot.Commands
 		private readonly IHolyBooksService _holybooks;
 		private readonly IAnimeApiService _api;
 		private readonly ILogger _logger;
+		private readonly IAiAnimeService _ai;
 		private readonly Random _rnd = new();
 
 		public HolybookCommands(
 			IHolyBooksService holybooks, 
 			ILogger<HolybookCommands> logger,
-			IAnimeApiService api)
+			IAnimeApiService api,
+			IAiAnimeService ai)
 		{
 			_holybooks = holybooks;
 			_logger = logger;
 			_api = api;
+			_ai = ai;
 		}
 
 		[Command("ping", "Checks to see if the bot is still alive.")]
@@ -111,6 +115,90 @@ namespace CardboardBox.Anime.Bot.Commands
 				_logger.LogError(ex, "Error occurred while requesting anime");
 				await cmd.Modify("An error occurred.");
 			}
+		}
+
+		//[Command("ai", "Generates an image with the given data", LongRunning = true)]
+		public async Task Ai(SocketSlashCommand cmd,
+			[Option("Generation Prompt", true)] string prompt,
+			[Option("Negative Generation Prompt", false)] string? negativePrompt,
+			[Option("Generation Steps (1 - 64)", false)] long? steps,
+			[Option("CFG Scale (1 - 30)", false)] double? cfg,
+			[Option("Generation Seed (1+)", false)] string? seed,
+			[Option("Image Width (100 - 1024)", false)] long? width,
+			[Option("Image Height (100 - 1024)", false)] long? height)
+		{
+			const long DEFAULT_STEPS = 20,
+					  DEFAULT_SIZE = 512;
+			const double DEFAULT_CFG = 7;
+			const string DEFAULT_SEED = "-1";
+
+			negativePrompt ??= "";
+			steps ??= DEFAULT_STEPS;
+			cfg ??= DEFAULT_CFG;
+			seed ??= DEFAULT_SEED;
+			width ??= DEFAULT_SIZE;
+			height ??= DEFAULT_SIZE;
+
+			if (width < 100 || width > 1024 || height < 100 || height > 1024)
+			{
+				await cmd.Modify("Image size has to be within 100x100 and 1024x1024!");
+				return;
+			}
+
+			if (steps < 1 || steps > 64)
+			{
+				await cmd.Modify("Generation Steps has to be between 1 and 64");
+				return;
+			}
+
+			if (cfg < 1 || cfg > 30)
+			{
+				await cmd.Modify("CFG has to be between 1 and 30");
+				return;
+			}
+
+			if (!long.TryParse(seed, out long actualSeed) || (actualSeed < 1 && actualSeed != -1))
+			{
+				await cmd.Modify("Seed has to be a number and cannot be less than 1!");
+				return;
+			}
+
+			var resp = await _ai.Get(new AiRequest
+			{
+				Prompt = prompt,
+				NegativePrompt = negativePrompt,
+				Steps = steps ?? DEFAULT_STEPS,
+				CfgScale = cfg ?? DEFAULT_CFG,
+				BatchCount = 1,
+				BatchSize = 1,
+				Seed = actualSeed,
+				Width = width ?? DEFAULT_SIZE,
+				Height = height ?? DEFAULT_SIZE
+			});
+			
+			if (resp == null || resp.Images == null || resp.Images.Length == 0)
+			{
+				await cmd.Modify("Something went wrong! Contact an admin!");
+				return;
+			}
+
+			var images = resp.Images.Select((t, i) =>
+			{
+				var temp = Path.GetRandomFileName() + ".png";
+				var bytes = Convert.FromBase64String(t);
+				File.WriteAllBytes(temp, bytes);
+
+				var attach = new FileAttachment(temp);
+				return (temp, attach);
+			}).ToArray();
+			
+			await cmd.Modify("I have finished generating your image! Give me a second to post it! Thanks!");
+			await cmd.Channel.SendFilesAsync(images.Select(t => t.attach));
+
+			images.Each(t =>
+			{
+				File.Delete(t.temp);
+			});
 		}
 
 		private async Task HandleBook(SocketSlashCommand cmd, string? language, int error = 0)

@@ -6,6 +6,7 @@ namespace CardboardBox.Anime.Database.Generation
 {
 	public static class Extensions
 	{
+        //
         public static string ToSnakeCase(this string text)
         {
             if (text == null) throw new ArgumentNullException(nameof(text));
@@ -28,7 +29,7 @@ namespace CardboardBox.Anime.Database.Generation
 
             return sb.ToString();
         }
-
+        //
         public static string ToPascalCase(this string? text)
         {
             if (text == null) throw new ArgumentNullException(nameof(text));

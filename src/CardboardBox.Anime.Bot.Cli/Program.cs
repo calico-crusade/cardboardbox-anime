@@ -1,4 +1,5 @@
-﻿using CardboardBox.Anime.Bot;
+﻿using CardboardBox.Anime.AI;
+using CardboardBox.Anime.Bot;
 using CardboardBox.Anime.Bot.Commands;
 using CardboardBox.Anime.Holybooks;
 using CardboardBox.Discord;
@@ -8,7 +9,8 @@ await DiscordBotBuilder.Start()
 	.WithServices(c =>
 	{
 		c.AddTransient<IHolyBooksService, HolyBooksService>()
-		 .AddTransient<IAnimeApiService, AnimeApiService>();
+		 .AddTransient<IAnimeApiService, AnimeApiService>()
+		 .AddTransient<IAiAnimeService, AiAnimeService>();
 	})
 	.WithSlashCommands(c =>
 	{

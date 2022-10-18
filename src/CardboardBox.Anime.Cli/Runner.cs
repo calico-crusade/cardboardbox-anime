@@ -161,7 +161,7 @@ namespace CardboardBox.Anime.Cli
 		{
 			await new[] { 47, 50, 49 }
 				.Select(t => _lnDb.Series.Delete(t))
-				.Await();
+				.WhenAll();
 		}
 
 		public async Task Load()

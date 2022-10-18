@@ -2,25 +2,26 @@
 {
 	public static class Extensions
 	{
+		//
 		public static XElement AddAttribute(this XElement el, XName name, object? value)
 		{
 			el.SetAttributeValue(name, value);
 			return el;
 		}
-
+		//
 		public static XElement AddAttributes(this XElement el, params (XName Attribute, object? Value)[] attributes)
 		{
 			foreach (var (atr, val) in attributes)
 				el.AddAttribute(atr, val);
 			return el;
 		}
-
+		//
 		public static XElement AddElements(this XElement parent, params object?[] children)
 		{
 			parent.Add(children);
 			return parent;
 		}
-
+		//
 		public static XElement AddElement(this XElement parent, XName tag, object? value, params (XName Attribute, object? Value)[] attributes)
 		{
 			var el = new XElement(tag)
@@ -32,7 +33,7 @@
 			parent.AddElements(el);
 			return parent;
 		}
-
+		//
 		public static XElement AddOptElement(this XElement parent, XName tag, object? value, params (XName Attribute, object? Value)[] attributes)
 		{
 			if (value == null) return parent;
@@ -55,17 +56,19 @@
 			return writer.ToString();
 		}
 
+		//
 		public static Stream ToStream(this string content)
 		{
 			var bytes = Encoding.UTF8.GetBytes(content);
 			return ToStream(bytes);
 		}
-
+		//
 		public static Stream ToStream(this byte[] content)
 		{
 			return new MemoryStream(content);
 		}
 
+		//
 		public static IEnumerable<T> SkipLast<T>(this IEnumerable<T> collection, int count = 1)
 		{
 			var ar = collection.ToArray();
@@ -76,6 +79,7 @@
 				yield return ar[i];
 		}
 
+		//
 		public static string PurgePathChars(this string text)
 		{
 			var chars = Path.GetInvalidFileNameChars()
