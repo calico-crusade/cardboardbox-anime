@@ -13,4 +13,10 @@ namespace CardboardBox.Anime.AI
 		[JsonPropertyName("info")]
 		public string Info { get; set; } = string.Empty;
 	}
+
+	public class EmbeddingsResponse
+	{
+		[JsonPropertyName("embeddings")]
+		public string[] Embeddings { get; set; } = Array.Empty<string>();
+	}
 }

@@ -31,4 +31,13 @@ namespace CardboardBox.Anime.AI
 		[JsonPropertyName("width")]
 		public long Width { get; set; } = 512;
 	}
+
+	public class AiRequestImg2Img : AiRequest
+	{
+		[JsonPropertyName("image")]
+		public string Image { get; set; } = string.Empty;
+
+		[JsonPropertyName("denoiseStrength")]
+		public double DenoiseStrength { get; set; } = 0.7;
+	}
 }

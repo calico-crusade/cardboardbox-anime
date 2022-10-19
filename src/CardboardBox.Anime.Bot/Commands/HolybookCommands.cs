@@ -1,6 +1,7 @@
 ﻿using CardboardBox.Anime.AI;
 using CardboardBox.Anime.Holybooks;
 using CardboardBox.Discord;
+using CardboardBox.Http;
 using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
@@ -10,8 +11,13 @@ namespace CardboardBox.Anime.Bot.Commands
 {
 	public class HolybookCommands
 	{
+		public const long DEFAULT_STEPS = 20, DEFAULT_SIZE = 512;
+		public const double DEFAULT_CFG = 7, DEFAULT_DENOISE = 0.7;
+		public const string DEFAULT_SEED = "-1";
+
+		private readonly IApiService _api;
 		private readonly IHolyBooksService _holybooks;
-		private readonly IAnimeApiService _api;
+		private readonly IAnimeApiService _anime;
 		private readonly ILogger _logger;
 		private readonly IAiAnimeService _ai;
 		private readonly Random _rnd = new();
@@ -19,13 +25,15 @@ namespace CardboardBox.Anime.Bot.Commands
 		public HolybookCommands(
 			IHolyBooksService holybooks, 
 			ILogger<HolybookCommands> logger,
-			IAnimeApiService api,
-			IAiAnimeService ai)
+			IAnimeApiService anime,
+			IAiAnimeService ai,
+			IApiService api)
 		{
 			_holybooks = holybooks;
 			_logger = logger;
-			_api = api;
+			_anime = anime;
 			_ai = ai;
+			_api = api;
 		}
 
 		[Command("ping", "Checks to see if the bot is still alive.")]
@@ -54,7 +62,7 @@ namespace CardboardBox.Anime.Bot.Commands
 					return new[] { input.Replace(" ", "") };
 				};
 
-				var results = await _api.Random(new()
+				var results = await _anime.Random(new()
 				{
 					Page = 1,
 					Size = 3000,
@@ -127,11 +135,6 @@ namespace CardboardBox.Anime.Bot.Commands
 			[Option("Image Width (100 - 1024)", false)] long? width,
 			[Option("Image Height (100 - 1024)", false)] long? height)
 		{
-			const long DEFAULT_STEPS = 20,
-					  DEFAULT_SIZE = 512;
-			const double DEFAULT_CFG = 7;
-			const string DEFAULT_SEED = "-1";
-
 			negativePrompt ??= "";
 			steps ??= DEFAULT_STEPS;
 			cfg ??= DEFAULT_CFG;
@@ -163,7 +166,7 @@ namespace CardboardBox.Anime.Bot.Commands
 				return;
 			}
 
-			var resp = await _ai.Get(new AiRequest
+			var resp = await _ai.Text2Img(new AiRequest
 			{
 				Prompt = prompt,
 				NegativePrompt = negativePrompt,
@@ -195,10 +198,146 @@ namespace CardboardBox.Anime.Bot.Commands
 			await cmd.Modify("I have finished generating your image! Give me a second to post it! Thanks!");
 			await cmd.Channel.SendFilesAsync(images.Select(t => t.attach));
 
-			images.Each(t =>
+			foreach (var (temp, _) in images)
+				File.Delete(temp);
+		}
+
+		//[Command("ai-img2img", "Generates an image with the given data", LongRunning = true)]
+		public async Task Img2ImgAi(SocketSlashCommand cmd,
+			[Option("Image Url", true)] string imageUrl,
+			[Option("Generation Prompt", true)] string prompt,
+			[Option("Negative Generation Prompt", false)] string? negativePrompt,
+			[Option("Generation Steps (1 - 64)", false)] long? steps,
+			[Option("CFG Scale (1 - 30)", false)] double? cfg,
+			[Option("Generation Seed (1+)", false)] string? seed,
+			[Option("Image Width (100 - 1024)", false)] long? width,
+			[Option("Image Height (100 - 1024)", false)] long? height,
+			[Option("Denoise Strength (0.0 - 1.0)", false)] double? denoiseStrength)
+		{
+			negativePrompt ??= "";
+			steps ??= DEFAULT_STEPS;
+			cfg ??= DEFAULT_CFG;
+			seed ??= DEFAULT_SEED;
+			width ??= DEFAULT_SIZE;
+			height ??= DEFAULT_SIZE;
+			denoiseStrength ??= DEFAULT_DENOISE;
+
+			if (width < 100 || width > 1024 || height < 100 || height > 1024)
 			{
-				File.Delete(t.temp);
+				await cmd.Modify("Image size has to be within 100x100 and 1024x1024!");
+				return;
+			}
+
+			if (steps < 1 || steps > 64)
+			{
+				await cmd.Modify("Generation Steps has to be between 1 and 64");
+				return;
+			}
+
+			if (cfg < 1 || cfg > 30)
+			{
+				await cmd.Modify("CFG has to be between 1 and 30");
+				return;
+			}
+
+			if (!long.TryParse(seed, out long actualSeed) || (actualSeed < 1 && actualSeed != -1))
+			{
+				await cmd.Modify("Seed has to be a number and cannot be less than 1!");
+				return;
+			}
+
+			if (denoiseStrength < 0 || denoiseStrength > 1)
+			{
+				await cmd.Modify("Denoise Strength has to be between 0.0 and 1.0!");
+				return;
+			}
+
+			var (worked, image) = await GetImage(imageUrl);
+
+
+			if (!worked)
+			{
+				await cmd.Modify("Image was not valid: " + image);
+				return;
+			}
+
+			var resp = await _ai.Img2Img(new AiRequestImg2Img
+			{
+				Prompt = prompt,
+				NegativePrompt = negativePrompt,
+				Steps = steps ?? DEFAULT_STEPS,
+				CfgScale = cfg ?? DEFAULT_CFG,
+				BatchCount = 1,
+				BatchSize = 1,
+				Seed = actualSeed,
+				Width = width ?? DEFAULT_SIZE,
+				Height = height ?? DEFAULT_SIZE,
+				Image = image,
+				DenoiseStrength = denoiseStrength ?? DEFAULT_DENOISE
 			});
+
+			if (resp == null || resp.Images == null || resp.Images.Length == 0)
+			{
+				await cmd.Modify("Something went wrong! Contact an admin!");
+				return;
+			}
+
+			var images = resp.Images.Select((t, i) =>
+			{
+				var temp = Path.GetRandomFileName() + ".png";
+				var bytes = Convert.FromBase64String(t);
+				File.WriteAllBytes(temp, bytes);
+
+				var attach = new FileAttachment(temp);
+				return (temp, attach);
+			}).ToArray();
+
+			await cmd.Modify("I have finished generating your image! Give me a second to post it! Thanks!");
+			await cmd.Channel.SendFilesAsync(images.Select(t => t.attach));
+
+			foreach (var (temp, _) in images)
+				File.Delete(temp);
+		}
+
+		//[Command("ai-embeds", "Displays a list of all of the embeds loaded on the system", LongRunning = true)]
+		public async Task EmbeddingList(SocketSlashCommand cmd)
+		{
+			var emebds = await _ai.Embeddings();
+			if (emebds.Length == 0)
+			{
+				await cmd.Modify("I couldn't find any embeds! Maybe the API is dead?");
+				return;
+			}
+
+			var files = emebds
+				.Where(t => Path.GetExtension(t).ToLower().TrimStart('.') != "txt")
+				.Select(t => Path.GetFileNameWithoutExtension(t))
+				.ToArray();
+
+			await cmd.Modify(
+				"These are all of the embeddings I found, you can put them in prompts and it modifies what the image looks like:\r\n" +
+				string.Join(", ", files));
+		}
+
+		private async Task<(bool, string)> GetImage(string url)
+		{
+			var (stream, length, file, type) = await _api.GetData(url);
+			if (stream == null)
+				return (false, "Image failed to download!");
+
+			if (!type.ToLower().StartsWith("image"))
+				return (false, "Return result needs to be an image! Mimetype received: " + type);
+
+			byte[] bytes = Array.Empty<byte>();
+			using (var io = new MemoryStream())
+			{
+				await stream.CopyToAsync(io);
+				io.Position = 0;
+				bytes = io.ToArray();
+				await stream.DisposeAsync();
+			}
+
+			return (true, Convert.ToBase64String(bytes));
 		}
 
 		private async Task HandleBook(SocketSlashCommand cmd, string? language, int error = 0)

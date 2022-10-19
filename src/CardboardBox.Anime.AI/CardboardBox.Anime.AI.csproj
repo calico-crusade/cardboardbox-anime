@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CardboardBox.Http.Files" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\CardboardBox.Anime.Core\CardboardBox.Anime.Core.csproj" />
   </ItemGroup>
 
