@@ -41,7 +41,16 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CardboardBox.LightNovel.Cor
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{64846183-815B-4A48-B116-C91F15BF6FDC}"
 	ProjectSection(SolutionItems) = preProject
+		..\.dockerignore = ..\.dockerignore
+		..\.gitignore = ..\.gitignore
+		..\api.Dockerfile = ..\api.Dockerfile
+		..\bot.Dockerfile = ..\bot.Dockerfile
+		..\deploy.sh = ..\deploy.sh
+		..\docker-compose.yml = ..\docker-compose.yml
 		global.cs = global.cs
+		..\nginx.conf = ..\nginx.conf
+		..\README.md = ..\README.md
+		..\ui.Dockerfile = ..\ui.Dockerfile
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CardboardBox.Epub", "CardboardBox.Epub\CardboardBox.Epub.csproj", "{E9AFB036-A25D-439D-983A-BFDF873029F5}"

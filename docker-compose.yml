@@ -40,5 +40,6 @@ services:
       - Discord:PublicKey=${DISCORD_KEY}
       - Discord:AppId=${DISCORD_APPID}
       - Discord:Token=${DISCORD_TOKEN}
+      - Ai:Url=${DISCORD_AI_URL}
     depends_on:
       - cba-api
