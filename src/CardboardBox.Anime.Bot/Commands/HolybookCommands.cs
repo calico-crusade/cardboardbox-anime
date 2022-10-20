@@ -125,7 +125,7 @@ namespace CardboardBox.Anime.Bot.Commands
 			}
 		}
 
-		//[Command("ai", "Generates an image with the given data", LongRunning = true)]
+		[Command("ai", "Generates an image with the given data", LongRunning = true)]
 		public async Task Ai(SocketSlashCommand cmd,
 			[Option("Generation Prompt", true)] string prompt,
 			[Option("Negative Generation Prompt", false)] string? negativePrompt,
@@ -202,7 +202,7 @@ namespace CardboardBox.Anime.Bot.Commands
 				File.Delete(temp);
 		}
 
-		//[Command("ai-img2img", "Generates an image with the given data", LongRunning = true)]
+		[Command("ai-img", "Generates an image with the given data", LongRunning = true)]
 		public async Task Img2ImgAi(SocketSlashCommand cmd,
 			[Option("Image Url", true)] string imageUrl,
 			[Option("Generation Prompt", true)] string prompt,
@@ -299,7 +299,7 @@ namespace CardboardBox.Anime.Bot.Commands
 				File.Delete(temp);
 		}
 
-		//[Command("ai-embeds", "Displays a list of all of the embeds loaded on the system", LongRunning = true)]
+		[Command("ai-embeds", "Displays a list of all of the embeds loaded on the system", LongRunning = true)]
 		public async Task EmbeddingList(SocketSlashCommand cmd)
 		{
 			var emebds = await _ai.Embeddings();
