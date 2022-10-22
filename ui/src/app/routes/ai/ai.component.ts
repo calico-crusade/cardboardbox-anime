@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { catchError, of } from 'rxjs';
 import { AiRequestImg2Img, AiService } from 'src/app/services';
 
@@ -6,14 +6,17 @@ import { AiRequestImg2Img, AiService } from 'src/app/services';
     templateUrl: './ai.component.html',
     styleUrls: ['./ai.component.scss']
 })
-export class AiComponent {
+export class AiComponent implements OnInit {
 
     loading: boolean = false;
     issues: string[] = [];
     error?: string;
     urls: string[] = [];
 
+    embeddings: string[] = [];
+
     img: boolean = false;
+    hints: boolean = false;
 
     request: AiRequestImg2Img = {
         prompt: 'detailed blushing [anime girl:botan-50000:.05] in a black outfit with ((starry eyes)), a perfect face, lit by ((strong rim light)) at ((night)), (intense shadows), ((sharp focus))',
@@ -32,6 +35,19 @@ export class AiComponent {
     constructor(
         private api: AiService
     ) { }
+
+    ngOnInit() {
+        this.api.embeddings()
+            .pipe(
+                catchError(err => {
+                    console.error('Error occurred while fetching embeds', { err });
+                    return of([]);
+                })
+            )
+            .subscribe(t => {
+                this.embeddings = t;
+            });
+    }
 
     post() {
         this.loading = true;

@@ -114,6 +114,16 @@ namespace CardboardBox.Anime.Api.Controllers
 			});
 		}
 
+		[HttpGet, Route("ai/embeddings")]
+		public async Task<IActionResult> Embeddings()
+		{
+			var embeds = (await _ai.Embeddings())
+				.Where(t => Path.GetExtension(t).Trim('.').ToLower() != "txt")
+				.Select(t => Path.GetFileNameWithoutExtension(t))
+				.ToArray();
+			return Ok(embeds);
+		}
+
 		private IActionResult? Validate(AiRequest request)
 		{
 			var validator = (string prop, double act, double min, double max) =>

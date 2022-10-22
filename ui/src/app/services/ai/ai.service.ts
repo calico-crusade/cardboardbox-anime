@@ -21,4 +21,8 @@ export class AiService extends ConfigObject {
     image2image(req: AiRequestImg2Img) {
         return this.http.post<AiResponse>(`${this.apiUrl}/ai/img`, req, { params: { download: false } });
     }
+
+    embeddings() {
+        return this.http.get<string[]>(`${this.apiUrl}/ai/embeddings`);
+    }
 }

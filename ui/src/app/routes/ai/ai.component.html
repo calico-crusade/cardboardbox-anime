@@ -2,9 +2,17 @@
     <main>
         <article>
             <div class="property">
-                <div class="title">Image 2 Image:</div>
-                <div class="value">
-                    <input type="checkbox" [(ngModel)]="img" />
+                <div class="split">
+                    <div class="title">Image 2 Image:</div>
+                    <div class="value">
+                        <input type="checkbox" [(ngModel)]="img" />
+                    </div>
+                </div>
+                <div class="split">
+                    <div class="title">Show Hints:</div>
+                    <div class="value">
+                        <input type="checkbox" [(ngModel)]="hints" />
+                    </div>
                 </div>
             </div>
             <div class="property fit">
@@ -13,11 +21,17 @@
                     <textarea [(ngModel)]="request.prompt"></textarea>
                 </div>
             </div>
+            <div class="notes" *ngIf="hints">
+                These are any key words you want the algorithm to use to generate your image. 
+            </div>
             <div class="property fit">
                 <div class="title">Negative Prompt:</div>
                 <div class="value">
                     <textarea [(ngModel)]="request.negativePrompt"></textarea>
                 </div>
+            </div>
+            <div class="notes" *ngIf="hints">
+                These are any key words you want the algorithm to actively avoid. 
             </div>
             <div class="property">
                 <div class="title">Steps:</div>
@@ -25,11 +39,17 @@
                     <input type="number" [(ngModel)]="request.steps" min="1" max="64" step="1" />
                 </div>
             </div>
+            <div class="notes" *ngIf="hints">
+                The number of sampling steps to use during the generation (Min: 1, Max: 64)
+            </div>
             <div class="property">
                 <div class="title">CFG Scale:</div>
                 <div class="value">
                     <input type="number" [(ngModel)]="request.cfgScale" min="1" max="32" />
                 </div>
+            </div>
+            <div class="notes" *ngIf="hints">
+                How strongly the image should conform to prompt - lower values produce more creative results (Min: 1, Max: 32)
             </div>
             <div class="property">
                 <div class="title">Batch Count:</div>
@@ -37,11 +57,17 @@
                     <input type="number" [(ngModel)]="request.batchCount" min="1" max="2" />
                 </div>
             </div>
+            <div class="notes" *ngIf="hints">
+                How many different batches of images to create. (Min: 1, Max: 2)
+            </div>
             <div class="property">
                 <div class="title">Batch Size:</div>
                 <div class="value">
                     <input type="number" [(ngModel)]="request.batchSize" min="1" max="4" />
                 </div>
+            </div>
+            <div class="notes" *ngIf="hints">
+                How many images to create in a single batch. (Min: 1, Max: 4)
             </div>
             <div class="property">
                 <div class="title">Seed:</div>
@@ -49,17 +75,26 @@
                     <input type="number" [(ngModel)]="request.seed" />
                 </div>
             </div>
+            <div class="notes" *ngIf="hints">
+                A value that determines the output of random number generator (-1 = Random Seed)
+            </div>
             <div class="property">
                 <div class="title">Image Width:</div>
                 <div class="value">
                     <input type="number" [(ngModel)]="request.width" min="64" max="1024" step="64" />
                 </div>
             </div>
+            <div class="notes" *ngIf="hints">
+                The width of the generated image (Min: 64, Max: 1024)
+            </div>
             <div class="property">
                 <div class="title">Image Height:</div>
                 <div class="value">
                     <input type="number" [(ngModel)]="request.height" min="64" max="1024" step="64" />
                 </div>
+            </div>
+            <div class="notes" *ngIf="hints">
+                The height of the generated image (Min: 64, Max: 1024)
             </div>
 
             <ng-container *ngIf="img">
@@ -69,16 +104,27 @@
                         <input type="text" [(ngModel)]="request.image" />
                     </div>
                 </div>
+                <div class="notes" *ngIf="hints">
+                    This is the base image to use when generating an image. This has to be a URL directly to the image, this cannot target a web-page.
+                </div>
                 <div class="property">
                     <div class="title">Denoise Strength:</div>
                     <div class="value">
                         <input type="number" [(ngModel)]="request.denoiseStrength" min="0.0" max="1.0" step="0.1" />
                     </div>
                 </div>
+                <div class="notes" *ngIf="hints">
+                    Determines how little respect the algorithm should have for image's content. The lower the closer to the original image (Min: 0.0, Max: 1.0)
+                </div>
             </ng-container>
 
             <div class="submit">
-                <button (click)="post()">Generate</button>
+                <button class="btn" (click)="post()">Generate</button>
+            </div>
+
+            <div class="notes" *ngIf="embeddings.length > 0 && hints">
+                The following key words will force the generator to use specific embeddings that modify how the image is generated. <br />
+                {{ embeddings.join(', ') }}
             </div>
         </article>
         <article>

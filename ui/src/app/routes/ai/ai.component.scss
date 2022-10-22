@@ -41,8 +41,39 @@ main {
                 }
             }
 
+            .split {
+                flex: 1;
+                display: flex;
+                flex-flow: row;
+
+                .title {
+                    flex: 1;
+                }
+
+                .value {
+                    flex: unset;
+                }
+            }
+
             &.fit {
                 flex-flow: column;
+            }
+        }
+
+        .notes {
+            width: 100%;
+            font-size: 13px;
+            text-align: right;
+            color: var(--text-color-muted);
+        }
+
+        .submit {
+            display: flex;
+            flex-flow: column;
+
+            button {
+                margin-left: auto;
+                margin-right: 5px;
             }
         }
 
@@ -64,7 +95,7 @@ main {
                 color: var(--dgr-color);
                 margin: 5px auto;
                 text-align: center;
-                
+
                 &:first-child { margin-top: auto; }
                 &:last-child { margin-bottom: auto; }
             }
