@@ -19,5 +19,7 @@
         <div class="res" *ngIf="res">
             <pre>{{ res | json }}</pre>
         </div>
+
+        <a [routerLink]="['/admin', 'ai']">AI Admin</a>
     </div>
 </cba-container>

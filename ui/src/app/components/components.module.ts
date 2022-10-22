@@ -17,6 +17,7 @@ import { SearchFiltersComponent } from "./search-filters/search-filters.componen
 import * as Hammer from 'hammerjs';
 import { AuthInterceptor } from "../services";
 import { ImageFallbackDirective } from "./image-fallback.directive";
+import { DeferLoadModule } from '@trademe/ng-defer-load';
 
 @Injectable()
 export class MyHammerConfig extends HammerGestureConfig {
@@ -38,7 +39,8 @@ const EXPORTS = [
 
 export const COMMON_IMPORTS = [
     LazyLoadImageModule,
-    InfiniteScrollModule
+    InfiniteScrollModule,
+    DeferLoadModule
 ]
 
 @NgModule({

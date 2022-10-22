@@ -25,4 +25,8 @@ export class AiService extends ConfigObject {
     embeddings() {
         return this.http.get<string[]>(`${this.apiUrl}/ai/embeddings`);
     }
+
+    images() {
+        return this.http.get<string[]>(`${this.apiUrl}/ai/images`);
+    }
 }

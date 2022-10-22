@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { catchError, of } from 'rxjs';
-import { AiRequestImg2Img, AiService } from 'src/app/services';
+import { AiRequestImg2Img, AiService, AuthService } from 'src/app/services';
 
 @Component({
     templateUrl: './ai.component.html',
@@ -33,14 +33,33 @@ export class AiComponent implements OnInit {
     };
 
     constructor(
-        private api: AiService
+        private api: AiService,
+        private auth: AuthService
     ) { }
 
     ngOnInit() {
-        this.api.embeddings()
+        this.auth
+            .onLogin
+            .subscribe(t => {
+                this.process();
+            });
+
+        this.process();
+    }
+
+    private process() {
+        this.error = undefined;
+        this.api
+            .embeddings()
             .pipe(
                 catchError(err => {
                     console.error('Error occurred while fetching embeds', { err });
+
+                    let statusCode = err.status;
+                    if (statusCode === 401) {
+                        this.error = 'Unauthorized: You need to be logged in to use this feature! (it\'s free and unlimited!)';
+                    }
+
                     return of([]);
                 })
             )

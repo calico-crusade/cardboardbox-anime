@@ -1,0 +1,7 @@
+<div class="component-container">
+    <div class="image-results" *ngFor="let image of images" (deferLoad)="image.show = true">
+        <ng-container *ngIf="image.show">
+            <img [src]="image.url" />
+        </ng-container>
+    </div>
+</div>

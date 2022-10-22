@@ -125,6 +125,17 @@ namespace CardboardBox.Anime.Api.Controllers
 			return Ok(embeds);
 		}
 
+		[HttpGet, Route("ai/images"), AdminAuthorize]
+		public IActionResult Images()
+		{
+			if (!Directory.Exists(ImageDir)) return NotFound();
+
+			return Ok(Directory
+				.GetFiles(ImageDir)
+				.Select(t => string.Join("/", t.Split('/', '\\').Skip(1)))
+				.ToArray());
+		}
+
 		private IActionResult? Validate(AiRequest request)
 		{
 			var validator = (string prop, double act, double min, double max) =>

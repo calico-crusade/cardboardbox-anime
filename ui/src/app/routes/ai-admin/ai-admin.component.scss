@@ -1,0 +1,13 @@
+.component-container {
+    flex-flow: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    .image-results {
+        margin: 10px auto;
+
+        img {
+            max-width: 100%;
+        }
+    }
+}
