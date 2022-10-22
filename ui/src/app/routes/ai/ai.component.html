@@ -82,6 +82,11 @@
             </div>
         </article>
         <article>
+            <h1 class="image-issues" *ngIf="issues.length > 0">There were a few issues with your request:</h1>
+            <div class="image-issues" *ngFor="let iss of issues">
+                {{ iss }}
+            </div>
+
             <div class="image-result" *ngFor="let img of urls">
                 <img [src]="imageUrl(img)" />
             </div>

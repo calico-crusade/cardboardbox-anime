@@ -59,6 +59,27 @@ main {
                     max-width: 100%;
                 }
             }
+
+            .image-issues {
+                color: var(--dgr-color);
+                margin: 5px auto;
+                text-align: center;
+                
+                &:first-child { margin-top: auto; }
+                &:last-child { margin-bottom: auto; }
+            }
         }
     }    
+}
+
+@media only screen and (max-width: 1000px) {
+    main {
+        flex-flow: column !important;
+        overflow-y: auto !important;
+
+        article {
+            width: unset !important;
+            overflow: unset !important;
+        }
+    }
 }

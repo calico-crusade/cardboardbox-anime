@@ -35,19 +35,30 @@ export class AiComponent {
 
     post() {
         this.loading = true;
+        this.issues = [];
+        this.urls = [];
+        this.error = undefined;
         
         let req = (!this.img ? this.api.text2Image : this.api.image2image);
 
         req.call(this.api, this.request)
             .pipe(
                 catchError(err => {
+                    const def = of({ urls: [] });
                     console.error('Error occurred in AI request', { 
                         req, 
                         request: this.request, 
                         err 
                     });
 
-                    return of({ urls: [] });
+                    let statusCode = err.status;
+                    if (statusCode != 400) {
+                        this.error = err.statusText || 'An error occurred.';
+                        return def;
+                    }
+                    
+                    this.issues = err.error.issues;
+                    return def;
                 })
             )
             .subscribe(t => {
