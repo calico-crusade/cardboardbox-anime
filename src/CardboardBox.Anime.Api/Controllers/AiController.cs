@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using IOFile = System.IO.File;
 
 namespace CardboardBox.Anime.Api.Controllers
@@ -6,7 +7,7 @@ namespace CardboardBox.Anime.Api.Controllers
 	using AI;
 	using Http;
 
-	[ApiController]
+	[ApiController, Authorize]
 	public class AiController : ControllerBase
 	{
 		public const int MIN_BATCH_COUNT = 1, MAX_BATCH_COUNT = 2,
