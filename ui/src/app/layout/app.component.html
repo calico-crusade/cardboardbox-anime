@@ -32,6 +32,12 @@
                 <span class="title">Public Lists</span>
             </a>
             <ng-container *ngIf="loggedIn">
+                <a routerLink="/ai" routerLinkActive="active" (click)="menuOpen = false">
+                    <span class="icon">
+                        <cba-icon>photo_library</cba-icon>
+                    </span>
+                    <span class="title">Image Generation</span>
+                </a>
                 <a routerLink="/series" routerLinkActive="active" (click)="menuOpen = false">
                     <span class="icon">
                         <cba-icon>menu_book</cba-icon>

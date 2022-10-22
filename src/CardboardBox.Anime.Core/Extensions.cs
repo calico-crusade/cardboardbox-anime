@@ -68,17 +68,7 @@ namespace CardboardBox
 			target.Bind(i);
 			return i;
 		}
-
-		//
-		public static string MD5Hash(this string data)
-		{
-			using var md5 = MD5.Create();
-			var input = Encoding.UTF8.GetBytes(data);
-			var output = md5.ComputeHash(input);
-			return Convert.ToHexString(output);
-		}
-
-		//
+				//
 		public static async Task<PaginatedResult<T>> Paginate<T>(
 			this IMongoService<T> mongo,
 			int page, int size,
@@ -121,18 +111,6 @@ namespace CardboardBox
 		public static async Task<List<T>> ToList<T>(this Task<IAsyncCursor<T>> task)
 		{
 			return await (await task).ToListAsync();
-		}
-
-		//
-		public static Task<T[]> WhenAll<T>(this IEnumerable<Task<T>> tasks)
-		{
-			return Task.WhenAll(tasks);
-		}
-
-		//
-		public static Task WhenAll(this IEnumerable<Task> tasks)
-		{
-			return Task.WhenAll(tasks);
 		}
 
 		//
@@ -214,41 +192,7 @@ namespace CardboardBox
 		{
 			return doc.SelectSingleNode(xpath)?.GetAttributeValue(attr, "")?.HTMLDecode();
 		}
-		//
-		public static bool IsWhiteSpace(this string? value)
-		{
-			var isWs = (char c) => char.IsWhiteSpace(c) || c == '\u00A0';
-			if (value == null || value.Length == 0) return true;
 
-			for (var i = 0; i < value.Length; i++)
-				if (!isWs(value[i])) return false;
-
-			return true;
-		}
-
-		//
-		public static IEnumerable<T> SkipLast<T>(this IEnumerable<T> data, int count = 1)
-		{
-			return data.Reverse().Skip(count).Reverse();
-		}
-		//
-		public static Dictionary<T, V[]> ToGDictionary<T, V>(this IEnumerable<V> data, Func<V, T> keySelector) where T : notnull
-		{
-			return data
-				.GroupBy(t => keySelector(t))
-				.ToDictionary(t => t.Key, t => t.ToArray());
-		}
-		//
-		public static Dictionary<T, V[]> ToGDictionary<T, V, O>(this IEnumerable<V> data, Func<V, T> keySelector, Func<V, O> order, bool asc = true) where T : notnull
-		{
-			return data
-				.GroupBy(t => keySelector(t))
-				.ToDictionary(t => t.Key, t =>
-				{
-					if (asc) return t.OrderBy(order).ToArray();
-					return t.OrderByDescending(order).ToArray();
-				});
-		}
 		//
 		public static async Task<HtmlDocument> GetHtml(this IApiService api, string url, Action<HttpRequestMessage>? config = null)
 		{
@@ -324,33 +268,6 @@ namespace CardboardBox
 				(a, b) => (a, b),
 				parameters,
 				splitOn: splitOn)).ToArray();
-		}
-
-		//
-		public static void Each<T>(this IEnumerable<T> data, Action<T> action)
-		{
-			foreach(var item in data) 
-				action(item);
-		}
-		//
-		public static void Each<T>(this IEnumerable<T> data, Action<int, T> action)
-		{
-			int count = 0;
-			foreach(var item in data)
-			{
-				action(count, item);
-				count++;
-			}
-		}
-		//
-		public static async Task Each<T>(this Task<T[]> tasks, Action<T> action)
-		{
-			(await tasks).Each(action);
-		}
-		//
-		public static async Task Each<T>(this Task<T[]> tasks, Action<int, T> action)
-		{
-			(await tasks).Each(action);
 		}
 	}
 

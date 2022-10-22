@@ -1,8 +1,8 @@
-﻿namespace CardboardBox.LightNovel.Core.Database
+﻿using System.Linq.Expressions;
+
+namespace CardboardBox.LightNovel.Core.Database
 {
 	using Anime.Database.Generation;
-	using System;
-	using System.Linq.Expressions;
 
 	public interface IDbChapterService : ILnOrmMap<Chapter>
 	{

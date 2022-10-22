@@ -5,6 +5,7 @@ import { LightnovelComponent } from './routes/lightnovel/lightnovel.component';
 import { LightnovelsComponent } from './routes/lightnovels/lightnovels.component';
 import { AdminComponent } from './routes/admin/admin.component';
 import { AdminGuard } from './services/admin.guard';
+import { AiComponent } from './routes/ai/ai.component';
 
 const routes: Routes = [
     {
@@ -19,6 +20,9 @@ const routes: Routes = [
     }, {
         path: 'series',
         loadChildren: () => import('./routes/novels').then(m => m.NovelsModule)
+    }, {
+        path: 'ai',
+        component: AiComponent
     }, {
        path: 'admin',
        component: AdminComponent,

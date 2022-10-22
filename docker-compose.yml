@@ -22,6 +22,7 @@ services:
       - OAuth:AppId=${OAUTH_APP_ID}
       - OAuth:Secret=${OAUTH_SECRET}
       - OAuth:Key=${OAUTH_KEY}
+      - Ai:Url=${DISCORD_AI_URL}
     ports:
       - 8891:80
     depends_on:

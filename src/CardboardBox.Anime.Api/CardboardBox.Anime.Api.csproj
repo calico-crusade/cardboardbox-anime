@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CardboardBox.Anime.All\CardboardBox.Anime.All.csproj" />
+    <ProjectReference Include="..\CardboardBox.Anime.Core\CardboardBox.Anime.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

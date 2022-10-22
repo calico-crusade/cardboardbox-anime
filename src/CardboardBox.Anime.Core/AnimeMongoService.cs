@@ -1,7 +1,4 @@
-﻿using CardboardBox.Database;
-using CardboardBox.Http;
-
-namespace CardboardBox.Anime.Core
+﻿namespace CardboardBox.Anime.Core
 {
 	using Models;
 

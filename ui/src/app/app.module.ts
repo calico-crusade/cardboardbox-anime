@@ -11,6 +11,7 @@ import { LightnovelComponent } from './routes/lightnovel/lightnovel.component';
 import { LightnovelsComponent } from './routes/lightnovels/lightnovels.component';
 import { AdminComponent } from './routes/admin/admin.component';
 import { COMMON_IMPORTS, ComponentsModule } from './components/components.module';
+import { AiComponent } from './routes/ai/ai.component';
 
 @NgModule({
     declarations: [
@@ -19,6 +20,7 @@ import { COMMON_IMPORTS, ComponentsModule } from './components/components.module
         LightnovelComponent,
         LightnovelsComponent,
         AdminComponent,
+        AiComponent,
     ],
     imports: [
         ComponentsModule,
