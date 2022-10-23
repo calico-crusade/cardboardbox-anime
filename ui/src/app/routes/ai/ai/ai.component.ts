@@ -44,6 +44,14 @@ export class AiComponent implements OnInit {
                 this.process();
             });
 
+        const cache = this.api.cache;
+        if (cache) {
+            this.request = <AiRequestImg2Img>cache;
+            this.img = !!this.request.image;
+            this.request.image = this.request.image || '';
+            this.request.denoiseStrength = this.request.denoiseStrength || 0.2;
+        }
+
         this.process();
     }
 

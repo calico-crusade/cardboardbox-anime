@@ -1,0 +1,32 @@
+<cba-container [loading]="loading" [error]="error" [handle-scroll]="false">
+    <div class="wrapper">
+        <main>
+            <article *ngFor="let req of res">
+                <header>
+                    <div class="pill" *ngIf="req.imageUrl">I2I</div>
+                    <div class="prompt"><b>Prompt: </b> {{ req.prompt }}</div>
+                    <button class="btn" (click)="open(req)">
+                        <cba-icon>open_in_new</cba-icon>
+                    </button>
+                </header>
+                <div class="image-list">
+                    <a class="image-result" *ngFor="let image of req.outputPaths" [style]="bgimage(image)" [href]="imageUrl(image)" target="_blank">
+                        <!-- <img [src]="imageUrl(image)" /> -->
+                    </a>
+                </div>
+            </article>
+        </main>
+        <footer>
+            <p>{{ total }} Requests! Displaying: {{ page }} of {{ pages }} page(s)!</p>
+
+            <input *ngIf="isAdmin" [(ngModel)]="id" type="number" placeholder="ID Override" />
+
+            <button class="btn" [disabled]="page <= 1" (click)="move(-1)">
+                <cba-icon>arrow_left</cba-icon>
+            </button>
+            <button class="btn" [disabled]="page >= pages" (click)="move(1)">
+                <cba-icon>arrow_right</cba-icon>
+            </button>
+        </footer>
+    </div>
+</cba-container>

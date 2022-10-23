@@ -1,0 +1,99 @@
+.wrapper {
+    flex: 1;
+    overflow: hidden;
+    
+    display: flex;
+    flex-flow: column;
+
+    main {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+
+        article {
+            display: flex;
+            flex-flow: column;
+            overflow: hidden;
+
+            header {
+                overflow: hidden;
+                display: flex;
+                flex-flow: row;
+                padding-right: 5px;
+
+                .pill {
+                    padding: 5px 10px;
+                    background-color: var(--def-color);
+                    border: none;
+                    border-radius: 5px;
+                    margin: auto 5px;
+                }
+
+                .prompt {
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: pre;
+                    flex: 1;
+                    margin: auto 5px;
+                }
+
+                button {
+                    padding: 5px;
+                }
+            }
+
+            .image-list {
+                display: flex;
+                flex-flow: row;
+                overflow-x: auto;
+                overflow-y: hidden;
+
+                .image-result {
+                    min-width: 250px;
+                    min-height: 250px;
+                    display: flex;
+                    margin: 5px;
+
+                    background-repeat: no-repeat;
+                    background-size: contain;
+                    background-position: center;
+                    
+                    img {
+                        height: 100%;
+                    }
+                }
+            }
+        }
+    }
+
+    footer {
+        padding: 5px;
+        border-top: 2px solid var(--color-funimation);
+
+        display: flex;
+        flex-flow: row;
+
+        p {
+            flex: 1;
+            margin: auto 0;
+            padding: 0;
+        }
+
+        input {
+            background-color: transparent;
+            color: var(--text-color);
+            border: none;
+            border-bottom: 1px solid var(--color-vrv);
+            outline: none;
+            margin: auto 5px;
+            padding: 5px;
+        }
+
+        button {
+            padding: 5px;
+            &:last-child {
+                border-left: none;
+            }
+        }
+    }
+}

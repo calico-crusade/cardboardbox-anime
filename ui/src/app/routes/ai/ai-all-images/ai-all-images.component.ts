@@ -3,10 +3,10 @@ import { catchError, of } from 'rxjs';
 import { AiService } from 'src/app/services';
 
 @Component({
-    templateUrl: './ai-admin.component.html',
-    styleUrls: ['./ai-admin.component.scss']
+  templateUrl: './ai-all-images.component.html',
+  styleUrls: ['./ai-all-images.component.scss']
 })
-export class AiAdminComponent implements OnInit {
+export class AiAllImagesComponent implements OnInit {
 
     images: { url: string, show: boolean }[] = [];
 

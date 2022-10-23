@@ -11,8 +11,6 @@ import { LightnovelComponent } from './routes/lightnovel/lightnovel.component';
 import { LightnovelsComponent } from './routes/lightnovels/lightnovels.component';
 import { AdminComponent } from './routes/admin/admin.component';
 import { COMMON_IMPORTS, ComponentsModule } from './components/components.module';
-import { AiComponent } from './routes/ai/ai.component';
-import { AiAdminComponent } from './routes/ai-admin/ai-admin.component';
 
 @NgModule({
     declarations: [
@@ -21,8 +19,6 @@ import { AiAdminComponent } from './routes/ai-admin/ai-admin.component';
         LightnovelComponent,
         LightnovelsComponent,
         AdminComponent,
-        AiComponent,
-        AiAdminComponent,
     ],
     imports: [
         ComponentsModule,

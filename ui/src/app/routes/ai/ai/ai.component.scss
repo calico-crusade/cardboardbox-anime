@@ -69,11 +69,14 @@ main {
 
         .submit {
             display: flex;
-            flex-flow: column;
+            flex-flow: row;
 
-            button {
-                margin-left: auto;
+            button, a {
                 margin-right: 5px;
+
+                &:first-child {
+                    margin-left: auto;
+                }
             }
         }
 

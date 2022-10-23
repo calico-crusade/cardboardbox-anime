@@ -96,41 +96,5 @@ namespace CardboardBox.Anime.Auth
 			};
 		}
 
-		public static Task<T?> FirstOrDefault<T>(this IFindFluent<T, T> fluent)
-		{
-#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
-			return fluent.SingleOrDefaultAsync();
-#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
-		}
-
-		public static T RandomRemove<T>(this List<T> collection)
-		{
-			var output = collection.Random();
-			collection.Remove(output);
-			return output;
-		}
-
-		public static T Random<T>(this List<T> collection)
-		{
-			if (collection.Count == 0) throw new ArgumentException("Collection contains no elements!", nameof(collection));
-			if (collection.Count == 1) return collection[0];
-
-			var index = RandomInstance.Next(0, collection.Count);
-			return collection[index];
-		}
-
-		public static T Random<T>(this T[] collection)
-		{
-			if (collection.Length == 0) throw new ArgumentException("Collection contains no elements!", nameof(collection));
-			if (collection.Length == 1) return collection[0];
-
-			var index = RandomInstance.Next(0, collection.Length);
-			return collection[index];
-		}
-
-		public static string Random(this string collection)
-		{
-			return collection.ToCharArray().Random().ToString();
-		}
 	}
 }

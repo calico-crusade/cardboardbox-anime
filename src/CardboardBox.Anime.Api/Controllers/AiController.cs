@@ -5,6 +5,8 @@ using IOFile = System.IO.File;
 namespace CardboardBox.Anime.Api.Controllers
 {
 	using AI;
+	using Auth;
+	using Database;
 	using Http;
 
 	[ApiController, Authorize]
@@ -19,15 +21,18 @@ namespace CardboardBox.Anime.Api.Controllers
 
 		private readonly IAiAnimeService _ai;
 		private readonly IApiService _api;
+		private readonly IDbService _db;
 
 		private static string ImageDir => Path.Combine("wwwroot", "image-cache");
 
 		public AiController(
 			IAiAnimeService ai, 
-			IApiService api)
+			IApiService api,
+			IDbService db)
 		{
 			_ai = ai;
 			_api = api;
+			_db = db;
 		}
 
 		[HttpPost, Route("ai")]
@@ -36,8 +41,18 @@ namespace CardboardBox.Anime.Api.Controllers
 			var valRes = Validate(request);
 			if (valRes != null) return valRes;
 
+			var req = await From(request);
+			if (req == null) return Unauthorized();
+
+			req.Id = await _db.AiRequests.Insert(req);
+
 			var res = await _ai.Text2Img(request);
 			if (res == null) return NotFound();
+
+			req.GenerationEnd = DateTime.Now;
+			req.SecondsElapsed = (long)(req.GenerationEnd - req.GenerationStart).Value.TotalSeconds;
+
+			await _db.AiRequests.Update(req);
 
 			if (res.Images.Length == 0) return NotFound();
 
@@ -58,6 +73,9 @@ namespace CardboardBox.Anime.Api.Controllers
 				return string.Join("/", ImageDir.Split('/', '\\').Skip(1)) + "/" + path;
 			}).ToArray().WhenAll();
 
+			req.OutputPaths = urls;
+			await _db.AiRequests.Update(req);
+
 			return Ok(new
 			{
 				urls
@@ -69,6 +87,11 @@ namespace CardboardBox.Anime.Api.Controllers
 		{
 			var valRes = Validate(request);
 			if (valRes != null) return valRes;
+
+			var req = await From(request);
+			if (req == null) return Unauthorized();
+
+			req.Id = await _db.AiRequests.Insert(req);
 
 			var (stream, _, file, type) = await _api.GetData(request.Image);
 			if (stream == null) return BadRequest();
@@ -85,10 +108,16 @@ namespace CardboardBox.Anime.Api.Controllers
 			}
 
 			request.Image = Convert.ToBase64String(data);
+			req.GenerationStart = DateTime.Now;
 
 			var res = await _ai.Img2Img(request);
 
 			if (res == null) return NotFound();
+
+			req.GenerationEnd = DateTime.Now;
+			req.SecondsElapsed = (long)(req.GenerationEnd - req.GenerationStart).Value.TotalSeconds;
+
+			await _db.AiRequests.Update(req);
 
 			if (res.Images.Length == 0) return NotFound();
 
@@ -108,6 +137,9 @@ namespace CardboardBox.Anime.Api.Controllers
 
 				return string.Join("/", ImageDir.Split('/', '\\').Skip(1)) + "/" + path;
 			}).ToArray().WhenAll();
+
+			req.OutputPaths = urls;
+			await _db.AiRequests.Update(req);
 
 			return Ok(new
 			{
@@ -134,6 +166,25 @@ namespace CardboardBox.Anime.Api.Controllers
 				.GetFiles(ImageDir)
 				.Select(t => string.Join("/", t.Split('/', '\\').Skip(1)))
 				.ToArray());
+		}
+
+		[HttpGet, Route("ai/requests")]
+		[ProducesDefaultResponseType(typeof(PaginatedResult<DbAiRequest>))]
+		public async Task<IActionResult> Requests([FromQuery] long? id = null, [FromQuery] int size = 100, [FromQuery] int page = 1)
+		{
+			var isAdmin = User.IsInRole("Admin");
+
+			if (!isAdmin || id == -1)
+			{
+				var pid = this.UserFromIdentity()?.Id ?? "";
+				var profile = await _db.Profiles.Fetch(pid);
+				if (profile == null) return Unauthorized();
+
+				id = profile.Id;
+			}
+
+			var data = await _db.AiRequests.Paged(id, page, size);
+			return Ok(data);
 		}
 
 		private IActionResult? Validate(AiRequest request)
@@ -173,6 +224,37 @@ namespace CardboardBox.Anime.Api.Controllers
 			{
 				issues = foundIssues
 			});
+		}
+
+		private async Task<DbAiRequest?> From(AiRequest request)
+		{
+			var pid = this.UserFromIdentity()?.Id ?? "";
+
+			var profile = await _db.Profiles.Fetch(pid);
+			if (profile == null) return null;
+
+			var res = new DbAiRequest
+			{
+				ProfileId = profile.Id,
+				Prompt = request.Prompt,
+				NegativePrompt = request.NegativePrompt,
+				Steps = request.Steps,
+				BatchCount = request.BatchCount,
+				BatchSize = request.BatchSize,
+				CfgScale = request.CfgScale,
+				Seed = request.Seed,
+				Height = request.Height,
+				Width = request.Width,
+				GenerationStart = DateTime.Now
+			};
+
+			if (request is AiRequestImg2Img img)
+			{
+				res.ImageUrl = img.Image;
+				res.DenoiseStrength = img.DenoiseStrength;
+			}
+
+			return res;
 		}
 	}
 }

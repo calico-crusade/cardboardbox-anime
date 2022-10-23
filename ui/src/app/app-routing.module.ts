@@ -5,8 +5,6 @@ import { LightnovelComponent } from './routes/lightnovel/lightnovel.component';
 import { LightnovelsComponent } from './routes/lightnovels/lightnovels.component';
 import { AdminComponent } from './routes/admin/admin.component';
 import { AdminGuard } from './services/admin.guard';
-import { AiComponent } from './routes/ai/ai.component';
-import { AiAdminComponent } from './routes/ai-admin/ai-admin.component';
 
 const routes: Routes = [
     {
@@ -23,14 +21,10 @@ const routes: Routes = [
         loadChildren: () => import('./routes/novels').then(m => m.NovelsModule)
     }, {
         path: 'ai',
-        component: AiComponent
+        loadChildren: () => import('./routes/ai').then(m => m.AiModule)
     }, {
        path: 'admin',
        component: AdminComponent,
-       canActivate: [ AdminGuard ] 
-    }, {
-       path: 'admin/ai',
-       component: AiAdminComponent,
        canActivate: [ AdminGuard ] 
     }, {
         path: '',
