@@ -1,6 +1,9 @@
 <cba-container [loading]="loading" [error]="error" [handle-scroll]="false">
     <div class="wrapper">
         <main>
+            <article *ngIf="res.length == 0">
+                <p>You have no requests! Do you want to <a [routerLink]="['/ai']">generate some?</a></p>
+            </article>
             <article *ngFor="let req of res">
                 <header>
                     <div class="pill" *ngIf="req.imageUrl">I2I</div>

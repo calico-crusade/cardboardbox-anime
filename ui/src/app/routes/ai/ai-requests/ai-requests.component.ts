@@ -58,11 +58,11 @@ export class AiRequestsComponent implements OnInit {
                         err
                     });
 
-                    let code = err.statusCode;
+                    let code = err.status;
                     if (code === 401) {
                         this.error = 'Unauthorized! You need to be logged in to do this!';
                     } else {
-                        this.error = err.status || 'Unknown Error! Contact an admin!';
+                        this.error = err.statusText || 'Unknown Error! Contact an admin!';
                     }
 
                     return of({
