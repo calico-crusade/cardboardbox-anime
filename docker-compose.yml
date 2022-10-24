@@ -27,6 +27,8 @@ services:
       - 8891:80
     depends_on:
       - cba-postgres
+    volumes:
+      - ./image-cache:/app/wwwroot/image-cache
   cba-ui:
     image: ghcr.io/calico-crusade/cardboardbox-anime/ui:latest
     restart: always
