@@ -14,6 +14,7 @@ export class AuthService extends ConfigObject {
 
     private _loginSub = new BehaviorSubject<AuthUser | undefined>(undefined);
     private _titleSub = new BehaviorSubject<string | undefined>(undefined);
+    private _loggingInSub = new BehaviorSubject<boolean>(false);
 
     get onLogin() { return this._loginSub.asObservable(); }
     get currentUser() { return this._loginSub.getValue(); }
@@ -24,21 +25,31 @@ export class AuthService extends ConfigObject {
         this._titleSub.next(title);
     }
 
+    get isLoggingIn() { return this._loggingInSub.value; }
+    set isLoggingIn(val: boolean) { this._loggingInSub.next(val); }
+    get onIsLoggingIn() { return this._loggingInSub.asObservable(); }
+
     constructor(
         private http: HttpClient,
         private api: AnimeService
     ) { super(); }
 
     async bump() {
-        if (!this.token) return false;
+        this.isLoggingIn = true;
+        if (!this.token) {
+            this.isLoggingIn = false;
+            return false;
+        }
 
         try {
             let me = await lastValueFrom(this.me());
             await lastValueFrom(this.api.buildMap());
             this._loginSub.next(me);
+            this.isLoggingIn = false;
             return true;
         } catch (e) {
             console.warn('Error occurred while fetching profile', { e });
+            this.isLoggingIn = false;
             return false;
         }
     }

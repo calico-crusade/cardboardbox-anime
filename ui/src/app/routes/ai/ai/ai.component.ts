@@ -63,9 +63,8 @@ export class AiComponent implements OnInit {
                 catchError(err => {
                     console.error('Error occurred while fetching embeds', { err });
 
-                    let statusCode = err.status;
-                    if (statusCode === 401) {
-                        this.error = 'Unauthorized: You need to be logged in to use this feature! (it\'s free and unlimited!)';
+                    if (err.status !== 401) {
+                        this.error = err.statusText;
                     }
 
                     return of([]);
@@ -89,9 +88,7 @@ export class AiComponent implements OnInit {
                 catchError(err => {
                     const def = of({ urls: [] });
                     console.error('Error occurred in AI request', { 
-                        req, 
-                        request: this.request, 
-                        err 
+                        req, err, request: this.request
                     });
 
                     let statusCode = err.status;

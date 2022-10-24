@@ -1,13 +1,30 @@
-<div class="component-container">
-    <main *ngIf="loading" class="loading">
+<div class="component-container" [ngSwitch]="state">
+    <main *ngSwitchCase="'loading'" class="loading">
         <img src="/assets/loading.gif" alt="Loading Icon" />
         <span>Loading...</span>
     </main>
-    <main *ngIf="!loading && error" class="loading">
+
+    <main *ngSwitchCase="'error'" class="loading">
         <img src="/assets/error.gif" alt="Loading Icon" />
         <span>{{ error }}</span>
     </main>
-    <main *ngIf="!loading && !error" class="content" [ngClass]="{ 'scroll': handleScroll }">
+
+    <main *ngSwitchCase="'requires-login-loading'" class="loading">
+        <img src="/assets/loading.gif" alt="Loading Icon" />
+        <span>Logging you in...</span>
+    </main>
+
+    <main *ngSwitchCase="'requires-login-not-admin'" class="loading">
+        <img src="/assets/error.gif" alt="Loading Icon" />
+        <span>You don't have the appropriate permissions to access this!</span>
+    </main>
+
+    <main *ngSwitchCase="'requires-login-not-loggedin'" class="loading">
+        <img src="/assets/error.gif" alt="Loading Icon" />
+        <span>You need to be logged in to use this!</span>
+    </main>
+
+    <main *ngSwitchDefault class="content" [ngClass]="{ 'scroll': handleScroll }">
         <ng-content></ng-content>
     </main>
 </div>

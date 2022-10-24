@@ -24,8 +24,7 @@ const routes: Routes = [
         loadChildren: () => import('./routes/ai').then(m => m.AiModule)
     }, {
        path: 'admin',
-       component: AdminComponent,
-       canActivate: [ AdminGuard ] 
+       component: AdminComponent
     }, {
         path: '',
         pathMatch: 'full',

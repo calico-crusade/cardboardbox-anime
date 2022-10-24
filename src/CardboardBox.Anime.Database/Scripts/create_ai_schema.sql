@@ -2,7 +2,6 @@
 	id BIGSERIAL PRIMARY KEY,
 	profile_id BIGINT not null,
 
-	image_2_image BIT not null,
 	prompt TEXT not null,
 	negative_prompt TEXT not null,
 	steps BIGINT not null,
@@ -18,10 +17,10 @@
 	output_paths TEXT[] not null,
 
 	generation_start TIMESTAMP not null,
-	generation_end TIMESTAMP not null,
-	seconds_elapsed BIGINT not null,
+	generation_end TIMESTAMP,
+	seconds_elapsed BIGINT,
 
 	created_at TIMESTAMP not null default CURRENT_TIMESTAMP,
 	updated_at TIMESTAMP not null default CURRENT_TIMESTAMP,
 	deleted_at TIMESTAMP
-)
+);

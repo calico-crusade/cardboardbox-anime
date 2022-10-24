@@ -3,7 +3,6 @@ import { NgModule } from "@angular/core";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { RouterModule, Routes } from "@angular/router";
 import { COMMON_IMPORTS, ComponentsModule } from "src/app/components/components.module";
-import { AdminGuard } from "src/app/services/admin.guard";
 import { AiRequestsComponent } from "./ai-requests/ai-requests.component";
 import { AiAllImagesComponent } from "./ai-all-images/ai-all-images.component";
 import { AiComponent } from "./ai/ai.component";
@@ -18,8 +17,7 @@ const ROUTES: Routes = [
         component: AiRequestsComponent
     }, {
         path: 'admin',
-        component: AiAllImagesComponent,
-        canActivate: [ AdminGuard ]
+        component: AiAllImagesComponent
     }
 ]
 

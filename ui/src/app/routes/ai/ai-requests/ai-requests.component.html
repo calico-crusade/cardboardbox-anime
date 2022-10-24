@@ -1,4 +1,4 @@
-<cba-container [loading]="loading" [error]="error" [handle-scroll]="false">
+<cba-container [loading]="loading" [error]="error" [handle-scroll]="false" [requires-login]="true">
     <div class="wrapper">
         <main>
             <article *ngIf="res.length == 0">
@@ -13,17 +13,13 @@
                     </button>
                 </header>
                 <div class="image-list">
-                    <a class="image-result" *ngFor="let image of req.outputPaths" [style]="bgimage(image)" [href]="imageUrl(image)" target="_blank">
-                        <!-- <img [src]="imageUrl(image)" /> -->
-                    </a>
+                    <a class="image-result" *ngFor="let image of req.outputPaths" [style]="bgimage(image)" [href]="imageUrl(image)" target="_blank"></a>
                 </div>
             </article>
         </main>
         <footer>
             <p>{{ total }} Requests! Displaying: {{ page }} of {{ pages }} page(s)!</p>
-
             <input *ngIf="isAdmin" [(ngModel)]="id" type="number" placeholder="ID Override" />
-
             <button class="btn" [disabled]="page <= 1" (click)="move(-1)">
                 <cba-icon>arrow_left</cba-icon>
             </button>
