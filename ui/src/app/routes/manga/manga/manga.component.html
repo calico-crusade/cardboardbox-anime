@@ -1,0 +1,19 @@
+<cba-container [loading]="loading" [error]="error" [handle-scroll]="true" flex-flow="column">
+    <header>
+        <div class="image" [style.background-image]="'url(' + manga?.cover + ')'"></div>
+        <div class="details">
+            <div class="title">
+                <a [href]="manga?.homePage" target="_blank">{{ manga?.title }}</a>
+            </div>
+            <div class="tags">
+                <div class="header">Tags: </div>
+                <div class="tag" *ngFor="let tag of manga?.tags">{{ tag }}</div>
+            </div>
+        </div>
+    </header>
+    <main>
+        <div class="chapter" *ngFor="let chapter of manga?.chapters?.slice()?.reverse()">
+            <a [routerLink]="['/manga', url, chapter.id, 1]">{{ chapter.title }}</a>
+        </div>
+    </main>
+</cba-container>

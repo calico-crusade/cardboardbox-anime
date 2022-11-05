@@ -1,0 +1,31 @@
+﻿.modal-wrapper {
+	position: fixed;
+	top: 0;	left: 0;
+	width: max(100%, 100vw); height: max(100%, 100vh);
+	display: flex;
+	z-index: 99;
+	background-color: rgba(0, 0, 0, 0.8);
+}
+
+	.modal-wrapper .fade {
+		position: absolute;
+		top: 0; left: 0;
+		width: 100%; height: 100%;
+	}
+
+	.modal-wrapper .content {
+		margin: auto;
+		background-color: var(--bg-card);
+		border-top: .25rem solid var(--color-vrv);
+		max-height: 80%;
+		overflow: hidden;
+		position: relative;
+		display: flex;
+		flex-flow: row;
+		padding: 15px;
+	}
+
+		.modal-wrapper .content .close {
+			position: absolute;
+			top: 5px; right: 0;
+		}

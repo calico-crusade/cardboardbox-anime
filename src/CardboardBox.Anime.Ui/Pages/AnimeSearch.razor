@@ -1,0 +1,116 @@
+﻿@page "/anime/{search?}"
+@inject IAnimeService Anime;
+@inject NavigationManager Nav;
+
+@if(Loading)
+{
+	<p>Loading...</p>
+}
+else
+{
+	<main>
+		@foreach(var anime in Results)
+		{
+			<p>@anime.Title</p>
+			<p>@anime.Description</p>
+			<hr />
+		}
+	</main>
+}
+
+@code {
+	#region Parameters
+	[Parameter] 
+	public string? Search
+	{
+		get => Filter.Search;
+		set => Filter.Search = value ?? "";
+	}
+
+	[Parameter, SupplyParameterFromQuery(Name = "page")]
+	public int? Page
+	{
+		get => Filter.Page;
+		set => Filter.Page = value ?? 1;
+	}
+
+	[Parameter, SupplyParameterFromQuery(Name = "size")]
+	public int? Size
+	{
+		get => Filter.Size;
+		set => Filter.Size = value ?? 50;
+	}
+
+	[Parameter, SupplyParameterFromQuery(Name = "langs")]
+	public string? Languages
+	{
+		get => string.Join(",", Filter.Queryables.Languages);
+		set => Filter.Queryables.Languages = (value ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries);
+	}
+
+	[Parameter, SupplyParameterFromQuery(Name = "types")]
+	public string? Types
+	{
+		get => string.Join(",", Filter.Queryables.Types);
+		set => Filter.Queryables.Types = (value ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries);
+	}
+
+	[Parameter, SupplyParameterFromQuery(Name = "platforms")]
+	public string? Platforms
+	{
+		get => string.Join(",", Filter.Queryables.Platforms);
+		set => Filter.Queryables.Platforms = (value ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries);
+	}
+
+	[Parameter, SupplyParameterFromQuery(Name = "tags")]
+	public string? Tags
+	{
+		get => string.Join(",", Filter.Queryables.Tags);
+		set => Filter.Queryables.Tags = (value ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries);
+	}
+
+	[Parameter, SupplyParameterFromQuery(Name = "vt")]
+	public string? VideoTypes
+	{
+		get => string.Join(",", Filter.Queryables.VideoTypes);
+		set => Filter.Queryables.VideoTypes = (value ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries);
+	}
+
+	[Parameter, SupplyParameterFromQuery(Name = "asc")]
+	public bool? Ascending
+	{
+		get => Filter.Ascending;
+		set => Filter.Ascending = value ?? true;
+	}
+
+	[Parameter, SupplyParameterFromQuery(Name = "mat")]
+	public int? Mature
+	{
+		get => (int)Filter.Mature;
+		set => Filter.Mature = (FilterSearch.MatureType)(value ?? 0);
+	}
+	#endregion
+
+	public bool Loading { get; set; } = false;
+	public FilterSearch Filter { get; set; } = new();
+	public long Pages { get; set; } = 0;
+	public long Total { get; set; } = 0;
+	public AnimeModel[] Results { get; set; } = Array.Empty<AnimeModel>();
+
+	protected override async Task OnInitializedAsync()
+	{
+		Nav.LocationChanged += async (_, _) => await NavChanged();
+		await NavChanged();
+	}
+
+	public async Task NavChanged()
+	{
+		Loading = true;
+		var (pages, count, results) = await Anime.Search(Filter);
+		Pages = pages;
+		Total = count;
+		Results = results;
+		Console.WriteLine($"Pages: {pages}, Count: {count}, Results: {results.Length}");
+		Loading = false;
+	}
+}

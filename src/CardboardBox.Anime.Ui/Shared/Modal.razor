@@ -1,0 +1,27 @@
+﻿@if (Open) {
+	<div class="modal-wrapper">
+		<div class="fade" @onclick="Toggle"></div>
+		<div class="content" style="border-color: @Color">
+			<button class="close btn-icon" @onclick="Toggle">
+				<Icon Name="close" />
+			</button>
+			@ChildContent
+		</div>
+	</div>
+}
+
+@code {
+	[Parameter] public bool Open { get; set; } = false;
+
+	[Parameter] public EventCallback<bool> OpenChanged { get; set; }
+
+	[Parameter] public RenderFragment? ChildContent  { get; set; }
+
+	[Parameter] public string Color { get; set; } = "var(--color-crunchyroll)";
+
+	private async Task Toggle()
+	{
+		Open = !Open;
+		await OpenChanged.InvokeAsync(Open);
+	}
+}

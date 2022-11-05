@@ -18,6 +18,7 @@ import * as Hammer from 'hammerjs';
 import { AuthInterceptor } from "../services";
 import { ImageFallbackDirective } from "./image-fallback.directive";
 import { DeferLoadModule } from '@trademe/ng-defer-load';
+import { PopupComponent } from './popup/popup.component';
 
 @Injectable()
 export class MyHammerConfig extends HammerGestureConfig {
@@ -34,7 +35,8 @@ const EXPORTS = [
     CardComponent,
     AnimeModalComponent,
     ObserveDirective,
-    ImageFallbackDirective
+    ImageFallbackDirective,
+    PopupComponent
 ];
 
 export const COMMON_IMPORTS = [
@@ -44,7 +46,7 @@ export const COMMON_IMPORTS = [
 ]
 
 @NgModule({
-    declarations: [ ...EXPORTS ],
+    declarations: [ ...EXPORTS  ],
     exports: [ ...EXPORTS ],
     imports: [
         CommonModule,

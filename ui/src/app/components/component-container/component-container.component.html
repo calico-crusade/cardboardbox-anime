@@ -24,7 +24,7 @@
         <span>You need to be logged in to use this!</span>
     </main>
 
-    <main *ngSwitchDefault class="content" [ngClass]="{ 'scroll': handleScroll }">
+    <main *ngSwitchDefault class="content" [ngClass]="{ 'scroll': handleScroll }" [style.flex-flow]="flow">
         <ng-content></ng-content>
     </main>
 </div>

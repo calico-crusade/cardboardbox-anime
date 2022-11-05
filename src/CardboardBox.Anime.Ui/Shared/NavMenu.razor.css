@@ -1,0 +1,29 @@
+nav {
+    background-color: var(--bg-card);
+    display: flex;
+    flex-flow: row;
+    border-bottom: 2px solid var(--color-vrv);
+    z-index: 0;
+    min-height: 40px;
+    padding: 5px 15px;
+}
+
+    nav a, nav button {
+        margin: auto 5px;
+        cursor: pointer;
+        color: #fff;
+        text-decoration: none;
+        white-space: pre;
+        border: none;
+        outline: none;
+        background-color: transparent;
+        padding: 0;
+    }
+
+        nav a b {
+            color: var(--color-mondo);
+        }
+
+    nav div {
+        margin: auto;
+    }

@@ -1,0 +1,59 @@
+<cba-container [loading]="loading" [error]="error">
+    <section class="context">
+        <header>
+            <button (click)="prevChap()" [disabled]="!hasPreviousChapter">
+                <cba-icon>skip_previous</cba-icon>
+            </button>
+            <button (click)="prevPage()" [disabled]="!hasPreviousPage">
+                <cba-icon>navigate_before</cba-icon>
+            </button>
+            <button (click)="pageChange(0)">
+                <cba-icon>restart_alt</cba-icon>
+            </button>
+    
+            <div class="select-list">
+                <select [(ngModel)]="chapter" (ngModelChange)="pageChange(0)">
+                    <option *ngFor="let chapter of manga?.chapters" [value]="chapter.id">
+                        {{ chapter.title }}
+                    </option>
+                </select>
+                <div class="counts">
+                    Page: {{ page }}/{{ mangaChapter?.pages?.length }}
+                </div>
+            </div>
+
+            <button (click)="settingsShow()">
+                <cba-icon>settings</cba-icon>
+            </button>
+    
+            <button (click)="nextPage()" [disabled]="!hasNextPage">
+                <cba-icon>navigate_next</cba-icon>
+            </button>
+            <button (click)="nextChap()" [disabled]="!hasNextChapter">
+                <cba-icon>skip_next</cba-icon>
+            </button>
+        </header>
+        <main [ngClass]="{ 'fit': settings.fitToWidth.value }">
+            <img [src]="pageImage" />
+
+            <button class="left" (click)="prevPage()"></button>
+            <button class="right" (click)="nextPage()"></button>
+        </main>
+    </section>
+</cba-container>
+
+<cba-popup #popup color="var(--color-funimation)">
+    <h2>Settings</h2>
+    <section>
+        <label>
+            <input type="checkbox" [(ngModel)]="settings.invertControls.value" />
+            Invert Controls
+        </label>
+    </section>
+    <section>
+        <label>
+            <input type="checkbox" [(ngModel)]="settings.fitToWidth.value" />
+            Fit to Width
+        </label>
+    </section>
+</cba-popup>

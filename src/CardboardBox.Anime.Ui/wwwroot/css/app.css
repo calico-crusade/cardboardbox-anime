@@ -1,0 +1,62 @@
+﻿:root {
+    --text-color: #dcddde;
+    --text-color-muted: #555;
+    --bg-main: #060606;
+    --bg-menu: #010101;
+    --bg-accent: #1b1a26;
+    --accent-1: #726ae4;
+    --accent-2: #6665DD;
+    --dgr-color: rgb(255, 61, 61);
+    --dgr-color-trans: rgba(255, 61, 61, 0.7);
+    --wrn-color: orange;
+    --suc-color: rgb(0, 255, 0);
+    --def-color: #6665DD;
+    --brd-color: #efefefef;
+    --brd-color-accent: rgba(255, 255, 255, 0.12);
+    --discord-bg: #36393f;
+    --discord-bg-2: #2f3136;
+    --discord-txt: #dcddde;
+    --discord-txt-muted: #8f8f8f;
+    --bg-header: #111111;
+    --bg-sidebar: #1b1b1b;
+    --bg-card: #302e42;
+    --bd-card-2: rgb(27, 26, 38);
+    --color-crunchyroll: rgb(244, 117, 33);
+    --color-vrv-crunchyroll: rgb(244, 117, 33);
+    --color-vrvselect: rgb(128, 130, 133);
+    --color-mondo: rgb(233, 55, 53);
+    --color-vrv: #fd0;
+    --color-hidive: rgba(0, 174, 240, 1);
+    --color-hidive-dark: rgb(0, 95, 133);
+    --color-vrv-trans: rgba(255, 221, 0, 0.842);
+    --color-funimation: #6030a1;
+}
+
+html, body {
+    font-family: 'Roboto', sans-serif;
+}
+
+
+
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+}
+
+a {
+    text-decoration: none;
+    color: var(--text-color);
+    cursor: pointer;
+}
+
+.btn-icon {
+    outline: none;
+    border: none;
+    text-align: center;
+    color: var(--text-color);
+    background-color: transparent;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 1rem;
+    display: inline-flex;
+    align-items: center;
+}

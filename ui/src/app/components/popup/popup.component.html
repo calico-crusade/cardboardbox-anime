@@ -1,0 +1,11 @@
+<div class="background" [ngClass]="{ 'show': show }">
+    <div class="fade" (click)="cancel(true)"></div>
+    <div class="modal" [class]="size" [style.border-top-color]="color">
+        <button class="close" (click)="cancel(true)">
+            <cba-icon>close</cba-icon>
+        </button>
+        <ng-container *ngIf="show">
+            <ng-content></ng-content>
+        </ng-container>
+    </div>
+</div>

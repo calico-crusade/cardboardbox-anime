@@ -44,6 +44,7 @@ export class ComponentContainerComponent implements OnInit {
     }
 
     @Input('handle-scroll') handleScroll: boolean = false;
+    @Input('flex-flow') flow: string = 'row';
 
     state: state = 'loading';
 

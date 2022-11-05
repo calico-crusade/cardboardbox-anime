@@ -1,0 +1,67 @@
+﻿@inherits LayoutComponentBase
+@implements IDisposable
+@inject IAnimeService Anime;
+
+<div class="app">
+
+	<div class="image-float" style=@_first></div>
+	<div class="image-float ignore" style=@_second></div>
+	
+	<NavMenu />
+	<main>@Body</main>
+</div>
+
+@code {
+
+	private string? _first;
+	private string? _second;
+
+
+	private readonly System.Timers.Timer _timer = new();
+
+	protected override async Task OnInitializedAsync()
+	{
+		_timer.Interval = 6000;
+		_timer.Elapsed += async (_, _) => await Elapsed();
+		_timer.Start();
+		await Elapsed();
+	}
+
+	public async Task Init()
+	{
+		_first = await GetImage();
+		_second = await GetImage();
+	}
+
+	public async Task<string?> GetImage()
+	{
+		var url = (await Anime.Random(new()
+		{
+			Queryables = new()
+			{
+				Platforms = new[] { "crunchyroll", "funimation" }
+			}
+		}))
+			.FirstOrDefault()?
+			.Images
+			.OrderByDescending(t => t.Width)
+			.FirstOrDefault(t => t.Type == "wallpaper")?
+			.Source;
+
+		if (string.IsNullOrEmpty(url)) return null;
+
+		return $"background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.8)), url({url})";
+	}
+
+	private async Task Elapsed()
+	{
+		_first = _second;
+		_second = await GetImage();
+		StateHasChanged();
+	}
+
+	public void Dispose()
+	{
+		_timer.Stop();
+	}
+}

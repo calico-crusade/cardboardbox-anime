@@ -3,20 +3,25 @@ using CardboardBox.Anime.Bot;
 using CardboardBox.Anime.Bot.Commands;
 using CardboardBox.Anime.Holybooks;
 using CardboardBox.Discord;
+using CardboardBox.Manga;
 using Microsoft.Extensions.DependencyInjection;
 
-await DiscordBotBuilder.Start()
+var bot = DiscordBotBuilder.Start()
 	.WithServices(c =>
 	{
 		c.AddTransient<IHolyBooksService, HolyBooksService>()
 		 .AddTransient<IAnimeApiService, AnimeApiService>()
-		 .AddTransient<IAiAnimeService, AiAnimeService>();
+		 .AddTransient<IAiAnimeService, AiAnimeService>()
+		 .AddManga();
 	})
 	.WithSlashCommands(c =>
 	{
 		c.With<HolybookCommands>();
+		 //.With<MangaCommand>()
+		 //.WithComponent<MangaComponent>();
 	})
-	.Build()
-	.Login();
+	.Build();
+
+await bot.Login();
 
 await Task.Delay(-1);

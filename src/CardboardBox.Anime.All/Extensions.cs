@@ -13,6 +13,7 @@ namespace CardboardBox.Anime
 	using Database;
 	using Funimation;
 	using HiDive;
+	using Manga;
 	using Vrv;
 
 	using LightNovel.Core;
@@ -35,7 +36,8 @@ namespace CardboardBox.Anime
 				.AddTransient<ICrunchyrollApiService, CrunchyrollApiService>()
 				.AddMongo<Anime, AnimeConfig>()
 				.AddTransient<IAnimeMongoService, AnimeMongoService>()
-				.AddTransient<IAiAnimeService, AiAnimeService>();
+				.AddTransient<IAiAnimeService, AiAnimeService>()
+				.AddManga();
 		}
 	}
 }

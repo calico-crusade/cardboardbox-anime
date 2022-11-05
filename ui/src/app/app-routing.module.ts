@@ -23,6 +23,9 @@ const routes: Routes = [
         path: 'ai',
         loadChildren: () => import('./routes/ai').then(m => m.AiModule)
     }, {
+        path: 'manga',
+        loadChildren: () => import('./routes/manga').then(m => m.MangaModule)
+    },{
        path: 'admin',
        component: AdminComponent
     }, {

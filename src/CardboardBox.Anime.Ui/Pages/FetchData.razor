@@ -1,0 +1,46 @@
+﻿@page "/fetchdata"
+@inject IAnimeService _anime;
+
+<PageTitle>Weather forecast</PageTitle>
+
+<h1>Weather forecast</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+@if (_results.Count == 0)
+{
+    <p><em>No data? Probably Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Temp. (C)</th>
+                <th>Temp. (F)</th>
+                <th>Summary</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var anime in _results.Results)
+            {
+                <tr>
+                    <td>@anime.Title</td>
+                    <td>@anime.Description</td>
+                    <td>@string.Join(", ", anime.Tags)</td>
+                    <td>@anime.PlatformId</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private PaginatedResult<AnimeModel> _results = new PaginatedResult<AnimeModel>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _results = await _anime.Search(new FilterSearch { });
+    }
+}
