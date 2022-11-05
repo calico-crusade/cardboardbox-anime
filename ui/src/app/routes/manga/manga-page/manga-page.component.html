@@ -35,7 +35,9 @@
         </header>
         <main [ngClass]="{ 'fit': settings.fitToWidth.value }">
             <img [src]="pageImage" />
-
+            <div class="page" [style.background-image]="'url('+ pageImage +')'"></div>
+            <!--Cache the next page so it loads faster-->
+            <div class="next" [style.background-image]="'url(' + nextPageImage + ')'"></div>
             <button class="left" (click)="prevPage()"></button>
             <button class="right" (click)="nextPage()"></button>
         </main>

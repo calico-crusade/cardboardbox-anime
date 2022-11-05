@@ -54,6 +54,11 @@ export class MangaPageComponent implements OnInit {
         return this.mangaChapter.pages[this.page - 1] || DEFAULT_IMAGE;
     }
 
+    get nextPageImage() {
+        if (!this.manga || !this.mangaChapter) return DEFAULT_IMAGE;
+        return this.mangaChapter.pages[this.page] || DEFAULT_IMAGE;
+    }
+
     get chapterIndex() {
         if (!this.manga || !this.mangaChapter) return -1;
 
