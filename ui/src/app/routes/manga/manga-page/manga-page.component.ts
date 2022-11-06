@@ -46,7 +46,9 @@ export class MangaPageComponent implements OnInit {
 
     settings = {
         invertControls: new StorageVar<boolean>(false, 'invert-controls'),
-        fitToWidth: new StorageVar<boolean>(false, 'fit-to-width')
+        fitToWidth: new StorageVar<boolean>(false, 'fit-to-width'),
+        scroll: new StorageVar<boolean>(false, 'scroll-chapter'),
+        hideHeader: new StorageVar<boolean>(false, 'hide-header')
     };
 
     get pageImage() {

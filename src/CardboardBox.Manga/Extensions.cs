@@ -8,8 +8,8 @@
 		{
 			return services
 				.AddTransient<IMangaService, MangaService>()
-				
-				.AddTransient<IMangakakalotSource, MangakakalotSource>();
+				.AddTransient<IMangakakalotSource, MangakakalotSource>()
+				.AddMangadex();
 		}
 	}
 }

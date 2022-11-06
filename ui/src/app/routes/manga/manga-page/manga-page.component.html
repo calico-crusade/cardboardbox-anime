@@ -1,10 +1,10 @@
 <cba-container [loading]="loading" [error]="error">
     <section class="context">
-        <header>
+        <header *ngIf="!settings.hideHeader.value">
             <button (click)="prevChap()" [disabled]="!hasPreviousChapter">
                 <cba-icon>skip_previous</cba-icon>
             </button>
-            <button (click)="prevPage()" [disabled]="!hasPreviousPage">
+            <button (click)="prevPage()" [disabled]="!hasPreviousPage" *ngIf="!settings.scroll.value">
                 <cba-icon>navigate_before</cba-icon>
             </button>
             <button (click)="pageChange(0)">
@@ -17,7 +17,7 @@
                         {{ chapter.title }}
                     </option>
                 </select>
-                <div class="counts">
+                <div class="counts" *ngIf="!settings.scroll.value">
                     Page: {{ page }}/{{ mangaChapter?.pages?.length }}
                 </div>
             </div>
@@ -26,36 +26,99 @@
                 <cba-icon>settings</cba-icon>
             </button>
     
-            <button (click)="nextPage()" [disabled]="!hasNextPage">
+            <button (click)="nextPage()" [disabled]="!hasNextPage" *ngIf="!settings.scroll.value">
                 <cba-icon>navigate_next</cba-icon>
             </button>
             <button (click)="nextChap()" [disabled]="!hasNextChapter">
                 <cba-icon>skip_next</cba-icon>
             </button>
         </header>
-        <main [ngClass]="{ 'fit': settings.fitToWidth.value }">
-            <img [src]="pageImage" />
-            <div class="page" [style.background-image]="'url('+ pageImage +')'"></div>
-            <!--Cache the next page so it loads faster-->
-            <div class="next" [style.background-image]="'url(' + nextPageImage + ')'"></div>
-            <button class="left" (click)="prevPage()"></button>
-            <button class="right" (click)="nextPage()"></button>
+        <main [ngClass]="{ 'fit': settings.fitToWidth.value, 'scroll': settings.scroll.value }">
+            <ng-container *ngIf="settings.scroll.value">
+                <button class="scroll-button" (click)="prevChap()" [disabled]="!hasPreviousChapter">
+                    <cba-icon>skip_previous</cba-icon>
+                </button>
+
+                <img *ngFor="let page of mangaChapter?.pages" [src]="page" />
+
+                <button class="scroll-button" (click)="nextChap()" [disabled]="!hasNextChapter">
+                    <cba-icon>skip_next</cba-icon>
+                </button>
+            </ng-container>
+            <ng-container *ngIf="!settings.scroll.value">
+                <img [src]="pageImage" />
+                <div class="page" [style.background-image]="'url('+ pageImage +')'"></div>
+                <!--Cache the next page so it loads faster-->
+                <div class="next" [style.background-image]="'url(' + nextPageImage + ')'"></div>
+                <button class="left" (click)="prevPage()"></button>
+                <button class="right" (click)="nextPage()"></button>
+            </ng-container>
         </main>
+        <button class="float-icon" (click)="settingsShow()" *ngIf="settings.hideHeader.value">
+            <cba-icon>settings</cba-icon>
+        </button>
     </section>
 </cba-container>
 
 <cba-popup #popup color="var(--color-funimation)">
     <h2>Settings</h2>
-    <section>
-        <label>
-            <input type="checkbox" [(ngModel)]="settings.invertControls.value" />
-            Invert Controls
-        </label>
-    </section>
-    <section>
-        <label>
-            <input type="checkbox" [(ngModel)]="settings.fitToWidth.value" />
-            Fit to Width
-        </label>
-    </section>
+    <div class="settings">
+        <section>
+            <label>
+                <input type="checkbox" [(ngModel)]="settings.invertControls.value" />
+                Invert Controls
+            </label>
+        </section>
+        <section>
+            <label>
+                <input type="checkbox" [(ngModel)]="settings.fitToWidth.value" />
+                Fit to Width
+            </label>
+        </section>
+        <section>
+            <label>
+                <input type="checkbox" [(ngModel)]="settings.scroll.value" />
+                Scroll through Chapter
+            </label>
+        </section>
+        <section>
+            <label>
+                <input type="checkbox" [(ngModel)]="settings.hideHeader.value" />
+                Hide Header
+            </label>
+        </section>
+        <section>
+            <div class="select-list">
+                <button (click)="prevChap()" [disabled]="!hasPreviousChapter">
+                    <cba-icon>skip_previous</cba-icon>
+                </button>
+                <select [(ngModel)]="chapter" (ngModelChange)="pageChange(0)">
+                    <option *ngFor="let chapter of manga?.chapters" [value]="chapter.id">
+                        {{ chapter.title }}
+                    </option>
+                </select>
+                <button (click)="nextChap()" [disabled]="!hasNextChapter">
+                    <cba-icon>skip_next</cba-icon>
+                </button>
+            </div>
+        </section>
+        <section *ngIf="!settings.scroll.value">
+            <div class="select-list">
+                <button (click)="prevPage()" [disabled]="!hasPreviousPage">
+                    <cba-icon>navigate_before</cba-icon>
+                </button>
+                <button (click)="pageChange(0)">
+                    <cba-icon>restart_alt</cba-icon>
+                </button>
+                <select [(ngModel)]="page" (ngModelChange)="pageChange(page - 1)">
+                    <option *ngFor="let page of mangaChapter?.pages; let i = index" [value]="i + 1">
+                        Page: #{{ i + 1 }}
+                    </option>
+                </select>
+                <button (click)="nextPage()" [disabled]="!hasNextPage" *ngIf="!settings.scroll.value">
+                    <cba-icon>navigate_next</cba-icon>
+                </button>
+            </div>
+        </section>
+    </div>
 </cba-popup>

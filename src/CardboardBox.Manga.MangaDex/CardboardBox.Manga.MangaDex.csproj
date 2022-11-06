@@ -12,7 +12,6 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\CardboardBox.Anime.Core\CardboardBox.Anime.Core.csproj" />
-	  <ProjectReference Include="..\CardboardBox.Manga.MangaDex\CardboardBox.Manga.MangaDex.csproj" />
 	</ItemGroup>
-	
+
 </Project>
