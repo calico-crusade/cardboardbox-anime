@@ -40,7 +40,7 @@
 			public string Status { get; set; } = string.Empty;
 
 			[JsonPropertyName("year")]
-			public int Year { get; set; }
+			public int? Year { get; set; }
 
 			[JsonPropertyName("contentRating")]
 			public string ContentRating { get; set; } = string.Empty;

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { catchError, of } from 'rxjs';
-import { Manga, MangaService } from 'src/app/services';
+import { Manga, MangaService, MangaWithChapters } from 'src/app/services';
 
 @Component({
     templateUrl: './manga.component.html',
@@ -11,8 +11,16 @@ export class MangaComponent implements OnInit {
 
     loading: boolean = false;
     error?: string;
-    url!: string;
-    manga?: Manga;
+    id!: number;
+    data?: MangaWithChapters;
+
+    get manga() {
+        return this.data?.manga;
+    }
+
+    get chapters() {
+        return this.data?.chapters || [];
+    }
 
     constructor(
         private route: ActivatedRoute,
@@ -21,7 +29,7 @@ export class MangaComponent implements OnInit {
 
     ngOnInit(): void {
         this.route.params.subscribe(t => {
-            this.url = t['url'];
+            this.id = +t['id'];
             this.process();
         });
     }
@@ -29,15 +37,14 @@ export class MangaComponent implements OnInit {
     private process() {
         this.loading = true;
         this.api
-            .manga(this.url)
+            .manga(this.id)
             .pipe(
                 catchError(err => {
-                    
                     return of(undefined);
                 })
             )
             .subscribe(t => {
-                this.manga = t;
+                this.data = t;
                 this.loading = false;
             });
     }

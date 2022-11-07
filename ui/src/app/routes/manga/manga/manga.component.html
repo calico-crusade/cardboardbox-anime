@@ -3,7 +3,7 @@
         <div class="image" [style.background-image]="'url(' + manga?.cover + ')'"></div>
         <div class="details">
             <div class="title">
-                <a [href]="manga?.homePage" target="_blank">{{ manga?.title }}</a>
+                <a [href]="manga?.url" target="_blank">{{ manga?.title }}</a>
             </div>
             <div class="tags">
                 <div class="header">Tags: </div>
@@ -12,8 +12,21 @@
         </div>
     </header>
     <main>
-        <div class="chapter" *ngFor="let chapter of manga?.chapters?.slice()?.reverse()">
-            <a [routerLink]="['/manga', url, chapter.id, 1]">{{ chapter.title }}</a>
-        </div>
+        <a class="chapter" *ngFor="let chapter of chapters" [routerLink]="['/manga', id, chapter.id, 1]">
+            <div class="header">
+                <div class="number">Ch. {{ chapter.ordinal }}</div>
+                <div class="title">{{ chapter.title }}</div>
+            </div>
+            <div class="footer">
+                <div class="lang">
+                    <cba-icon>language</cba-icon> 
+                    <span>{{ chapter.language }}</span>
+                </div>
+                <div class="timings">
+                    <cba-icon>schedule</cba-icon> 
+                    <span>{{ chapter.createdAt | date:'yyyy-MM-dd' }}</span>
+                </div>
+            </div>
+        </a>
     </main>
 </cba-container>

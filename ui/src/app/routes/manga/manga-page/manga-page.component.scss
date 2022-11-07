@@ -22,8 +22,6 @@ header {
             cursor: not-allowed;
         }
     }
-
-    
 }
 
 main {
@@ -56,6 +54,11 @@ main {
         border: none;
         background: transparent;
         cursor: pointer;
+        
+        &:disabled {
+            color: var(--text-color-muted);
+            cursor: not-allowed;
+        }
     }
 
     .right {
@@ -111,6 +114,16 @@ main {
             display: block;
             max-width: 100%;
             max-height: unset;
+        }
+    }
+
+    &.invert {
+        img {
+            filter: invert(100%)
+        }
+
+        .page {
+            filter: invert(100%)
         }
     }
 }

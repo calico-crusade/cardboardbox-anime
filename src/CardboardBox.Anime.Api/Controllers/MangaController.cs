@@ -3,6 +3,7 @@
 namespace CardboardBox.Anime.Api.Controllers
 {
 	using Manga;
+	using Database;
 
 	[ApiController]
 	public class MangaController : ControllerBase
@@ -15,31 +16,41 @@ namespace CardboardBox.Anime.Api.Controllers
 		}
 
 		[HttpGet, Route("manga")]
-		[ProducesDefaultResponseType(typeof(Manga))]
-		[ProducesResponseType(404), ProducesResponseType(400)]
-		public async Task<IActionResult> Get([FromQuery] string url)
+		[ProducesDefaultResponseType(typeof(PaginatedResult<DbManga>))]
+		public async Task<IActionResult> Get([FromQuery] int page = 1, [FromQuery] int size = 100)
 		{
-			var (src, id) = _manga.DetermineSource(url);
-			if (src == null || id == null) return BadRequest();
+			var data = await _manga.Manga(page, size);
+			return Ok(data);
+		}
 
-			var manga = await src.Manga(id);
+		[HttpGet, Route("manga/{id}")]
+		[ProducesDefaultResponseType(typeof(MangaWithChapters)), ProducesResponseType(404)]
+		public async Task<IActionResult> Get([FromRoute] long id)
+		{
+			var manga = await _manga.Manga(id);
 			if (manga == null) return NotFound();
+			return Ok(manga);
+		}
+
+		[HttpGet, Route("manga/{id}/{chapterId}/pages")]
+		[ProducesDefaultResponseType(typeof(string[])), ProducesResponseType(404)]
+		public async Task<IActionResult> GetPages([FromRoute] long chapterId)
+		{
+			var manga = await _manga.MangaPages(chapterId);
+			if (manga == null || manga.Length == 0) return NotFound();
 
 			return Ok(manga);
 		}
 
-		[HttpGet, Route("manga/chapter")]
-		[ProducesDefaultResponseType(typeof(MangaChapterPages))]
+		[HttpGet, Route("manga/load")]
+		[ProducesDefaultResponseType(typeof(MangaWithChapters))]
 		[ProducesResponseType(404), ProducesResponseType(400)]
-		public async Task<IActionResult> Get([FromQuery] string url, [FromQuery] string chapter)
+		public async Task<IActionResult> Get([FromQuery] string url)
 		{
-			var (src, id) = _manga.DetermineSource(url);
-			if (src == null || id == null) return BadRequest();
+			var manga = await _manga.Manga(url);
+			if (manga == null) return NotFound();
 
-			var chap = await src.ChapterPages(id, chapter);
-			if (chap == null) return NotFound();
-
-			return Ok(chap);
+			return Ok(manga);
 		}
 	}
 }

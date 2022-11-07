@@ -10,6 +10,8 @@
 
 		Task<MangaDexCollection<MangaDexChapter>?> Chapters(string id, int limit = 500, int offset = 0);
 
+		Task<MangaDexRoot<MangaDexChapter>?> Chapter(string id, string[]? includes = null);
+
 		Task<MangaDexPages?> Pages(string id);
 	}
 
@@ -56,6 +58,18 @@
 			};
 
 			return Chapters(id, filter);
+		}
+
+		public Task<MangaDexRoot<MangaDexChapter>?> Chapter(string id, string[]? includes = null)
+		{
+			//https://api.mangadex.org/chapter/b5c27796-f334-43b5-834f-6617f7458d0b
+			includes ??= new[]
+			{
+				"scanlation_group", "manga", "user"
+			};
+			var pars = string.Join("&", includes.Select(t => $"includes[]={t}"));
+			var url = $"https://api.mangadex.org/chapter/{id}?{pars}";
+			return _api.Get<MangaDexRoot<MangaDexChapter>>(url);
 		}
 
 		public Task<MangaDexPages?> Pages(string id)

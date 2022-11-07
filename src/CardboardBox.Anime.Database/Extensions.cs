@@ -78,7 +78,10 @@ namespace CardboardBox.Anime.Database
 
 				 .ForEntity<DbAiRequest>()
 				 
-				 .ForEntity<CompPublicList>();
+				 .ForEntity<CompPublicList>()
+				 
+				 .ForEntity<DbManga>()
+				 .ForEntity<DbMangaChapter>();
 			});
 
 			MapConfig.StartMap();
@@ -92,6 +95,7 @@ namespace CardboardBox.Anime.Database
 				.AddTransient<IListDbService, ListDbService>()
 				.AddTransient<IListMapDbService, ListMapDbService>()
 				.AddTransient<IChapterDbService, ChapterDbService>()
+				.AddTransient<IMangaDbService, MangaDbService>()
 
 				.AddTransient<IAiRequestDbService, AiRequestDbService>()
 				

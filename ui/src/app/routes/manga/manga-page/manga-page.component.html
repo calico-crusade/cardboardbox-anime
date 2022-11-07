@@ -12,13 +12,13 @@
             </button>
     
             <div class="select-list">
-                <select [(ngModel)]="chapter" (ngModelChange)="pageChange(0)">
-                    <option *ngFor="let chapter of manga?.chapters" [value]="chapter.id">
-                        {{ chapter.title }}
+                <select [(ngModel)]="chapterId" (ngModelChange)="pageChange(0)">
+                    <option *ngFor="let chapter of chapters" [value]="chapter.id">
+                        Chapter #{{ chapter.ordinal}} - {{ chapter.title }}
                     </option>
                 </select>
                 <div class="counts" *ngIf="!settings.scroll.value">
-                    Page: {{ page }}/{{ mangaChapter?.pages?.length }}
+                    Page: {{ page }}/{{ chapter?.pages?.length }}
                 </div>
             </div>
 
@@ -33,13 +33,13 @@
                 <cba-icon>skip_next</cba-icon>
             </button>
         </header>
-        <main [ngClass]="{ 'fit': settings.fitToWidth.value, 'scroll': settings.scroll.value }">
+        <main [ngClass]="{ 'fit': settings.fitToWidth.value, 'scroll': settings.scroll.value, 'invert': settings.invert.value }">
             <ng-container *ngIf="settings.scroll.value">
                 <button class="scroll-button" (click)="prevChap()" [disabled]="!hasPreviousChapter">
                     <cba-icon>skip_previous</cba-icon>
                 </button>
 
-                <img *ngFor="let page of mangaChapter?.pages" [src]="page" />
+                <img *ngFor="let page of chapter?.pages" [src]="page" />
 
                 <button class="scroll-button" (click)="nextChap()" [disabled]="!hasNextChapter">
                     <cba-icon>skip_next</cba-icon>
@@ -50,8 +50,8 @@
                 <div class="page" [style.background-image]="'url('+ pageImage +')'"></div>
                 <!--Cache the next page so it loads faster-->
                 <div class="next" [style.background-image]="'url(' + nextPageImage + ')'"></div>
-                <button class="left" (click)="prevPage()"></button>
-                <button class="right" (click)="nextPage()"></button>
+                <button class="left" (click)="prevPage()" [disabled]="!hasPreviousPage"></button>
+                <button class="right" (click)="nextPage()" [disabled]="!hasNextPage"></button>
             </ng-container>
         </main>
         <button class="float-icon" (click)="settingsShow()" *ngIf="settings.hideHeader.value">
@@ -88,12 +88,18 @@
             </label>
         </section>
         <section>
+            <label>
+                <input type="checkbox" [(ngModel)]="settings.invert.value" />
+                Invert Colors (It's cursed)
+            </label>
+        </section>
+        <section>
             <div class="select-list">
                 <button (click)="prevChap()" [disabled]="!hasPreviousChapter">
                     <cba-icon>skip_previous</cba-icon>
                 </button>
-                <select [(ngModel)]="chapter" (ngModelChange)="pageChange(0)">
-                    <option *ngFor="let chapter of manga?.chapters" [value]="chapter.id">
+                <select [(ngModel)]="chapterId" (ngModelChange)="pageChange(0)">
+                    <option *ngFor="let chapter of chapters" [value]="chapter.id">
                         {{ chapter.title }}
                     </option>
                 </select>
@@ -111,7 +117,7 @@
                     <cba-icon>restart_alt</cba-icon>
                 </button>
                 <select [(ngModel)]="page" (ngModelChange)="pageChange(page - 1)">
-                    <option *ngFor="let page of mangaChapter?.pages; let i = index" [value]="i + 1">
+                    <option *ngFor="let page of chapter?.pages; let i = index" [value]="i + 1">
                         Page: #{{ i + 1 }}
                     </option>
                 </select>

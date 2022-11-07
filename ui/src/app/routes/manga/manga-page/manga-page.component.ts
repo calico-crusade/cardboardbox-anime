@@ -2,7 +2,7 @@ import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import { PopupService, PopupComponent } from 'src/app/components';
-import { Manga, MangaChapter, MangaService } from 'src/app/services';
+import { Manga, MangaChapter, MangaService, MangaWithChapters } from 'src/app/services';
 
 const DEFAULT_IMAGE = 'https://wallpaperaccess.com/full/1979093.jpg';
 
@@ -37,82 +37,79 @@ export class MangaPageComponent implements OnInit {
     loading: boolean = false;
     error?: string;
 
-    url!: string;
-    chapter!: string;
+    id!: number;
+    chapterId!: number;
     page!: number;
 
-    manga?: Manga;
-    mangaChapter?: MangaChapter;
+    data?: MangaWithChapters;
+
+    chapter?: MangaChapter;
+    get manga() { return this.data?.manga; }
+    get chapters() { return this.data?.chapters || []; }
 
     settings = {
         invertControls: new StorageVar<boolean>(false, 'invert-controls'),
         fitToWidth: new StorageVar<boolean>(false, 'fit-to-width'),
         scroll: new StorageVar<boolean>(false, 'scroll-chapter'),
-        hideHeader: new StorageVar<boolean>(false, 'hide-header')
+        hideHeader: new StorageVar<boolean>(false, 'hide-header'),
+        invert: new StorageVar<boolean>(false, 'invert-image')
     };
 
     get pageImage() {
-        if (!this.manga || !this.mangaChapter) return DEFAULT_IMAGE;
-        return this.mangaChapter.pages[this.page - 1] || DEFAULT_IMAGE;
+        if (!this.manga || !this.chapter) return DEFAULT_IMAGE;
+        return this.chapter.pages[this.page - 1] || DEFAULT_IMAGE;
     }
 
     get nextPageImage() {
-        if (!this.manga || !this.mangaChapter) return DEFAULT_IMAGE;
-        return this.mangaChapter.pages[this.page] || DEFAULT_IMAGE;
+        if (!this.manga || !this.chapter) return DEFAULT_IMAGE;
+        return this.chapter.pages[this.page] || DEFAULT_IMAGE;
     }
 
     get chapterIndex() {
-        if (!this.manga || !this.mangaChapter) return -1;
+        if (!this.manga || !this.chapter) return -1;
 
-        return this.chapters.findIndex(a => a.id === this.mangaChapter?.id);
+        return this.chapters.findIndex(a => a.id === this.chapter?.id);
     }
 
-    get chapters() {
-        return this.manga?.chapters.sort((a, b) => {
-            if (a.number < b.number) return -1;
-            if (a.number > b.number) return 1;
-            return 0;
-        }) || [];
-    }
 
     get hasNextPage() {
-        if (!this.manga || !this.mangaChapter) return false;
+        if (!this.manga || !this.chapter) return false;
         
         const p = this.page;
-        if (p >= 0 && p < this.mangaChapter.pages.length) return true;
+        if (p >= 0 && p < this.chapter.pages.length) return true;
 
         return this.hasNextChapter;
     }
 
     get hasNextChapter() {
-        if (!this.manga || !this.mangaChapter) return false;
+        if (!this.manga || !this.chapter) return false;
 
         let c = this.chapterIndex;
         if (c == -1) return false;
 
         c += 1;
-        if (c >= 0 && c < this.manga.chapters.length) return true;
+        if (c >= 0 && c < this.chapters.length) return true;
         
         return false;
     }
 
     get hasPreviousPage() {
-        if (!this.manga || !this.mangaChapter) return false;
+        if (!this.manga || !this.chapter) return false;
 
         const p = this.page - 2;
-        if (p >= 0 && p < this.mangaChapter.pages.length) return true;
+        if (p >= 0 && p < this.chapter.pages.length) return true;
 
         return this.hasPreviousChapter;
     }
 
     get hasPreviousChapter() {
-        if (!this.manga || !this.mangaChapter) return false;
+        if (!this.manga || !this.chapter) return false;
 
         let c = this.chapterIndex;
         if (c == -1) return false;
 
         c -= 1;
-        if (c >= 0 && c < this.manga.chapters.length) return true;
+        if (c >= 0 && c < this.chapters.length) return true;
         
         return false;
     }
@@ -137,8 +134,8 @@ export class MangaPageComponent implements OnInit {
         this.route
             .params
             .subscribe(t => {
-                this.url = t['url'];
-                this.chapter = t['chapter'];
+                this.id = +t['id'];
+                this.chapterId = +t['chapter'];
                 this.page = +t['page'];
                 this.process();
             });
@@ -146,91 +143,95 @@ export class MangaPageComponent implements OnInit {
 
     private async process() {
         this.loading = true;
-        await Promise.all([ this.getManga(), this.getChapter() ]);
+        
+        try {
+            this.data = await lastValueFrom(this.api.manga(this.id));
+        } catch (err) {
+            this.loading = false;
+            this.printState(err, 'Error loading manga', true);
+            return;
+        }
 
-        if (!this.manga || !this.mangaChapter) {
+        if (!this.manga) {
             this.loading = false;
             return;
+        }
+
+        this.chapter = this.chapters.find(t => t.id === this.chapterId);
+        if (!this.chapter) {
+            this.loading = false;
+            return;
+        }
+
+        if (this.chapter.pages.length === 0) {
+            this.chapter.pages = await lastValueFrom(this.api.manga(this.id, this.chapterId));
+            if (this.chapter.pages.length == 0) {
+                this.loading = false;
+                this.printState(null, 'Could not polyfill pages', true);
+                return;
+            }
         }
 
         let p = this.page - 1;
 
         if (p < 0) p = 0;
-        if (p >= this.mangaChapter.pages.length) p = this.mangaChapter.pages.length - 1;
+        if (p >= this.chapter.pages.length) p = this.chapter.pages.length - 1;
 
         this.page = p + 1;
 
         this.loading = false;
     }
 
-    private async getManga() {
-        try {
-            if (this.manga && this.manga.homePage == this.url) return;
-            this.manga = await lastValueFrom(this.api.manga(this.url));
-            this.printState(null, 'Manga Fetch');
-        } catch (err) {
-            this.printState(err, 'Manga Fetch Error');
-        }
-    }
-
-    private async getChapter() {
-        try {
-            if (this.mangaChapter && this.mangaChapter.id == this.chapter) return;
-
-            this.mangaChapter = await lastValueFrom(this.api.chapter(this.url, this.chapter));
-
-            this.printState(null, 'Chapter Fetch');
-        } catch (err) {
-            this.printState(err, 'Chapter Fetch Error');
-        }
-    }
-
-    navigate(page?: number, chapter?: string) {
+    navigate(page?: number, chapter?: number) {
         this.printState({ page, chapter });
         let p = page;
         if (page === undefined) p = this.page - 1;
         p = p || 0;
-        this.router.navigate([ '/manga', this.url, chapter || this.chapter, p + 1 ]);
+        this.router.navigate([ '/manga', this.id, chapter || this.chapterId, p + 1 ]);
     }
 
     pageChange(p: number) {
         this.printState(null, 'pageChange');
 
-        if (!this.manga || !this.mangaChapter) return;
+        if (!this.manga || !this.chapter) return;
         const c = this.chapterIndex;
 
         //New page index is within page bounds
-        if (p >= 0 && p < this.mangaChapter.pages.length) {
+        if (p >= 0 && p < this.chapter.pages.length) {
             this.navigate(p);
             return;
         }
 
         //Move to previous chapter
         if (p < 0 && c > 0) {
-            const chapter = this.manga.chapters[c - 1];
+            const chapter = this.chapters[c - 1];
             this.navigate(999, chapter.id);
             return;
         }
 
-        if (p >= this.mangaChapter.pages.length && c < this.manga.chapters.length) {
-            const chapter = this.manga.chapters[c + 1];
+        if (p >= this.chapter.pages.length && c < this.chapters.length) {
+            const chapter = this.chapters[c + 1];
             this.navigate(0, chapter.id);
             return;
         }
         
-        this.printState(null, 'No change detected');
+        this.printState(null, 'No change detected', true);
     }
 
-    printState(state?: any, mod?: string) {
-        console.log('State', {
+    printState(state?: any, mod?: string, error: boolean = false) {
+        if (this.api.isProd && !error) return;
+
+        let logger = error ? console.error : console.log;
+
+        logger('State', {
             mod,
             loading: this.loading,
             error: this.error,
-            url: this.url,
+            id: this.id,
+            chapterId: this.chapterId,
             chapter: this.chapter,
             page: this.page,
             manga: this.manga,
-            mangaChapter: this.mangaChapter,
             state,
             image: this.pageImage,
             hasNextChapter: this.hasNextChapter,

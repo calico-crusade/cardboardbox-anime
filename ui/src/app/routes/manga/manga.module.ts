@@ -13,10 +13,10 @@ const ROUTES: Routes = [
         pathMatch: "full",
         component: MangaSelectorComponent
     }, { 
-        path: ':url',
+        path: ':id',
         component: MangaComponent
     }, {
-        path: ':url/:chapter/:page',
+        path: ':id/:chapter/:page',
         component: MangaPageComponent
     }
 ];

@@ -67,13 +67,41 @@ header {
 
 main {
     display: flex;
-    flex-flow: row wrap;
-    margin: 10px;
+    flex-flow: column;
+    margin: 10px auto;
+    max-width: 700px;
+    width: 100%;
+    flex: 1;
 
     .chapter {
         flex: 1;
-        min-width: 200px;
-        margin: 5px auto;
-        white-space: pre;
+        margin: 10px 0;
+        padding: 15px;
+        background-color: var(--bg-card);
+        text-decoration: none;
+
+        display: flex;
+        flex-flow: column;
+
+        .header, .footer {
+            display: flex;
+            flex-flow: row;
+
+            :last-child {
+                margin-left: auto;
+            }
+
+            .number, .title, .lang, .timings {
+                display: flex;
+                flex-flow: row;
+
+                span {
+                    margin: auto 5px;
+                }
+            }
+        }
+        :not(:first-child) {
+            margin-top: 5px;
+        }
     }
 }

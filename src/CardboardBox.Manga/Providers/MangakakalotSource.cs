@@ -13,7 +13,7 @@
 
 		public string MangaBaseUri => $"{HomeUrl}manga/";
 
-		public string Provider => "Mangakakalot.tv";
+		public string Provider => "mangakakalot";
 
 		private readonly IApiService _api;
 
@@ -111,6 +111,8 @@
 
 				manga.Chapters.Add(c);
 			}
+
+			manga.Chapters = manga.Chapters.OrderBy(t => t.Number).ToList();
 
 			return manga;
 		}

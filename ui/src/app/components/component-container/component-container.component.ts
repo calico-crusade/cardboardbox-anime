@@ -1,4 +1,5 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { IInfiniteScrollEvent } from 'ngx-infinite-scroll';
 import { AuthService } from 'src/app/services';
 
 type state = 'loading' | 'error' |
@@ -45,6 +46,13 @@ export class ComponentContainerComponent implements OnInit {
 
     @Input('handle-scroll') handleScroll: boolean = false;
     @Input('flex-flow') flow: string = 'row';
+
+    @Input('ifs-distance') ifsDistance: number = 2;
+    @Input('ifs-throlle') ifsThrottle: number = 50;
+
+    @Input('ifs-enabled') ifsEnabled: boolean = false;
+
+    @Output('ifs') onScrolled = new EventEmitter<IInfiniteScrollEvent>(); 
 
     state: state = 'loading';
 
@@ -94,5 +102,11 @@ export class ComponentContainerComponent implements OnInit {
         }
         
         this.state = 'none';
+    }
+
+    onScrollTriggered(event: IInfiniteScrollEvent) {
+        if (!this.ifsEnabled) return;
+
+        this.onScrolled.emit(event);
     }
 }

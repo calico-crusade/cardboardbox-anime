@@ -1,58 +1,34 @@
-﻿-- CREATE manga TABLE
-CREATE TABLE manga (
+﻿CREATE TABLE manga (
     id BIGSERIAL PRIMARY KEY,
-	
+
     title text not null,
     source_id text not null,
+    provider text not null,
     url text not null,
     cover text not null,
-    provider text not null,
-
     tags text[] not null default '{}',
-	
+
     created_at timestamp not null default CURRENT_TIMESTAMP,
     updated_at timestamp not null default CURRENT_TIMESTAMP,
     deleted_at timestamp,
 
-    CONSTRAINT uiq_manga_provider_source UNIQUE(provider, source_id)
+    CONSTRAINT uiq_manga_title_hash UNIQUE(source_id, provider)
 );
 
--- CREATE manga_chapter TABLE
 CREATE TABLE manga_chapter (
     id BIGSERIAL PRIMARY KEY,
-	
-    manga_id bigint not null,
-    source_id text not null,
+
+    manga_id bigint not null references manga(id),
     title text not null,
     url text not null,
-    ordinal decimal not null,
-
+    source_id text not null,
+    ordinal numeric not null,
+    language text not null,
     pages text[] not null default '{}',
-	
+
     created_at timestamp not null default CURRENT_TIMESTAMP,
     updated_at timestamp not null default CURRENT_TIMESTAMP,
     deleted_at timestamp,
 
-    CONSTRAINT uiq_manga_chapter_ids UNIQUE(manga_id, source_id)
+    CONSTRAINT uiq_manga_chapter UNIQUE(manga_id, source_id, language)
 );
-
--- CREATE manga_state TABLE
-CREATE TABLE manga_state (
-    id BIGSERIAL PRIMARY KEY,
-	
-    message_id text not null,
-    user_id text not null,
-    guild_id text,
-    channel_id text,
-    source text not null,
-    manga_id bigint not null,
-    chapter_id bigint,
-    page_index int,
-    	
-    created_at timestamp not null default CURRENT_TIMESTAMP,
-    updated_at timestamp not null default CURRENT_TIMESTAMP,
-    deleted_at timestamp,
-
-    CONSTRAINT uiq_manga_state_message_id UNIQUE(message_id)
-);
-

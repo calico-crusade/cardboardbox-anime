@@ -1,22 +1,39 @@
 export interface Manga {
+    id: number;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt?: Date;
+
     title: string;
-    id: string;
+    sourceId: string;
     provider: string;
-    homePage: string;
+    url: string;
     cover: string;
     tags: string[];
-    chapters: {
-        title: string;
-        url: string;
-        id: string;
-        number: number;
-    }[];
 }
 
 export interface MangaChapter {
+    id: number;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt?: Date;
+
+    mangaId: number;
     title: string;
     url: string;
-    id: string;
-    number: number;
+    sourceId: string;
+    ordinal: number;
+    language: string;
     pages: string[];
+}
+
+export interface MangaWithChapters {
+    manga: Manga;
+    chapters: MangaChapter[];
+}
+
+export interface PaginatedManga {
+    pages: number;
+    count: number;
+    results: Manga[];
 }
