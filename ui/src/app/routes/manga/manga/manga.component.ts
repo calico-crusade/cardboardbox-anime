@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { catchError, of } from 'rxjs';
-import { Manga, MangaService, MangaWithChapters } from 'src/app/services';
+import { LightNovelService, Manga, MangaService, MangaWithChapters } from 'src/app/services';
 
 @Component({
     templateUrl: './manga.component.html',
@@ -24,7 +24,8 @@ export class MangaComponent implements OnInit {
 
     constructor(
         private route: ActivatedRoute,
-        private api: MangaService
+        private api: MangaService,
+        private lnApi: LightNovelService
     ) { }
 
     ngOnInit(): void {
@@ -73,4 +74,8 @@ export class MangaComponent implements OnInit {
             })
     }
 
+    proxy(url?: string) {
+        if (!url) return '';
+        return this.lnApi.corsFallback(url);
+    }
 }

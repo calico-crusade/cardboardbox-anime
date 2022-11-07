@@ -39,17 +39,17 @@
                     <cba-icon>skip_previous</cba-icon>
                 </button>
 
-                <img *ngFor="let page of chapter?.pages" [src]="page" />
+                <img *ngFor="let page of chapter?.pages" [proxy]="page" />
 
                 <button class="scroll-button" (click)="nextChap()" [disabled]="!hasNextChapter">
                     <cba-icon>skip_next</cba-icon>
                 </button>
             </ng-container>
             <ng-container *ngIf="!settings.scroll.value">
-                <img [src]="pageImage" />
-                <div class="page" [style.background-image]="'url('+ pageImage +')'"></div>
+                <img [proxy]="pageImage" />
+                <div class="page" [style.background-image]="'url('+ proxy(pageImage) +')'"></div>
                 <!--Cache the next page so it loads faster-->
-                <div class="next" [style.background-image]="'url(' + nextPageImage + ')'"></div>
+                <div class="next" [style.background-image]="'url(' + proxy(nextPageImage) + ')'"></div>
                 <button class="left" (click)="prevPage()" [disabled]="!hasPreviousPage"></button>
                 <button class="right" (click)="nextPage()" [disabled]="!hasNextPage"></button>
             </ng-container>

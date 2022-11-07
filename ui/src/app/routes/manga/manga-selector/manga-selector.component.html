@@ -1,6 +1,6 @@
 <cba-container [ifs-enabled]="true" (ifs)="onScroll()" flex-flow="column">
     <a class="manga" *ngFor="let manga of data" [routerLink]="['/manga', manga.id ]">
-        <div class="image" [style.background-image]="'url(' + manga.cover + ')'"></div>
+        <div class="image" [style.background-image]="'url(' + proxy(manga.cover) + ')'"></div>
         <div class="details">
             <div class="title">{{ manga.title }}</div>
             <div class="source">

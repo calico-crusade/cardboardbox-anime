@@ -1,6 +1,6 @@
 <cba-container [loading]="loading" [error]="error" [handle-scroll]="true" flex-flow="column">
     <header>
-        <div class="image" [style.background-image]="'url(' + manga?.cover + ')'"></div>
+        <div class="image" [style.background-image]="'url(' + proxy(manga?.cover) + ')'"></div>
         <div class="details">
             <div class="title">
                 <a [href]="manga?.url" target="_blank">{{ manga?.title }}</a>

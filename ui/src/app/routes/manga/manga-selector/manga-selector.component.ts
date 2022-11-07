@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, of } from 'rxjs';
 import { PopupComponent, PopupService } from 'src/app/components';
-import { Manga, MangaService } from 'src/app/services';
+import { LightNovelService, Manga, MangaService } from 'src/app/services';
 
 @Component({
     templateUrl: './manga-selector.component.html',
@@ -25,8 +25,14 @@ export class MangaSelectorComponent implements OnInit {
     constructor(
         private api: MangaService,
         private pop: PopupService,
-        private router: Router
+        private router: Router,
+        private lnApi: LightNovelService
     ) { }
+
+    proxy(url?: string) {
+        if (!url) return '';
+        return this.lnApi.corsFallback(url);
+    }
 
     ngOnInit() {
         this.process();

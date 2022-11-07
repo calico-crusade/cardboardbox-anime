@@ -2,7 +2,7 @@ import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import { PopupService, PopupComponent } from 'src/app/components';
-import { Manga, MangaChapter, MangaService, MangaWithChapters } from 'src/app/services';
+import { LightNovelService, Manga, MangaChapter, MangaService, MangaWithChapters } from 'src/app/services';
 
 const DEFAULT_IMAGE = 'https://wallpaperaccess.com/full/1979093.jpg';
 
@@ -118,8 +118,14 @@ export class MangaPageComponent implements OnInit {
         private route: ActivatedRoute,
         private router: Router,
         private api: MangaService,
-        private pop: PopupService
+        private pop: PopupService,
+        private lnApi: LightNovelService
     ) { }
+
+    proxy(url?: string) {
+        if (!url) return '';
+        return this.lnApi.corsFallback(url);
+    }
 
     @HostListener('window:keyup', ['$event'])
     keyEvent(event: KeyboardEvent) {
