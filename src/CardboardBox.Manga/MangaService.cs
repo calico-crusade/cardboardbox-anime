@@ -9,7 +9,7 @@
 		(IMangaSource? source, string? id) DetermineSource(string url);
 
 		Task<PaginatedResult<DbManga>> Manga(int page, int size);
-		Task<MangaWithChapters?> Manga(string url);
+		Task<MangaWithChapters?> Manga(string url, bool forceUpdate = false);
 		Task<MangaWithChapters?> Manga(long id);
 		Task<string[]> MangaPages(long chapterId);
 	}
@@ -71,13 +71,13 @@
 			return _db.Paginate(page, size);
 		}
 
-		public async Task<MangaWithChapters?> Manga(string url)
+		public async Task<MangaWithChapters?> Manga(string url, bool forceUpdate = false)
 		{
 			var (src, id) = DetermineSource(url);
 			if (src == null || id == null) return null;
 
 			var manga = await _db.Get(id);
-			if (manga == null) return await LoadManga(src, id);
+			if (manga == null || forceUpdate) return await LoadManga(src, id);
 
 			var chapters = await _db.Chapters(manga.Id);
 			return new(manga, chapters);

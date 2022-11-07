@@ -49,4 +49,28 @@ export class MangaComponent implements OnInit {
             });
     }
 
+    update() {
+        if (!this.manga) return;
+
+        this.loading = true;
+        this.api
+            .reload(this.manga)
+            .pipe(
+                catchError(err => {
+                    this.error = 'An error occurred while refreshing the manga!';
+                    console.error('Error occurred!', {
+                        manga: this.manga,
+                        chapters: this.chapters,
+                        id: this.id,
+                        err
+                    })
+                    return of(undefined);
+                })
+            )
+            .subscribe(t => {
+                this.data = t;
+                this.loading = false;
+            })
+    }
+
 }

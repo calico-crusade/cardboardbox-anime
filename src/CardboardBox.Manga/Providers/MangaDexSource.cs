@@ -107,8 +107,12 @@
 			var regex = new Regex("https://mangadex.org/title/(.*?)(/(.*?))?");
 			if (!regex.IsMatch(url)) return (false, null);
 
-			var parts = url.Split('/').Reverse().Skip(1).First();
-			return (true, parts);
+			var parts = url.Split('/').Reverse().ToArray();
+			
+			var last = parts.Skip(1).First();
+			if (last == "title")
+				last = parts.First();
+			return (true, last);
 		}
 	}
 }

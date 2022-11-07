@@ -87,7 +87,7 @@ a {
     color: var(--text-color);
 }
 
-button.btn, a.btn {
+.btn {
     font-family: Roboto;
     background-color: transparent;
     color: var(--color-vrv);
@@ -100,18 +100,31 @@ button.btn, a.btn {
     cursor: pointer;
     text-align: center;
     margin: 5px 0;
-    &:hover,
-    &.active {
+    transition: all 250ms;
+
+    &:hover, &.active {
         background-color: var(--color-vrv);
         color: #000;
     }
-    &:disabled,
-    &[disabled] {
+    &:disabled, &[disabled] {
         background-color: rgba(255, 255, 255, 0.5);
         cursor: not-allowed;
         color: #000;
     }
+
+    &.icon {
+        background-color: var(--brd-color-accent);
+        padding: 10px;
+        border: none;
+        border-radius: 50%;
+        color: var(--text-color);
+
+        &:hover {
+            transform: rotate(90deg);
+        }
+    }
 }
+
 input.ipt, textarea.ipt {
     background-color: transparent;
     outline: none;

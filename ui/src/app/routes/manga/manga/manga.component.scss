@@ -15,6 +15,7 @@ header {
     .details {
         display: flex;
         flex-flow: column;
+        flex: 1;
 
         .title {
             a {
@@ -61,6 +62,11 @@ header {
                 border: 1px solid var(--brd-color-accent);
                 border-radius: 3px;
             }
+        }
+
+        .buttons {
+            margin-top: auto;
+            margin-left: auto;
         }
     }
 }

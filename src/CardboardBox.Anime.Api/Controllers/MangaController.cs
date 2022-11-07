@@ -45,9 +45,9 @@ namespace CardboardBox.Anime.Api.Controllers
 		[HttpGet, Route("manga/load")]
 		[ProducesDefaultResponseType(typeof(MangaWithChapters))]
 		[ProducesResponseType(404), ProducesResponseType(400)]
-		public async Task<IActionResult> Get([FromQuery] string url)
+		public async Task<IActionResult> Get([FromQuery] string url, [FromQuery] bool force = false)
 		{
-			var manga = await _manga.Manga(url);
+			var manga = await _manga.Manga(url, force);
 			if (manga == null) return NotFound();
 
 			return Ok(manga);

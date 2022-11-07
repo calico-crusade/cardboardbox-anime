@@ -9,6 +9,11 @@
                 <div class="header">Tags: </div>
                 <div class="tag" *ngFor="let tag of manga?.tags">{{ tag }}</div>
             </div>
+            <div class="buttons">
+                <button class="btn icon" (click)="update()">
+                    <cba-icon>update</cba-icon>
+                </button>
+            </div>
         </div>
     </header>
     <main>
