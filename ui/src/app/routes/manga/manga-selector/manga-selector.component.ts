@@ -15,7 +15,7 @@ export class MangaSelectorComponent implements OnInit {
     data: Manga[] = [];
     
     page: number = 1;
-    size: number = 100;
+    size: number = 10;
     pages: number = 0;
 
     url: string = '';
