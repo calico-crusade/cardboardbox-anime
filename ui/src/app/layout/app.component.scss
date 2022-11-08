@@ -49,6 +49,10 @@
             overflow-x: hidden;
             text-overflow: ellipsis;
         }
+
+        :first-child {
+            margin-right: auto;
+        }
     }
     main {
         flex: 1;

@@ -1,11 +1,9 @@
 <div class="app">
     <header>
-        <a class="logo" href="/">
+        <a class="logo" href="/" *ngIf="!title">
             Cardboard<b>Box</b> - Anime
         </a>
-        <div class="bump"></div>
-        <span class="title">{{ title }}</span>
-        <div class="bump"></div>
+        <span class="title" *ngIf="title">{{ title }}</span>
         <button class="menu" (click)="menuOpen = !menuOpen"  *ngIf="loggedIn">
             <img [src]="user?.avatar" alt="User Avatar" />
         </button>
