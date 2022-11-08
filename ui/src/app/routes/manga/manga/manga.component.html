@@ -9,6 +9,11 @@
                 <div class="header">Tags: </div>
                 <div class="tag" *ngFor="let tag of manga?.tags">{{ tag }}</div>
             </div>
+
+            <div class="tags">
+                <div class="header">Alt Titles: </div>
+                <div class="tag secondary" *ngFor="let tag of manga?.altTitles">{{ tag }}</div>
+            </div>
             <div class="description" *ngIf="manga?.description">
                 <div class="content" [markdown]="manga?.description"></div>
             </div>
