@@ -1,4 +1,4 @@
-import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
@@ -14,7 +14,9 @@ class StorageVar<T> {
     ) { }
 
     get value(): T {
-        return <any>localStorage.getItem(this.name) || this.defValue;
+        const val = localStorage.getItem(this.name);
+
+        return <any>this.convertType(val);
     }
 
     set value(item: T | undefined) {
@@ -25,6 +27,20 @@ class StorageVar<T> {
 
         localStorage.setItem(this.name, <any>item);
     }
+
+    convertType(value?: string | null) {
+        if (value === undefined ||
+            value === null) return this.defValue;
+
+        if (typeof this.defValue === 'number') {
+            return Number(value);
+        }
+        if (typeof this.defValue === 'boolean') {
+            return value === 'true';
+        }
+
+        return value;
+    }
 }
 
 @Component({
@@ -34,6 +50,7 @@ class StorageVar<T> {
 export class MangaPageComponent implements OnInit, OnDestroy {
 
     @ViewChild('popup') popup!: PopupComponent;
+    @ViewChild('scrollcont') el!: ElementRef<any>;
 
     loading: boolean = false;
     error?: string;
@@ -53,7 +70,8 @@ export class MangaPageComponent implements OnInit, OnDestroy {
         fitToWidth: new StorageVar<boolean>(false, 'fit-to-width'),
         scroll: new StorageVar<boolean>(false, 'scroll-chapter'),
         hideHeader: new StorageVar<boolean>(false, 'hide-header'),
-        invert: new StorageVar<boolean>(false, 'invert-image')
+        invert: new StorageVar<boolean>(false, 'invert-image'),
+        scrollAmount: new StorageVar<number>(100, 'scroll-amount')
     };
 
     get pageImage() {
@@ -71,7 +89,6 @@ export class MangaPageComponent implements OnInit, OnDestroy {
 
         return this.chapters.findIndex(a => a.id === this.chapter?.id);
     }
-
 
     get hasNextPage() {
         if (!this.manga || !this.chapter) return false;
@@ -130,13 +147,34 @@ export class MangaPageComponent implements OnInit, OnDestroy {
         return this.lnApi.corsFallback(url);
     }
 
+    @HostListener('window:keydown', ['$event'])
+    keyDownEvent(event: KeyboardEvent) {
+        if (!this.settings.fitToWidth.value && 
+            !this.settings.scroll.value) return;
+
+        const pos = this.el.nativeElement.scrollTop;
+        const offset = this.settings.scrollAmount.value;
+        if (event.key == 'ArrowUp') { 
+            this.el.nativeElement.scrollTop = (pos - offset);
+            return;
+        }
+        if (event.key == 'ArrowDown') { 
+            this.el.nativeElement.scrollTop = (pos + offset);
+            return;
+        }
+    }
+
     @HostListener('window:keyup', ['$event'])
     keyEvent(event: KeyboardEvent) {
-        if (event.key == 'ArrowLeft' ||
-            event.key == 'ArrowUp') { this.prevPage(); return; }
+        if (event.key == 'ArrowLeft') { this.prevPage(); return; }
 
-        if (event.key == 'ArrowRight' ||
-            event.key == 'ArrowDown') { this.nextPage(); return; }
+        if (event.key == 'ArrowRight') { this.nextPage(); return; }
+
+        if (this.settings.fitToWidth.value || 
+            this.settings.scroll.value) return;
+
+        if (event.key == 'ArrowUp') { this.prevPage(); return; }
+        if (event.key == 'ArrowDown') { this.nextPage(); return; }
     }
 
     ngOnInit(): void {

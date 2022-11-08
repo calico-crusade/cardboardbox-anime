@@ -27,7 +27,7 @@
                     </option>
                 </select>
                 <div class="counts" *ngIf="!settings.scroll.value">
-                    /{{ chapter?.pages?.length }}
+                    of {{ chapter?.pages?.length }}
                 </div>
             </div>
 
@@ -48,7 +48,7 @@
                 <cba-icon>skip_next</cba-icon>
             </button>
         </header>
-        <main [ngClass]="{ 'fit': settings.fitToWidth.value, 'scroll': settings.scroll.value, 'invert': settings.invert.value }">
+        <main [ngClass]="{ 'fit': settings.fitToWidth.value, 'scroll': settings.scroll.value, 'invert': settings.invert.value }" #scrollcont>
             <ng-container *ngIf="settings.scroll.value">
                 <button class="scroll-button" (click)="prevChap()" [disabled]="!hasPreviousChapter">
                     <cba-icon>skip_previous</cba-icon>
@@ -107,6 +107,17 @@
                 <input type="checkbox" [(ngModel)]="settings.invert.value" />
                 Invert Colors (It's cursed)
             </label>
+        </section>
+        
+        <section>
+            <label>
+                How much to scroll on key event:
+            </label>
+        </section>
+        <section>
+            <div class="select-list">
+                <input type="number" step="10" [(ngModel)]="settings.scrollAmount.value" />
+            </div>
         </section>
         <section>
             <div class="select-list">
