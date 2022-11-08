@@ -73,18 +73,16 @@ header {
 
 main {
     display: flex;
-    flex-flow: column;
-    margin: 10px auto;
-    max-width: 700px;
-    width: 100%;
-    flex: 1;
+    flex-flow: row wrap;
+    margin: 10px;
 
     .chapter {
-        flex: 1;
-        margin: 10px 0;
+        margin: 10px auto;
         padding: 15px;
         background-color: var(--bg-card);
         text-decoration: none;
+        width: 550px;
+        max-width: 100%;
 
         display: flex;
         flex-flow: column;
@@ -108,6 +106,18 @@ main {
         }
         :not(:first-child) {
             margin-top: 5px;
+        }
+    }
+}
+
+
+@media only screen and (max-width: 700px) {
+    header {
+        flex-flow: column !important;
+
+        .image {
+            margin: 0 auto !important;
+            width: 100%;
         }
     }
 }

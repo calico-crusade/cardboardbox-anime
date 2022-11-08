@@ -136,3 +136,26 @@ input.ipt, textarea.ipt {
     font-family: 'Roboto';
     resize: none;
 }
+
+.float-icon {
+    position: absolute;
+    top: 5px;
+    right: 20px;
+    outline: none;
+    border: none;
+    background-color: var(--brd-color-accent);
+    padding: 10px;
+    border-radius: 50%;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: all 250ms;
+
+    &:disabled {
+        color: var(--text-color-muted);
+        cursor: not-allowed;
+    }
+
+    &:hover {
+        transform: rotate(90deg);
+    }
+}

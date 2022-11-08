@@ -17,6 +17,12 @@
 		[JsonPropertyName("cover")]
 		public string Cover { get; set; } = string.Empty;
 
+		[JsonPropertyName("description")]
+		public string Description { get; set; } = string.Empty;
+
+		[JsonPropertyName("altTitles")]
+		public string[] AltTitles { get; set; } = Array.Empty<string>();
+
 		[JsonPropertyName("tags")]
 		public string[] Tags { get; set; } = Array.Empty<string>();
 	}

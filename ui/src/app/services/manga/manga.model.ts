@@ -10,6 +10,8 @@ export interface Manga {
     url: string;
     cover: string;
     tags: string[];
+    altTitles: string[];
+    description: string;
 }
 
 export interface MangaChapter {

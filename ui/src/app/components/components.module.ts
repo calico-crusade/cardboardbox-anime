@@ -20,6 +20,7 @@ import { ImageFallbackDirective } from "./image-fallback.directive";
 import { DeferLoadModule } from '@trademe/ng-defer-load';
 import { PopupComponent } from './popup/popup.component';
 import { ImageProxyDirective } from "./image-proxy.directive";
+import { MarkdownDirective } from "./markdown.directive";
 
 @Injectable()
 export class MyHammerConfig extends HammerGestureConfig {
@@ -38,7 +39,8 @@ const EXPORTS = [
     ObserveDirective,
     ImageFallbackDirective,
     ImageProxyDirective,
-    PopupComponent
+    PopupComponent,
+    MarkdownDirective
 ];
 
 export const COMMON_IMPORTS = [

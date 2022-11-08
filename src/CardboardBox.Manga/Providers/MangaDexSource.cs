@@ -55,6 +55,8 @@
 				Provider = Provider,
 				HomePage = $"{HomeUrl}/title/{id}",
 				Cover = coverUrl,
+				Description = manga.Data.Attributes.Description.PreferedOrFirst(t => t.Key == DEFAULT_LANG).Value,
+				AltTitles = manga.Data.Attributes.AltTitles.SelectMany(t => t.Values).Distinct().ToArray(),
 				Tags = manga.Data
 					.Attributes
 					.Tags

@@ -111,7 +111,9 @@
 				Provider = manga.Provider,
 				Url = manga.HomePage,
 				Cover = manga.Cover,
-				Tags = manga.Tags
+				Tags = manga.Tags,
+				Description = manga.Description,
+				AltTitles = manga.AltTitles
 			};
 			m.Id = await _db.Upsert(m);
 			return m;
