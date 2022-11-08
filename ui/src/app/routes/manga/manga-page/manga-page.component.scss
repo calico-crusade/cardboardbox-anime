@@ -10,7 +10,7 @@ header {
     flex-flow: row;
 
     button, a {
-        margin: 5px;
+        margin: auto 5px;
         outline: none;
         border: none;
         background-color: transparent;
@@ -156,7 +156,7 @@ h2 {
 .select-list {
     display: flex;
     flex-flow: row;
-    margin: auto;
+    margin: 5px auto;
 
     select, input {
         outline: none;
@@ -204,6 +204,10 @@ h2 {
     :last-child {
         border-top-right-radius: 5px;
         border-bottom-right-radius: 5px;
+    }
+
+    :not(:first-child):not(:last-child) {
+        border-radius: 0;
     }
 }
 
