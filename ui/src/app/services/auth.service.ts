@@ -6,6 +6,7 @@ import { AuthCodeResponse, AuthUser } from './auth.model';
 import { ConfigObject } from './config.base';
 
 const SKIP_URIS: string[] = [];
+const STORAGE_REROUTE = 'reroute-source';
 
 @Injectable({
     providedIn: 'root'
@@ -28,6 +29,12 @@ export class AuthService extends ConfigObject {
     get isLoggingIn() { return this._loggingInSub.value; }
     set isLoggingIn(val: boolean) { this._loggingInSub.next(val); }
     get onIsLoggingIn() { return this._loggingInSub.asObservable(); }
+
+    get lastRoute(){ return localStorage.getItem(STORAGE_REROUTE); }
+    set lastRoute(value: string | null) {
+        if (value === '/' || !value) return;
+        localStorage.setItem(STORAGE_REROUTE, value);
+    }
 
     constructor(
         private http: HttpClient,

@@ -4,7 +4,7 @@ import { ErrorComponent } from './routes/error/error.component';
 import { LightnovelComponent } from './routes/lightnovel/lightnovel.component';
 import { LightnovelsComponent } from './routes/lightnovels/lightnovels.component';
 import { AdminComponent } from './routes/admin/admin.component';
-import { AdminGuard } from './services/admin.guard';
+import { RerouteComponent } from './routes/reroute/reroute.component';
 
 const routes: Routes = [
     {
@@ -31,7 +31,7 @@ const routes: Routes = [
     }, {
         path: '',
         pathMatch: 'full',
-        redirectTo: '/anime/all'
+        component: RerouteComponent
     }, {
         path: '**',
         component: ErrorComponent

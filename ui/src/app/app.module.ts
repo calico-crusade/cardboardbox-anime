@@ -13,6 +13,7 @@ import { AdminComponent } from './routes/admin/admin.component';
 import { COMMON_IMPORTS, ComponentsModule } from './components/components.module';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
+import { RerouteComponent } from './routes/reroute/reroute.component';
 
 @NgModule({
     declarations: [
@@ -21,6 +22,7 @@ import { environment } from '../environments/environment';
         LightnovelComponent,
         LightnovelsComponent,
         AdminComponent,
+        RerouteComponent,
     ],
     imports: [
         ComponentsModule,

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
 import { AuthUser } from '../services/auth.model';
 import { AuthService } from '../services/auth.service';
 
@@ -22,10 +23,20 @@ export class AppComponent implements OnInit {
     get loggedIn() { return this.user; }
 
     constructor(
-        private auth: AuthService
+        private auth: AuthService,
+        private router: Router
     ) { }
 
     async ngOnInit() {
+        this.router
+            .events
+            .subscribe(t => {
+                if (t instanceof NavigationEnd) {
+                    const url = t.url.substring(1);
+                    this.auth.lastRoute = url;
+                }
+            });
+
         this.auth.onLogin.subscribe(t => this.user = t);
         this.auth.onTitleChange.subscribe(t => this.title = t);
         await this.auth.bump();
