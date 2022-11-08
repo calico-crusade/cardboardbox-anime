@@ -10,6 +10,10 @@
             <button (click)="pageChange(0)">
                 <cba-icon>restart_alt</cba-icon>
             </button>
+
+            <a [routerLink]="['/manga', id ]">
+                <cba-icon>menu_book</cba-icon>
+            </a>
     
             <div class="select-list">
                 <select [(ngModel)]="chapterId" (ngModelChange)="pageChange(0)">
@@ -17,10 +21,21 @@
                         Chapter #{{ chapter.ordinal}} - {{ chapter.title }}
                     </option>
                 </select>
+                <select [(ngModel)]="page" (ngModelChange)="pageChange(page - 1)">
+                    <option *ngFor="let page of chapter?.pages; let i = index" [value]="i + 1">
+                        #{{ i + 1 }}
+                    </option>
+                </select>
                 <div class="counts" *ngIf="!settings.scroll.value">
-                    Page: {{ page }}/{{ chapter?.pages?.length }}
+                    /{{ chapter?.pages?.length }}
                 </div>
             </div>
+
+            <div class="mobile-bump"></div>
+
+            <a [href]="pageImage" target="_blank">
+                <cba-icon>download</cba-icon>
+            </a>
 
             <button (click)="settingsShow()">
                 <cba-icon>settings</cba-icon>

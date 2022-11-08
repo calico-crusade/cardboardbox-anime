@@ -9,13 +9,15 @@ header {
     display: flex;
     flex-flow: row;
 
-    button {
+    button, a {
         margin: 5px;
         outline: none;
         border: none;
         background-color: transparent;
         color: var(--text-color);
         cursor: pointer;
+        text-decoration: none;
+        text-align: center;
 
         &:disabled {
             color: var(--text-color-muted);
@@ -213,6 +215,18 @@ h2 {
             select {
                 width: 100%;
             }
+        }
+    }
+}
+
+@media only screen and (max-width: 600px) {
+    header {
+        .select-list {
+            display: none;
+        }
+
+        .mobile-bump {
+            flex: 1;
         }
     }
 }

@@ -3,7 +3,7 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import { PopupService, PopupComponent } from 'src/app/components';
-import { LightNovelService, Manga, MangaChapter, MangaService, MangaWithChapters } from 'src/app/services';
+import { AuthService, LightNovelService, Manga, MangaChapter, MangaService, MangaWithChapters } from 'src/app/services';
 
 const DEFAULT_IMAGE = 'https://wallpaperaccess.com/full/1979093.jpg';
 
@@ -121,7 +121,8 @@ export class MangaPageComponent implements OnInit, OnDestroy {
         private api: MangaService,
         private pop: PopupService,
         private lnApi: LightNovelService,
-        private title: Title
+        private title: Title,
+        private auth: AuthService
     ) { }
 
     proxy(url?: string) {
@@ -151,6 +152,7 @@ export class MangaPageComponent implements OnInit, OnDestroy {
 
     ngOnDestroy(): void {
         this.title.setTitle(this.api.defaultTitle);
+        this.auth.title = undefined;
     }
 
     private async process() {
@@ -185,6 +187,7 @@ export class MangaPageComponent implements OnInit, OnDestroy {
         }
 
         this.title.setTitle('CBA | ' + this.manga.title);
+        this.auth.title = this.manga?.title;
 
         let p = this.page - 1;
 
