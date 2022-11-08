@@ -1,4 +1,5 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { catchError, of } from 'rxjs';
 import { PopupComponent, PopupService } from 'src/app/components';
@@ -8,14 +9,14 @@ import { LightNovelService, Manga, MangaService } from 'src/app/services';
     templateUrl: './manga-selector.component.html',
     styleUrls: ['./manga-selector.component.scss']
 })
-export class MangaSelectorComponent implements OnInit {
+export class MangaSelectorComponent implements OnInit, OnDestroy {
 
     loading: boolean = false;
 
     data: Manga[] = [];
     
     page: number = 1;
-    size: number = 10;
+    size: number = 20;
     pages: number = 0;
 
     url: string = '';
@@ -26,7 +27,8 @@ export class MangaSelectorComponent implements OnInit {
         private api: MangaService,
         private pop: PopupService,
         private router: Router,
-        private lnApi: LightNovelService
+        private lnApi: LightNovelService,
+        private title: Title
     ) { }
 
     proxy(url?: string) {
@@ -35,7 +37,12 @@ export class MangaSelectorComponent implements OnInit {
     }
 
     ngOnInit() {
+        this.title.setTitle('CardboardBox | Manga');
         this.process();
+    }
+
+    ngOnDestroy(): void {
+        this.title.setTitle(this.api.defaultTitle);
     }
 
     private process() {

@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { catchError, of } from 'rxjs';
 import { AiDbRequest, AiService, AuthService } from 'src/app/services';
@@ -7,7 +8,7 @@ import { AiDbRequest, AiService, AuthService } from 'src/app/services';
     templateUrl: './ai-requests.component.html',
     styleUrls: ['./ai-requests.component.scss']
 })
-export class AiRequestsComponent implements OnInit {
+export class AiRequestsComponent implements OnInit, OnDestroy {
 
     loading: boolean = false;
     error?: string;
@@ -27,15 +28,21 @@ export class AiRequestsComponent implements OnInit {
     constructor(
         private api: AiService,
         private auth: AuthService,
-        private router: Router
+        private router: Router,
+        private title: Title
     ) { }
 
     ngOnInit() {
+        this.title.setTitle('CBA | Image Gen History');
         this.auth.onLogin.subscribe(_ => {
             this.process();
         });
 
         this.process();
+    }
+
+    ngOnDestroy(): void {
+        this.title.setTitle(this.api.defaultTitle);    
     }
 
     process() {

@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { catchError, of } from 'rxjs';
 import { LightNovelService, Manga, MangaService, MangaWithChapters } from 'src/app/services';
@@ -7,7 +8,7 @@ import { LightNovelService, Manga, MangaService, MangaWithChapters } from 'src/a
     templateUrl: './manga.component.html',
     styleUrls: ['./manga.component.scss']
 })
-export class MangaComponent implements OnInit {
+export class MangaComponent implements OnInit, OnDestroy {
 
     loading: boolean = false;
     error?: string;
@@ -25,7 +26,8 @@ export class MangaComponent implements OnInit {
     constructor(
         private route: ActivatedRoute,
         private api: MangaService,
-        private lnApi: LightNovelService
+        private lnApi: LightNovelService,
+        private title: Title
     ) { }
 
     ngOnInit(): void {
@@ -33,6 +35,10 @@ export class MangaComponent implements OnInit {
             this.id = +t['id'];
             this.process();
         });
+    }
+
+    ngOnDestroy(): void {
+        this.title.setTitle(this.api.defaultTitle);
     }
 
     private process() {
@@ -46,6 +52,7 @@ export class MangaComponent implements OnInit {
             )
             .subscribe(t => {
                 this.data = t;
+                this.title.setTitle('CBA | ' + this.manga?.title);
                 this.loading = false;
             });
     }

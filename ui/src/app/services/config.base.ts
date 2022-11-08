@@ -4,6 +4,7 @@ const STORE_TOKEN = 'AuthToken';
 
 export abstract class ConfigObject {
 
+    get defaultTitle() { return 'CardboardBox | Anime'; }
     get apiUrl() { return environment.apiUrl; }
     get appId() { return environment.appId; }
     get isProd() { return environment.production; }

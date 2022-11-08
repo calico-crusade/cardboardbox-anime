@@ -1,4 +1,4 @@
-<cba-container [ifs-enabled]="true" (ifs)="onScroll()" flex-flow="column">
+<cba-container [ifs-enabled]="true" (ifs)="onScroll()" flex-flow="row wrap">
     <a class="manga" *ngFor="let manga of data" [routerLink]="['/manga', manga.id ]">
         <div class="image" [style.background-image]="'url(' + proxy(manga.cover) + ')'"></div>
         <div class="details masked-overflow">

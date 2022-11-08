@@ -1,4 +1,5 @@
-import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import { PopupService, PopupComponent } from 'src/app/components';
@@ -30,7 +31,7 @@ class StorageVar<T> {
     templateUrl: './manga-page.component.html',
     styleUrls: ['./manga-page.component.scss']
 })
-export class MangaPageComponent implements OnInit {
+export class MangaPageComponent implements OnInit, OnDestroy {
 
     @ViewChild('popup') popup!: PopupComponent;
 
@@ -119,7 +120,8 @@ export class MangaPageComponent implements OnInit {
         private router: Router,
         private api: MangaService,
         private pop: PopupService,
-        private lnApi: LightNovelService
+        private lnApi: LightNovelService,
+        private title: Title
     ) { }
 
     proxy(url?: string) {
@@ -145,6 +147,10 @@ export class MangaPageComponent implements OnInit {
                 this.page = +t['page'];
                 this.process();
             });
+    }
+
+    ngOnDestroy(): void {
+        this.title.setTitle(this.api.defaultTitle);
     }
 
     private async process() {
@@ -177,6 +183,8 @@ export class MangaPageComponent implements OnInit {
                 return;
             }
         }
+
+        this.title.setTitle('CBA | ' + this.manga.title);
 
         let p = this.page - 1;
 
