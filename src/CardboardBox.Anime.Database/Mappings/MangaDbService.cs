@@ -8,7 +8,10 @@
 
 		Task<long> Upsert(DbMangaChapter chapter);
 
+		Task<long> Upsert(DbMangaProgress progress);
+
 		Task<DbManga?> Get(string sourceId); 
+
 		Task<DbManga?> Get(long id);
 
 		Task<DbMangaChapter[]> Chapters(long mangaId, string language = "en");
@@ -16,15 +19,19 @@
 		Task<PaginatedResult<DbManga>> Paginate(int page = 1, int size = 100);
 
 		Task<DbMangaChapter?> GetChapter(long id);
+
+		Task<DbMangaProgress?> GetProgress(string platformId, long mangaId);
 	}
 
 	public class MangaDbService : OrmMapExtended<DbManga>, IMangaDbService
 	{
 		private const string TABLE_NAME_MANGA = "manga";
 		private const string TABLE_NAME_MANGA_CHAPTER = "manga_chapter";
+		private const string TABLE_NAME_MANGA_PROGRESS = "manga_progress";
 
 		private string? _upsertMangaQuery;
 		private string? _upsertMangaChapterQuery;
+		private string? _upsertMangaProgressQuery;
 		private string? _getChapterQuery;
 		private string? _getMangaQuery;
 
@@ -52,6 +59,17 @@
 				v => v.Id);
 
 			return _sql.ExecuteScalar<long>(_upsertMangaChapterQuery, chapter);
+		}
+
+		public Task<long> Upsert(DbMangaProgress progress)
+		{
+			_upsertMangaProgressQuery ??= _query.Upsert<DbMangaProgress, long>(TABLE_NAME_MANGA_PROGRESS,
+				v => v.With(t => t.ProfileId).With(t => t.MangaId),
+				v => v.With(t => t.Id),
+				v => v.With(t => t.Id).With(t => t.CreatedAt),
+				v => v.Id);
+
+			return _sql.ExecuteScalar<long>(_upsertMangaProgressQuery, progress);
 		}
 
 		public override Task<PaginatedResult<DbManga>> Paginate(int page = 1, int size = 100)
@@ -91,6 +109,20 @@ ORDER BY ordinal";
 		{
 			_getChapterQuery ??= _query.Select<DbMangaChapter>(TABLE_NAME_MANGA_CHAPTER, t => t.With(a => a.Id));
 			return _sql.Fetch<DbMangaChapter?>(_getChapterQuery, new { id });
+		}
+
+		public Task<DbMangaProgress?> GetProgress(string platformId, long mangaId)
+		{
+			const string QUERY = @"SELECT 
+	mp.*
+FROM manga_progress mp
+JOIN profiles p ON p.id = mp.profile_id
+WHERE
+	p.platform_id = :platformId AND
+	mp.manga_id = :mangaId AND
+	mp.deleted_at IS NULL AND
+	p.deleted_at IS NULL";
+			return _sql.Fetch<DbMangaProgress?>(QUERY, new { platformId, mangaId });
 		}
 	}
 }

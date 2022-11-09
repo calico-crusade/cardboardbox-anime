@@ -1,7 +1,7 @@
 import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { lastValueFrom } from 'rxjs';
+import { catchError, lastValueFrom, of } from 'rxjs';
 import { PopupService, PopupComponent } from 'src/app/components';
 import { AuthService, LightNovelService, Manga, MangaChapter, MangaService, MangaWithChapters } from 'src/app/services';
 
@@ -197,7 +197,7 @@ export class MangaPageComponent implements OnInit, OnDestroy {
         this.loading = true;
         
         try {
-            this.data = await lastValueFrom(this.api.manga(this.id));
+            this.data = await this.getMangaData();
         } catch (err) {
             this.loading = false;
             this.printState(err, 'Error loading manga', true);
@@ -233,8 +233,34 @@ export class MangaPageComponent implements OnInit, OnDestroy {
         if (p >= this.chapter.pages.length) p = this.chapter.pages.length - 1;
 
         this.page = p + 1;
-
+        this.progressUpdate();
         this.loading = false;
+    }
+
+    progressUpdate() {
+        if (!this.auth.currentUser) return;
+
+        this.api
+            .progress({
+                mangaId: this.id,
+                mangaChapterId: this.chapterId,
+                page: this.page
+            })
+            .pipe(
+                catchError(err => {
+                    this.printState(err, 'Error occurred while updating progress', true);
+                    return of({});
+                })
+            )
+            .subscribe(t => {
+                this.printState(null, 'Manga Progress Updated');
+            });
+    }
+
+    async getMangaData() {
+        if (this.manga && this.manga.id === this.id) return this.data;
+
+        return await lastValueFrom(this.api.manga(this.id));
     }
 
     navigate(page?: number, chapter?: number) {

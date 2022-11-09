@@ -34,3 +34,18 @@ CREATE TABLE manga_chapter (
 
     CONSTRAINT uiq_manga_chapter UNIQUE(manga_id, source_id, language)
 );
+
+CREATE TABLE manga_progress (
+    id BIGSERIAL PRIMARY KEY,
+    
+    profile_id bigint not null references profiles(id),
+    manga_id bigint not null references manga(id),
+    manga_chapter_id bigint not null references manga_chapter(id),
+    page_index int not null,
+
+    created_at timestamp not null default CURRENT_TIMESTAMP,
+    updated_at timestamp not null default CURRENT_TIMESTAMP,
+    deleted_at timestamp,
+
+    CONSTRAINT uiq_manga_progress UNIQUE(profile_id, manga_id)
+);

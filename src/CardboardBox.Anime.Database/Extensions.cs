@@ -81,7 +81,8 @@ namespace CardboardBox.Anime.Database
 				 .ForEntity<CompPublicList>()
 				 
 				 .ForEntity<DbManga>()
-				 .ForEntity<DbMangaChapter>();
+				 .ForEntity<DbMangaChapter>()
+				 .ForEntity<DbMangaProgress>();
 			});
 
 			MapConfig.StartMap();

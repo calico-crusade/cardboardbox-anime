@@ -2,7 +2,7 @@ import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Observable } from "rxjs";
 import { ConfigObject } from "../config.base";
-import { Manga, MangaWithChapters, PaginatedManga } from "./manga.model";
+import { Manga, MangaProgress, MangaProgressUpdate, MangaWithChapters, PaginatedManga } from "./manga.model";
 
 @Injectable({
     providedIn: 'root'
@@ -31,5 +31,12 @@ export class MangaService extends ConfigObject {
 
     allManga(page: number, size: number) {
         return this.http.get<PaginatedManga>(`${this.apiUrl}/manga`, { params: { page, size }});
+    }
+
+    progress(id: number): Observable<MangaProgress>;
+    progress(progress: MangaProgressUpdate): Observable<any>;
+    progress(item: number | MangaProgressUpdate) {
+        if (typeof item === 'number') return this.http.get<MangaProgress>(`${this.apiUrl}/manga/${item}/progress`);
+        return this.http.post<any>(`${this.apiUrl}/manga`, item);
     }
 }

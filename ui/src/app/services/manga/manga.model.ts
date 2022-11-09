@@ -39,3 +39,21 @@ export interface PaginatedManga {
     count: number;
     results: Manga[];
 }
+
+export interface MangaProgressUpdate {
+    mangaId: number;
+    mangaChapterId: number;
+    page: number;
+}
+
+export interface MangaProgress {
+    id: number;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt?: Date;
+
+    profileId: number;
+    mangaId: number;
+    mangaChapterId: number;
+    pageIndex: number;
+}

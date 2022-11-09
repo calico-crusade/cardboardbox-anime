@@ -7,6 +7,7 @@
 		IListMapDbService ListMaps { get; }
 		IProfileDbService Profiles { get; }
 		IAiRequestDbService AiRequests { get; }
+		IMangaDbService Manga { get; }
 	}
 
 	public class DbService : IDbService
@@ -16,15 +17,23 @@
 		public IListMapDbService ListMaps { get; }
 		public IProfileDbService Profiles { get; }
 
+		public IMangaDbService Manga { get; }
+
 		public IAiRequestDbService AiRequests { get; }
 
-		public DbService(IAnimeDbService anime, IListDbService lists, IListMapDbService listMaps, IProfileDbService profiles, IAiRequestDbService aiRequests)
+		public DbService(IAnimeDbService anime,
+			IListDbService lists, 
+			IListMapDbService listMaps,
+			IProfileDbService profiles,
+			IAiRequestDbService aiRequests,
+			IMangaDbService manga)
 		{
 			Anime = anime;
 			Lists = lists;
 			ListMaps = listMaps;
 			Profiles = profiles;
 			AiRequests = aiRequests;
+			Manga = manga;
 		}
 	}
 }

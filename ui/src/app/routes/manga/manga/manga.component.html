@@ -20,7 +20,25 @@
         </div>
     </header>
     <main>
-        <a class="chapter" *ngFor="let chapter of chapters" [routerLink]="['/manga', id, chapter.id, 1]">
+        <a class="chapter resume" *ngIf="currentChapter" [routerLink]="[ '/manga', id, currentChapter.id, progress?.pageIndex ]">
+            <div class="header">
+                <div class="number">Resume Reading! </div>
+                <div class="title">{{ currentChapter.title }}</div>
+            </div>
+            <div class="footer">
+                <div class="lang">
+                    <cba-icon>auto_stories</cba-icon> 
+                    <span>Ch. {{ currentChapter.ordinal }} Page. {{ progress?.pageIndex }}</span>
+                </div>
+                <div class="timings">
+                    <cba-icon>schedule</cba-icon> 
+                    <span>{{ progress?.updatedAt | date:'yyyy-MM-dd' }}</span>
+                </div>
+            </div>
+        </a>
+        <a class="chapter" *ngFor="let chapter of chapters" 
+           [routerLink]="['/manga', id, chapter.id, 1]"
+           [ngClass]="{ 'active': chapter.id === progress?.mangaChapterId }">
             <div class="header">
                 <div class="number">Ch. {{ chapter.ordinal }}</div>
                 <div class="title">{{ chapter.title }}</div>

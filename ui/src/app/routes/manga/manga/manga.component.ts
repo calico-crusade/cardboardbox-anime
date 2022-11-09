@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { catchError, of } from 'rxjs';
-import { AuthService, LightNovelService, Manga, MangaService, MangaWithChapters } from 'src/app/services';
+import { AuthService, LightNovelService, Manga, MangaProgress, MangaService, MangaWithChapters } from 'src/app/services';
 
 @Component({
     templateUrl: './manga.component.html',
@@ -14,6 +14,7 @@ export class MangaComponent implements OnInit, OnDestroy {
     error?: string;
     id!: number;
     data?: MangaWithChapters;
+    progress?: MangaProgress;
 
     get manga() {
         return this.data?.manga;
@@ -21,6 +22,10 @@ export class MangaComponent implements OnInit, OnDestroy {
 
     get chapters() {
         return this.data?.chapters || [];
+    }
+
+    get currentChapter() {
+        return this.chapters.find(t => t.id === this.progress?.mangaChapterId);
     }
 
     constructor(
@@ -35,6 +40,9 @@ export class MangaComponent implements OnInit, OnDestroy {
         this.route.params.subscribe(t => {
             this.id = +t['id'];
             this.process();
+        });
+        this.auth.onLogin.subscribe(t => {
+            if (t) this.getProgress();
         });
     }
 
@@ -57,6 +65,25 @@ export class MangaComponent implements OnInit, OnDestroy {
                 this.title.setTitle('CBA | ' + this.manga?.title);
                 this.auth.title = this.manga?.title;
                 this.loading = false;
+            });
+
+        if (this.auth.currentUser)
+            this.getProgress();
+    }
+
+    private getProgress() {
+        if (this.progress?.mangaId === this.id) return;
+
+        this.api
+            .progress(this.id)
+            .pipe(
+                catchError(err => {
+                    console.error('Error occurred while getting progress', { err });
+                    return of(undefined);
+                })
+            )
+            .subscribe(t => {
+                this.progress = t;
             });
     }
 

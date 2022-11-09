@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CardboardBox.Anime.Api.Controllers
 {
+	using Auth;
+	using Core.Models;
 	using Manga;
 	using Database;
 
@@ -9,10 +12,14 @@ namespace CardboardBox.Anime.Api.Controllers
 	public class MangaController : ControllerBase
 	{
 		private readonly IMangaService _manga;
+		private readonly IDbService _db;
 
-		public MangaController(IMangaService manga)
+		public MangaController(
+			IMangaService manga,
+			IDbService db)
 		{
 			_manga = manga;
+			_db = db;
 		}
 
 		[HttpGet, Route("manga")]
@@ -30,6 +37,19 @@ namespace CardboardBox.Anime.Api.Controllers
 			var manga = await _manga.Manga(id);
 			if (manga == null) return NotFound();
 			return Ok(manga);
+		}
+
+		[HttpGet, Route("manga/{id}/progress"), Authorize]
+		[ProducesDefaultResponseType(typeof(DbMangaProgress)), ProducesResponseType(404)]
+		public async Task<IActionResult> GetProgress([FromRoute] long id)
+		{
+			var platform = this.UserFromIdentity()?.Id;
+			if (string.IsNullOrEmpty(platform)) return BadRequest();
+
+			var progress = await _db.Manga.GetProgress(platform, id);
+			if (progress == null) return NotFound();
+
+			return Ok(progress);
 		}
 
 		[HttpGet, Route("manga/{id}/{chapterId}/pages")]
@@ -51,6 +71,26 @@ namespace CardboardBox.Anime.Api.Controllers
 			if (manga == null) return NotFound();
 
 			return Ok(manga);
+		}
+
+		[HttpPost, Route("manga"), Authorize]
+		public async Task<IActionResult> Post([FromBody] MangaProgressPost data)
+		{
+			var id = this.UserFromIdentity()?.Id;
+			if (id == null) return BadRequest();
+
+			var profile = await _db.Profiles.Fetch(id);
+			if (profile == null) return Unauthorized();
+
+			await _db.Manga.Upsert(new DbMangaProgress
+			{
+				ProfileId = profile.Id,
+				MangaId = data.MangaId,
+				MangaChapterId = data.MangaChapterId,
+				PageIndex = data.Page
+			});
+
+			return Ok();
 		}
 	}
 }

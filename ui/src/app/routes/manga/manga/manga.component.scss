@@ -113,6 +113,15 @@ main {
         :not(:first-child) {
             margin-top: 5px;
         }
+
+        &.active {
+            background-color: var(--color-hidive-dark);
+            border: 1px solid var(--color-hidive);
+        }
+
+        &.resume {
+            background-color: var(--accent-1);
+        }
     }
 }
 
