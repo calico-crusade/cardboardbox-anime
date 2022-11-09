@@ -52,7 +52,7 @@ services:
     environment:
       - Postgres:ConnectionString=User ID=${POSTGRES_USER};Password=${POSTGRES_PASS};Host=cba-postgres;Database=caching;
     ports:
-      - 8891:80
+      - 8899:80
     depends_on:
       - cba-postgres
     volumes:
