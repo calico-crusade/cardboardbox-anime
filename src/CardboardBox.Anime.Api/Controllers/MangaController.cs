@@ -30,6 +30,16 @@ namespace CardboardBox.Anime.Api.Controllers
 			return Ok(data);
 		}
 
+		[HttpGet, Route("manga/in-progress"), Authorize]
+		[ProducesDefaultResponseType(typeof(MangaProgress[]))]
+		public async Task<IActionResult> InProgress()
+		{
+			var id = this.UserFromIdentity()?.Id;
+			if (string.IsNullOrEmpty(id)) return BadRequest();
+			var data = await _db.Manga.InProgress(id);
+			return Ok(data);
+		}
+
 		[HttpGet, Route("manga/{id}")]
 		[ProducesDefaultResponseType(typeof(MangaWithChapters)), ProducesResponseType(404)]
 		public async Task<IActionResult> Get([FromRoute] long id)

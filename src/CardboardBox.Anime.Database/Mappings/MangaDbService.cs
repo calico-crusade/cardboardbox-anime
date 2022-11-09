@@ -21,6 +21,8 @@
 		Task<DbMangaChapter?> GetChapter(long id);
 
 		Task<DbMangaProgress?> GetProgress(string platformId, long mangaId);
+
+		Task<MangaProgress[]> InProgress(string platformId);
 	}
 
 	public class MangaDbService : OrmMapExtended<DbManga>, IMangaDbService
@@ -103,6 +105,50 @@ ORDER BY ordinal";
 		{
 			_getMangaQuery ??= _query.Select<DbManga>(TABLE_NAME_MANGA, t => t.With(a => a.Id));
 			return _sql.Fetch<DbManga?>(_getMangaQuery, new { id });
+		}
+
+		public async Task<MangaProgress[]> InProgress(string platformId)
+		{
+			const string QUERY = @"WITH chapter_numbers AS (
+    SELECT
+        *,
+        row_number() over (
+            PARTITION BY manga_id
+            ORDER BY ordinal ASC
+        ) as row_num
+    FROM manga_chapter c
+), max_chapter_numbers AS (
+    SELECT
+        c.manga_id,
+        MAX(c.row_num) as max
+    FROM chapter_numbers c
+    GROUP BY c.manga_id
+) SELECT
+	m.*,
+	'' as split,
+	mp.*,
+	'' as split,
+	mc.*,
+	'' as split,
+	mmc.max as max_chapter_num,
+    mc.row_num as chapter_num,
+    array_length(mc.pages, 1) as page_count,
+    round(mc.row_num / CAST(mmc.max as decimal) * 100, 2) as chapter_progress,
+    round(mp.page_index / CAST(array_length(mc.pages, 1) as decimal), 2) * 100 as page_progress
+FROM manga m
+JOIN manga_progress mp ON mp.manga_id = m.id
+JOIN chapter_numbers mc ON mc.id = mp.manga_chapter_id
+JOIN max_chapter_numbers mmc ON mmc.manga_id = mc.manga_id
+JOIN profiles p ON p.id = mp.profile_id
+WHERE
+	p.platform_id = :platformId AND
+	m.deleted_at IS NULL AND
+	mp.deleted_at IS NULL AND
+	p.deleted_at IS NULL
+ORDER BY mp.updated_at DESC";
+
+			var res = await _sql.QueryAsync<DbManga, DbMangaProgress, DbMangaChapter, MangaStats>(QUERY, new { platformId });
+			return res.Select(t => new MangaProgress(t.item1, t.item2, t.item3, t.item4)).ToArray();
 		}
 
 		public Task<DbMangaChapter?> GetChapter(long id)

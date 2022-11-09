@@ -57,3 +57,16 @@ export interface MangaProgress {
     mangaChapterId: number;
     pageIndex: number;
 }
+
+export interface MangaProgressData {
+    manga: Manga;
+    progress: MangaProgress;
+    chapter: MangaChapter;
+    stats: {
+        maxChapterNum: number;
+        chapterNum: number;
+        pageCount: number;
+        chapterProgress: number;
+        pageProgress: number;
+    }
+}

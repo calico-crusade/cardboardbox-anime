@@ -149,6 +149,7 @@ input.ipt, textarea.ipt {
     color: var(--text-color);
     cursor: pointer;
     transition: all 250ms;
+    text-decoration: none;
 
     &:disabled {
         color: var(--text-color-muted);
@@ -157,5 +158,21 @@ input.ipt, textarea.ipt {
 
     &:hover {
         transform: rotate(90deg);
+    }
+}
+
+.float-icons {
+    position: absolute;
+    top: 5px;
+    right: 20px;
+    display: flex;
+    flex-flow: column;
+
+    .float-icon {
+        position: relative;
+        
+        &:not(:first-child) {
+            margin-top: 5px;
+        }
     }
 }

@@ -15,9 +15,15 @@
     </a>
 </cba-container>
 
-<button class="float-icon" (click)="add()">
-    <cba-icon>add</cba-icon>
-</button>
+<div class="float-icons">
+    <button class="float-icon" (click)="add()">
+        <cba-icon>add</cba-icon>
+    </button>
+    <a class="float-icon" [routerLink]="['/manga', 'in-progress']">
+        <cba-icon>collections_bookmark</cba-icon>
+    </a>
+</div>
+
 
 <cba-popup #popup [background]="!loading">
     <div class="popup">
