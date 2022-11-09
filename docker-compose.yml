@@ -46,3 +46,14 @@ services:
       - Ai:Url=${DISCORD_AI_URL}
     depends_on:
       - cba-api
+  cba-proxy:
+    image: ghcr.io/calico-crusade/cardboardbox-proxy/api:latest
+    restart: always
+    environment:
+      - Postgres:ConnectionString=User ID=${POSTGRES_USER};Password=${POSTGRES_PASS};Host=cba-postgres;Database=caching;
+    ports:
+      - 8891:80
+    depends_on:
+      - cba-postgres
+    volumes:
+      - ./file-cache:/app/file-cache

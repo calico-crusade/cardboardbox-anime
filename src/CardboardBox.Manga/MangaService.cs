@@ -98,8 +98,8 @@
 			if (m == null) return null;
 
 			var manga = await ConvertManga(m);
-			var chapters = await ConvertChapters(m, manga.Id).ToArrayAsync();
-			return new(manga, chapters);
+			await ConvertChapters(m, manga.Id).ToArrayAsync();
+			return await Manga(manga.Id);
 		}
 
 		public async Task<DbManga> ConvertManga(Manga manga)
