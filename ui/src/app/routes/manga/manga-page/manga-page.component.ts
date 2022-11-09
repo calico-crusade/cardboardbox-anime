@@ -144,7 +144,7 @@ export class MangaPageComponent implements OnInit, OnDestroy {
 
     proxy(url?: string) {
         if (!url) return '';
-        return this.lnApi.corsFallback(url);
+        return this.lnApi.corsFallback(url, 'manga-page');
     }
 
     @HostListener('window:keydown', ['$event'])

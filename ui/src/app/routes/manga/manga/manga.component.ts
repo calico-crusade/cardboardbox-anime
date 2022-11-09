@@ -86,6 +86,6 @@ export class MangaComponent implements OnInit, OnDestroy {
 
     proxy(url?: string) {
         if (!url) return '';
-        return this.lnApi.corsFallback(url);
+        return this.lnApi.corsFallback(url, 'manga-covers');
     }
 }

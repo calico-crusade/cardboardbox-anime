@@ -14,7 +14,7 @@ export class ImageFallbackDirective {
 
     @HostListener('error')
     update() {
-        this.src = this.api.corsFallback(this.src || '');
+        this.src = this.api.corsFallback(this.src || '', 'image-fallback');
     }
 
 }
