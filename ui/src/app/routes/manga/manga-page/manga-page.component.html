@@ -18,7 +18,7 @@
             <div class="select-list">
                 <select [(ngModel)]="chapterId" (ngModelChange)="pageChange(0)">
                     <option *ngFor="let chapter of chapters" [value]="chapter.id">
-                        Chapter #{{ chapter.ordinal}} - {{ chapter.title }}
+                        Ch. {{ chapter.ordinal}} - {{ chapter.title }}
                     </option>
                 </select>
                 <select [(ngModel)]="page" (ngModelChange)="pageChange(page - 1)">
@@ -69,6 +69,16 @@
                 <button class="right" (click)="nextPage()" [disabled]="!hasNextPage"></button>
             </ng-container>
         </main>
+        <ng-container *ngIf="!settings.scroll.value && settings.progressBar.value">
+            <div class="progress-bar pages" [class]="settings.progressBar.value">
+                <div class="progress" *ngFor="let p of chapter?.pages; let i = index"
+                    [ngClass]="{ 'active': i <= page - 1 }"></div>
+            </div>
+            <!-- <div class="progress-bar">
+                <div class="progress" *ngFor="let chap of chapters"
+                    [ngClass]="{ 'active': chap.ordinal <= (chapter?.ordinal || 0)}"></div>
+            </div> -->
+        </ng-container>
         <button class="float-icon" (click)="settingsShow()" *ngIf="settings.hideHeader.value">
             <cba-icon>settings</cba-icon>
         </button>
@@ -108,19 +118,25 @@
                 Invert Colors (It's cursed)
             </label>
         </section>
-        
+        <section><label>How much to scroll on key event:</label></section>
         <section>
-            <label>
-                How much to scroll on key event:
-            </label>
-        </section>
-        <section>
-            <div class="select-list">
-                <input type="number" step="10" [(ngModel)]="settings.scrollAmount.value" />
+            <div class="select-list fill">
+                <input type="number" class="fill" step="10" [(ngModel)]="settings.scrollAmount.value" />
             </div>
         </section>
+        <section><label>Page Progress Bar:</label></section>
         <section>
-            <div class="select-list">
+            <div class="select-list fill">
+                <select [(ngModel)]="settings.progressBar.value" class="fill">
+                    <option *ngFor="let opt of progressBarOptions" [value]="opt">
+                        {{ opt || 'none' }}
+                    </option>
+                </select>
+            </div>
+        </section>
+        <section><label>Chapters:</label></section>
+        <section>
+            <div class="select-list fill">
                 <button (click)="prevChap()" [disabled]="!hasPreviousChapter">
                     <cba-icon>skip_previous</cba-icon>
                 </button>
@@ -134,8 +150,9 @@
                 </button>
             </div>
         </section>
+        <section *ngIf="!settings.scroll.value"><label>Pages:</label></section>
         <section *ngIf="!settings.scroll.value">
-            <div class="select-list">
+            <div class="select-list fill">
                 <button (click)="prevPage()" [disabled]="!hasPreviousPage">
                     <cba-icon>navigate_before</cba-icon>
                 </button>

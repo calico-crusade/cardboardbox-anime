@@ -1,7 +1,7 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
-import { AvailableParams, Filter, Filters, FilterSearch, MatureType } from 'src/app/services/anime.model';
-import { AnimeService } from 'src/app/services/anime.service';
+import { AvailableParams, Filter, Filters, FilterSearch, MatureType } from 'src/app/services/anime/anime.model';
+import { AnimeService } from 'src/app/services/anime/anime.service';
 import { UtilitiesService } from 'src/app/services/utilities.service';
 
 @Component({

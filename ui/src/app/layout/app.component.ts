@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
-import { AuthUser } from '../services/auth.model';
-import { AuthService } from '../services/auth.service';
+import { AuthUser } from '../services/auth/auth.model';
+import { AuthService } from '../services/auth/auth.service';
 
 @Component({
     selector: 'cba-root',

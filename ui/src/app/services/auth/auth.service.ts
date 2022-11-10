@@ -1,9 +1,9 @@
 import { HttpClient, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, lastValueFrom, Observable } from 'rxjs';
-import { AnimeService } from './anime.service';
+import { AnimeService } from '../anime/anime.service';
 import { AuthCodeResponse, AuthUser } from './auth.model';
-import { ConfigObject } from './config.base';
+import { ConfigObject } from '../config.base';
 
 const SKIP_URIS: string[] = [];
 const STORAGE_REROUTE = 'reroute-source';

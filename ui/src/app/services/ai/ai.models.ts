@@ -1,4 +1,4 @@
-import { DbObject, PagedResults } from "../anime.model";
+import { DbObject, PagedResults } from "../anime/anime.model";
 
 export interface AiRequest {
     prompt: string;

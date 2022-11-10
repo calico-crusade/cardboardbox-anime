@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { PagedResults, Filters, FilterSearch, ListExt, ListPost, ListPut, Id, ListMap, Anime, List, ListMapItem, PublicLists, Chapter, Book } from './anime.model';
-import { ConfigObject } from './config.base';
+import { ConfigObject } from '../config.base';
 import { BehaviorSubject, combineLatestWith, lastValueFrom, map, Observable, switchMap, tap } from 'rxjs';
 
 export type ListsMaps = {

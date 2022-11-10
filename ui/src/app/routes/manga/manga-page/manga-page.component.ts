@@ -29,9 +29,9 @@ class StorageVar<T> {
     }
 
     convertType(value?: string | null) {
-        if (value === undefined ||
-            value === null) return this.defValue;
-
+        if (value === undefined || value === null) {
+            return this.defValue;
+        }
         if (typeof this.defValue === 'number') {
             return Number(value);
         }
@@ -48,6 +48,8 @@ class StorageVar<T> {
     styleUrls: ['./manga-page.component.scss']
 })
 export class MangaPageComponent implements OnInit, OnDestroy {
+
+    progressBarOptions = ['', 'bottom', 'left', 'right' ];
 
     @ViewChild('popup') popup!: PopupComponent;
     @ViewChild('scrollcont') el!: ElementRef<any>;
@@ -71,7 +73,8 @@ export class MangaPageComponent implements OnInit, OnDestroy {
         scroll: new StorageVar<boolean>(false, 'scroll-chapter'),
         hideHeader: new StorageVar<boolean>(false, 'hide-header'),
         invert: new StorageVar<boolean>(false, 'invert-image'),
-        scrollAmount: new StorageVar<number>(100, 'scroll-amount')
+        scrollAmount: new StorageVar<number>(100, 'scroll-amount'),
+        progressBar: new StorageVar<string>('', 'progress-bar')
     };
 
     get pageImage() {

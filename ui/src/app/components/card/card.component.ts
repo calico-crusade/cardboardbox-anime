@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { Anime, Image } from 'src/app/services/anime.model';
+import { Anime, Image } from 'src/app/services/anime/anime.model';
 import { AnimeModalService } from '../anime-modal/anime-modal.component';
 
 @Component({

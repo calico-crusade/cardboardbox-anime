@@ -1,3 +1,6 @@
+$progress-height: 4px;
+$select-list-padding: 10px;
+
 .context {
     flex: 1;
     overflow: hidden;
@@ -8,9 +11,11 @@
 header {
     display: flex;
     flex-flow: row;
+    position: relative;
 
     button, a {
         margin: auto 5px;
+        padding: 5px;
         outline: none;
         border: none;
         background-color: transparent;
@@ -128,6 +133,42 @@ main {
             filter: invert(100%)
         }
     }
+
+}
+
+.progress-bar {
+    height: $progress-height;
+
+    display: flex;
+    flex-flow: row;
+
+    .progress {
+        flex: 1;
+        background-color: var(--accent-2);
+        transition: all 250ms;
+
+        &.active {
+            background-color: var(--color-hidive);
+        }
+    }
+
+    &.left {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: $progress-height;
+        height: 100%;
+        flex-flow: column;
+    }
+
+    &.right {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: $progress-height;
+        height: 100%;
+        flex-flow: column;
+    }
 }
 
 .float-icon {
@@ -163,11 +204,17 @@ h2 {
         border: 1px solid var(--accent-2);
         background-color: var(--bg-accent);
         color: var(--text-color);
-        padding: 5px;
+        max-width: 240px;
+        padding: $select-list-padding;
 
         option {
             background-color: transparent;
             color: var(--text-color);
+        }
+
+        &.fill {
+            flex: 1;
+            max-width: 100%;
         }
     }
 
@@ -175,7 +222,7 @@ h2 {
         outline: none;
         border: 1px solid var(--accent-2);
         background: var(--bg-accent);
-        padding: 5px;
+        padding: #{$select-list-padding / 2};
         color: var(--text-color);
         cursor: pointer;
 
@@ -188,7 +235,7 @@ h2 {
     .counts {
         border: 1px solid var(--accent-2);
         background-color: var(--bg-accent);
-        padding: 5px 10px;
+        padding: $select-list-padding;
         border-left: none;
     }
 
@@ -209,6 +256,14 @@ h2 {
     :not(:first-child):not(:last-child) {
         border-radius: 0;
     }
+
+    select, input, button, .counts {
+        margin: 0;
+    }
+
+    &.fill {
+        width: 100%;
+    }
 }
 
 .settings {
@@ -223,7 +278,7 @@ h2 {
     }
 }
 
-@media only screen and (max-width: 600px) {
+@media only screen and (max-width: 720px) {
     header {
         .select-list {
             display: none;
