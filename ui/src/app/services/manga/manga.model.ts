@@ -25,6 +25,7 @@ export interface MangaChapter {
     url: string;
     sourceId: string;
     ordinal: number;
+    volume?: number;
     language: string;
     pages: string[];
 }
@@ -69,4 +70,13 @@ export interface MangaProgressData {
         chapterProgress: number;
         pageProgress: number;
     }
+}
+
+export interface MangaFilter {
+    page: number;
+    size: number;
+    search?: string;
+    asc: boolean;
+    include: string[];
+    exclude: string[];
 }

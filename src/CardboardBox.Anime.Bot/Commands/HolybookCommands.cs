@@ -5,7 +5,7 @@ using CardboardBox.Http;
 using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
-using Maturity = CardboardBox.Anime.Core.Models.FilterSearch.MatureType;
+using Maturity = CardboardBox.Anime.Core.Models.AnimeFilter.MatureType;
 
 namespace CardboardBox.Anime.Bot.Commands
 {

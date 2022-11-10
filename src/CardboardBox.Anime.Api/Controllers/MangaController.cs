@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace CardboardBox.Anime.Api.Controllers
 {
 	using Auth;
+	using Core;
 	using Core.Models;
 	using Manga;
 	using Database;
@@ -27,6 +28,14 @@ namespace CardboardBox.Anime.Api.Controllers
 		public async Task<IActionResult> Get([FromQuery] int page = 1, [FromQuery] int size = 100)
 		{
 			var data = await _manga.Manga(page, size);
+			return Ok(data);
+		}
+
+		[HttpGet, Route("manga/filters")]
+		[ProducesDefaultResponseType(typeof(Filter[]))]
+		public async Task<IActionResult> Get()
+		{
+			var data = await _db.Manga.Filters();
 			return Ok(data);
 		}
 
@@ -101,6 +110,14 @@ namespace CardboardBox.Anime.Api.Controllers
 			});
 
 			return Ok();
+		}
+
+		[HttpPost, Route("manga/search")]
+		[ProducesDefaultResponseType(typeof(PaginatedResult<DbManga>))]
+		public async Task<IActionResult> Search([FromBody] MangaFilter filter)
+		{
+			var data = await _db.Manga.Search(filter);
+			return Ok(data);
 		}
 	}
 }

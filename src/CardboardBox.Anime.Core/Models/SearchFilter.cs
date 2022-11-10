@@ -1,21 +1,9 @@
 ﻿namespace CardboardBox.Anime.Core.Models
 {
-	public class FilterSearch
+	public class AnimeFilter : SearchFilter
 	{
-		[JsonPropertyName("page")]
-		public int Page { get; set; }
-
-		[JsonPropertyName("size")]
-		public int Size { get; set; }
-
-		[JsonPropertyName("search")]
-		public string? Search { get; set; }
-
 		[JsonPropertyName("queryables")]
 		public Queryable Queryables { get; set; } = new();
-		
-		[JsonPropertyName("asc")]
-		public bool Ascending { get; set; } = true;
 
 		[JsonPropertyName("mature")]
 		public MatureType Mature { get; set; } = MatureType.Both;
@@ -66,5 +54,42 @@
 			asc = Ascending;
 			mature = Mature;
 		}
+	}
+
+	public class MangaFilter : SearchFilter
+	{
+		[JsonPropertyName("include")]
+		public string[] Include { get; set; } = Array.Empty<string>();
+
+		[JsonPropertyName("exclude")]
+		public string[] Exclude { get; set; } = Array.Empty<string>();
+
+		public void Deconstruct(
+			out int page, out int size, out string? search,
+			out string[] exclude, out string[] include,
+			out bool asc)
+		{
+			page = Page;
+			size = Size;
+			search = Search;
+			exclude = Exclude;
+			include = Include;
+			asc = Ascending;
+		}
+	}
+
+	public abstract class SearchFilter
+	{
+		[JsonPropertyName("page")]
+		public int Page { get; set; }
+
+		[JsonPropertyName("size")]
+		public int Size { get; set; }
+
+		[JsonPropertyName("search")]
+		public string? Search { get; set; }
+
+		[JsonPropertyName("asc")]
+		public bool Ascending { get; set; } = true;
 	}
 }

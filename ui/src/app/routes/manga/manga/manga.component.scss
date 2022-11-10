@@ -5,7 +5,7 @@ header {
 
     .image {
         width: 300px;
-        min-height: 300px;
+        min-height: 400px;
         height: 100%;
         background-size: contain;
         background-position: center;
@@ -51,8 +51,11 @@ header {
         }
 
         .tags {
+            margin-right: 5px;
             .header {
                 font-weight: bold;
+                display: inline-block;
+                margin-left: 10px;
             }
 
             .tag {

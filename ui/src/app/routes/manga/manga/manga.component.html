@@ -5,6 +5,13 @@
             <div class="title">
                 <a [href]="manga?.url" target="_blank">{{ manga?.title }}</a>
             </div>
+            <div class="description" *ngIf="manga?.description">
+                <div class="content" [markdown]="manga?.description"></div>
+            </div>
+        </div>
+    </header>
+    <header>
+        <div class="details">
             <div class="tags">
                 <div class="header">Tags: </div>
                 <div class="tag" *ngFor="let tag of manga?.tags">{{ tag }}</div>
@@ -13,9 +20,6 @@
             <div class="tags">
                 <div class="header">Alt Titles: </div>
                 <div class="tag secondary" *ngFor="let tag of manga?.altTitles">{{ tag }}</div>
-            </div>
-            <div class="description" *ngIf="manga?.description">
-                <div class="content" [markdown]="manga?.description"></div>
             </div>
         </div>
     </header>
@@ -28,7 +32,9 @@
             <div class="footer">
                 <div class="lang">
                     <cba-icon>auto_stories</cba-icon> 
-                    <span>Ch. {{ currentChapter.ordinal }} Page. {{ progress?.pageIndex }}</span>
+                    <span *ngIf="currentChapter.volume">Vol. {{ currentChapter.volume }}</span>
+                    <span>Ch. {{ currentChapter.ordinal }}</span>
+                    <span>Page. {{ progress?.pageIndex }}</span>
                 </div>
                 <div class="timings">
                     <cba-icon>schedule</cba-icon> 
@@ -40,7 +46,10 @@
            [routerLink]="['/manga', id, chapter.id, 1]"
            [ngClass]="{ 'active': chapter.id === progress?.mangaChapterId }">
             <div class="header">
-                <div class="number">Ch. {{ chapter.ordinal }}</div>
+                <div class="number">
+                    <span *ngIf="chapter.volume">Vol. {{ chapter.volume }}</span>
+                    <span>Ch. {{ chapter.ordinal }}</span>
+                </div>
                 <div class="title">{{ chapter.title }}</div>
             </div>
             <div class="footer">

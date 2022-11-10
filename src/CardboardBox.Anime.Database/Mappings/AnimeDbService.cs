@@ -9,8 +9,8 @@ namespace CardboardBox.Anime.Database
 	public interface IAnimeDbService
 	{
 		Task<long> Upsert(DbAnime anime);
-		Task<(int total, DbAnime[] results)> Search(FilterSearch search, string? platformId = null);
-		Task<DbAnime[]> Random(FilterSearch search, string? platformId = null);
+		Task<(int total, DbAnime[] results)> Search(AnimeFilter search, string? platformId = null);
+		Task<DbAnime[]> Random(AnimeFilter search, string? platformId = null);
 		Task<DbAnime[]> All();
 		Task<Filter[]> Filters();
 	}
@@ -38,7 +38,7 @@ namespace CardboardBox.Anime.Database
 			return _sql.ExecuteScalar<long>(_upsertQuery, anime);
 		}
 
-		public async Task<(int total, DbAnime[] results)> Search(FilterSearch search, string? platformId = null)
+		public async Task<(int total, DbAnime[] results)> Search(AnimeFilter search, string? platformId = null)
 		{
 			int offset = (search.Page - 1) * search.Size;
 			var query = $@"CREATE TEMP TABLE titles AS
@@ -72,10 +72,10 @@ DROP TABLE titles;";
 				pars.Add("search", search.Search);
 			}
 
-			if (search.Mature != FilterSearch.MatureType.Both)
+			if (search.Mature != AnimeFilter.MatureType.Both)
 			{
 				parts.Add("a.mature = :mature");
-				pars.Add("mature", search.Mature == FilterSearch.MatureType.Mature);
+				pars.Add("mature", search.Mature == AnimeFilter.MatureType.Mature);
 			}
 
 			if (search.ListId != null)
@@ -137,7 +137,7 @@ JOIN profiles p ON p.id = l.profile_id";
 			return (total, GroupPlatforms(results).ToArray());
 		}
 
-		public async Task<DbAnime[]> Random(FilterSearch search, string? platformId = null)
+		public async Task<DbAnime[]> Random(AnimeFilter search, string? platformId = null)
 		{
 			var query = $@"CREATE TEMP TABLE titles AS
 SELECT
@@ -171,10 +171,10 @@ DROP TABLE titles;";
 				pars.Add("search", search.Search);
 			}
 
-			if (search.Mature != FilterSearch.MatureType.Both)
+			if (search.Mature != AnimeFilter.MatureType.Both)
 			{
 				parts.Add("a.mature = :mature");
-				pars.Add("mature", search.Mature == FilterSearch.MatureType.Mature);
+				pars.Add("mature", search.Mature == AnimeFilter.MatureType.Mature);
 			}
 
 			if (search.ListId != null)

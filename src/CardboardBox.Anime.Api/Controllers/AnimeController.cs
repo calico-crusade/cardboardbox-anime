@@ -49,7 +49,7 @@ namespace CardboardBox.Anime.Api.Controllers
 		}
 
 		[HttpPost, Route("anime"), ProducesDefaultResponseType(typeof(PaginatedResult<DbAnime>))]
-		public async Task<IActionResult> AllV2([FromBody] FilterSearch search)
+		public async Task<IActionResult> AllV2([FromBody] AnimeFilter search)
 		{
 			var user = this.UserFromIdentity();
 			var (total, anime) = await _sql.Anime.Search(search, user?.Id);
@@ -62,7 +62,7 @@ namespace CardboardBox.Anime.Api.Controllers
 		}
 
 		[HttpPost, Route("anime/random"), ProducesDefaultResponseType(typeof(DbAnime[]))]
-		public async Task<IActionResult> Random([FromBody] FilterSearch search)
+		public async Task<IActionResult> Random([FromBody] AnimeFilter search)
 		{
 			search.Size = 1;
 			search.Page = 1;

@@ -17,6 +17,16 @@
     CONSTRAINT uiq_manga_title_hash UNIQUE(source_id, provider)
 );
 
+CREATE OR REPLACE FUNCTION f_ciarr2text(text[]) RETURNS text LANGUAGE sql IMMUTABLE AS $$SELECT array_to_string($1, ',')$$;
+
+ALTER TABLE manga
+    ADD COLUMN fts tsvector
+        GENERATED ALWAYS AS (
+            to_tsvector('english',
+                title || ' ' || description || ' ' || f_ciarr2text(alt_titles)
+            )
+        ) STORED;
+
 CREATE TABLE manga_chapter (
     id BIGSERIAL PRIMARY KEY,
 
@@ -25,6 +35,7 @@ CREATE TABLE manga_chapter (
     url text not null,
     source_id text not null,
     ordinal numeric not null,
+    volume numeric,
     language text not null,
     pages text[] not null default '{}',
 

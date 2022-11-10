@@ -1,19 +1,28 @@
-<cba-container [loading]="loading" [error]="error" [requires-login]="true" [handle-scroll]="true" flex-flow="row wrap">
-    <a class="manga" *ngFor="let manga of data" [routerLink]="['/manga', manga.manga.id ]">
-        <div class="image" [style.background-image]="'url(' + proxy(manga.manga.cover) + ')'"></div>
-        <div class="details masked-overflow">
-            <div class="title">{{ manga.manga.title }}</div>
-            <div class="source">
-                <b>Progress: </b>&nbsp; {{ manga.stats.chapterProgress }}% - {{ manga.progress.updatedAt | date:'yyyy-MM-dd' }}
-            </div>
-            <div class="source">
-                <b>Source:</b>&nbsp;{{ manga.manga.provider }}
-            </div>
-            <div class="tags">
-                <div class="header">Tags: </div>
-                <div class="tag" *ngFor="let tag of manga.manga.tags">{{ tag }}</div>
-            </div>
-            <div class="description" [markdown]="manga.manga.description"></div>
+<cba-container [loading]="loading" [error]="error" [requires-login]="true" [handle-scroll]="true" flex-flow="column">
+    <header>
+        <div class="select-list">
+            <button (click)="state = 'all'" [ngClass]="{ 'active': state == 'all' }">All</button>
+            <button (click)="state = 'inp'" [ngClass]="{ 'active': state == 'inp' }">In Progress</button>
+            <button (click)="state = 'com'" [ngClass]="{ 'active': state == 'com' }">Completed</button>
         </div>
-    </a>
+    </header>
+    <main>
+        <a class="manga" *ngFor="let manga of records" [routerLink]="['/manga', manga.manga.id ]" @messageState>
+            <div class="image" [style.background-image]="'url(' + proxy(manga.manga.cover) + ')'"></div>
+            <div class="details masked-overflow">
+                <div class="title">{{ manga.manga.title }}</div>
+                <div class="source">
+                    <b>Progress: </b>&nbsp; {{ manga.stats.chapterProgress }}% - {{ manga.progress.updatedAt | date:'yyyy-MM-dd' }}
+                </div>
+                <div class="source">
+                    <b>Source:</b>&nbsp;{{ manga.manga.provider }}
+                </div>
+                <div class="tags">
+                    <div class="header">Tags: </div>
+                    <div class="tag" *ngFor="let tag of manga.manga.tags">{{ tag }}</div>
+                </div>
+                <div class="description" [markdown]="manga.manga.description"></div>
+            </div>
+        </a>
+    </main>
 </cba-container>

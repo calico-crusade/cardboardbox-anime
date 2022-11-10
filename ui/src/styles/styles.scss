@@ -170,6 +170,8 @@ input.ipt, textarea.ipt {
 
     .float-icon {
         position: relative;
+        top: unset;
+        right: unset;
         
         &:not(:first-child) {
             margin-top: 5px;

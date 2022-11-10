@@ -1,50 +1,181 @@
-.manga {
+$progress-height: 4px;
+$select-list-padding: 20px;
+
+header {
+    width: 100%;
     display: flex;
     flex-flow: row;
-    padding: 15px;
-    max-width: 700px;
-    width: 100%;
-    margin: 10px auto;
-    text-decoration: none;
-    max-height: 330px;
+    max-height: #{$select-list-padding * 2.5};
 
-    background-color: var(--bg-card);
-
-    .image {
-        background-position: center;
-        background-size: cover;
-        background-repeat: no-repeat;
-        width: 200px;
-        min-height: 300px;
-    }
-
-    .details {
-        flex: 1;
-        display: flex;
-        flex-flow: column;
-        margin-left: 10px;
-        max-height: 300px;
-        overflow: hidden;
-
-        .title {
-            font-size: 1.5em;
-            font-weight: 700;
+    span {
+        margin: auto 0;
+        &:first-child {
+            margin-left: 10px;
         }
 
-        .tags {
-            .header {
-                display: inline-block;
-                font-weight: bold;
-            }
+        &:not(:first-child) {
+            margin: auto;
+        }
+    }
 
-            .tag {
-                display: inline-block;
-                padding: 3px 5px;
-                margin: 3px;
-                background-color: var(--def-color);
-                border: 1px solid var(--brd-color-accent);
-                border-radius: 3px;
+    button.open {
+        transform: rotate(180deg);
+    }
+
+    .select-list {
+        display: flex;
+        flex-flow: row;
+        margin: 5px auto;
+    
+        select, input {
+            outline: none;
+            border: 1px solid var(--accent-2);
+            background-color: var(--bg-accent);
+            color: var(--text-color);
+            max-width: 240px;
+            padding: $select-list-padding;
+    
+            option {
+                background-color: transparent;
+                color: var(--text-color);
             }
+    
+            &.fill {
+                flex: 1;
+                max-width: 100%;
+            }
+        }
+    
+        button, a {
+            outline: none;
+            border: 1px solid var(--accent-2);
+            background: var(--bg-accent);
+            padding: #{$select-list-padding / 2};
+            margin: 0;
+            color: var(--text-color);
+            line-height: 100%;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+    
+            &:disabled {
+                color: var(--text-color-muted);
+                cursor: not-allowed;
+            }
+    
+            &.active {
+                background-color: var(--accent-2);
+            }
+        }
+    
+        .counts {
+            border: 1px solid var(--accent-2);
+            background-color: var(--bg-accent);
+            padding: $select-list-padding;
+            border-left: none;
+        }
+    
+        :first-child {
+            border-top-left-radius: 5px;
+            border-bottom-left-radius: 5px;
+        }
+    
+        :not(:first-child) {
+            border-left: none;
+        }
+    
+        :last-child {
+            border-top-right-radius: 5px;
+            border-bottom-right-radius: 5px;
+        }
+    
+        :not(:first-child):not(:last-child) {
+            border-radius: 0;
+        }
+    
+        select, input, button, .counts {
+            margin: 0;
+        }
+    
+        &.fill {
+            width: 100%;
+        }
+    }
+    
+}
+
+main {
+    display: flex;
+    flex-flow: row wrap;
+    position: relative;
+
+    .manga {
+        display: flex;
+        flex-flow: row;
+        padding: 15px;
+        max-width: 700px;
+        width: 100%;
+        margin: 10px auto;
+        text-decoration: none;
+        max-height: 330px;
+        transition: all 250ms;
+        background-color: var(--bg-card);
+        overflow: hidden;
+    
+        .image {
+            background-position: center;
+            background-size: cover;
+            background-repeat: no-repeat;
+            width: 200px;
+            min-height: 300px;
+        }
+    
+        .details {
+            flex: 1;
+            display: flex;
+            flex-flow: column;
+            margin-left: 10px;
+            max-height: 300px;
+            overflow: hidden;
+    
+            .title {
+                font-size: 1.5em;
+                font-weight: 700;
+            }
+    
+            .tags {
+                .header {
+                    display: inline-block;
+                    font-weight: bold;
+                }
+    
+                .tag {
+                    display: inline-block;
+                    padding: 3px 5px;
+                    margin: 3px;
+                    background-color: var(--def-color);
+                    border: 1px solid var(--brd-color-accent);
+                    border-radius: 3px;
+                }
+            }
+        }
+    }
+
+    &.inp {
+        .completed {
+            max-height: 0;
+            margin: 0;
+            padding: 0;
+            max-width: 0;
+        }
+    }
+
+    &.com {
+        .in-progress {
+            max-height: 0;
+            margin: 0;
+            padding: 0;
+            max-width: 0;
         }
     }
 }
@@ -66,3 +197,4 @@
     mask-position: 0 0, 100% 0;
     mask-repeat: no-repeat, no-repeat;
 }
+

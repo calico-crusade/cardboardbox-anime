@@ -19,11 +19,13 @@
     <button class="float-icon" (click)="add()">
         <cba-icon>add</cba-icon>
     </button>
+    <button class="float-icon" (click)="filter()">
+        <cba-icon>search</cba-icon>
+    </button>
     <a class="float-icon" [routerLink]="['/manga', 'in-progress']">
         <cba-icon>collections_bookmark</cba-icon>
     </a>
 </div>
-
 
 <cba-popup #popup [background]="!loading">
     <div class="popup">
@@ -47,6 +49,33 @@
             </div>
             <button class="btn" (click)="load()" [disabled]="loading">
                 <cba-icon>add</cba-icon>
+            </button>
+        </section>
+    </div>
+</cba-popup>
+
+<cba-popup #searchpopup>
+    <div class="popup">
+        <h2>Search for your favourite manga!</h2>
+        <section>
+            <input type="text" [(ngModel)]="search.search" placeholder="Search for your favourite manga!" />
+        </section>
+        <section><label>Tags:</label></section>
+        <section class="tags">
+            <button *ngFor="let tag of allTags" (click)="toggleFilter(tag)" [class]="getState(tag)">
+                <cba-icon *ngIf="getState(tag) == 'include'" [unsize]="true" [font-size]="'16px'">add</cba-icon>
+                <cba-icon *ngIf="getState(tag) == 'exclude'" [unsize]="true" [font-size]="'16px'">remove</cba-icon>
+                <span>{{ tag }}</span>
+            </button>
+        </section>
+        <section class="toggles">
+            <span>Sort By:</span>
+            <button [ngClass]="{'active': search.asc}" (click)="search.asc = true">Ascending</button>
+            <button [ngClass]="{'active': !search.asc}" (click)="search.asc = false">Descending</button>
+        </section>
+        <section>
+            <button class="btn" (click)="doSearch()">
+                <cba-icon>search</cba-icon>
             </button>
         </section>
     </div>

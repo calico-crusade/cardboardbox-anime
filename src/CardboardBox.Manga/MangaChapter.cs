@@ -13,6 +13,9 @@
 
 		[JsonPropertyName("number"), BsonElement("ordinal")]
 		public double Number { get; set; }
+
+		[JsonPropertyName("volume"), BsonElement("volume")]
+		public double? Volume { get; set; }
 	}
 
 	public class MangaChapterPages : MangaChapter

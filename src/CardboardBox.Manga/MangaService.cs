@@ -130,6 +130,7 @@
 					Url = chapter.Url,
 					SourceId = chapter.Id,
 					Ordinal = chapter.Number,
+					Volume = chapter.Volume,
 					Language = language
 				};
 

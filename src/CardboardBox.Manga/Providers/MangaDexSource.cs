@@ -32,6 +32,7 @@
 				Url = $"{HomeUrl}/chapter/{chapter.Data.Id}",
 				Id = chapter.Data.Id ?? string.Empty,
 				Number = double.TryParse(chapter.Data.Attributes.Chapter, out var a) ? a : 0,
+				Volume = double.TryParse(chapter.Data.Attributes.Volume, out var b) ? b : null,
 				Pages = pages.Images
 			};
 		}
@@ -89,7 +90,8 @@
 							Title = t?.Attributes.Title ?? string.Empty,
 							Url = $"{HomeUrl}/chapter/{t?.Id}",
 							Id = t?.Id ?? string.Empty,
-							Number = double.TryParse(t?.Attributes.Chapter, out var a) ? a : 0
+							Number = double.TryParse(t?.Attributes.Chapter, out var a) ? a : 0,
+							Volume = double.TryParse(t?.Attributes.Volume, out var b) ? b : null
 						};
 					})
 					.OrderBy(t => t.Number);

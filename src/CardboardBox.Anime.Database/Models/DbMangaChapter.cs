@@ -17,6 +17,9 @@
 		[JsonPropertyName("ordinal")]
 		public double Ordinal { get; set; }
 
+		[JsonPropertyName("volume")]
+		public double? Volume { get; set; }
+
 		[JsonPropertyName("language")]
 		public string Language { get; set; } = "en";
 

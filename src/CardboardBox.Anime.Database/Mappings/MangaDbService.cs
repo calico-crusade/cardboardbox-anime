@@ -1,5 +1,9 @@
-﻿namespace CardboardBox.Anime.Database
+﻿using Dapper;
+
+namespace CardboardBox.Anime.Database
 {
+	using Core;
+	using Core.Models;
 	using Generation;
 
 	public interface IMangaDbService
@@ -23,6 +27,10 @@
 		Task<DbMangaProgress?> GetProgress(string platformId, long mangaId);
 
 		Task<MangaProgress[]> InProgress(string platformId);
+
+		Task<Filter[]> Filters();
+
+		Task<PaginatedResult<DbManga>> Search(MangaFilter filter);
 	}
 
 	public class MangaDbService : OrmMapExtended<DbManga>, IMangaDbService
@@ -169,6 +177,70 @@ WHERE
 	mp.deleted_at IS NULL AND
 	p.deleted_at IS NULL";
 			return _sql.Fetch<DbMangaProgress?>(QUERY, new { platformId, mangaId });
+		}
+
+		public async Task<Filter[]> Filters()
+		{
+			const string QUERY = @"SELECT
+    *
+FROM (
+    SELECT 
+        DISTINCT 
+        'tag' as key,
+        unnest(tags) as value
+    FROM manga) x 
+ORDER BY key, value";
+			var filters = await _sql.Get<DbFilter>(QUERY);
+			return filters
+				.GroupBy(t => t.Key, t => t.Value)
+				.Select(t => new Filter(t.Key, t.ToArray()))
+				.ToArray();
+		}
+
+		public async Task<PaginatedResult<DbManga>> Search(MangaFilter filter)
+		{
+			const string QUERY = @"SELECT m.*
+FROM manga m
+WHERE {0}
+ORDER BY m.title {1}
+LIMIT :size OFFSET :offset;
+SELECT COUNT(*) FROM manga m WHERE {0};";
+
+			var parts = new List<string>();
+			var pars = new DynamicParameters();
+			pars.Add("offset", (filter.Page - 1) * filter.Size);
+			pars.Add("size", filter.Size);
+
+			if (!string.IsNullOrEmpty(filter.Search))
+			{
+				parts.Add("m.fts @@ phraseto_tsquery('english', :search)");
+				pars.Add("search", filter.Search);
+			}
+
+			if (filter.Include != null && filter.Include.Length > 0)
+			{
+				parts.Add("m.tags @> :include");
+				pars.Add("include", filter.Include);
+			}
+
+			if (filter.Exclude != null && filter.Exclude.Length > 0)
+			{
+				parts.Add("NOT (m.tags && :exclude )");
+				pars.Add("exclude", filter.Exclude);
+			}
+
+			parts.Add("m.deleted_at IS NULL");
+			var where = string.Join(" AND ", parts);
+			var sort = filter.Ascending ? "ASC" : "DESC";
+
+			var query = string.Format(QUERY, where, sort);
+			using var con = _sql.CreateConnection();
+			using var rdr = await con.QueryMultipleAsync(query, pars);
+
+			var res = (await rdr.ReadAsync<DbManga>()).ToArray();
+			var total = await rdr.ReadSingleAsync<int>();
+			var pages = (long)Math.Ceiling((double)total / filter.Size);
+			return new PaginatedResult<DbManga>(pages, total, res);
 		}
 	}
 }

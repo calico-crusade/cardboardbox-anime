@@ -21,7 +21,7 @@
                         Ch. {{ chapter.ordinal}} - {{ chapter.title }}
                     </option>
                 </select>
-                <select [(ngModel)]="page" (ngModelChange)="pageChange(page - 1)">
+                <select [(ngModel)]="page" (ngModelChange)="pageChange(page - 1)" *ngIf="!settings.scroll.value">
                     <option *ngFor="let page of chapter?.pages; let i = index" [value]="i + 1">
                         #{{ i + 1 }}
                     </option>
@@ -65,14 +65,15 @@
                 <div class="page" [style.background-image]="'url('+ proxy(pageImage) +')'"></div>
                 <!--Cache the next page so it loads faster-->
                 <div class="next" [style.background-image]="'url(' + proxy(nextPageImage) + ')'"></div>
-                <button class="left" (click)="prevPage()" [disabled]="!hasPreviousPage"></button>
-                <button class="right" (click)="nextPage()" [disabled]="!hasNextPage"></button>
+                <button class="left" (click)="prevPage()" [disabled]="!hasPreviousPage" *ngIf="!settings.noDirectionalButton.value"></button>
+                <button class="right" (click)="nextPage()" [disabled]="!hasNextPage" [ngClass]="{ 'fill' : settings.noDirectionalButton.value }"></button>
             </ng-container>
         </main>
         <ng-container *ngIf="!settings.scroll.value && settings.progressBar.value">
             <div class="progress-bar pages" [class]="settings.progressBar.value">
-                <div class="progress" *ngFor="let p of chapter?.pages; let i = index"
-                    [ngClass]="{ 'active': i <= page - 1 }"></div>
+                <a class="progress" *ngFor="let p of chapter?.pages; let i = index"
+                   [ngClass]="{ 'active': i <= page - 1 }"
+                   (click)="pageChange(i)"></a>
             </div>
             <!-- <div class="progress-bar">
                 <div class="progress" *ngFor="let chap of chapters"
@@ -118,6 +119,12 @@
                 Invert Colors (It's cursed)
             </label>
         </section>
+        <section>
+            <label>
+                <input type="checkbox" [(ngModel)]="settings.noDirectionalButton.value" />
+                No Directional Buttons
+            </label>
+        </section>
         <section><label>How much to scroll on key event:</label></section>
         <section>
             <div class="select-list fill">
@@ -142,7 +149,7 @@
                 </button>
                 <select [(ngModel)]="chapterId" (ngModelChange)="pageChange(0)">
                     <option *ngFor="let chapter of chapters" [value]="chapter.id">
-                        {{ chapter.title }}
+                        Ch. {{ chapter.ordinal }} - {{ chapter.title }}
                     </option>
                 </select>
                 <button (click)="nextChap()" [disabled]="!hasNextChapter">

@@ -8,8 +8,8 @@ namespace CardboardBox.Anime.Bot
 {
 	public interface IAnimeApiService
 	{
-		Task<DbAnime[]> Random(FilterSearch search);
-		Task<PaginatedResult<DbAnime>> Search(FilterSearch search);
+		Task<DbAnime[]> Random(AnimeFilter search);
+		Task<PaginatedResult<DbAnime>> Search(AnimeFilter search);
 		Task<Filter[]?> Filters();
 	}
 
@@ -28,14 +28,14 @@ namespace CardboardBox.Anime.Bot
 			_api = api;
 		}
 
-		public async Task<DbAnime[]> Random(FilterSearch search)
+		public async Task<DbAnime[]> Random(AnimeFilter search)
 		{
-			return await _api.Post<DbAnime[], FilterSearch>($"{ApiUrl}/anime/random", search) ?? Array.Empty<DbAnime>();
+			return await _api.Post<DbAnime[], AnimeFilter>($"{ApiUrl}/anime/random", search) ?? Array.Empty<DbAnime>();
 		}
 
-		public async Task<PaginatedResult<DbAnime>> Search(FilterSearch search)
+		public async Task<PaginatedResult<DbAnime>> Search(AnimeFilter search)
 		{
-			return await _api.Post<PaginatedResult<DbAnime>, FilterSearch>($"{ApiUrl}/anime", search)
+			return await _api.Post<PaginatedResult<DbAnime>, AnimeFilter>($"{ApiUrl}/anime", search)
 				?? new PaginatedResult<DbAnime>(0, 0, Array.Empty<DbAnime>());
 		}
 

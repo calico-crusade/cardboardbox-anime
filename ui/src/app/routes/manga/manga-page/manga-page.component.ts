@@ -3,45 +3,9 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, lastValueFrom, of } from 'rxjs';
 import { PopupService, PopupComponent } from 'src/app/components';
-import { AuthService, LightNovelService, Manga, MangaChapter, MangaService, MangaWithChapters } from 'src/app/services';
+import { AuthService, LightNovelService, MangaChapter, MangaService, MangaWithChapters, StorageVar } from 'src/app/services';
 
 const DEFAULT_IMAGE = 'https://wallpaperaccess.com/full/1979093.jpg';
-
-class StorageVar<T> {
-    constructor(
-        public defValue: T,
-        public name: string
-    ) { }
-
-    get value(): T {
-        const val = localStorage.getItem(this.name);
-
-        return <any>this.convertType(val);
-    }
-
-    set value(item: T | undefined) {
-        if (!item) {
-            localStorage.removeItem(this.name);
-            return;
-        }
-
-        localStorage.setItem(this.name, <any>item);
-    }
-
-    convertType(value?: string | null) {
-        if (value === undefined || value === null) {
-            return this.defValue;
-        }
-        if (typeof this.defValue === 'number') {
-            return Number(value);
-        }
-        if (typeof this.defValue === 'boolean') {
-            return value === 'true';
-        }
-
-        return value;
-    }
-}
 
 @Component({
     templateUrl: './manga-page.component.html',
@@ -74,7 +38,8 @@ export class MangaPageComponent implements OnInit, OnDestroy {
         hideHeader: new StorageVar<boolean>(false, 'hide-header'),
         invert: new StorageVar<boolean>(false, 'invert-image'),
         scrollAmount: new StorageVar<number>(100, 'scroll-amount'),
-        progressBar: new StorageVar<string>('', 'progress-bar')
+        progressBar: new StorageVar<string>('', 'progress-bar'),
+        noDirectionalButton: new StorageVar<boolean>(false, 'no-directional-buttons')
     };
 
     get pageImage() {

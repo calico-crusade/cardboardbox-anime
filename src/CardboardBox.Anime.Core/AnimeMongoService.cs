@@ -23,7 +23,7 @@
 		Task Upsert(Anime anime);
 		Task Upsert(IEnumerable<Anime> anime);
 		Task<PaginatedResult<Anime>> All(int page = 1, int size = 20, bool asc = true);
-		Task<PaginatedResult<Anime>> All(FilterSearch search);
+		Task<PaginatedResult<Anime>> All(AnimeFilter search);
 
 		Task<Filter[]?> Filters();
 
@@ -75,7 +75,7 @@
 
 		public Task<Filter[]?> Filters() => _filterCache.Get();
 
-		public Task<PaginatedResult<Anime>> All(FilterSearch search)
+		public Task<PaginatedResult<Anime>> All(AnimeFilter search)
 		{
 			var (page, size, text, langs, types, plats, tags, videoTypes, asc, mature) = search;
 			var filters = new List<FilterDefinition<Anime>>();
@@ -98,8 +98,8 @@
 			if (videoTypes.Any())
 				filters.Add(Filter.In(t => t.Type, videoTypes));
 
-			if (mature != FilterSearch.MatureType.Both)
-				filters.Add(Filter.Eq(t => t.Metadata.Mature, FilterSearch.MatureType.Mature == mature));
+			if (mature != AnimeFilter.MatureType.Both)
+				filters.Add(Filter.Eq(t => t.Metadata.Mature, AnimeFilter.MatureType.Mature == mature));
 
 			var filter = filters.Any() ? Filter.And(filters.ToArray()) : Filter.Empty;
 			return _mongo.Paginate(page, size, t => t.Title, asc, filter);
