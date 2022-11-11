@@ -1,7 +1,4 @@
-﻿using CardboardBox.Anime.Database;
-using Discord;
-
-namespace CardboardBox.Anime.Bot
+﻿namespace CardboardBox.Anime.Bot
 {
 	public static class Extensions
 	{
@@ -37,6 +34,18 @@ namespace CardboardBox.Anime.Bot
 		public static Color PlatformColor(this DbAnime anime)
 		{
 			return anime.PlatformId.PlatformColor();
+		}
+
+		public static int IndexOf<T>(this IEnumerable<T> data, Func<T, bool> predicate)
+		{
+			int i = 0;
+			foreach(var item in data)
+			{
+				if (predicate(item)) return i;
+				i++;
+			}
+
+			return -1;
 		}
 
 		public static EmbedBuilder AddOptField(this EmbedBuilder bob, string title, string? data, bool inline = false)

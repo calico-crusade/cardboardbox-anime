@@ -139,6 +139,4 @@
 			}
 		}
 	}
-
-	public record class MangaWithChapters(DbManga Manga, DbMangaChapter[] Chapters);
 }

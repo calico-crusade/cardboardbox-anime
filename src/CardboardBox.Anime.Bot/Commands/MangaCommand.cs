@@ -1,57 +1,57 @@
-﻿using CardboardBox.Discord;
-using CardboardBox.Discord.Components;
-using CardboardBox.Manga;
-using Discord;
-using Discord.WebSocket;
-
-namespace CardboardBox.Anime.Bot.Commands
+﻿namespace CardboardBox.Anime.Bot.Commands
 {
 	public class MangaCommand
 	{
 		private readonly IComponentService _components;
-		private readonly IMangaService _manga;
+		private readonly IMangaApiService _api;
+		private readonly IMangaUtilityService _util;
 
 		public MangaCommand(
 			IComponentService components,
-			IMangaService manga)
+			IMangaApiService api,
+			IMangaUtilityService util)
 		{
 			_components = components;
-			_manga = manga;
+			_api = api;
+			_util = util;
 		}
 
-		[Command("manga", "Allows reading a managa on discord")]
-		public async Task Manga(SocketSlashCommand cmd, [Option("Manga URL", true)] string url)
+		[Command("manga", "Search for a manga available on https://cba.index-0.com/manga", LongRunning = true)]
+		public async Task Manga(SocketSlashCommand cmd,
+			[Option("Search Text", false)] string? search)
 		{
-			var (src, id) = _manga.DetermineSource(url);
-			if (src == null)
+			var filter = new MangaFilter
 			{
-				await cmd.Respond($"We don't support that site yet. We only support:\r\n{string.Join("\r\n", _manga.Sources().Select(t => t.HomeUrl))}", ephemeral: true);
+				Search = search
+			};
+			var data = await _api.Search(filter);
+
+			if (data == null || data.Count == 0 || data.Results.Length == 0)
+			{
+				await cmd.Modify("Couldn't find a manga that matches that search query!");
 				return;
 			}
 
-			var comp = await _components.Components<MangaComponent>(cmd);
-			await cmd.Respond("One sec while I load some stuff!", components: comp);
+			var manga = data.Results.First();
+			var msg = await cmd.ModifyOriginalResponseAsync(f =>
+			{
+				f.Embed = _util.GenerateEmbed(manga)
+					.Build();
+				f.Content = "Search Text: " + search;
+			});
+
+			var comp = data.Count == 1 ?
+				await _components.Components<MangaSearchReadComponent>(msg) :
+				await _components.Components<MangaSearchComponent>(msg);
+			await msg.ModifyAsync(f =>
+			{
+				f.Embed = _util.GenerateEmbed(manga)
+					.AddOptField("Total Search Results", $"{1}/{data.Count}")
+					.Build();
+				f.Content = "Search Text: " + search;
+				f.Components = comp;
+			});
 		}
 	}
 
-	public class MangaComponent : ComponentHandler
-	{
-		private readonly IComponentService _components;
-		private readonly IMangaService _manga;
-
-		public MangaComponent(
-			IComponentService components, 
-			IMangaService manga)
-		{
-			_components = components;
-			_manga = manga;
-		}
-
-		[Button("Next", "👉", ButtonStyle.Primary)]
-		public async Task Next()
-		{
-			var interaction = Message?.Interaction as IApplicationCommand;
-
-		}
-	}
 }

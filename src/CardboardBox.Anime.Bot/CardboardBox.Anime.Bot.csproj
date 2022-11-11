@@ -17,4 +17,12 @@
     <ProjectReference Include="..\CardboardBox.Manga\CardboardBox.Manga.csproj" />
   </ItemGroup>
 
+	<ItemGroup>
+		<Compile Include="./../global.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Commands\Manga\" />
+	</ItemGroup>
+
 </Project>

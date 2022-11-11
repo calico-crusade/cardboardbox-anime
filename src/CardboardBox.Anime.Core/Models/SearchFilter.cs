@@ -81,10 +81,10 @@
 	public abstract class SearchFilter
 	{
 		[JsonPropertyName("page")]
-		public int Page { get; set; }
+		public int Page { get; set; } = 1;
 
 		[JsonPropertyName("size")]
-		public int Size { get; set; }
+		public int Size { get; set; } = 100;
 
 		[JsonPropertyName("search")]
 		public string? Search { get; set; }

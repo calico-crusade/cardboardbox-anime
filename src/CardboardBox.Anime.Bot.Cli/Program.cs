@@ -3,7 +3,6 @@ using CardboardBox.Anime.Bot;
 using CardboardBox.Anime.Bot.Commands;
 using CardboardBox.Anime.Holybooks;
 using CardboardBox.Discord;
-using CardboardBox.Manga;
 using Microsoft.Extensions.DependencyInjection;
 
 var bot = DiscordBotBuilder.Start()
@@ -12,13 +11,16 @@ var bot = DiscordBotBuilder.Start()
 		c.AddTransient<IHolyBooksService, HolyBooksService>()
 		 .AddTransient<IAnimeApiService, AnimeApiService>()
 		 .AddTransient<IAiAnimeService, AiAnimeService>()
-		 .AddManga();
+		 .AddTransient<IMangaApiService, MangaApiService>()
+		 .AddTransient<IMangaUtilityService, MangaUtilityService>();
 	})
 	.WithSlashCommands(c =>
 	{
-		c.With<HolybookCommands>();
-		 //.With<MangaCommand>()
-		 //.WithComponent<MangaComponent>();
+		c.With<HolybookCommands>()
+		 .With<MangaCommand>()
+		 .WithComponent<MangaSearchComponent>()
+		 .WithComponent<MangaReadComponent>()
+		 .WithComponent<MangaSearchReadComponent>();
 	})
 	.Build();
 
