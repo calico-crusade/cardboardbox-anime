@@ -6,6 +6,7 @@ using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using Maturity = CardboardBox.Anime.Core.Models.AnimeFilter.MatureType;
+using DiscordClient = Discord.WebSocket.DiscordSocketClient;
 
 namespace CardboardBox.Anime.Bot.Commands
 {
@@ -14,12 +15,14 @@ namespace CardboardBox.Anime.Bot.Commands
 		public const long DEFAULT_STEPS = 20, DEFAULT_SIZE = 512;
 		public const double DEFAULT_CFG = 7, DEFAULT_DENOISE = 0.7;
 		public const string DEFAULT_SEED = "-1";
+		public const ulong CARDBOARD_BOX_SERVER = 1009959054073933885;
 
 		private readonly IApiService _api;
 		private readonly IHolyBooksService _holybooks;
 		private readonly IAnimeApiService _anime;
 		private readonly ILogger _logger;
 		private readonly IAiAnimeService _ai;
+		private readonly DiscordClient _client;
 		private readonly Random _rnd = new();
 
 		public HolybookCommands(
@@ -27,13 +30,15 @@ namespace CardboardBox.Anime.Bot.Commands
 			ILogger<HolybookCommands> logger,
 			IAnimeApiService anime,
 			IAiAnimeService ai,
-			IApiService api)
+			IApiService api,
+			DiscordClient client)
 		{
 			_holybooks = holybooks;
 			_logger = logger;
 			_anime = anime;
 			_ai = ai;
 			_api = api;
+			_client = client;
 		}
 
 		[Command("ping", "Checks to see if the bot is still alive.")]
@@ -317,6 +322,45 @@ namespace CardboardBox.Anime.Bot.Commands
 			await cmd.Modify(
 				"These are all of the embeddings I found, you can put them in prompts and it modifies what the image looks like:\r\n" +
 				string.Join(", ", files));
+		}
+
+		[GuildCommand("guilds", "Displays a list of discord servers the bot is in", CARDBOARD_BOX_SERVER)]
+		public async Task Servers(SocketSlashCommand cmd,
+			[Option("Name of the server to get the invite link for", false)] string? name)
+		{
+			try
+			{
+				if (string.IsNullOrEmpty(name))
+				{
+					var names = string.Join(", ", _client.Guilds.Select(t => t.Name));
+					await cmd.RespondAsync("Discord Guilds: " + names, ephemeral: true);
+					return;
+				}
+
+				var guild = _client.Guilds.FirstOrDefault(t => t.Name.ToLower() == name.ToLower());
+				if (guild == null)
+				{
+					await cmd.RespondAsync("Couldn't find a guild with that name", ephemeral: true);
+					return;
+				}
+
+				var link = await guild.GetVanityInviteAsync();
+				if (link == null)
+					link = (await guild.GetInvitesAsync())?.FirstOrDefault(t => !t.IsTemporary);
+
+				if (link == null)
+				{
+					await cmd.RespondAsync("Couldn't get an invite link for said server", ephemeral: true);
+					return;
+				}
+
+				await cmd.RespondAsync("Invite link: " + link.Url, ephemeral: true);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error occurred while procressing servers request");
+				await cmd.RespondAsync("Error occurred while processing your request", ephemeral: true);
+			}
 		}
 
 		private async Task<(bool, string)> GetImage(string url)
