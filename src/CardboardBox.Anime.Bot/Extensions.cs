@@ -54,5 +54,27 @@
 
 			return bob.AddField(title, data, inline);
 		}
+
+		public static Task UpdateDefered(this ComponentHandler handler, Action<MessageProperties> action)
+		{
+			return handler.Update(action);
+			//if (handler.Component == null) return Task.CompletedTask;
+
+			//return handler.Component.ModifyOriginalResponseAsync(action);
+		}
+
+		public static Task Remove(this ComponentHandler handler, Action<MessageProperties>? action = null)
+		{
+			action ??= (t) => { };
+
+			return handler.RemoveComponents(action);
+			//if (handler.Component == null) return Task.CompletedTask;
+
+			//return handler.Component.ModifyOriginalResponseAsync(t =>
+			//{
+			//	action?.Invoke(t);
+			//	t.Components = null;
+			//});
+		}
 	}
 }

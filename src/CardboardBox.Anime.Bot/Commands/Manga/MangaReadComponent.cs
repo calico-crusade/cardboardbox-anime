@@ -46,10 +46,11 @@ namespace CardboardBox.Anime.Bot.Commands
 		public async Task Do(bool next)
 		{
 			if (!await Validate()) return;
+			//await (Component?.DeferLoadingAsync() ?? Task.CompletedTask);
 
 			if (Message == null)
 			{
-				await RemoveComponents(t =>
+				await this.Remove(t =>
 				{
 					t.Content = "Uh... Message is null?";
 				});
@@ -61,7 +62,7 @@ namespace CardboardBox.Anime.Bot.Commands
 			var manga = await _api.GetManga(id);
 			if (manga == null || manga.Manga == null || manga.Chapters == null || manga.Chapters.Length == 0)
 			{
-				await RemoveComponents(t =>
+				await this.Remove(t =>
 				{
 					t.Content = "Uh... Ran into an issue with fetching manga states...";
 				});
@@ -73,7 +74,7 @@ namespace CardboardBox.Anime.Bot.Commands
 			var pages = await GetPages(manga.Manga, chapter);
 			if (pages.Length == 0)
 			{
-				await RemoveComponents(t =>
+				await this.Remove(t =>
 				{
 					t.Content = "Uh... Couldn't figure out the page you're on.";
 				});
@@ -83,11 +84,7 @@ namespace CardboardBox.Anime.Bot.Commands
 			var pi = page + (next ? 1 : -1);
 			if (pi < 0)
 			{
-				if (ci == 0)
-				{
-					await Acknowledge();
-					return;
-				}
+				if (ci == 0) return;
 
 				chapter = manga.Chapters[ci - 1];
 				pages = await GetPages(manga.Manga, chapter);
@@ -95,11 +92,7 @@ namespace CardboardBox.Anime.Bot.Commands
 			}
 			else if (pi >= pages.Length)
 			{
-				if (ci == manga.Chapters.Length - 1)
-				{
-					await Acknowledge();
-					return;
-				}
+				if (ci == manga.Chapters.Length - 1) return;
 
 				chapter = manga.Chapters[ci + 1];
 				pages = await GetPages(manga.Manga, chapter);
@@ -110,7 +103,7 @@ namespace CardboardBox.Anime.Bot.Commands
 
 			var msgText = _util.GenerateRead(manga, chapter, pages, pi, UserId);
 			var comp = await _comp.Components<MangaReadComponent>(Message);
-			await Update(t =>
+			await this.UpdateDefered(t =>
 			{
 				t.Content = msgText;
 				t.Components = comp;
@@ -121,10 +114,11 @@ namespace CardboardBox.Anime.Bot.Commands
 		public async Task DoChap(bool next)
 		{
 			if (!await Validate()) return;
+			//await (Component?.DeferLoadingAsync() ?? Task.CompletedTask);
 
 			if (Message == null)
 			{
-				await RemoveComponents(t =>
+				await this.Remove(t =>
 				{
 					t.Content = "Uh... Message is null?";
 				});
@@ -136,7 +130,7 @@ namespace CardboardBox.Anime.Bot.Commands
 			var manga = await _api.GetManga(id);
 			if (manga == null || manga.Manga == null || manga.Chapters == null || manga.Chapters.Length == 0)
 			{
-				await RemoveComponents(t =>
+				await this.Remove(t =>
 				{
 					t.Content = "Uh... Ran into an issue with fetching manga states...";
 				});
@@ -146,8 +140,7 @@ namespace CardboardBox.Anime.Bot.Commands
 			var ci = manga.Chapters.IndexOf(t => t.Id == chap);
 			var i = ci + (next ? 1 : -1);
 
-			if (i < 0) { await Acknowledge(); return; }
-			if (i >= manga.Chapters.Length) { await Acknowledge(); return; }
+			if (i < 0 || i >= manga.Chapters.Length) return;
 
 			var chapter = manga.Chapters[i];
 			var pages = await GetPages(manga.Manga, chapter);
@@ -157,7 +150,7 @@ namespace CardboardBox.Anime.Bot.Commands
 
 			var msgText = _util.GenerateRead(manga, chapter, pages, pi, UserId);
 			var comp = await _comp.Components<MangaReadComponent>(Message);
-			await Update(t =>
+			await this.UpdateDefered(t =>
 			{
 				t.Content = msgText;
 				t.Components = comp;

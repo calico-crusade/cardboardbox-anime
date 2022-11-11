@@ -19,6 +19,8 @@ namespace CardboardBox.Anime.Bot
 
 	public class MangaApiService : IMangaApiService
 	{
+		private static Dictionary<long, CacheItem<MangaWithChapters?>> _mangaCache = new();
+		private static Dictionary<string, CacheItem<string[]>> _pagesCache = new();
 		private readonly IConfiguration _config;
 		private readonly IApiService _api;
 
@@ -39,10 +41,27 @@ namespace CardboardBox.Anime.Bot
 
 		public Task<MangaWithChapters?> GetManga(long id)
 		{
+			if (!_mangaCache.ContainsKey(id))
+				_mangaCache.Add(id, new CacheItem<MangaWithChapters?>(async () => await GetRawManga(id)));
+
+			return _mangaCache[id].Get();
+		}
+
+		public Task<MangaWithChapters?> GetRawManga(long id)
+		{
 			return _api.Get<MangaWithChapters>($"{ApiUrl}/manga/{id}");
 		}
 
 		public async Task<string[]> GetPages(long mangaId, long chapterId)
+		{
+			var key = $"{mangaId}-{chapterId}";
+			if (!_pagesCache.ContainsKey(key))
+				_pagesCache.Add(key, new CacheItem<string[]>(async () => await GetRawPages(mangaId, chapterId)));
+
+			return (await _pagesCache[key].Get()) ?? Array.Empty<string>();
+		}
+
+		public async Task<string[]> GetRawPages(long mangaId, long chapterId)
 		{
 			return await _api.Get<string[]>($"{ApiUrl}/manga/{mangaId}/{chapterId}/pages") ?? Array.Empty<string>();
 		}

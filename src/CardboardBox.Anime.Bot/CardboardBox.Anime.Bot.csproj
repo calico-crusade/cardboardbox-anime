@@ -21,8 +21,4 @@
 		<Compile Include="./../global.cs" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="Commands\Manga\" />
-	</ItemGroup>
-
 </Project>
