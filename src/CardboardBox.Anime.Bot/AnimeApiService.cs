@@ -1,10 +1,4 @@
-﻿using CardboardBox.Anime.Core;
-using CardboardBox.Anime.Core.Models;
-using CardboardBox.Anime.Database;
-using CardboardBox.Http;
-using Microsoft.Extensions.Configuration;
-
-namespace CardboardBox.Anime.Bot
+﻿namespace CardboardBox.Anime.Bot
 {
 	public interface IAnimeApiService
 	{

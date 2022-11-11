@@ -1,10 +1,5 @@
 ﻿using CardboardBox.Anime.AI;
 using CardboardBox.Anime.Holybooks;
-using CardboardBox.Discord;
-using CardboardBox.Http;
-using Discord;
-using Discord.WebSocket;
-using Microsoft.Extensions.Logging;
 using Maturity = CardboardBox.Anime.Core.Models.AnimeFilter.MatureType;
 using DiscordClient = Discord.WebSocket.DiscordSocketClient;
 

@@ -166,7 +166,7 @@ namespace CardboardBox.Anime.Bot.Commands
 
 		[Button("Chap +", "⏭️")] public Task NextChapter() => DoChap(true);
 
-		[Button("Cancel", "⚔️", ButtonStyle.Danger)]
+		[Button("Close", "⚔️", ButtonStyle.Danger)]
 		public async Task Cancel()
 		{
 			if (!await Validate()) return;
