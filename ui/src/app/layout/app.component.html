@@ -29,6 +29,18 @@
                 </span>
                 <span class="title">Public Lists</span>
             </a>
+            <a *ngIf="loggedIn" routerLink="/anime/lists/mine" routerLinkActive="active" (click)="menuOpen = false">
+                <span class="icon">
+                    <cba-icon>list</cba-icon>
+                </span>
+                <span class="title">My Lists</span>
+            </a>
+            <a routerLink="/manga" routerLinkActive="active" (click)="menuOpen = false">
+                <span class="icon">
+                    <cba-icon>photo_album</cba-icon>
+                </span>
+                <span class="title">Manga</span>
+            </a>
             <ng-container *ngIf="loggedIn">
                 <a routerLink="/ai" routerLinkActive="active" (click)="menuOpen = false">
                     <span class="icon">
@@ -41,18 +53,6 @@
                         <cba-icon>menu_book</cba-icon>
                     </span>
                     <span class="title">Novels</span>
-                </a>
-                <a routerLink="/manga" routerLinkActive="active" (click)="menuOpen = false">
-                    <span class="icon">
-                        <cba-icon>photo_album</cba-icon>
-                    </span>
-                    <span class="title">Manga</span>
-                </a>
-                <a routerLink="/anime/lists/mine" routerLinkActive="active" (click)="menuOpen = false">
-                    <span class="icon">
-                        <cba-icon>list</cba-icon>
-                    </span>
-                    <span class="title">My Lists</span>
                 </a>
                 <a *ngIf="isAdmin" routerLink="/admin" routerLinkActive="active" (click)="menuOpen = false">
                     <span class="icon">

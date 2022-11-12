@@ -47,10 +47,18 @@ namespace CardboardBox.Anime.Api.Controllers
 
 			var roles = profile.Admin ? new[] { "Admin" } : Array.Empty<string>();
 			var token = _token.GenerateToken(res, roles);
+			
 
 			return Ok(new
 			{
-				user = res.User,
+				user = new
+				{
+					roles,
+					nickname = res.User.Nickname,
+					avatar = res.User.Avatar,
+					id = res.User.Id,
+					email = res.User.Email
+				},
 				token,
 				id
 			});
