@@ -39,7 +39,7 @@
 
             <div class="mobile-bump"></div>
 
-            <ng-container *ngIf="!settings.hideExtraButtons.value">
+            <ng-container *ngIf="!settings.hideExtraButtons.value && loggedIn">
                 <button (click)="bookmarkPage()">
                     <cba-icon [fill]="bookmarks.indexOf(page) !== -1">bookmark</cba-icon>
                 </button>

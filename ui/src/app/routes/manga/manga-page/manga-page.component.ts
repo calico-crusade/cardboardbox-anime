@@ -45,6 +45,8 @@ export class MangaPageComponent implements OnInit, OnDestroy {
         hideExtraButtons: new StorageVar<boolean>(false, 'hide-extra-buttons')
     };
 
+    get loggedIn() { return !!this.auth.currentUser; }
+
     get pageImage() {
         if (!this.manga || !this.chapter) return DEFAULT_IMAGE;
         return this.chapter.pages[this.page - 1] || DEFAULT_IMAGE;
@@ -149,6 +151,10 @@ export class MangaPageComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
+        this.auth
+            .onLogin
+            .subscribe(t => this.process(true));
+
         this.route
             .params
             .subscribe(t => {
@@ -164,11 +170,11 @@ export class MangaPageComponent implements OnInit, OnDestroy {
         this.auth.title = undefined;
     }
 
-    private async process() {
+    private async process(force: boolean = false) {
         this.loading = true;
         
         try {
-            this.data = await this.getMangaData();
+            this.data = await this.getMangaData(force);
         } catch (err) {
             this.loading = false;
             this.printState(err, 'Error loading manga', true);
@@ -207,6 +213,7 @@ export class MangaPageComponent implements OnInit, OnDestroy {
         this.page = p + 1;
         this.progressUpdate();
         this.loading = false;
+        this.printState(null, 'Manga State Updated');
     }
 
     progressUpdate() {
@@ -229,8 +236,8 @@ export class MangaPageComponent implements OnInit, OnDestroy {
             });
     }
 
-    async getMangaData() {
-        if (this.manga && this.manga.id === this.id) return this.data;
+    async getMangaData(force: boolean) {
+        if (this.manga && this.manga.id === this.id && !force) return this.data;
 
         return await lastValueFrom(this.api.manga(this.id));
     }
@@ -291,7 +298,8 @@ export class MangaPageComponent implements OnInit, OnDestroy {
             hasNextPage: this.hasNextPage,
             hasPreviousChapter: this.hasPreviousChapter,
             hasPreviousPage: this.hasPreviousPage,
-            chapterIndex: this.chapterIndex
+            chapterIndex: this.chapterIndex,
+            data: this.data
         });
     }
 
