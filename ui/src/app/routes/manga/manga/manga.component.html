@@ -64,7 +64,12 @@
             </div>
         </a>
     </main>
-    <button class="float-icon" (click)="update()">
-        <cba-icon>update</cba-icon>
-    </button>
+    <div class="float-icons">
+        <button class="float-icon" (click)="update()">
+            <cba-icon>update</cba-icon>
+        </button>
+        <button class="float-icon" (click)="toggleFavourite()" *ngIf="loggedIn">
+            <cba-icon [fill]="favourite">star</cba-icon>
+        </button>
+    </div>
 </cba-container>

@@ -7,6 +7,7 @@
 		public const string MEDIA_TYPE_JPEG = "image/jpeg";
 		public const string MEDIA_TYPE_NCX = "application/x-dtbncx+xml";
 		public const string MEDIA_TYPE_PNG = "image/png";
+		public const string MEDIA_TYPE_GIF = "image/gif";
 		public const string MEDIA_TYPE_WEBP = "image/webp";
 
 		public string Id { get; set; }

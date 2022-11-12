@@ -83,6 +83,8 @@ namespace CardboardBox.Anime.Database
 				 .ForEntity<DbManga>()
 				 .ForEntity<DbMangaChapter>()
 				 .ForEntity<DbMangaProgress>()
+				 .ForEntity<DbMangaBookmark>()
+				 .ForEntity<DbMangaFavourite>()
 				 .ForEntity<MangaStats>();
 			});
 

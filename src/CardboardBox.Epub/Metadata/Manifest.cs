@@ -31,6 +31,7 @@
 				"jpeg" => ManifestItem.MEDIA_TYPE_JPEG,
 				"png" => ManifestItem.MEDIA_TYPE_PNG,
 				"webp" => ManifestItem.MEDIA_TYPE_WEBP,
+				"gif" => ManifestItem.MEDIA_TYPE_GIF,
 				_ => throw new NotSupportedException($"\"{ext}\" is not a valid image extension!")
 			};
 

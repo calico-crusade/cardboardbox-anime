@@ -14,13 +14,16 @@ namespace CardboardBox.Anime.Api.Controllers
 	{
 		private readonly IMangaService _manga;
 		private readonly IDbService _db;
+		private readonly IMangaEpubService _epub;
 
 		public MangaController(
 			IMangaService manga,
-			IDbService db)
+			IDbService db,
+			IMangaEpubService epub)
 		{
 			_manga = manga;
 			_db = db;
+			_epub = epub;
 		}
 
 		[HttpGet, Route("manga")]
@@ -53,7 +56,7 @@ namespace CardboardBox.Anime.Api.Controllers
 		[ProducesDefaultResponseType(typeof(MangaWithChapters)), ProducesResponseType(404)]
 		public async Task<IActionResult> Get([FromRoute] long id)
 		{
-			var manga = await _manga.Manga(id);
+			var manga = await _manga.Manga(id, this.UserFromIdentity()?.Id);
 			if (manga == null) return NotFound();
 			return Ok(manga);
 		}
@@ -73,9 +76,9 @@ namespace CardboardBox.Anime.Api.Controllers
 
 		[HttpGet, Route("manga/{id}/{chapterId}/pages")]
 		[ProducesDefaultResponseType(typeof(string[])), ProducesResponseType(404)]
-		public async Task<IActionResult> GetPages([FromRoute] long chapterId)
+		public async Task<IActionResult> GetPages([FromRoute] long chapterId, [FromQuery] bool refetch = false)
 		{
-			var manga = await _manga.MangaPages(chapterId);
+			var manga = await _manga.MangaPages(chapterId, refetch);
 			if (manga == null || manga.Length == 0) return NotFound();
 
 			return Ok(manga);
@@ -86,7 +89,7 @@ namespace CardboardBox.Anime.Api.Controllers
 		[ProducesResponseType(404), ProducesResponseType(400)]
 		public async Task<IActionResult> Load([FromQuery] string url, [FromQuery] bool force = false)
 		{
-			var manga = await _manga.Manga(url, force);
+			var manga = await _manga.Manga(url, this.UserFromIdentity()?.Id, force);
 			if (manga == null) return NotFound();
 
 			return Ok(manga);
@@ -118,6 +121,28 @@ namespace CardboardBox.Anime.Api.Controllers
 		{
 			var data = await _db.Manga.Search(filter);
 			return Ok(data);
+		}
+
+		[HttpGet, Route("manga/{id}/download")]
+		public async Task<IActionResult> Download([FromRoute] long id)
+		{
+			var data = await _epub.Generate(id);
+			if (data == null) return NotFound();
+
+			return File(data.Stream, data.Mimetype, data.Name);
+		}
+
+		[HttpGet, Route("manga/{id}/favourite"), Authorize]
+		[ProducesDefaultResponseType(typeof(bool))]
+		public async Task<IActionResult> ToggleFavourite(long id)
+		{
+			var uid = this.UserFromIdentity()?.Id;
+			if (string.IsNullOrEmpty(uid)) return Unauthorized();
+
+			var res = await _db.Manga.Favourite(uid, id);
+			if (res == null) return Unauthorized();
+
+			return Ok(res);
 		}
 	}
 }

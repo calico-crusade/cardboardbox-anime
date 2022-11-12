@@ -9,9 +9,9 @@
 		(IMangaSource? source, string? id) DetermineSource(string url);
 
 		Task<PaginatedResult<DbManga>> Manga(int page, int size);
-		Task<MangaWithChapters?> Manga(string url, bool forceUpdate = false);
-		Task<MangaWithChapters?> Manga(long id);
-		Task<string[]> MangaPages(long chapterId);
+		Task<MangaWithChapters?> Manga(string url, string? platformId, bool forceUpdate = false);
+		Task<MangaWithChapters?> Manga(long id, string? platformId);
+		Task<string[]> MangaPages(long chapterId, bool refetch);
 	}
 
 	public class MangaService : IMangaService
@@ -45,11 +45,11 @@
 			return (null, null);
 		}
 
-		public async Task<string[]> MangaPages(long chapterId)
+		public async Task<string[]> MangaPages(long chapterId, bool refetch)
 		{
 			var chapter = await _db.GetChapter(chapterId);
 			if (chapter == null) return Array.Empty<string>();
-			if (chapter.Pages.Length > 0) return chapter.Pages;
+			if (chapter.Pages.Length > 0 && !refetch) return chapter.Pages;
 
 			var manga = await _db.Get(chapter.MangaId);
 			if (manga == null) return Array.Empty<string>();
@@ -60,9 +60,8 @@
 			var pages = await src.ChapterPages(manga.SourceId, chapter.SourceId);
 			if (pages == null) return Array.Empty<string>();
 
+			await _db.SetPages(chapter.Id, pages.Pages);
 			chapter.Pages = pages.Pages;
-			await _db.Upsert(chapter);
-
 			return chapter.Pages;
 		}
 
@@ -71,35 +70,39 @@
 			return _db.Paginate(page, size);
 		}
 
-		public async Task<MangaWithChapters?> Manga(string url, bool forceUpdate = false)
+		public async Task<MangaWithChapters?> Manga(string url, string? platformId, bool forceUpdate = false)
 		{
 			var (src, id) = DetermineSource(url);
 			if (src == null || id == null) return null;
 
 			var manga = await _db.Get(id);
-			if (manga == null || forceUpdate) return await LoadManga(src, id);
+			if (manga == null || forceUpdate) return await LoadManga(src, id, platformId);
 
 			var chapters = await _db.Chapters(manga.Id);
-			return new(manga, chapters);
+			var bookmarks = await _db.Bookmarks(manga.Id, platformId);
+			var favourite = await _db.IsFavourite(platformId, manga.Id);
+			return new(manga, chapters, bookmarks, favourite);
 		}
 
-		public async Task<MangaWithChapters?> Manga(long id)
+		public async Task<MangaWithChapters?> Manga(long id, string? platformId)
 		{
 			var manga = await _db.Get(id);
 			if (manga == null) return null;
 
 			var chapters = await _db.Chapters(manga.Id);
-			return new(manga, chapters);
+			var bookmarks = await _db.Bookmarks(manga.Id, platformId);
+			var favourite = await _db.IsFavourite(platformId, manga.Id);
+			return new(manga, chapters, bookmarks, favourite);
 		}
 
-		public async Task<MangaWithChapters?> LoadManga(IMangaSource src, string id)
+		public async Task<MangaWithChapters?> LoadManga(IMangaSource src, string id, string? platformId)
 		{
 			var m = await src.Manga(id);
 			if (m == null) return null;
 
 			var manga = await ConvertManga(m);
 			await ConvertChapters(m, manga.Id).ToArrayAsync();
-			return await Manga(manga.Id);
+			return await Manga(manga.Id, platformId);
 		}
 
 		public async Task<DbManga> ConvertManga(Manga manga)

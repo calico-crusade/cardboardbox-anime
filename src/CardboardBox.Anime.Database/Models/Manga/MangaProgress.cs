@@ -3,7 +3,7 @@
 	public class MangaProgress
 	{
 		public DbManga Manga { get; set; }
-		public DbMangaProgress Progress { get; set; }
+		public DbMangaProgress? Progress { get; set; }
 		public DbMangaChapter Chapter { get; set; }
 		public MangaStats Stats { get; set; }
 
@@ -14,7 +14,7 @@
 			MangaStats stats)
 		{
 			Manga = manga;
-			Progress = progress;
+			Progress = progress?.Id == 0 ? null : progress;
 			Chapter = chapter;
 			Stats = stats;
 		}
@@ -36,5 +36,11 @@
 
 		[JsonPropertyName("pageProgress")]
 		public double PageProgress { get; set; }
+
+		[JsonPropertyName("favourite")]
+		public bool Favourite { get; set; } = false;
+
+		[JsonPropertyName("bookmarks")]
+		public int[] Bookmarks { get; set; } = Array.Empty<int>();
 	}
 }

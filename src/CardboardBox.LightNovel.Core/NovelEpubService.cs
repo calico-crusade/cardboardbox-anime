@@ -222,7 +222,6 @@ namespace CardboardBox.LightNovel.Core
 
 		public Task<(Stream stream, string filename, string type)> GetDataFromFile(string path)
 		{
-			var fileInfo = new FileInfo(path);
 			var name = Path.GetFileName(path);
 			var ext = Path.GetExtension(path).ToLower().TrimStart('.');
 			var type = ext switch

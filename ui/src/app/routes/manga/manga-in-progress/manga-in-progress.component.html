@@ -4,15 +4,20 @@
             <button (click)="state = 'all'" [ngClass]="{ 'active': state == 'all' }">All</button>
             <button (click)="state = 'inp'" [ngClass]="{ 'active': state == 'inp' }">In Progress</button>
             <button (click)="state = 'com'" [ngClass]="{ 'active': state == 'com' }">Completed</button>
+            <button (click)="state = 'fvr'" [ngClass]="{ 'active': state == 'fvr' }">Favourites</button>
         </div>
     </header>
     <main>
         <a class="manga" *ngFor="let manga of records" [routerLink]="['/manga', manga.manga.id ]" @messageState>
             <div class="image" [style.background-image]="'url(' + proxy(manga.manga.cover) + ')'"></div>
             <div class="details masked-overflow">
-                <div class="title">{{ manga.manga.title }}</div>
+                <div class="title">
+                    <span>{{ manga.manga.title }}</span>
+                    <div class="fav" *ngIf="manga.stats.favourite">
+                        <cba-icon [fill]="true">star</cba-icon>
+                    </div></div>
                 <div class="source">
-                    <b>Progress: </b>&nbsp; {{ manga.stats.chapterProgress }}% - {{ manga.progress.updatedAt | date:'yyyy-MM-dd' }}
+                    <b>Progress: </b>&nbsp; {{ manga.stats.chapterProgress }}% - {{ manga.progress?.updatedAt | date:'yyyy-MM-dd' }}
                 </div>
                 <div class="source">
                     <b>Source:</b>&nbsp;{{ manga.manga.provider }}

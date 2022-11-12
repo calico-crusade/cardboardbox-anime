@@ -38,15 +38,17 @@ export class MangaInProgressComponent implements OnInit, OnDestroy {
 
     data: MangaProgressData[] = [];
 
-    state: ('all' | 'inp' | 'com') = 'all';
+    state: ('all' | 'inp' | 'com' | 'fvr') = 'all';
 
     inProgress: MangaProgressData[] = [];
     completed: MangaProgressData[] = [];
+    favourites: MangaProgressData[] = [];
 
     get records() {
         switch (this.state) {
             case 'inp': return this.inProgress;
             case 'com': return this.completed;
+            case 'fvr': return this.favourites;
             default: return this.data;
         }
     }
@@ -90,8 +92,13 @@ export class MangaInProgressComponent implements OnInit, OnDestroy {
 
                 this.inProgress = [];
                 this.completed = [];
+                this.favourites = [];
 
                 for (let item of this.data) {
+                    if (item.stats.favourite) {
+                        this.favourites.push(item);
+                    }
+
                     if (item.stats.chapterProgress >= 100) {
                         this.completed.push(item);
                         continue;

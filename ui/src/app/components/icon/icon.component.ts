@@ -8,4 +8,5 @@ import { Component, Input } from '@angular/core';
 export class IconComponent { 
     @Input('font-size') size?: string; 
     @Input('unsize') unsize: boolean = false;
+    @Input('fill') fill: boolean = false;
 }

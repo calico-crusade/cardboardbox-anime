@@ -30,9 +30,23 @@ export interface MangaChapter {
     pages: string[];
 }
 
+export interface MangaBookmark {
+    id: number;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt?: Date;
+
+    profileId: number;
+    mangaId: number;
+    mangaChapterId: number;
+    pages: number[];
+}
+
 export interface MangaWithChapters {
     manga: Manga;
     chapters: MangaChapter[];
+    bookmarks: MangaBookmark[];
+    favourite: boolean;
 }
 
 export interface PaginatedManga {
@@ -61,7 +75,7 @@ export interface MangaProgress {
 
 export interface MangaProgressData {
     manga: Manga;
-    progress: MangaProgress;
+    progress?: MangaProgress;
     chapter: MangaChapter;
     stats: {
         maxChapterNum: number;
@@ -69,6 +83,8 @@ export interface MangaProgressData {
         pageCount: number;
         chapterProgress: number;
         pageProgress: number;
+        favourite: boolean;
+        bookmarks: number[];
     }
 }
 

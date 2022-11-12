@@ -28,6 +28,14 @@ export class MangaComponent implements OnInit, OnDestroy {
         return this.chapters.find(t => t.id === this.progress?.mangaChapterId);
     }
 
+    get favourite() {
+        return this.data?.favourite ?? false;
+    }
+
+    get loggedIn() {
+        return !!this.auth.currentUser;
+    }
+
     constructor(
         private route: ActivatedRoute,
         private api: MangaService,
@@ -109,6 +117,16 @@ export class MangaComponent implements OnInit, OnDestroy {
                 this.data = t;
                 this.loading = false;
             })
+    }
+
+    toggleFavourite() {
+        if (!this.loggedIn) return;
+        this.api
+            .favourite(this.id)
+            .subscribe(t => {
+                if (!this.data) return;
+                this.data.favourite = t;
+            });
     }
 
     proxy(url?: string) {

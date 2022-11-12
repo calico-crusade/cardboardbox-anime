@@ -52,4 +52,8 @@ export class MangaService extends ConfigObject {
     search(filter: MangaFilter) {
         return this.http.post<PaginatedManga>(`${this.apiUrl}/manga/search`, filter);
     }
+
+    favourite(id: number) {
+        return this.http.get<boolean>(`${this.apiUrl}/manga/${id}/favourite`);
+    }
 }

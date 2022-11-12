@@ -10,18 +10,34 @@
 		[JsonPropertyName("chapters")]
 		public DbMangaChapter[] Chapters { get; set; } = Array.Empty<DbMangaChapter>();
 
+		[JsonPropertyName("bookmarks")]
+		public DbMangaBookmark[] Bookmarks { get; set; } = Array.Empty<DbMangaBookmark>();
+
+		[JsonPropertyName("favourite")]
+		public bool Favourite { get; set; }
+
 		public MangaWithChapters() { }
 
-		public MangaWithChapters(DbManga manga, DbMangaChapter[] chapters)
+		public MangaWithChapters(DbManga manga, DbMangaChapter[] chapters, DbMangaBookmark[] bookmarks, bool favourite)
 		{
 			Manga = manga;
 			Chapters = chapters;
+			Bookmarks = bookmarks;
+			Favourite = favourite;
 		}
 
 		public void Deconstruct(out DbManga manga, out DbMangaChapter[] chapters)
 		{
 			manga = Manga;
 			chapters = Chapters;
+		}
+
+		public void Deconstruct(out DbManga manga, out DbMangaChapter[] chapters, out DbMangaBookmark[] bookmarks, out bool favourite)
+		{
+			manga = Manga;
+			chapters = Chapters;
+			bookmarks = Bookmarks;
+			favourite = Favourite;
 		}
 	}
 }

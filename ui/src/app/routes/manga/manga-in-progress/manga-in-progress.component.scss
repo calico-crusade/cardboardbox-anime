@@ -139,8 +139,14 @@ main {
             overflow: hidden;
     
             .title {
+                display: flex;
+                flex-flow: row;
                 font-size: 1.5em;
                 font-weight: 700;
+                span {
+                    flex: 1;
+                    margin: auto 0;
+                }
             }
     
             .tags {
