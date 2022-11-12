@@ -14,7 +14,7 @@ header {
     position: relative;
 
     button, a {
-        margin: auto 5px;
+        margin: auto 0;
         padding: 5px;
         outline: none;
         border: none;
@@ -27,6 +27,14 @@ header {
         &:disabled {
             color: var(--text-color-muted);
             cursor: not-allowed;
+        }
+
+        &:first-child {
+            margin-left: 5px;
+        }
+
+        &:last-child {
+            margin-right: 5px;
         }
     }
 }
@@ -306,6 +314,11 @@ h2 {
             }
         }
     }
+}
+
+.bookmarks {
+    display: flex;
+    flex-flow: column;
 }
 
 @media only screen and (max-width: 720px) {

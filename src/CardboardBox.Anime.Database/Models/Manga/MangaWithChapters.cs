@@ -1,7 +1,5 @@
-﻿namespace CardboardBox.Manga
+﻿namespace CardboardBox.Anime.Database
 {
-	using Anime.Database;
-
 	public class MangaWithChapters
 	{
 		[JsonPropertyName("manga")]
@@ -14,9 +12,15 @@
 		public DbMangaBookmark[] Bookmarks { get; set; } = Array.Empty<DbMangaBookmark>();
 
 		[JsonPropertyName("favourite")]
-		public bool Favourite { get; set; }
+		public bool Favourite { get; set; } = false;
 
 		public MangaWithChapters() { }
+
+		public MangaWithChapters(DbManga manga, DbMangaChapter[] chapters)
+		{
+			Manga = manga;
+			Chapters = chapters;
+		}
 
 		public MangaWithChapters(DbManga manga, DbMangaChapter[] chapters, DbMangaBookmark[] bookmarks, bool favourite)
 		{

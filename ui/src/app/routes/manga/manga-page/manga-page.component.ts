@@ -17,6 +17,7 @@ export class MangaPageComponent implements OnInit, OnDestroy {
 
     @ViewChild('popup') popup!: PopupComponent;
     @ViewChild('scrollcont') el!: ElementRef<any>;
+    @ViewChild('bookmarkspopup') bookmarkPop!: PopupComponent;
 
     loading: boolean = false;
     error?: string;
@@ -28,6 +29,7 @@ export class MangaPageComponent implements OnInit, OnDestroy {
     data?: MangaWithChapters;
 
     chapter?: MangaChapter;
+    bookmarks: number[] = [];
     get manga() { return this.data?.manga; }
     get chapters() { return this.data?.chapters || []; }
 
@@ -39,7 +41,8 @@ export class MangaPageComponent implements OnInit, OnDestroy {
         invert: new StorageVar<boolean>(false, 'invert-image'),
         scrollAmount: new StorageVar<number>(100, 'scroll-amount'),
         progressBar: new StorageVar<string>('', 'progress-bar'),
-        noDirectionalButton: new StorageVar<boolean>(false, 'no-directional-buttons')
+        noDirectionalButton: new StorageVar<boolean>(false, 'no-directional-buttons'),
+        hideExtraButtons: new StorageVar<boolean>(false, 'hide-extra-buttons')
     };
 
     get pageImage() {
@@ -192,6 +195,7 @@ export class MangaPageComponent implements OnInit, OnDestroy {
             }
         }
 
+        this.bookmarks = this.data?.bookmarks.find(t => t.mangaChapterId === this.chapterId)?.pages || [];
         this.title.setTitle('CBA | ' + this.manga.title);
         this.auth.title = this.manga?.title;
 
@@ -322,5 +326,51 @@ export class MangaPageComponent implements OnInit, OnDestroy {
         else
             this.pageChange(-1);
 
+    }
+
+    bookmarkPage() {
+        if (!this.chapter) return;
+
+        const i = this.bookmarks.indexOf(this.page);
+        if (i === -1) {
+            this.bookmarks.push(this.page);
+        } else {
+            this.bookmarks.splice(i);
+        }
+
+        this.api
+            .bookmark(this.chapter, this.bookmarks)
+            .subscribe(t => {
+                console.log('Page bookmarked');
+                
+                if (!this.data) return;
+
+                if (!this.data.bookmarks)
+                    this.data.bookmarks = [];
+
+                const bk = this.data.bookmarks.findIndex(t => t.mangaChapterId === this.chapterId);
+                if (bk === -1) {
+                    this.data.bookmarks.push({
+                        id: -1,
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                        profileId: -1,
+                        mangaId: this.id,
+                        mangaChapterId: this.chapterId,
+                        pages: [this.page]
+                    });
+                    return;
+                }
+
+                this.data.bookmarks[bk].pages = this.bookmarks;
+            });
+    }
+
+    showBookmarks() {
+        this.pop.show(this.bookmarkPop);
+    }
+
+    getChapter(id: number) {
+        return this.chapters.find(t => t.id === id);
     }
 }

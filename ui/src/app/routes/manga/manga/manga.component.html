@@ -71,5 +71,21 @@
         <button class="float-icon" (click)="toggleFavourite()" *ngIf="loggedIn">
             <cba-icon [fill]="favourite">star</cba-icon>
         </button>
+        <button class="float-icon" (click)="showBookmarks()" *ngIf="hasBookmarks">
+            <cba-icon>bookmarks</cba-icon>
+        </button>
     </div>
 </cba-container>
+
+<cba-popup #bookmarkspopup>
+    <h2>Bookmarks</h2>
+    <div class="bookmarks">
+        <ng-container *ngFor="let bk of data?.bookmarks">
+            <a *ngFor="let page of bk.pages" [routerLink]="['/manga', id, bk.mangaChapterId, page]">
+                Ch. {{ getChapter(bk.mangaChapterId)?.ordinal }} - 
+                {{ getChapter(bk.mangaChapterId)?.title }} 
+                P. {{ page }}
+            </a>
+        </ng-container>
+    </div>
+</cba-popup>

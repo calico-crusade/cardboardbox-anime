@@ -3,7 +3,7 @@ import { Injectable } from "@angular/core";
 import { Observable } from "rxjs";
 import { Filters } from "../anime/anime.model";
 import { ConfigObject } from "../config.base";
-import { Manga, MangaFilter, MangaProgress, MangaProgressData, MangaProgressUpdate, MangaWithChapters, PaginatedManga } from "./manga.model";
+import { Manga, MangaChapter, MangaFilter, MangaProgress, MangaProgressData, MangaProgressUpdate, MangaWithChapters, PaginatedManga } from "./manga.model";
 
 @Injectable({
     providedIn: 'root'
@@ -55,5 +55,9 @@ export class MangaService extends ConfigObject {
 
     favourite(id: number) {
         return this.http.get<boolean>(`${this.apiUrl}/manga/${id}/favourite`);
+    }
+
+    bookmark(chapter: MangaChapter, pages: number[]) {
+        return this.http.post(`${this.apiUrl}/manga/${chapter.mangaId}/${chapter.id}/bookmark`, pages);
     }
 }

@@ -39,6 +39,10 @@ namespace CardboardBox.Anime.Database
 		Task<DbMangaBookmark[]> Bookmarks(long id, string? platformId);
 
 		Task<bool> IsFavourite(string? platformId, long mangaId);
+
+		Task<MangaWithChapters?> GetManga(long id, string? platformId);
+
+		Task Bookmark(long id, long chapterId, int[] pages, string platformId);
 	}
 
 	public class MangaDbService : OrmMapExtended<DbManga>, IMangaDbService
@@ -52,12 +56,21 @@ namespace CardboardBox.Anime.Database
 		private string? _upsertMangaQuery;
 		private string? _upsertMangaChapterQuery;
 		private string? _upsertMangaProgressQuery;
+		private string? _upsertMangaBookmarkQuery;
 		private string? _getChapterQuery;
 		private string? _getMangaQuery;
 
 		public override string TableName => TABLE_NAME_MANGA;
 
-		public MangaDbService(IDbQueryBuilderService query, ISqlService sql) : base(query, sql) { }
+		private readonly IProfileDbService _prof;
+
+		public MangaDbService(
+			IDbQueryBuilderService query, 
+			ISqlService sql, 
+			IProfileDbService prof) : base(query, sql) 
+		{ 
+			_prof = prof;
+		}
 
 		public Task<long> Upsert(DbManga manga)
 		{
@@ -301,6 +314,41 @@ WHERE p.platform_id = :platformId AND mb.manga_id = :id";
 			return (await _sql.Get<DbMangaBookmark>(QUERY, new { id, platformId })) ?? Array.Empty<DbMangaBookmark>();
 		}
 
+		public async Task Bookmark(long id, long chapterId, int[] pages, string platformId)
+		{
+			const string DELETE_QUERY = @"
+DELETE FROM manga_bookmarks 
+WHERE id IN (
+	SELECT
+		mb.id
+	FROM manga_bookmarks mb 
+	JOIN profiles p ON p.id = mb.profile_id
+	WHERE p.platform_id = :platformId AND
+		  mb.manga_id = :id AND
+		  mb.manga_chapter_id = :chapterId
+)";
+			_upsertMangaBookmarkQuery ??= _query.Upsert<DbMangaBookmark>(TABLE_NAME_MANGA_BOOKMARKS,
+				v => v.With(t => t.ProfileId).With(t => t.MangaId).With(t => t.MangaChapterId),
+				v => v.With(t => t.Id),
+				v => v.With(t => t.Id).With(t => t.CreatedAt));
+			if (pages.Length == 0)
+			{
+				await _sql.Execute(DELETE_QUERY, new { id, chapterId, pages, platformId });
+				return;
+			}
+
+			var pid = await _prof.Fetch(platformId);
+			if (pid == null) return;
+
+			await _sql.Execute(_upsertMangaBookmarkQuery, new DbMangaBookmark
+			{
+				ProfileId = pid.Id,
+				MangaId = id,
+				MangaChapterId = chapterId,
+				Pages = pages
+			});
+		}
+
 		public async Task<bool> IsFavourite(string? platformId, long mangaId)
 		{
 			if (string.IsNullOrEmpty(platformId)) return false;
@@ -318,6 +366,39 @@ WHERE p.platform_id = :platformId AND mf.manga_id = :mangaId";
 			var res = await _sql.ExecuteScalar<int>(QUERY, new { platformId, mangaId });
 			if (res == -1) return null;
 			return res == 1;
+		}
+
+		public async Task<MangaWithChapters?> GetManga(long id, string? platformId)
+		{
+			const string QUERY = "SELECT * FROM manga WHERE id = :id;" +
+				"SELECT * FROM manga_chapter WHERE manga_id = :id ORDER BY ordinal;";
+			const string TARGETED_QUERY = @"SELECT mb.* 
+FROM manga_bookmarks mb
+JOIN profiles p ON p.id = mb.profile_id
+WHERE p.platform_id = :platformId AND mb.manga_id = :id
+ORDER BY mb.manga_chapter_id;
+
+SELECT 1 
+FROM manga_favourites mf 
+JOIN profiles p ON p.id = mf.profile_id
+WHERE p.platform_id = :platformId AND mf.manga_id = :id";
+
+			var query = string.IsNullOrEmpty(platformId) ? QUERY : QUERY + TARGETED_QUERY;
+
+			using var con = _sql.CreateConnection();
+			using var rdr = await con.QueryMultipleAsync(query, new { id, platformId });
+
+			var manga = await rdr.ReadFirstOrDefaultAsync<DbManga>();
+			if (manga == null) return null;
+
+			var chapters = await rdr.ReadAsync<DbMangaChapter>();
+			if (string.IsNullOrEmpty(platformId))
+				return new(manga, chapters.ToArray());
+
+			var bookmarks = await rdr.ReadAsync<DbMangaBookmark>();
+			var favourite = (await rdr.ReadSingleAsync<bool?>()) ?? false;
+
+			return new(manga, chapters.ToArray(), bookmarks.ToArray(), favourite);
 		}
 	}
 }

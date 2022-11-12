@@ -1,14 +1,17 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { catchError, of } from 'rxjs';
-import { AuthService, LightNovelService, Manga, MangaProgress, MangaService, MangaWithChapters } from 'src/app/services';
+import { PopupComponent, PopupService } from 'src/app/components';
+import { AuthService, LightNovelService, MangaProgress, MangaService, MangaWithChapters } from 'src/app/services';
 
 @Component({
     templateUrl: './manga.component.html',
     styleUrls: ['./manga.component.scss']
 })
 export class MangaComponent implements OnInit, OnDestroy {
+
+    @ViewChild('bookmarkspopup') bookmarkPop!: PopupComponent;
 
     loading: boolean = false;
     error?: string;
@@ -36,12 +39,17 @@ export class MangaComponent implements OnInit, OnDestroy {
         return !!this.auth.currentUser;
     }
 
+    get hasBookmarks() {
+        return (this.data?.bookmarks.length || 0) > 0;
+    }
+
     constructor(
         private route: ActivatedRoute,
         private api: MangaService,
         private lnApi: LightNovelService,
         private title: Title,
-        private auth: AuthService
+        private auth: AuthService,
+        private pop: PopupService
     ) { }
 
     ngOnInit(): void {
@@ -132,5 +140,13 @@ export class MangaComponent implements OnInit, OnDestroy {
     proxy(url?: string) {
         if (!url) return '';
         return this.lnApi.corsFallback(url, 'manga-covers');
+    }
+
+    showBookmarks() {
+        this.pop.show(this.bookmarkPop);
+    }
+
+    getChapter(id: number) {
+        return this.chapters.find(t => t.id === id);
     }
 }

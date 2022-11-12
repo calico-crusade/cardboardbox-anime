@@ -10,10 +10,16 @@
             <button (click)="pageChange(0)">
                 <cba-icon>restart_alt</cba-icon>
             </button>
+            <ng-container *ngIf="!settings.hideExtraButtons.value">
+                <a [routerLink]="['/manga', id ]">
+                    <cba-icon>menu_book</cba-icon>
+                </a>
+    
+                <a [href]="proxy(pageImage)" target="_blank">
+                    <cba-icon>download</cba-icon>
+                </a>
+            </ng-container>
 
-            <a [routerLink]="['/manga', id ]">
-                <cba-icon>menu_book</cba-icon>
-            </a>
     
             <div class="select-list">
                 <select [(ngModel)]="chapterId" (ngModelChange)="pageChange(0)">
@@ -33,14 +39,18 @@
 
             <div class="mobile-bump"></div>
 
-            <a [href]="proxy(pageImage)" target="_blank">
-                <cba-icon>download</cba-icon>
-            </a>
-
+            <ng-container *ngIf="!settings.hideExtraButtons.value">
+                <button (click)="bookmarkPage()">
+                    <cba-icon [fill]="bookmarks.indexOf(page) !== -1">bookmark</cba-icon>
+                </button>
+    
+                <button (click)="showBookmarks()">
+                    <cba-icon>bookmarks</cba-icon>
+                </button>
+            </ng-container>
             <button (click)="settingsShow()">
                 <cba-icon>settings</cba-icon>
             </button>
-    
             <button (click)="nextPage()" [disabled]="!hasNextPage" *ngIf="!settings.scroll.value">
                 <cba-icon>navigate_next</cba-icon>
             </button>
@@ -125,6 +135,12 @@
                 No Directional Buttons
             </label>
         </section>
+        <section>
+            <label>
+                <input type="checkbox" [(ngModel)]="settings.hideExtraButtons.value" />
+                Hide Extra Buttons in Header
+            </label>
+        </section>
         <section><label>How much to scroll on key event:</label></section>
         <section>
             <div class="select-list fill">
@@ -176,5 +192,18 @@
                 </button>
             </div>
         </section>
+    </div>
+</cba-popup>
+
+<cba-popup #bookmarkspopup>
+    <h2>Bookmarks</h2>
+    <div class="bookmarks">
+        <ng-container *ngFor="let bk of data?.bookmarks">
+            <a *ngFor="let page of bk.pages" [routerLink]="['/manga', id, bk.mangaChapterId, page]">
+                Ch. {{ getChapter(bk.mangaChapterId)?.ordinal }} - 
+                {{ getChapter(bk.mangaChapterId)?.title }} 
+                P. {{ page }}
+            </a>
+        </ng-container>
     </div>
 </cba-popup>

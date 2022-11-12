@@ -84,6 +84,16 @@ namespace CardboardBox.Anime.Api.Controllers
 			return Ok(manga);
 		}
 
+		[HttpPost, Route("manga/{id}/{chapterId}/bookmark"), Authorize]
+		public async Task<IActionResult> Bookmark([FromRoute] long id, [FromRoute] long chapterId, [FromBody] int[] pages)
+		{
+			var pid = this.UserFromIdentity()?.Id;
+			if (string.IsNullOrEmpty(pid)) return Unauthorized();
+
+			await _db.Manga.Bookmark(id, chapterId, pages, pid);
+			return Ok();
+		}
+
 		[HttpGet, Route("manga/load")]
 		[ProducesDefaultResponseType(typeof(MangaWithChapters))]
 		[ProducesResponseType(404), ProducesResponseType(400)]

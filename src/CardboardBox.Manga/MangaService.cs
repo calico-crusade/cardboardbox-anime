@@ -78,21 +78,12 @@
 			var manga = await _db.Get(id);
 			if (manga == null || forceUpdate) return await LoadManga(src, id, platformId);
 
-			var chapters = await _db.Chapters(manga.Id);
-			var bookmarks = await _db.Bookmarks(manga.Id, platformId);
-			var favourite = await _db.IsFavourite(platformId, manga.Id);
-			return new(manga, chapters, bookmarks, favourite);
+			return await Manga(manga.Id, platformId);
 		}
 
-		public async Task<MangaWithChapters?> Manga(long id, string? platformId)
+		public Task<MangaWithChapters?> Manga(long id, string? platformId)
 		{
-			var manga = await _db.Get(id);
-			if (manga == null) return null;
-
-			var chapters = await _db.Chapters(manga.Id);
-			var bookmarks = await _db.Bookmarks(manga.Id, platformId);
-			var favourite = await _db.IsFavourite(platformId, manga.Id);
-			return new(manga, chapters, bookmarks, favourite);
+			return _db.GetManga(id, platformId);
 		}
 
 		public async Task<MangaWithChapters?> LoadManga(IMangaSource src, string id, string? platformId)
