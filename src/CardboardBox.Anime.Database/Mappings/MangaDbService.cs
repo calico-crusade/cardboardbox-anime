@@ -396,7 +396,7 @@ WHERE p.platform_id = :platformId AND mf.manga_id = :id";
 				return new(manga, chapters.ToArray());
 
 			var bookmarks = await rdr.ReadAsync<DbMangaBookmark>();
-			var favourite = (await rdr.ReadSingleAsync<bool?>()) ?? false;
+			var favourite = (await rdr.ReadSingleOrDefaultAsync<bool?>()) ?? false;
 
 			return new(manga, chapters.ToArray(), bookmarks.ToArray(), favourite);
 		}
