@@ -64,6 +64,9 @@
 		[JsonPropertyName("exclude")]
 		public string[] Exclude { get; set; } = Array.Empty<string>();
 
+		[JsonPropertyName("sort")]
+		public int? Sort { get; set; }
+
 		public void Deconstruct(
 			out int page, out int size, out string? search,
 			out string[] exclude, out string[] include,

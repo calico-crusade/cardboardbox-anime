@@ -12,11 +12,22 @@ h1 {
     width: 80vh; height: 80vh;
     transform-origin: center;
     transform: translate(-50%, -50%);
-    animation: dospin 10s linear infinite;
+
+    &.animate {
+        animation: dospin 10s linear infinite;
+    }
 
     &.delay-1 { animation-delay: 2.5s; }
     &.delay-2 { animation-delay: 5s; }
     &.delay-3 { animation-delay: 7.5s; }
+}
+
+.options-float {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    flex-flow: column;
 }
 
 @keyframes dospin {
@@ -25,7 +36,7 @@ h1 {
     }
 
     50% {
-        transform: translate(-50%, -50%) rotate3d(1, 1, 1, 180deg);
+        transform: translate(-50%, -50%) rotate3d(0.5, 0.5, 0.5, 180deg);
     }
 
     100% {

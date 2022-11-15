@@ -74,6 +74,19 @@ namespace CardboardBox.Anime.Database
 			_prof = prof;
 		}
 
+		public MangaSortField[] SortFields()
+		{
+			return new[]
+			{
+				new MangaSortField("Title", 0, "m.title"),
+				new("Provider", 1, "m.provider"),
+				new("Latest Chapter", 2, "mc.latest_chapter"),
+				new("Description", 3, "m.description"),
+				new("Updated", 4, "m.updated_at"),
+				new("Created", 5, "m.created_at")
+			};
+		}
+
 		public Task<long> Upsert(DbManga manga)
 		{
 			_upsertMangaQuery ??= _query.Upsert<DbManga, long>(TableName,
@@ -257,17 +270,28 @@ ORDER BY key, value";
 			return filters
 				.GroupBy(t => t.Key, t => t.Value)
 				.Select(t => new Filter(t.Key, t.ToArray()))
+				.Append(new Filter("sorts", SortFields().Select(t => t.Name).ToArray()))
 				.ToArray();
 		}
 
 		public async Task<PaginatedResult<DbManga>> Search(MangaFilter filter)
 		{
-			const string QUERY = @"SELECT m.*
+			const string QUERY = @"WITH manga_chapter_filters AS (
+	SELECT
+		manga_id,
+		MAX(created_at) as latest_chapter,
+		MIN(created_at) as earliest_chapter
+	FROM manga_chapter
+	GROUP BY manga_id
+) SELECT m.*
 FROM manga m
+JOIN manga_chapter_filters mc ON mc.manga_id = m.id
 WHERE {0}
-ORDER BY m.title {1}
+ORDER BY {2} {1}
 LIMIT :size OFFSET :offset;
 SELECT COUNT(*) FROM manga m WHERE {0};";
+
+			var sortField = SortFields().FirstOrDefault(t => t.Id == (filter.Sort ?? 0))?.SqlName ?? "m.title";
 
 			var parts = new List<string>();
 			var pars = new DynamicParameters();
@@ -296,7 +320,7 @@ SELECT COUNT(*) FROM manga m WHERE {0};";
 			var where = string.Join(" AND ", parts);
 			var sort = filter.Ascending ? "ASC" : "DESC";
 
-			var query = string.Format(QUERY, where, sort);
+			var query = string.Format(QUERY, where, sort, sortField);
 			using var con = _sql.CreateConnection();
 			using var rdr = await con.QueryMultipleAsync(query, pars);
 
@@ -409,4 +433,6 @@ WHERE p.platform_id = :platformId AND mf.manga_id = :id";
 			return _sql.Get<DbManga>(QUERY, new { count }); 
 		}
 	}
+
+	public record class MangaSortField(string Name, int Id, string SqlName);
 }

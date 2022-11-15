@@ -95,4 +95,5 @@ export interface MangaFilter {
     asc: boolean;
     include: string[];
     exclude: string[];
+    sort?: number;
 }

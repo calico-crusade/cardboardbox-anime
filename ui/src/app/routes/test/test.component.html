@@ -1,8 +1,7 @@
 <cba-container>
-
-    <div class="circle-rotater">
+    <div class="circle-rotater" *ngFor="let r of rotaters; let x = index" [style.animation-delay]="getDelay(x)" [ngClass]="{ 'animate': animate }">
         <magic-circle width="100%" height="100%">
-            <mc-ring text="">
+            <mc-ring [text]="spell">
                 <mc-square *ngFor="let x of squares; let i = index" [index]="i" [total]="squares.length">
                     <mc-ring *ngIf="i == 0" text="">
                         <mc-square *ngFor="let x of squares; let i = index" [index]="i" [total]="squares.length">
@@ -17,56 +16,13 @@
         </magic-circle>
     </div>
 
-    <div class="circle-rotater delay-1">
-        <magic-circle width="100%" height="100%">
-            <mc-ring text="">
-                <mc-square *ngFor="let x of squares; let i = index" [index]="i" [total]="squares.length">
-                    <mc-ring *ngIf="i == 0" text="">
-                        <mc-square *ngFor="let x of squares; let i = index" [index]="i" [total]="squares.length">
-                            <mc-ring *ngIf="i == 0" text="">
-                                <mc-square *ngFor="let x of squares; let i = index" [index]="i" [total]="squares.length">
-                                </mc-square>
-                            </mc-ring>
-                        </mc-square>
-                    </mc-ring>
-                </mc-square>
-            </mc-ring>
-        </magic-circle>
-    </div>
-
-    
-    <div class="circle-rotater delay-2">
-        <magic-circle width="100%" height="100%">
-            <mc-ring text="">
-                <mc-square *ngFor="let x of squares; let i = index" [index]="i" [total]="squares.length">
-                    <mc-ring *ngIf="i == 0" text="">
-                        <mc-square *ngFor="let x of squares; let i = index" [index]="i" [total]="squares.length">
-                            <mc-ring *ngIf="i == 0" text="">
-                                <mc-square *ngFor="let x of squares; let i = index" [index]="i" [total]="squares.length">
-                                </mc-square>
-                            </mc-ring>
-                        </mc-square>
-                    </mc-ring>
-                </mc-square>
-            </mc-ring>
-        </magic-circle>
-    </div>
-
-    
-    <div class="circle-rotater delay-3">
-        <magic-circle width="100%" height="100%">
-            <mc-ring text="">
-                <mc-square *ngFor="let x of squares; let i = index" [index]="i" [total]="squares.length">
-                    <mc-ring *ngIf="i == 0" text="">
-                        <mc-square *ngFor="let x of squares; let i = index" [index]="i" [total]="squares.length">
-                            <mc-ring *ngIf="i == 0" text="">
-                                <mc-square *ngFor="let x of squares; let i = index" [index]="i" [total]="squares.length">
-                                </mc-square>
-                            </mc-ring>
-                        </mc-square>
-                    </mc-ring>
-                </mc-square>
-            </mc-ring>
-        </magic-circle>
+    <div class="options-float">
+        <label>Number of Magic Circles:</label>
+        <input type="number" [(ngModel)]="rotateCount" />
+        <label>Number of Squares:</label>
+        <input type="number" [(ngModel)]="squareCount" />
+        <label>The text in the ring:</label>
+        <input type="text" [(ngModel)]="spell" />
+        <button (click)="animate = !animate">Animate: {{ animate ? 'true' : 'false' }}</button>
     </div>
 </cba-container>

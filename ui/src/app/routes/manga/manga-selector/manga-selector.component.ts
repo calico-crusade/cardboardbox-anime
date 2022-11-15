@@ -30,6 +30,7 @@ export class MangaSelectorComponent implements OnInit, OnDestroy {
     @ViewChild('searchpopup') searchPop!: PopupComponent;
 
     allTags: string[] = [];
+    allSorts: string[] = [];
 
     search: MangaFilter = {
         page: 1,
@@ -37,7 +38,8 @@ export class MangaSelectorComponent implements OnInit, OnDestroy {
         search: '',
         include: [],
         exclude: [],
-        asc: true
+        asc: true,
+        sort: 0
     };
 
     constructor(
@@ -58,6 +60,7 @@ export class MangaSelectorComponent implements OnInit, OnDestroy {
         this.api.filters().subscribe(t => {
             this.filters = t;
             this.allTags = this.filters.find(t => t.key === 'tag')?.values || [];
+            this.allSorts = this.filters.find(t => t.key === 'sorts')?.values || [];
         });
         this.title.setTitle('CardboardBox | Manga');
         this.route.queryParams.subscribe(t => {
@@ -65,6 +68,7 @@ export class MangaSelectorComponent implements OnInit, OnDestroy {
             if (t['desc']) this.search.asc = false;
             if (t['include']) this.search.include = t['include'].split(',');
             if (t['exclude']) this.search.exclude = t['exclude'].split(',');
+            if (t['sort']) this.search.sort = +t['sort'];
             this.process();
         });
     }
@@ -80,6 +84,7 @@ export class MangaSelectorComponent implements OnInit, OnDestroy {
         if (this.search.include.length > 0) pars['include'] = this.search.include.join(',');
         if (this.search.exclude.length > 0) pars['exclude'] = this.search.exclude.join(',');
         if (!this.search.asc) pars['desc'] = true;
+        if (this.search.sort) pars['sort'] = this.search.sort;
 
         this.search.page = 1;
         this.router.navigate(['/manga'], { queryParams: pars });

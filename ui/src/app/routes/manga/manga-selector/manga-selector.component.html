@@ -68,10 +68,16 @@
                 <span>{{ tag }}</span>
             </button>
         </section>
+        <section><label>Sort By:</label></section>
+        <section class="tags">
+            <button *ngFor="let sort of allSorts; let i = index" [ngClass]="{'include': search.sort === i}" (click)="search.sort = i">{{ sort }}</button>
+        </section>
+
         <section class="toggles">
-            <span>Sort By:</span>
-            <button [ngClass]="{'active': search.asc}" (click)="search.asc = true">Ascending</button>
-            <button [ngClass]="{'active': !search.asc}" (click)="search.asc = false">Descending</button>
+            <div class="btn-group">
+                <button [ngClass]="{'active': search.asc}" (click)="search.asc = true">Ascending</button>
+                <button [ngClass]="{'active': !search.asc}" (click)="search.asc = false">Descending</button>
+            </div>
         </section>
         <section>
             <button class="btn" (click)="doSearch()">
