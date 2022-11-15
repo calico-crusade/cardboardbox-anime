@@ -16,6 +16,7 @@
         display: flex;
         flex-flow: row;
         border-bottom: 2px solid var(--color-vrv);
+        transition: margin-top 250ms;
         a, button {
             margin: auto 5px;
             cursor: pointer;
@@ -52,6 +53,10 @@
 
         :first-child {
             margin-right: auto;
+        }
+
+        &.hide {
+            margin-top: -52px;
         }
     }
     main {

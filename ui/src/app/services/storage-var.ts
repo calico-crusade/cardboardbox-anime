@@ -1,7 +1,8 @@
 export class StorageVar<T> {
     constructor(
         public defValue: T,
-        public name: string
+        public name: string,
+        public fun?: (val?: T) => void
     ) { }
 
     get value(): T {
@@ -13,10 +14,12 @@ export class StorageVar<T> {
     set value(item: T | undefined) {
         if (!item) {
             localStorage.removeItem(this.name);
+            if (this.fun) this.fun(item);
             return;
         }
 
         localStorage.setItem(this.name, <any>item);
+        if (this.fun) this.fun(item);
     }
 
     convertType(value?: string | null) {

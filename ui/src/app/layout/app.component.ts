@@ -13,6 +13,7 @@ export class AppComponent implements OnInit {
     user?: AuthUser;
     menuOpen = false;
     title?: string;
+    showTitle: boolean = true;
 
     get isAdmin() {
         if (!this.user) return false;
@@ -37,6 +38,7 @@ export class AppComponent implements OnInit {
                 }
             });
 
+        this.auth.onHeaderChange.subscribe(t => this.showTitle = t);
         this.auth.onLogin.subscribe(t => this.user = t);
         this.auth.onTitleChange.subscribe(t => this.title = t);
         await this.auth.bump();

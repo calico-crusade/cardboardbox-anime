@@ -37,12 +37,12 @@ export class MangaPageComponent implements OnInit, OnDestroy {
         invertControls: new StorageVar<boolean>(false, 'invert-controls'),
         fitToWidth: new StorageVar<boolean>(false, 'fit-to-width'),
         scroll: new StorageVar<boolean>(false, 'scroll-chapter'),
-        hideHeader: new StorageVar<boolean>(false, 'hide-header'),
+        hideHeader: new StorageVar<boolean>(false, 'hide-header', (v) => this.auth.showHeader = !v),
         invert: new StorageVar<boolean>(false, 'invert-image'),
         scrollAmount: new StorageVar<number>(100, 'scroll-amount'),
         progressBar: new StorageVar<string>('', 'progress-bar'),
         noDirectionalButton: new StorageVar<boolean>(false, 'no-directional-buttons'),
-        hideExtraButtons: new StorageVar<boolean>(false, 'hide-extra-buttons')
+        hideExtraButtons: new StorageVar<boolean>(false, 'hide-extra-buttons'),
     };
 
     get loggedIn() { return !!this.auth.currentUser; }
@@ -163,11 +163,14 @@ export class MangaPageComponent implements OnInit, OnDestroy {
                 this.page = +t['page'];
                 this.process();
             });
+
+        this.auth.showHeader = !this.settings.hideHeader.value;
     }
 
     ngOnDestroy(): void {
         this.title.setTitle(this.api.defaultTitle);
         this.auth.title = undefined;
+        this.auth.showHeader = true;
     }
 
     private async process(force: boolean = false) {

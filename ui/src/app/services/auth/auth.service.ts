@@ -16,6 +16,7 @@ export class AuthService extends ConfigObject {
     private _loginSub = new BehaviorSubject<AuthUser | undefined>(undefined);
     private _titleSub = new BehaviorSubject<string | undefined>(undefined);
     private _loggingInSub = new BehaviorSubject<boolean>(false);
+    private _headerSub = new BehaviorSubject<boolean>(true);
 
     get onLogin() { return this._loginSub.asObservable(); }
     get currentUser() { return this._loginSub.getValue(); }
@@ -29,6 +30,10 @@ export class AuthService extends ConfigObject {
     get isLoggingIn() { return this._loggingInSub.value; }
     set isLoggingIn(val: boolean) { this._loggingInSub.next(val); }
     get onIsLoggingIn() { return this._loggingInSub.asObservable(); }
+
+    get onHeaderChange() { return this._headerSub.asObservable(); }
+    get showHeader() { return this._headerSub.getValue(); }
+    set showHeader(value: boolean) { this._headerSub.next(value); }
 
     get lastRoute(){ return localStorage.getItem(STORAGE_REROUTE); }
     set lastRoute(value: string | null) {

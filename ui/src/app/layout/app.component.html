@@ -1,5 +1,5 @@
 <div class="app">
-    <header>
+    <header [ngClass]="{ 'hide': !showTitle }">
         <a class="logo" href="/" *ngIf="!title">
             Cardboard<b>Box</b> - Anime
         </a>
