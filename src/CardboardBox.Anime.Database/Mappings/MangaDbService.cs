@@ -165,21 +165,21 @@ ORDER BY ordinal";
     SELECT DISTINCT m.*, p.id as profile_id FROM manga m
     JOIN manga_bookmarks mb on m.id = mb.manga_id
     JOIN profiles p on mb.profile_id = p.id
-    WHERE p.platform_id = '1fc77928-23ea-466e-a7ba-ed9d17e457f7'
+    WHERE p.platform_id = :platformId
 
     UNION
 
     SELECT DISTINCT m.*, p.id as profile_id FROM manga m
     JOIN manga_favourites mb on m.id = mb.manga_id
     JOIN profiles p on mb.profile_id = p.id
-    WHERE p.platform_id = '1fc77928-23ea-466e-a7ba-ed9d17e457f7'
+    WHERE p.platform_id = :platformId
 
     UNION
 
     SELECT DISTINCT m.*, p.id as profile_id FROM manga m
     JOIN manga_progress mb on m.id = mb.manga_id
     JOIN profiles p on mb.profile_id = p.id
-    WHERE p.platform_id = '1fc77928-23ea-466e-a7ba-ed9d17e457f7'
+    WHERE p.platform_id = :platformId
 ), chapter_numbers AS (
     SELECT
         c.*,
