@@ -45,6 +45,7 @@ main {
     flex-flow: row;
     overflow: hidden;
     position: relative;
+    cursor: pointer;
 
     .page {
         flex: 1;
@@ -108,7 +109,7 @@ main {
         }
     }
 
-    &.fit {
+    &.fit-width {
         overflow-y: auto;
         overflow-x: hidden;
         
@@ -116,6 +117,23 @@ main {
             display: block;
             width: 100%;
             max-width: unset;
+            max-height: unset;
+        }
+
+        .page {
+            display: none;
+        }
+    }
+
+    &.natural-img-size {
+        overflow-y: auto;
+        overflow-x: hidden;
+
+        img {
+            display: block;
+            width: unset;
+            height: unset;
+            max-width: 100%;
             max-height: unset;
         }
 

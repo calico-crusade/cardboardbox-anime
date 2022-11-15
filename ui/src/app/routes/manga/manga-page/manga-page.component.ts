@@ -14,6 +14,7 @@ const DEFAULT_IMAGE = 'https://wallpaperaccess.com/full/1979093.jpg';
 export class MangaPageComponent implements OnInit, OnDestroy {
 
     progressBarOptions = ['', 'bottom', 'left', 'right' ];
+    sizeOptions = ['Fit to Height', 'Fit to Width', 'Natural Image Size'];
 
     @ViewChild('popup') popup!: PopupComponent;
     @ViewChild('scrollcont') el!: ElementRef<any>;
@@ -35,7 +36,7 @@ export class MangaPageComponent implements OnInit, OnDestroy {
 
     settings = {
         invertControls: new StorageVar<boolean>(false, 'invert-controls'),
-        fitToWidth: new StorageVar<boolean>(false, 'fit-to-width'),
+        imgSize: new StorageVar<string>('Fit to Height', 'img-size'),
         scroll: new StorageVar<boolean>(false, 'scroll-chapter'),
         hideHeader: new StorageVar<boolean>(false, 'hide-header', (v) => this.auth.showHeader = !v),
         invert: new StorageVar<boolean>(false, 'invert-image'),
@@ -105,6 +106,9 @@ export class MangaPageComponent implements OnInit, OnDestroy {
         return false;
     }
 
+    get fitToWidth() { return this.settings.imgSize.value === 'Fit to Width'; }
+    get fitToHeight() { return this.settings.imgSize.value === 'Fit to Height'; }
+
     constructor(
         private route: ActivatedRoute,
         private router: Router,
@@ -113,7 +117,9 @@ export class MangaPageComponent implements OnInit, OnDestroy {
         private lnApi: LightNovelService,
         private title: Title,
         private auth: AuthService
-    ) { }
+    ) {
+        this.auth.showHeader = !this.settings.hideHeader.value;
+    }
 
     proxy(url?: string) {
         if (!url) return '';
@@ -122,7 +128,7 @@ export class MangaPageComponent implements OnInit, OnDestroy {
 
     @HostListener('window:keydown', ['$event'])
     keyDownEvent(event: KeyboardEvent) {
-        if (!this.settings.fitToWidth.value && 
+        if (!this.fitToWidth && 
             !this.settings.scroll.value) return;
 
         const pos = this.el.nativeElement.scrollTop;
@@ -143,7 +149,7 @@ export class MangaPageComponent implements OnInit, OnDestroy {
 
         if (event.key == 'ArrowRight') { this.nextPage(); return; }
 
-        if (this.settings.fitToWidth.value || 
+        if (this.fitToWidth || 
             this.settings.scroll.value) return;
 
         if (event.key == 'ArrowUp') { this.prevPage(); return; }
@@ -164,7 +170,6 @@ export class MangaPageComponent implements OnInit, OnDestroy {
                 this.process();
             });
 
-        this.auth.showHeader = !this.settings.hideHeader.value;
     }
 
     ngOnDestroy(): void {
@@ -383,5 +388,25 @@ export class MangaPageComponent implements OnInit, OnDestroy {
 
     getChapter(id: number) {
         return this.chapters.find(t => t.id === id);
+    }
+
+    imageClick(event: MouseEvent) {
+        if (this.settings.scroll.value) return;
+
+        const el = <HTMLElement>event.target;
+        const rect = el.getBoundingClientRect();
+
+        const isRight = this.settings.noDirectionalButton.value ||
+            event.clientX >= (rect.x + rect.width) / 2;
+
+        if (isRight && this.hasNextPage) {
+            this.nextPage();
+            return;
+        }
+
+        if (!isRight && this.hasPreviousPage) {
+            this.prevPage();
+            return;
+        }
     }
 }

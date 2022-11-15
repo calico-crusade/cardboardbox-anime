@@ -58,7 +58,8 @@
                 <cba-icon>skip_next</cba-icon>
             </button>
         </header>
-        <main [ngClass]="{ 'fit': settings.fitToWidth.value, 'scroll': settings.scroll.value, 'invert': settings.invert.value }" #scrollcont>
+        <main [ngClass]="{ 'fit-width': fitToWidth, 'natural-img-size': !fitToHeight && !fitToWidth , 'scroll': settings.scroll.value, 'invert': settings.invert.value }" 
+              #scrollcont (click)="imageClick($event)">
             <ng-container *ngIf="settings.scroll.value">
                 <button class="scroll-button" (click)="prevChap()" [disabled]="!hasPreviousChapter">
                     <cba-icon>skip_previous</cba-icon>
@@ -73,10 +74,7 @@
             <ng-container *ngIf="!settings.scroll.value">
                 <img [proxy]="pageImage" />
                 <div class="page" [style.background-image]="'url('+ proxy(pageImage) +')'"></div>
-                <!--Cache the next page so it loads faster-->
                 <div class="next" [style.background-image]="'url(' + proxy(nextPageImage) + ')'"></div>
-                <button class="left" (click)="prevPage()" [disabled]="!hasPreviousPage" *ngIf="!settings.noDirectionalButton.value"></button>
-                <button class="right" (click)="nextPage()" [disabled]="!hasNextPage" [ngClass]="{ 'fill' : settings.noDirectionalButton.value }"></button>
             </ng-container>
         </main>
         <ng-container *ngIf="!settings.scroll.value && settings.progressBar.value">
@@ -85,10 +83,6 @@
                    [ngClass]="{ 'active': i <= page - 1 }"
                    (click)="pageChange(i)"></a>
             </div>
-            <!-- <div class="progress-bar">
-                <div class="progress" *ngFor="let chap of chapters"
-                    [ngClass]="{ 'active': chap.ordinal <= (chapter?.ordinal || 0)}"></div>
-            </div> -->
         </ng-container>
         <button class="float-icon" (click)="settingsShow()" *ngIf="settings.hideHeader.value">
             <cba-icon>settings</cba-icon>
@@ -103,12 +97,6 @@
             <label>
                 <input type="checkbox" [(ngModel)]="settings.invertControls.value" />
                 Invert Controls
-            </label>
-        </section>
-        <section>
-            <label>
-                <input type="checkbox" [(ngModel)]="settings.fitToWidth.value" />
-                Fit to Width
             </label>
         </section>
         <section>
@@ -145,6 +133,17 @@
         <section>
             <div class="select-list fill">
                 <input type="number" class="fill" step="10" [(ngModel)]="settings.scrollAmount.value" />
+            </div>
+        </section>
+        
+        <section><label>Image Size:</label></section>
+        <section>
+            <div class="select-list fill">
+                <select [(ngModel)]="settings.imgSize.value" class="fill">
+                    <option *ngFor="let opt of sizeOptions" [value]="opt">
+                        {{ opt }}
+                    </option>
+                </select>
             </div>
         </section>
         <section><label>Page Progress Bar:</label></section>
