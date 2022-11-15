@@ -43,6 +43,8 @@ namespace CardboardBox.Anime.Database
 		Task<MangaWithChapters?> GetManga(long id, string? platformId);
 
 		Task Bookmark(long id, long chapterId, int[] pages, string platformId);
+
+		Task<DbManga[]> FirstUpdated(int count);
 	}
 
 	public class MangaDbService : OrmMapExtended<DbManga>, IMangaDbService
@@ -399,6 +401,12 @@ WHERE p.platform_id = :platformId AND mf.manga_id = :id";
 			var favourite = (await rdr.ReadSingleOrDefaultAsync<bool?>()) ?? false;
 
 			return new(manga, chapters.ToArray(), bookmarks.ToArray(), favourite);
+		}
+
+		public Task<DbManga[]> FirstUpdated(int count)
+		{
+			const string QUERY = "SELECT * FROM manga ORDER BY updated_at ASC LIMIT :count";
+			return _sql.Get<DbManga>(QUERY, new { count }); 
 		}
 	}
 }

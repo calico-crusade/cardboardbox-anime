@@ -12,6 +12,7 @@
 		Task<MangaWithChapters?> Manga(string url, string? platformId, bool forceUpdate = false);
 		Task<MangaWithChapters?> Manga(long id, string? platformId);
 		Task<string[]> MangaPages(long chapterId, bool refetch);
+		Task<MangaWorked[]> Updated(int count, string? platformId);
 	}
 
 	public class MangaService : IMangaService
@@ -131,6 +132,37 @@
 				chap.Id = await _db.Upsert(chap);
 				yield return chap;
 			}
+		}
+
+		public async Task<MangaWorked[]> Updated(int count, string? platformId)
+		{
+			var needs = await _db.FirstUpdated(count);
+
+			return await needs.Select(async t =>
+			{
+				var (src, id) = DetermineSource(t.Url);
+				if (src == null || id == null) return new MangaWorked(t, false);
+
+				var res = await LoadManga(src, id, platformId);
+				return new(res?.Manga ?? t, res != null);
+			}).WhenAll();
+		}
+	}
+
+	public class MangaWorked
+	{
+		[JsonPropertyName("manga")]
+		public DbManga Manga { get; set; } = new();
+
+		[JsonPropertyName("worked")]
+		public bool Worked { get; set; } = false;
+
+		public MangaWorked() { }
+
+		public MangaWorked(DbManga manga, bool worked)
+		{
+			Manga = manga;
+			Worked = worked;
 		}
 	}
 }

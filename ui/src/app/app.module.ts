@@ -15,6 +15,8 @@ import { COMMON_IMPORTS, ComponentsModule } from './components/components.module
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
 import { RerouteComponent } from './routes/reroute/reroute.component';
+import { TestComponent } from './routes/test/test.component';
+import { MagicCircleModule } from './components/magic-circle';
 
 @NgModule({
     declarations: [
@@ -24,6 +26,7 @@ import { RerouteComponent } from './routes/reroute/reroute.component';
         LightnovelsComponent,
         AdminComponent,
         RerouteComponent,
+        TestComponent,
     ],
     imports: [
         ComponentsModule,
@@ -34,6 +37,7 @@ import { RerouteComponent } from './routes/reroute/reroute.component';
         FormsModule,
         CommonModule,
         HammerModule,
+        MagicCircleModule,
         ...COMMON_IMPORTS,
         ServiceWorkerModule.register('ngsw-worker.js', {
           enabled: environment.production,

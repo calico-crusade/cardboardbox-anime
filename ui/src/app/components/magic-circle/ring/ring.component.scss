@@ -1,0 +1,32 @@
+$text-ring-offset: 5px;
+
+:host {
+    width: 100%;
+    height: 100%;
+}
+
+.ring {
+    position: relative;
+    border: 1px solid #fff;
+    border-radius: 50%;
+
+    .text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: calc(100% - #{$text-ring-offset});
+        height: calc(100% - #{$text-ring-offset});
+        transform: translate(-50%, -50%) translateX(-#{$text-ring-offset});
+        font-size: 18px;
+        font-family: monospace;
+    }
+
+    .inner-ring {
+        position: absolute;
+        border: 1px solid #fff;
+        border-radius: 50%;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+}

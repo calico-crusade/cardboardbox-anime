@@ -154,5 +154,13 @@ namespace CardboardBox.Anime.Api.Controllers
 
 			return Ok(res);
 		}
+
+		[HttpGet, Route("manga/refresh")]
+		[ProducesDefaultResponseType(typeof(MangaWorked[]))]
+		public async Task<IActionResult> Refresh([FromQuery] int count = 5)
+		{
+			var data = await _manga.Updated(count, this.UserFromIdentity()?.Id);
+			return Ok(data);
+		}
 	}
 }

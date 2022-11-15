@@ -1,5 +1,6 @@
 ﻿using CardboardBox.Anime.AI;
 using CardboardBox.Anime.Bot;
+using CardboardBox.Anime.Bot.Cli;
 using CardboardBox.Anime.Bot.Commands;
 using CardboardBox.Anime.Holybooks;
 using CardboardBox.Discord;
@@ -12,7 +13,8 @@ var bot = DiscordBotBuilder.Start()
 		 .AddTransient<IAnimeApiService, AnimeApiService>()
 		 .AddTransient<IAiAnimeService, AiAnimeService>()
 		 .AddTransient<IMangaApiService, MangaApiService>()
-		 .AddTransient<IMangaUtilityService, MangaUtilityService>();
+		 .AddTransient<IMangaUtilityService, MangaUtilityService>()
+		 .AddTransient<MangaUpdater>();
 	})
 	.WithSlashCommands(c =>
 	{
@@ -25,5 +27,7 @@ var bot = DiscordBotBuilder.Start()
 	.Build();
 
 await bot.Login();
+
+bot.Background<MangaUpdater>(t => t.Update(), out _, 60 * 30);
 
 await Task.Delay(-1);

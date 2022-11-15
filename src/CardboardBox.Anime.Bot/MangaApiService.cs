@@ -15,6 +15,7 @@ namespace CardboardBox.Anime.Bot
 		Task<string[]> GetPages(long mangaId, long chapterId);
 		Task<MangaWithChapters?> LoadManga(string url, bool force = false);
 		Task<PaginatedResult<DbManga>?> Search(MangaFilter? filter = null);
+		Task<MangaWorked[]?> Update(int count);
 	}
 
 	public class MangaApiService : IMangaApiService
@@ -76,6 +77,11 @@ namespace CardboardBox.Anime.Bot
 		{
 			filter ??= new();
 			return _api.Post<PaginatedResult<DbManga>, MangaFilter>($"{ApiUrl}/manga/search", filter);
+		}
+
+		public Task<MangaWorked[]?> Update(int count)
+		{
+			return _api.Get<MangaWorked[]>($"{ApiUrl}/manga/refresh?count={count}");
 		}
 	}
 }

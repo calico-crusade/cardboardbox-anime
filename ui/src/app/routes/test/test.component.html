@@ -1,0 +1,72 @@
+<cba-container>
+
+    <div class="circle-rotater">
+        <magic-circle width="100%" height="100%">
+            <mc-ring text="">
+                <mc-square *ngFor="let x of squares; let i = index" [index]="i" [total]="squares.length">
+                    <mc-ring *ngIf="i == 0" text="">
+                        <mc-square *ngFor="let x of squares; let i = index" [index]="i" [total]="squares.length">
+                            <mc-ring *ngIf="i == 0" text="">
+                                <mc-square *ngFor="let x of squares; let i = index" [index]="i" [total]="squares.length">
+                                </mc-square>
+                            </mc-ring>
+                        </mc-square>
+                    </mc-ring>
+                </mc-square>
+            </mc-ring>
+        </magic-circle>
+    </div>
+
+    <div class="circle-rotater delay-1">
+        <magic-circle width="100%" height="100%">
+            <mc-ring text="">
+                <mc-square *ngFor="let x of squares; let i = index" [index]="i" [total]="squares.length">
+                    <mc-ring *ngIf="i == 0" text="">
+                        <mc-square *ngFor="let x of squares; let i = index" [index]="i" [total]="squares.length">
+                            <mc-ring *ngIf="i == 0" text="">
+                                <mc-square *ngFor="let x of squares; let i = index" [index]="i" [total]="squares.length">
+                                </mc-square>
+                            </mc-ring>
+                        </mc-square>
+                    </mc-ring>
+                </mc-square>
+            </mc-ring>
+        </magic-circle>
+    </div>
+
+    
+    <div class="circle-rotater delay-2">
+        <magic-circle width="100%" height="100%">
+            <mc-ring text="">
+                <mc-square *ngFor="let x of squares; let i = index" [index]="i" [total]="squares.length">
+                    <mc-ring *ngIf="i == 0" text="">
+                        <mc-square *ngFor="let x of squares; let i = index" [index]="i" [total]="squares.length">
+                            <mc-ring *ngIf="i == 0" text="">
+                                <mc-square *ngFor="let x of squares; let i = index" [index]="i" [total]="squares.length">
+                                </mc-square>
+                            </mc-ring>
+                        </mc-square>
+                    </mc-ring>
+                </mc-square>
+            </mc-ring>
+        </magic-circle>
+    </div>
+
+    
+    <div class="circle-rotater delay-3">
+        <magic-circle width="100%" height="100%">
+            <mc-ring text="">
+                <mc-square *ngFor="let x of squares; let i = index" [index]="i" [total]="squares.length">
+                    <mc-ring *ngIf="i == 0" text="">
+                        <mc-square *ngFor="let x of squares; let i = index" [index]="i" [total]="squares.length">
+                            <mc-ring *ngIf="i == 0" text="">
+                                <mc-square *ngFor="let x of squares; let i = index" [index]="i" [total]="squares.length">
+                                </mc-square>
+                            </mc-ring>
+                        </mc-square>
+                    </mc-ring>
+                </mc-square>
+            </mc-ring>
+        </magic-circle>
+    </div>
+</cba-container>

@@ -21,6 +21,7 @@ import { DeferLoadModule } from '@trademe/ng-defer-load';
 import { PopupComponent } from './popup/popup.component';
 import { ImageProxyDirective } from "./image-proxy.directive";
 import { MarkdownDirective } from "./markdown.directive";
+import { MagicCircleModule } from "./magic-circle";
 
 @Injectable()
 export class MyHammerConfig extends HammerGestureConfig {
@@ -58,6 +59,7 @@ export const COMMON_IMPORTS = [
         FormsModule,
         HttpClientModule,
         HammerModule,
+        MagicCircleModule,
         ...COMMON_IMPORTS
     ], 
     providers: [

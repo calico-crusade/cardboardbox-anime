@@ -5,6 +5,7 @@ import { LightnovelComponent } from './routes/lightnovel/lightnovel.component';
 import { LightnovelsComponent } from './routes/lightnovels/lightnovels.component';
 import { AdminComponent } from './routes/admin/admin.component';
 import { RerouteComponent } from './routes/reroute/reroute.component';
+import { TestComponent } from './routes/test/test.component';
 
 const routes: Routes = [
     {
@@ -28,6 +29,9 @@ const routes: Routes = [
     },{
        path: 'admin',
        component: AdminComponent
+    }, {
+       path: 'test',
+       component: TestComponent 
     }, {
         path: '',
         pathMatch: 'full',
