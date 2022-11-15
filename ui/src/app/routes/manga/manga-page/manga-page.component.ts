@@ -117,9 +117,7 @@ export class MangaPageComponent implements OnInit, OnDestroy {
         private lnApi: LightNovelService,
         private title: Title,
         private auth: AuthService
-    ) {
-        this.auth.showHeader = !this.settings.hideHeader.value;
-    }
+    ) { this.auth.showHeader = !this.settings.hideHeader.value; }
 
     proxy(url?: string) {
         if (!url) return '';
@@ -167,6 +165,9 @@ export class MangaPageComponent implements OnInit, OnDestroy {
                 this.id = +t['id'];
                 this.chapterId = +t['chapter'];
                 this.page = +t['page'];
+
+                if (!this.id) return;
+
                 this.process();
             });
 
@@ -246,6 +247,8 @@ export class MangaPageComponent implements OnInit, OnDestroy {
 
     async getMangaData(force: boolean) {
         if (this.manga && this.manga.id === this.id && !force) return this.data;
+
+        if (!this.id) return undefined;
 
         return await lastValueFrom(this.api.manga(this.id));
     }

@@ -18,6 +18,8 @@ export class MangaService extends ConfigObject {
     manga(id: number, chapter: number): Observable<string[]>;
     manga(url: string): Observable<MangaWithChapters>;
     manga(idUrl: number | string, chapter?: number) {
+        if (!idUrl && !chapter) return undefined;
+
         if (idUrl && typeof idUrl === 'number' && !chapter) return this.http.get<MangaWithChapters>(`${this.apiUrl}/manga/${idUrl}`);
         if (idUrl && typeof idUrl === 'string' && !chapter) return this.http.get<MangaWithChapters>(`${this.apiUrl}/manga/load`, { params: { url: idUrl }});
         return this.http.get<string[]>(`${this.apiUrl}/manga/${idUrl}/${chapter}/pages`);
