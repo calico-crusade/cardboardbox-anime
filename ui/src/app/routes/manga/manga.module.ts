@@ -10,6 +10,7 @@ import { MangaInProgressComponent } from './manga-in-progress/manga-in-progress.
 import { MangaAddComponent } from './components/manga-add/manga-add.component';
 import { MangaAddRouteComponent } from './manga-add-route/manga-add-route.component';
 import { MangaCardComponent } from './components/manga-card/manga-card.component';
+import { MangaBookmarksComponent } from './components/manga-bookmarks/manga-bookmarks.component';
 
 const ROUTES: Routes = [
     {
@@ -52,6 +53,7 @@ const IMPORTS = [
         MangaAddComponent,
         MangaAddRouteComponent,
         MangaCardComponent,
+        MangaBookmarksComponent,
     ],
     imports: [ ...IMPORTS ]
 })

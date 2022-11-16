@@ -161,8 +161,4 @@ export class MangaComponent implements OnInit, OnDestroy {
     showBookmarks() {
         this.pop.show(this.bookmarkPop);
     }
-
-    getChapter(id: number) {
-        return this.chapters.find(t => t.id === id);
-    }
 }

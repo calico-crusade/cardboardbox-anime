@@ -1,19 +1,5 @@
 <cba-container [ifs-enabled]="true" (ifs)="onScroll()" flex-flow="row wrap">
     <cba-manga-card *ngFor="let manga of data" [data]="manga"></cba-manga-card>
-    <!-- <a class="manga" *ngFor="let manga of data" [routerLink]="['/manga', manga.id ]">
-        <div class="image" [style.background-image]="'url(' + proxy(manga.cover) + ')'"></div>
-        <div class="details masked-overflow">
-            <div class="title">{{ manga.title }}</div>
-            <div class="source">
-                <b>Source:</b>&nbsp;{{ manga.provider }}
-            </div>
-            <div class="tags">
-                <div class="header">Tags: </div>
-                <div class="tag" *ngFor="let tag of manga.tags">{{ tag }}</div>
-            </div>
-            <div class="description" [markdown]="manga.description"></div>
-        </div>
-    </a> -->
 </cba-container>
 
 <div class="float-icons">

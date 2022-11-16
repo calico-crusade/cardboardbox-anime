@@ -31,6 +31,13 @@ export class MangaCardComponent implements OnInit {
         return this.data.chapter;
     }
 
+    get icon() {
+        if (this.stats?.favourite) return { text: 'star', fill: true };
+        if (this.stats?.chapterProgress === 100) return { text: 'check_circle' };
+        if (this.progress) return { text: 'collections_bookmark' };
+        return undefined;
+    }
+
     constructor(
         private lnApi: LightNovelService
     ) { }
@@ -40,6 +47,6 @@ export class MangaCardComponent implements OnInit {
 
     proxy(url?: string) {
         if (!url) return '';
-        return this.lnApi.corsFallback(url);
+        return this.lnApi.corsFallback(url, 'manga-covers');
     }
 }

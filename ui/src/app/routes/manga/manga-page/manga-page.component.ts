@@ -360,8 +360,6 @@ export class MangaPageComponent implements OnInit, OnDestroy {
         this.api
             .bookmark(this.chapter, this.bookmarks)
             .subscribe(t => {
-                console.log('Page bookmarked');
-                
                 if (!this.data) return;
 
                 if (!this.data.bookmarks)
@@ -387,10 +385,6 @@ export class MangaPageComponent implements OnInit, OnDestroy {
 
     showBookmarks() {
         this.pop.show(this.bookmarkPop);
-    }
-
-    getChapter(id: number) {
-        return this.chapters.find(t => t.id === id);
     }
 
     imageClick(event: MouseEvent) {

@@ -65,14 +65,14 @@
                     <cba-icon>skip_previous</cba-icon>
                 </button>
 
-                <img *ngFor="let page of chapter?.pages" [proxy]="page" />
+                <img *ngFor="let page of chapter?.pages" [proxy]="page" group="manga-page" />
 
                 <button class="scroll-button" (click)="nextChap()" [disabled]="!hasNextChapter">
                     <cba-icon>skip_next</cba-icon>
                 </button>
             </ng-container>
             <ng-container *ngIf="!settings.scroll.value">
-                <img [proxy]="pageImage" />
+                <img [proxy]="pageImage" group="manga-page" />
                 <div class="page" [style.background-image]="'url('+ proxy(pageImage) +')'"></div>
                 <div class="next" [style.background-image]="'url(' + proxy(nextPageImage) + ')'"></div>
             </ng-container>
@@ -203,14 +203,5 @@
 </cba-popup>
 
 <cba-popup #bookmarkspopup>
-    <h2>Bookmarks</h2>
-    <div class="bookmarks">
-        <ng-container *ngFor="let bk of data?.bookmarks">
-            <a *ngFor="let page of bk.pages" [routerLink]="['/manga', id, bk.mangaChapterId, page]">
-                Ch. {{ getChapter(bk.mangaChapterId)?.ordinal }} - 
-                {{ getChapter(bk.mangaChapterId)?.title }} 
-                P. {{ page }}
-            </a>
-        </ng-container>
-    </div>
+    <cba-manga-bookmarks *ngIf="data" [data]="data"></cba-manga-bookmarks>
 </cba-popup>

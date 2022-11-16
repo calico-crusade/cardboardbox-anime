@@ -1,0 +1,15 @@
+<div class="bookmarks">
+    <h2>Bookmarks</h2>
+    <div class="chapter">
+        <ng-container *ngFor="let chap of data.bookmarks">
+            <a class="header" [routerLink]="['/manga', data.manga.id, chap.mangaChapterId, 1]" routerLinkActive="active">
+                <cba-icon>import_contacts</cba-icon>
+                <div class="title">Ch. {{ getChapter(chap.mangaChapterId)?.ordinal }} - {{ getChapter(chap.mangaChapterId)?.title }}</div>
+            </a>
+            <a *ngFor="let page of chap.pages" routerLinkActive="active" [routerLink]="['/manga', data.manga.id, chap.mangaChapterId, page]">
+                <cba-icon>auto_stories</cba-icon>
+                <div class="title">Page. {{ page }}</div>
+            </a>
+        </ng-container>
+    </div>
+</div>

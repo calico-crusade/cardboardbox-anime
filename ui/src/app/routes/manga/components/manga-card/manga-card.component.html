@@ -3,11 +3,8 @@
     <div class="details masked-overflow">
         <div class="title">
             <span>{{ manga.title }}</span>
-            <div class="fav" *ngIf="stats?.favourite">
-                <cba-icon [fill]="true">star</cba-icon>
-            </div>
-            <div class="fav" *ngIf="!stats?.favourite && progress">
-                <cba-icon>collections_bookmark</cba-icon>
+            <div class="fav" *ngIf="icon">
+                <cba-icon [fill]="!!icon.fill">{{ icon.text }}</cba-icon>
             </div>
         </div>
         <div class="source" *ngIf="stats && progress">

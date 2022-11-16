@@ -1,0 +1,36 @@
+.bookmarks {
+    display: flex;
+    flex-flow: column;
+
+    h2 {
+        margin: 0;
+        padding: 0;
+    }
+
+    .chapter {
+        display: flex;
+        flex-flow: column;
+        max-height: 70vh;
+
+        a {
+            padding-left: 30px;
+            display: flex;
+            flex-flow: row;
+            text-decoration: none;
+            border-left: 2px solid transparent;
+
+            .title {
+                flex: 1;
+                margin: auto 5px;
+            }
+
+            &:hover, &.active {
+                border-left: 2px solid var(--color-vrv);
+            }
+
+            &.header {
+                padding-left: 5px;
+            }
+        }
+    }
+}
