@@ -84,9 +84,17 @@
                    (click)="pageChange(i)"></a>
             </div>
         </ng-container>
-        <button class="float-icon" (click)="settingsShow()" *ngIf="settings.hideHeader.value">
-            <cba-icon>settings</cba-icon>
-        </button>
+        <div class="float-icons" *ngIf="settings.hideHeader.value">
+            <button class="float-icon" (click)="settingsShow()">
+                <cba-icon>settings</cba-icon>
+            </button>
+            <a [routerLink]="['/manga', id ]" class="float-icon">
+                <cba-icon>menu_book</cba-icon>
+            </a>
+            <button class="float-icon" (click)="bookmarkPage()">
+                <cba-icon [fill]="bookmarks.indexOf(page) !== -1">bookmark</cba-icon>
+            </button>
+        </div>
     </section>
 </cba-container>
 

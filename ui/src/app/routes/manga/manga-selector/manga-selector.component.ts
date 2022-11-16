@@ -1,9 +1,8 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { catchError, of } from 'rxjs';
 import { PopupComponent, PopupInstance, PopupService } from 'src/app/components';
-import { Filter, LightNovelService, Manga, MangaFilter, MangaService } from 'src/app/services';
+import { Filter, LightNovelService, MangaFilter, MangaProgressData, MangaService } from 'src/app/services';
 
 type SearchTag = {
     value: string;
@@ -18,7 +17,7 @@ export class MangaSelectorComponent implements OnInit, OnDestroy {
 
     loading: boolean = false;
 
-    data: Manga[] = [];
+    data: MangaProgressData[] = [];
     filters: Filter[] = [];
     filterInstance?: PopupInstance;
     
@@ -93,7 +92,7 @@ export class MangaSelectorComponent implements OnInit, OnDestroy {
 
     process() {
         this.api
-            .search(this.search)
+            .searchV2(this.search)
             .subscribe(t => {
                 if (this.search.page === 1)
                     this.data = [];
@@ -113,27 +112,7 @@ export class MangaSelectorComponent implements OnInit, OnDestroy {
 
     add() { this.pop.show(this.popup); }
 
-    load() {
-        this.loading = true;
-        this.api
-            .manga(this.url)
-            .pipe(
-                catchError(err => {
-                    console.error('Error occurred while loading manga', {
-                        url: this.url,
-                        err
-                    });
-                    alert('An error occurred while trying to load your manga!');
-                    return of(undefined);
-                })
-            )
-            .subscribe(t => {
-                this.loading = false;
-                if (!t) return;
-
-                this.router.navigate(['/manga', t.manga.id]);
-            });
-    }
+    
 
     filter() { this.filterInstance = this.pop.show(this.searchPop); }
 

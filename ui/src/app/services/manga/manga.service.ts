@@ -3,7 +3,7 @@ import { Injectable } from "@angular/core";
 import { Observable } from "rxjs";
 import { Filters } from "../anime/anime.model";
 import { ConfigObject } from "../config.base";
-import { Manga, MangaChapter, MangaFilter, MangaProgress, MangaProgressData, MangaProgressUpdate, MangaWithChapters, PaginatedManga } from "./manga.model";
+import { Manga, MangaChapter, MangaFilter, MangaProgress, MangaProgressData, MangaProgressUpdate, MangaWithChapters, PaginatedManga, PaginatedMangaProgress } from "./manga.model";
 
 @Injectable({
     providedIn: 'root'
@@ -55,6 +55,10 @@ export class MangaService extends ConfigObject {
         return this.http.post<PaginatedManga>(`${this.apiUrl}/manga/search`, filter);
     }
 
+    searchV2(filter: MangaFilter) {
+        return this.http.post<PaginatedMangaProgress>(`${this.apiUrl}/manga/search-v2`, filter);
+    }
+
     favourite(id: number) {
         return this.http.get<boolean>(`${this.apiUrl}/manga/${id}/favourite`);
     }
@@ -62,4 +66,6 @@ export class MangaService extends ConfigObject {
     bookmark(chapter: MangaChapter, pages: number[]) {
         return this.http.post(`${this.apiUrl}/manga/${chapter.mangaId}/${chapter.id}/bookmark`, pages);
     }
+
+    random() { return this.http.get<MangaWithChapters>(`${this.apiUrl}/manga/random`); }
 }

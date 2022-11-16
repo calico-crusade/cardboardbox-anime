@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { AuthUser } from '../services/auth/auth.model';
 import { AuthService } from '../services/auth/auth.service';
@@ -52,5 +52,9 @@ export class AppComponent implements OnInit {
     logout() { 
         this.auth.logout();
         this.menuOpen = false;
+    }
+    
+    toggleDropdown(el: HTMLElement) {
+        el.classList.toggle('active');
     }
 }

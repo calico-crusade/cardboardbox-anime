@@ -133,6 +133,14 @@ namespace CardboardBox.Anime.Api.Controllers
 			return Ok(data);
 		}
 
+		[HttpPost, Route("manga/search-v2")]
+		[ProducesDefaultResponseType(typeof(PaginatedResult<MangaProgress>))]
+		public async Task<IActionResult> SearchV2([FromBody] MangaFilter filter)
+		{
+			var data = await _db.Manga.Search(filter, this.UserFromIdentity()?.Id);
+			return Ok(data);
+		}
+
 		[HttpGet, Route("manga/{id}/download")]
 		public async Task<IActionResult> Download([FromRoute] long id)
 		{
@@ -160,6 +168,14 @@ namespace CardboardBox.Anime.Api.Controllers
 		public async Task<IActionResult> Refresh([FromQuery] int count = 5)
 		{
 			var data = await _manga.Updated(count, this.UserFromIdentity()?.Id);
+			return Ok(data);
+		}
+
+		[HttpGet, Route("manga/random")]
+		[ProducesDefaultResponseType(typeof(MangaWithChapters))]
+		public async Task<IActionResult> Random()
+		{
+			var data = await _db.Manga.Random(this.UserFromIdentity()?.Id);
 			return Ok(data);
 		}
 	}

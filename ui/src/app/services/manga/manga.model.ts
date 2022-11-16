@@ -73,6 +73,12 @@ export interface MangaProgress {
     pageIndex: number;
 }
 
+export interface PaginatedMangaProgress {
+    pages: number;
+    count: number;
+    results: MangaProgressData[];
+}
+
 export interface MangaProgressData {
     manga: Manga;
     progress?: MangaProgress;

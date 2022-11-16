@@ -1,0 +1,25 @@
+<a *ngIf="manga" class="manga" [routerLink]="['/manga', manga.id]">
+    <div class="image" [style.background-image]="'url(' + proxy(manga.cover) + ')'"></div>
+    <div class="details masked-overflow">
+        <div class="title">
+            <span>{{ manga.title }}</span>
+            <div class="fav" *ngIf="stats?.favourite">
+                <cba-icon [fill]="true">star</cba-icon>
+            </div>
+            <div class="fav" *ngIf="!stats?.favourite && progress">
+                <cba-icon>collections_bookmark</cba-icon>
+            </div>
+        </div>
+        <div class="source" *ngIf="stats && progress">
+            <b>Progress: </b>&nbsp; {{ stats.chapterProgress }}% - {{ progress.updatedAt | date:'yyyy-MM-dd' }}
+        </div>
+        <div class="source">
+            <b>Source:</b>&nbsp;{{ manga.provider }}
+        </div>
+        <div class="tags">
+            <div class="header">Tags: </div>
+            <div class="tag" *ngFor="let tag of manga.tags">{{ tag }}</div>
+        </div>
+        <div class="description" [markdown]="manga.description"></div>
+    </div>
+</a>

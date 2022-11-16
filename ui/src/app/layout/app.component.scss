@@ -144,6 +144,39 @@
                     border-left: 2px solid var(--color-vrv);
                 }
             }
+
+            .dropdown-menu {
+                display: flex;
+                flex-flow: column;
+                .menu {
+                    margin-top: 0;
+                }
+                .dropdown {
+                    max-height: 0;
+                    transition: all 250ms;
+                    overflow: hidden;
+
+                    a, button {
+                        .icon {
+                            margin-left: 20px;
+                        }
+                        &:first-child {
+                            margin-top: 0;
+                        }
+                        &:last-child {
+                            margin-bottom: 0;
+                        }
+                    }
+
+                    &.active {
+                        max-height: 300px;
+                    }
+                }
+
+                &:hover {
+                    .dropdown { max-height: 300px; }
+                }
+            }
         }
 
         &.open {

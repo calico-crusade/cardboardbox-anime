@@ -14,7 +14,7 @@
         <div class="details">
             <div class="tags">
                 <div class="header">Tags: </div>
-                <div class="tag" *ngFor="let tag of manga?.tags">{{ tag }}</div>
+                <a class="tag" *ngFor="let tag of manga?.tags" routerLink="/manga" [queryParams]="{include: tag}">{{ tag }}</a>
             </div>
 
             <div class="tags">
@@ -73,6 +73,9 @@
         </button>
         <button class="float-icon" (click)="showBookmarks()" *ngIf="hasBookmarks">
             <cba-icon>bookmarks</cba-icon>
+        </button>
+        <button class="float-icon" (click)="nextRandom()" *ngIf="isRandom">
+            <cba-icon>shuffle</cba-icon>
         </button>
     </div>
 </cba-container>

@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
-import { catchError, of } from 'rxjs';
+import { catchError, lastValueFrom, of } from 'rxjs';
 import { PopupComponent, PopupService } from 'src/app/components';
 import { AuthService, LightNovelService, MangaProgress, MangaService, MangaWithChapters } from 'src/app/services';
 
@@ -18,6 +18,7 @@ export class MangaComponent implements OnInit, OnDestroy {
     id!: number;
     data?: MangaWithChapters;
     progress?: MangaProgress;
+    isRandom: boolean = false;
 
     get manga() {
         return this.data?.manga;
@@ -54,11 +55,13 @@ export class MangaComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.route.params.subscribe(t => {
-            this.id = +t['id'];
+            const id = t['id'] + '';
+            this.id = id.toLowerCase() === 'random' ? -1 : +id;
+            this.isRandom = this.id === -1;
             this.process();
         });
         this.auth.onLogin.subscribe(t => {
-            if (t) this.getProgress();
+            this.process();
         });
     }
 
@@ -67,40 +70,53 @@ export class MangaComponent implements OnInit, OnDestroy {
         this.auth.title = undefined;
     }
 
-    private process() {
+    private async process() {
         this.loading = true;
-        this.api
-            .manga(this.id)
-            .pipe(
-                catchError(err => {
-                    return of(undefined);
-                })
-            )
-            .subscribe(t => {
-                this.data = t;
-                this.title.setTitle('CBA | ' + this.manga?.title);
-                this.auth.title = this.manga?.title;
-                this.loading = false;
+        try {
+            if (this.data?.manga.id !== this.id)
+                this.data = await this.getMangaData();
+            this.id = this.data?.manga.id;
+        } catch (error) {
+            console.error('Error occurred while fetching manga', {
+                error,
+                id: this.id
             });
+        }
 
-        if (this.auth.currentUser)
-            this.getProgress();
+        this.title.setTitle('CBA | ' + this.manga?.title);
+        this.auth.title = this.manga?.title;
+
+        if (!this.data ||
+            this.progress?.mangaId === this.id || 
+            !this.auth.currentUser) {
+            this.loading = false;
+            return;
+        }
+
+        try {
+            this.progress = await lastValueFrom(this.api.progress(this.data.manga.id));
+        } catch (error) {
+            console.error('Error occurred while fetching manga progress', {
+                error,
+                id: this.id,
+                data: this.data
+            });
+        }
+
+        this.loading = false;
     }
 
-    private getProgress() {
-        if (this.progress?.mangaId === this.id) return;
+    private getMangaData() {
+        if (this.id <= 0) {
+            return lastValueFrom(this.api.random());
+        }
 
-        this.api
-            .progress(this.id)
-            .pipe(
-                catchError(err => {
-                    console.error('Error occurred while getting progress', { err });
-                    return of(undefined);
-                })
-            )
-            .subscribe(t => {
-                this.progress = t;
-            });
+        return lastValueFrom(this.api.manga(this.id));
+    }
+
+    nextRandom() {
+        this.id = -1;
+        this.process();
     }
 
     update() {

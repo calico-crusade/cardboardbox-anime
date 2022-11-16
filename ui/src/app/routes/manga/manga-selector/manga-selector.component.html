@@ -1,5 +1,6 @@
 <cba-container [ifs-enabled]="true" (ifs)="onScroll()" flex-flow="row wrap">
-    <a class="manga" *ngFor="let manga of data" [routerLink]="['/manga', manga.id ]">
+    <cba-manga-card *ngFor="let manga of data" [data]="manga"></cba-manga-card>
+    <!-- <a class="manga" *ngFor="let manga of data" [routerLink]="['/manga', manga.id ]">
         <div class="image" [style.background-image]="'url(' + proxy(manga.cover) + ')'"></div>
         <div class="details masked-overflow">
             <div class="title">{{ manga.title }}</div>
@@ -12,7 +13,7 @@
             </div>
             <div class="description" [markdown]="manga.description"></div>
         </div>
-    </a>
+    </a> -->
 </cba-container>
 
 <div class="float-icons">
@@ -28,30 +29,7 @@
 </div>
 
 <cba-popup #popup [background]="!loading">
-    <div class="popup">
-        <h2>Don't see your favourite manga? Add it!</h2>
-        <section>
-            <input type="url" [(ngModel)]="url" placeholder="Manga Home Page Url" />
-        </section>
-        <section>
-            <p>We support Manga from the following sites:</p>
-            <ul>
-                <li><a href="https://mangadex.org/" target="_blank">mangadex.org</a></li>
-                <li><a href="https://ww4.mangakakalot.tv" target="_blank">mangakakalot.tv</a></li>
-            </ul>
-            <p>Just paste the manga's home page into the text box above! Example:</p>
-            <p class="code">https://mangadex.org/title/fc0a7b86-992e-4126-b30f-ca04811979bf/the-unrivaled-mememori-kun</p>
-        </section>
-        <section class="buttons">
-            <div class="loading" *ngIf="loading">
-                <img src="/assets/loading.gif" alt="Loading Icon" />
-                <span>Loading...</span>
-            </div>
-            <button class="btn" (click)="load()" [disabled]="loading">
-                <cba-icon>add</cba-icon>
-            </button>
-        </section>
-    </div>
+    <cba-manga-add></cba-manga-add>
 </cba-popup>
 
 <cba-popup #searchpopup>

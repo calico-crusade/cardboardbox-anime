@@ -35,13 +35,48 @@
                 </span>
                 <span class="title">My Lists</span>
             </a>
-            <a routerLink="/manga" routerLinkActive="active" (click)="menuOpen = false">
+            <a routerLink="/manga" routerLinkActive="active" (click)="menuOpen = false" *ngIf="!loggedIn">
                 <span class="icon">
                     <cba-icon>photo_album</cba-icon>
                 </span>
                 <span class="title">Manga</span>
             </a>
             <ng-container *ngIf="loggedIn">
+                <div class="dropdown-menu">
+                    <button class="menu" (click)="toggleDropdown(dropdown)">
+                        <span class="icon">
+                            <cba-icon>photo_album</cba-icon>
+                        </span>
+                        <span class="title">Manga</span>
+                    </button>
+                    <div class="dropdown" #dropdown>
+                        <a routerLink="/manga/all" routerLinkActive="active" (click)="menuOpen = false">
+                            <span class="icon">
+                                <cba-icon>search</cba-icon>
+                            </span>
+                            <span class="title">Search</span>
+                        </a>
+                        <a routerLink="/manga/add" routerLinkActive="active" (click)="menuOpen = false">
+                            <span class="icon">
+                                <cba-icon>add</cba-icon>
+                            </span>
+                            <span class="title">Add New</span>
+                        </a>
+                        <a routerLink="/manga/in-progress" routerLinkActive="active" (click)="menuOpen = false">
+                            <span class="icon">
+                                <cba-icon>collections_bookmark</cba-icon>
+                            </span>
+                            <span class="title">In Progress</span>
+                        </a>
+                        <a routerLink="/manga/random" routerLinkActive="active" (click)="menuOpen = false">
+                            <span class="icon">
+                                <cba-icon>shuffle</cba-icon>
+                            </span>
+                            <span class="title">Random</span>
+                        </a>
+                    </div>
+                </div>
+
                 <a routerLink="/ai" routerLinkActive="active" (click)="menuOpen = false">
                     <span class="icon">
                         <cba-icon>photo_library</cba-icon>

@@ -32,6 +32,8 @@ namespace CardboardBox.Anime.Database
 
 		Task<PaginatedResult<DbManga>> Search(MangaFilter filter);
 
+		Task<PaginatedResult<MangaProgress>> Search(MangaFilter filter, string? platformId);
+
 		Task SetPages(long id, string[] pages);
 
 		Task<bool?> Favourite(string platformId, long mangaId);
@@ -45,6 +47,8 @@ namespace CardboardBox.Anime.Database
 		Task Bookmark(long id, long chapterId, int[] pages, string platformId);
 
 		Task<DbManga[]> FirstUpdated(int count);
+
+		Task<MangaWithChapters?> Random(string? platformId);
 	}
 
 	public class MangaDbService : OrmMapExtended<DbManga>, IMangaDbService
@@ -80,7 +84,7 @@ namespace CardboardBox.Anime.Database
 			{
 				new MangaSortField("Title", 0, "m.title"),
 				new("Provider", 1, "m.provider"),
-				new("Latest Chapter", 2, "mc.latest_chapter"),
+				new("Latest Chapter", 2, "mcf.latest_chapter"),
 				new("Description", 3, "m.description"),
 				new("Updated", 4, "m.updated_at"),
 				new("Created", 5, "m.created_at")
@@ -285,7 +289,7 @@ ORDER BY key, value";
 	GROUP BY manga_id
 ) SELECT m.*
 FROM manga m
-JOIN manga_chapter_filters mc ON mc.manga_id = m.id
+JOIN manga_chapter_filters mcf ON mcf.manga_id = m.id
 WHERE {0}
 ORDER BY {2} {1}
 LIMIT :size OFFSET :offset;
@@ -328,6 +332,130 @@ SELECT COUNT(*) FROM manga m WHERE {0};";
 			var total = await rdr.ReadSingleAsync<int>();
 			var pages = (long)Math.Ceiling((double)total / filter.Size);
 			return new PaginatedResult<DbManga>(pages, total, res);
+		}
+
+		public async Task<PaginatedResult<MangaProgress>> Search(MangaFilter filter, string? platformId)
+		{
+			const string QUERY = @"WITH manga_chapter_filters AS (
+	SELECT
+		manga_id,
+		MAX(created_at) as latest_chapter,
+		MIN(created_at) as earliest_chapter
+	FROM manga_chapter
+	GROUP BY manga_id
+), limited_manga AS (
+    SELECT
+        m.*,
+		mcf.latest_chapter
+    FROM manga m
+    JOIN manga_chapter_filters mcf ON mcf.manga_id = m.id
+    WHERE
+        {0}
+    ORDER BY {2} {1}
+    LIMIT :size OFFSET :offset
+), chapter_numbers AS (
+    SELECT
+        c.*,
+        row_number() over (
+            PARTITION BY manga_id
+            ORDER BY ordinal ASC
+        ) as row_num
+    FROM manga_chapter c
+), max_chapter_numbers AS (
+    SELECT
+        c.manga_id,
+        MAX(c.row_num) as max,
+        MIN(c.id) as first_chapter_id
+    FROM chapter_numbers c
+    GROUP BY c.manga_id
+), progress AS (
+    SELECT mp.*
+    FROM manga_progress mp
+    JOIN profiles p ON mp.profile_id = p.id
+    WHERE p.platform_id = :platformId
+), bookmarks AS (
+    SELECT mb.*
+    FROM manga_bookmarks mb
+    JOIN profiles p ON mb.profile_id = p.id
+    WHERE p.platform_id = :platformId
+), favourites AS (
+	SELECT mb.manga_id, 1 as is_favourite
+    FROM manga_favourites mb
+    JOIN profiles p ON mb.profile_id = p.id
+    WHERE p.platform_id = :platformId
+) SELECT DISTINCT
+    m.*,
+    '' as split,
+    mp.*,
+    '' as split,
+    mc.*,
+    '' as split,
+    mmc.max as max_chapter_num,
+    mc.row_num as chapter_num,
+    coalesce(array_length(mc.pages, 1), 0) as page_count,
+    (
+        CASE
+            WHEN mmc.first_chapter_id = mc.id AND mp.page_index IS NULL THEN 0
+            ELSE round(mc.row_num / CAST(mmc.max as decimal) * 100, 2)
+        END
+    ) as chapter_progress,
+    coalesce(round(mp.page_index / CAST(array_length(mc.pages, 1) as decimal), 2), 0) * 100 as page_progress,
+    coalesce(mf.is_favourite, 0) as favourite,
+    coalesce(mb.pages, '{3}') as bookmarks,
+	mcf.latest_chapter
+FROM limited_manga m
+JOIN max_chapter_numbers mmc ON mmc.manga_id = m.id
+JOIN manga_chapter_filters mcf ON mcf.manga_id = m.id
+LEFT JOIN favourites mf ON mf.manga_id = m.id
+LEFT JOIN progress mp ON mp.manga_id = m.id
+LEFT JOIN chapter_numbers mc ON
+    (mp.id IS NOT NULL AND mc.id = mp.manga_chapter_id) OR
+    (mp.id IS NULL AND mmc.first_chapter_id = mc.id)
+LEFT JOIN bookmarks mb ON mb.manga_chapter_id = mc.id
+WHERE
+    mp.deleted_at IS NULL AND
+    {0}
+ORDER BY {2} {1};";
+			const string COUNT_QUERY = "SELECT COUNT(*) FROM manga m WHERE {0};";
+
+			var sortField = SortFields().FirstOrDefault(t => t.Id == (filter.Sort ?? 0))?.SqlName ?? "m.title";
+
+			var parts = new List<string>();
+			var pars = new DynamicParameters();
+			pars.Add("offset", (filter.Page - 1) * filter.Size);
+			pars.Add("size", filter.Size);
+			pars.Add("platformId", platformId);
+
+			if (!string.IsNullOrEmpty(filter.Search))
+			{
+				parts.Add("m.fts @@ phraseto_tsquery('english', :search)");
+				pars.Add("search", filter.Search);
+			}
+
+			if (filter.Include != null && filter.Include.Length > 0)
+			{
+				parts.Add("m.tags @> :include");
+				pars.Add("include", filter.Include);
+			}
+
+			if (filter.Exclude != null && filter.Exclude.Length > 0)
+			{
+				parts.Add("NOT (m.tags && :exclude )");
+				pars.Add("exclude", filter.Exclude);
+			}
+
+			parts.Add("m.deleted_at IS NULL");
+			var where = string.Join(" AND ", parts);
+			var sort = filter.Ascending ? "ASC" : "DESC";
+
+			var query = string.Format(QUERY, where, sort, sortField, "{}");
+			var countQuery = string.Format(COUNT_QUERY, where, sort, sortField, "{}");
+
+			var res = await _sql.QueryAsync<DbManga, DbMangaProgress, DbMangaChapter, MangaStats>(query, pars);
+			var results = res.Select(t => new MangaProgress(t.item1, t.item2, t.item3, t.item4)).ToArray();
+			var total = await _sql.Fetch<int>(countQuery, pars);
+			var pages = (long)Math.Ceiling((double)total / filter.Size);
+			return new PaginatedResult<MangaProgress>(pages, total, results);
 		}
 
 		public async Task<DbMangaBookmark[]> Bookmarks(long id, string? platformId)
@@ -431,6 +559,39 @@ WHERE p.platform_id = :platformId AND mf.manga_id = :id";
 		{
 			const string QUERY = "SELECT * FROM manga ORDER BY updated_at ASC LIMIT :count";
 			return _sql.Get<DbManga>(QUERY, new { count }); 
+		}
+
+		public async Task<MangaWithChapters?> Random(string? platformId)
+		{
+			const string RANDOM_QUERY = "SELECT * FROM manga ORDER BY random() LIMIT 1;";
+			const string QUERY = "SELECT * FROM manga_chapter WHERE manga_id = :id ORDER BY ordinal;";
+			const string TARGETED_QUERY = @"SELECT mb.* 
+FROM manga_bookmarks mb
+JOIN profiles p ON p.id = mb.profile_id
+WHERE p.platform_id = :platformId AND mb.manga_id = :id
+ORDER BY mb.manga_chapter_id;
+
+SELECT 1 
+FROM manga_favourites mf 
+JOIN profiles p ON p.id = mf.profile_id
+WHERE p.platform_id = :platformId AND mf.manga_id = :id";
+
+			using var con = _sql.CreateConnection();
+			var manga = await con.QueryFirstOrDefaultAsync<DbManga>(RANDOM_QUERY);
+			if (manga == null) return null;
+
+			var query = string.IsNullOrEmpty(platformId) ? QUERY : QUERY + TARGETED_QUERY;
+
+			using var rdr = await con.QueryMultipleAsync(query, new { id = manga.Id, platformId });
+
+			var chapters = await rdr.ReadAsync<DbMangaChapter>();
+			if (string.IsNullOrEmpty(platformId))
+				return new(manga, chapters.ToArray());
+
+			var bookmarks = await rdr.ReadAsync<DbMangaBookmark>();
+			var favourite = (await rdr.ReadSingleOrDefaultAsync<bool?>()) ?? false;
+
+			return new(manga, chapters.ToArray(), bookmarks.ToArray(), favourite);
 		}
 	}
 

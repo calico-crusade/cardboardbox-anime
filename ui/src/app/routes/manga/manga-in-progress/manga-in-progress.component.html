@@ -8,26 +8,6 @@
         </div>
     </header>
     <main>
-        <a class="manga" *ngFor="let manga of records" [routerLink]="['/manga', manga.manga.id ]" @messageState>
-            <div class="image" [style.background-image]="'url(' + proxy(manga.manga.cover) + ')'"></div>
-            <div class="details masked-overflow">
-                <div class="title">
-                    <span>{{ manga.manga.title }}</span>
-                    <div class="fav" *ngIf="manga.stats.favourite">
-                        <cba-icon [fill]="true">star</cba-icon>
-                    </div></div>
-                <div class="source">
-                    <b>Progress: </b>&nbsp; {{ manga.stats.chapterProgress }}% - {{ manga.progress?.updatedAt | date:'yyyy-MM-dd' }}
-                </div>
-                <div class="source">
-                    <b>Source:</b>&nbsp;{{ manga.manga.provider }}
-                </div>
-                <div class="tags">
-                    <div class="header">Tags: </div>
-                    <div class="tag" *ngFor="let tag of manga.manga.tags">{{ tag }}</div>
-                </div>
-                <div class="description" [markdown]="manga.manga.description"></div>
-            </div>
-        </a>
+        <cba-manga-card *ngFor="let manga of records" [data]="manga" @messageState></cba-manga-card>
     </main>
 </cba-container>
