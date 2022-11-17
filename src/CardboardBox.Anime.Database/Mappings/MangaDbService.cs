@@ -200,6 +200,13 @@ ORDER BY ordinal";
         MIN(c.id) as first_chapter_id
     FROM chapter_numbers c
     GROUP BY c.manga_id
+), progress AS (
+    SELECT
+        mp.*
+    FROM manga_progress mp
+    JOIN profiles p ON p.id = mp.profile_id
+    WHERE
+        p.platform_id = :platformId
 ) SELECT DISTINCT
 	m.*,
 	'' as split,
@@ -224,7 +231,7 @@ ORDER BY ordinal";
     ), 0) as favourite,
     coalesce(mb.pages, '{}') as bookmarks
 FROM touched_manga m
-LEFT JOIN manga_progress mp ON mp.manga_id = m.id
+LEFT JOIN progress mp ON mp.manga_id = m.id
 LEFT JOIN max_chapter_numbers mmc ON mmc.manga_id = m.id
 LEFT JOIN chapter_numbers mc ON
     (mp.id IS NOT NULL AND mc.id = mp.manga_chapter_id) OR
