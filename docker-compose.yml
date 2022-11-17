@@ -57,3 +57,17 @@ services:
       - cba-postgres
     volumes:
       - ./file-cache:/app/file-cache
+  cba-web:
+    image: ghcr.io/calico-crusade/cardboardbox-anime/web:latest
+    restart: always
+    environment:
+      - Mongo:ConnectionString=${MONGO_CON_URL}
+      - Postgres:ConnectionString=User ID=${POSTGRES_USER};Password=${POSTGRES_PASS};Host=cba-postgres;Database=${POSTGRES_HOST};
+      - OAuth:AppId=${OAUTH_APP_ID}
+      - OAuth:Secret=${OAUTH_SECRET}
+      - OAuth:Key=${OAUTH_KEY}
+      - Ai:Url=${DISCORD_AI_URL}
+    ports:
+      - 8891:80
+    depends_on:
+      - cba-api

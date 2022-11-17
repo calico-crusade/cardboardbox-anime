@@ -361,3 +361,4 @@ dist/
 /src/CardboardBox.Anime.Api/ProxyCache
 
 image-cache/
+/src/CardboardBox.Anime.Web/wwwroot
