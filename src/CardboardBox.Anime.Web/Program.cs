@@ -18,5 +18,9 @@ if (!app.Environment.IsDevelopment())
 app.UseStaticFiles();
 
 app.UseRouting();
-app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
+app.UseEndpoints(c =>
+{
+	c.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
+	c.MapFallbackToFile("/index.html");
+});
 app.Run();
