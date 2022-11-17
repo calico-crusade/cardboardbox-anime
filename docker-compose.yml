@@ -68,6 +68,6 @@ services:
       - OAuth:Key=${OAUTH_KEY}
       - Ai:Url=${DISCORD_AI_URL}
     ports:
-      - 8891:80
+      - 8897:80
     depends_on:
       - cba-api

@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Net;
+using System.Text;
 
 namespace CardboardBox.Anime.Web.Services
 {
@@ -61,6 +62,13 @@ namespace CardboardBox.Anime.Web.Services
 		public OpenGraphBuilder ImageHeight(int height) => AddPropertyContent("og:image:height", height.ToString());
 		public OpenGraphBuilder ImageMimeType(string type) => AddPropertyContent("og:image:type", type);
 		public OpenGraphBuilder Author(string author) => AddPropertyContent("author", author);
+
+		public OpenGraphBuilder ProxiedImage(string url)
+		{
+			var encoded = WebUtility.UrlEncode(url);
+			var uri = $"https://cba-proxy.index-0.com/proxy?path={encoded}&group=ogp";
+			return Image(uri);
+		}
 
 		public string Render()
 		{
