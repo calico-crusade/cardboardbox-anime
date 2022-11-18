@@ -14,7 +14,7 @@ namespace CardboardBox.Anime.Web.Controllers
 
 		private IMangaDbService _mangaDb => _db.Manga;
 
-		private const string DEFAULT_IMAGE = "https://cba.index-0.com/assets/twirl.gif";
+		private const string DEFAULT_IMAGE = "https://cba.index-0.com/assets/logo.png";
 
 		public HomeController(
 			IOpenGraphService og, 

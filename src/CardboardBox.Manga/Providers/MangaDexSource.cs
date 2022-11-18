@@ -49,9 +49,11 @@
 				.OrderBy(t => t.Number)
 				.ToListAsync();
 
+			var title = DetermineTitle(manga);
+
 			return new Manga
 			{
-				Title = manga.Data.Attributes.Title.PreferedOrFirst(t => t.Key.ToLower() == DEFAULT_LANG).Value,
+				Title = title,
 				Id = id,
 				Provider = Provider,
 				HomePage = $"{HomeUrl}/title/{id}",
@@ -68,6 +70,18 @@
 						 .Value).ToArray(),
 				Chapters = chapters
 			};
+		}
+
+		public string DetermineTitle(MangaDexRoot<MangaDexManga> manga)
+		{
+			var title = manga.Data.Attributes.Title.PreferedOrFirst(t => t.Key.ToLower() == DEFAULT_LANG);
+			if (title.Key.ToLower() == DEFAULT_LANG) return title.Value;
+
+			var prefered = manga.Data.Attributes.AltTitles.FirstOrDefault(t => t.Keys.Contains(DEFAULT_LANG));
+			if (prefered != null)
+				return prefered.PreferedOrFirst(t => t.Key.ToLower() == DEFAULT_LANG).Value;
+
+			return title.Value;
 		}
 
 		public async IAsyncEnumerable<MangaChapter> GetChapters(string id, params string[] languages)
