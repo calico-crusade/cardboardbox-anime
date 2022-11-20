@@ -18,10 +18,14 @@ const ROUTES: Routes = [
         pathMatch: "full",
         redirectTo: 'all'
     }, {
+        path: 'in-progress',
+        pathMatch: 'full',
+        redirectTo: 'touched/in-progress'
+    }, {
         path: 'all',
         component: MangaSelectorComponent
     }, {
-        path: 'in-progress',
+        path: 'touched/:type',
         component: MangaInProgressComponent
     }, {
         path: 'add',

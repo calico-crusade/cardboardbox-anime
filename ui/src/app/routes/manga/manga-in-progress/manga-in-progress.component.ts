@@ -1,55 +1,34 @@
-import { animate, style, transition, trigger } from '@angular/animations';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
+import { ActivatedRoute } from '@angular/router';
 import { catchError, of } from 'rxjs';
 import { AuthService, LightNovelService, MangaProgressData, MangaService } from 'src/app/services';
 
 @Component({
     templateUrl: './manga-in-progress.component.html',
-    styleUrls: ['./manga-in-progress.component.scss'],
-    animations: [
-        trigger('messageState', [
-            transition('void => *', [
-                style({
-                    opacity: 0
-                }),
-                animate(
-                    '150ms ease-in-out',
-                    style({
-                        opacity: 1
-                    })
-                )
-            ]),
-            transition('* => void', [
-                animate(
-                    '150ms ease-in-out',
-                    style({
-                        opacity: 0
-                    })
-                )
-            ])
-        ])
-    ]
+    styleUrls: ['./manga-in-progress.component.scss']
 })
 export class MangaInProgressComponent implements OnInit, OnDestroy {
 
     loading: boolean = false;
     error?: string;
 
-    data: MangaProgressData[] = [];
+    records: MangaProgressData[] = [];
+    page: number = 1;
+    size: number = 20;
+    pages: number = 0;
+    total: number = 0;
+    type?: string;
 
-    state: ('all' | 'inp' | 'com' | 'fvr') = 'all';
-
-    inProgress: MangaProgressData[] = [];
-    completed: MangaProgressData[] = [];
-    favourites: MangaProgressData[] = [];
-
-    get records() {
-        switch (this.state) {
-            case 'inp': return this.inProgress;
-            case 'com': return this.completed;
-            case 'fvr': return this.favourites;
-            default: return this.data;
+    get properType() {
+        const type = this.type?.toLocaleLowerCase();
+        switch(type) {
+            case 'favourite': return 'favourite';
+            case 'completed': return 'completed';
+            case 'inprogress':
+            case 'in-progress': return 'inprogress';
+            case 'bookmarked': return 'bookmarked';
+            default: return undefined;
         }
     }
 
@@ -57,13 +36,20 @@ export class MangaInProgressComponent implements OnInit, OnDestroy {
         private api: MangaService,
         private auth: AuthService,
         private title: Title,
-        private lnApi: LightNovelService
+        private lnApi: LightNovelService,
+        private route: ActivatedRoute
     ) { }
 
     ngOnInit() {
         this.title.setTitle('CardboardBox | In Progress Manga');
-        this.process();
         this.auth.onLogin.subscribe(t => this.process());
+        this.route.params.subscribe(t => {
+            this.type = t['type'];
+            this.page = 1;
+            this.records = [];
+            this.loading = true;
+            this.process();
+        })
     }
 
     ngOnDestroy() {
@@ -78,36 +64,28 @@ export class MangaInProgressComponent implements OnInit, OnDestroy {
     private process() {
         if (!this.auth.currentUser) return;
 
-        this.loading = true;
         this.api
-            .inProgress()
+            .touched(this.page, this.size, this.properType)
             .pipe(
                 catchError(err => {
                     console.error('Error occurred while fetching in-progress', { err });
-                    return of([]);
+                    this.error = err.status;
+                    return of({ pages: 0, count: 0, results: [] });
                 })
             )
             .subscribe(t => {
-                this.data = t;
-
-                this.inProgress = [];
-                this.completed = [];
-                this.favourites = [];
-
-                for (let item of this.data) {
-                    if (item.stats.favourite) {
-                        this.favourites.push(item);
-                    }
-
-                    if (item.stats.chapterProgress >= 100) {
-                        this.completed.push(item);
-                        continue;
-                    }
-
-                    this.inProgress.push(item);
-                }
-
+                const { pages, count, results } = t;
+                this.pages = pages;
+                this.total = count;
+                this.records = [ ...this.records, ...results ];
                 this.loading = false;
-            })
+            });
+    }
+
+    onScroll() {
+        this.page += 1;
+        if (this.pages < this.page) return;
+
+        this.process();
     }
 }

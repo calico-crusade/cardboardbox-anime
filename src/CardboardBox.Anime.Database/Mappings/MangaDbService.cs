@@ -49,6 +49,8 @@ namespace CardboardBox.Anime.Database
 		Task<DbManga[]> FirstUpdated(int count);
 
 		Task<MangaWithChapters?> Random(string? platformId);
+
+		Task<PaginatedResult<MangaProgress>> Touched(string? platformId, int page, int size, TouchedState state = TouchedState.All);
 	}
 
 	public class MangaDbService : OrmMapExtended<DbManga>, IMangaDbService
@@ -600,7 +602,58 @@ WHERE p.platform_id = :platformId AND mf.manga_id = :id";
 
 			return new(manga, chapters.ToArray(), bookmarks.ToArray(), favourite);
 		}
+
+		public async Task<PaginatedResult<MangaProgress>> Touched(string? platformId, int page, int size, TouchedState state = TouchedState.All)
+		{
+			const string QUERY = @"CREATE TEMP TABLE touched_manga AS
+SELECT
+    *
+FROM get_touched_manga(:platformId) t
+WHERE
+    (t.favourite = true AND :state = 1) OR
+    (t.completed = true AND :state = 2) OR
+    (t.completed = false AND :state = 3) OR
+    (t.has_bookmarks = true AND :state = 4) OR
+    (:state < 1 OR :state > 4);
+
+SELECT
+    m.*,
+    '' as split,
+    mp.*,
+    '' as split,
+    mc.*,
+    '' as split,
+    t.*
+FROM touched_manga t
+JOIN manga m ON m.id = t.manga_id
+JOIN manga_chapter mc ON mc.id = t.manga_chapter_id
+LEFT JOIN manga_progress mp ON mp.id = t.progress_id
+ORDER BY m.title ASC
+LIMIT :size OFFSET :offset;
+
+SELECT COUNT(*) FROM touched_manga;
+
+DROP TABLE touched_manga;";
+
+			var offset = (page - 1) * size;
+			using var con = _sql.CreateConnection();
+			using var rdr = await con.QueryMultipleAsync(QUERY, new { platformId, state = (int)state, offset, size });
+
+			var results = rdr.Read<DbManga, DbMangaProgress, DbMangaChapter, MangaStats, MangaProgress>((m, p, c, s) =>  new MangaProgress(m, p, c, s), splitOn: "split");
+			var total = await rdr.ReadSingleAsync<int>();
+			var pages = (long)Math.Ceiling((double)total / size);
+			return new PaginatedResult<MangaProgress>(pages, total, results.ToArray());
+		}
 	}
 
 	public record class MangaSortField(string Name, int Id, string SqlName);
+
+	public enum TouchedState
+	{
+		All = 99,
+		Favourite = 1,
+		Completed = 2,
+		InProgress = 3,
+		Bookmarked = 4
+	}
 }

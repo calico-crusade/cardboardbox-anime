@@ -1,13 +1,14 @@
-<cba-container [loading]="loading" [error]="error" [requires-login]="true" [handle-scroll]="true" flex-flow="column">
+<cba-container [loading]="loading" [error]="error" [requires-login]="true" [ifs-enabled]="true" (ifs)="onScroll()" flex-flow="column">
     <header>
         <div class="select-list">
-            <button (click)="state = 'all'" [ngClass]="{ 'active': state == 'all' }">All</button>
-            <button (click)="state = 'inp'" [ngClass]="{ 'active': state == 'inp' }">In Progress</button>
-            <button (click)="state = 'com'" [ngClass]="{ 'active': state == 'com' }">Completed</button>
-            <button (click)="state = 'fvr'" [ngClass]="{ 'active': state == 'fvr' }">Favourites</button>
+            <a [routerLink]="['/manga', 'touched', 'all']" routerLinkActive="active">All<span> ({{ total }})</span></a>
+            <a [routerLink]="['/manga', 'touched', 'completed']" routerLinkActive="active">Completed<span> ({{ total }})</span></a>
+            <a [routerLink]="['/manga', 'touched', 'in-progress']" routerLinkActive="active">In Progress<span> ({{ total }})</span></a>
+            <a [routerLink]="['/manga', 'touched', 'bookmarked']" routerLinkActive="active">Bookmarked<span> ({{ total }})</span></a>
+            <a [routerLink]="['/manga', 'touched', 'favourite']" routerLinkActive="active">Favourites<span> ({{ total }})</span></a>
         </div>
     </header>
     <main>
-        <cba-manga-card *ngFor="let manga of records" [data]="manga" @messageState></cba-manga-card>
+        <cba-manga-card *ngFor="let manga of records" [data]="manga"></cba-manga-card>
     </main>
 </cba-container>

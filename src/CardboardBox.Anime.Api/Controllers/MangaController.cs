@@ -178,5 +178,16 @@ namespace CardboardBox.Anime.Api.Controllers
 			var data = await _db.Manga.Random(this.UserFromIdentity()?.Id);
 			return Ok(data);
 		}
+
+		[HttpGet, Route("manga/touched")]
+		[ProducesDefaultResponseType(typeof(PaginatedResult<MangaProgress>))]
+		public async Task<IActionResult> Touched([FromQuery] int page = 1, [FromQuery] int size = 100, [FromQuery] string? type = null)
+		{
+			if (!Enum.TryParse<TouchedState>(type, true, out var touchedType))
+				touchedType = TouchedState.All;
+
+			var data = await _db.Manga.Touched(this.UserFromIdentity()?.Id, page, size, touchedType);
+			return Ok(data);
+		}
 	}
 }

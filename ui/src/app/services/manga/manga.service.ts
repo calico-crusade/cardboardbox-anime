@@ -68,4 +68,10 @@ export class MangaService extends ConfigObject {
     }
 
     random() { return this.http.get<MangaWithChapters>(`${this.apiUrl}/manga/random`); }
+
+    touched(page: number, size: number, type?: ('favourite' | 'completed' | 'inprogress' | 'bookmarked' | number)) {
+        let params: { [key: string]: any } = { page, size };
+        if (type) params['type'] = type;
+        return this.http.get<PaginatedMangaProgress>(`${this.apiUrl}/manga/touched`, { params });
+    }
 }
