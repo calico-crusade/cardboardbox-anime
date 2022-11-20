@@ -1,7 +1,8 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { catchError, of } from 'rxjs';
+import { PopupComponent, PopupInstance, PopupService } from 'src/app/components';
 import { AuthService, LightNovelService, MangaProgressData, MangaService } from 'src/app/services';
 
 @Component({
@@ -9,6 +10,9 @@ import { AuthService, LightNovelService, MangaProgressData, MangaService } from 
     styleUrls: ['./manga-in-progress.component.scss']
 })
 export class MangaInProgressComponent implements OnInit, OnDestroy {
+
+    @ViewChild('popup') popup!: PopupComponent;
+    private _popIn?: PopupInstance;
 
     loading: boolean = false;
     error?: string;
@@ -37,7 +41,8 @@ export class MangaInProgressComponent implements OnInit, OnDestroy {
         private auth: AuthService,
         private title: Title,
         private lnApi: LightNovelService,
-        private route: ActivatedRoute
+        private route: ActivatedRoute,
+        private pop: PopupService
     ) { }
 
     ngOnInit() {
@@ -87,5 +92,13 @@ export class MangaInProgressComponent implements OnInit, OnDestroy {
         if (this.pages < this.page) return;
 
         this.process();
+    }
+
+    openFilters() {
+        this._popIn = this.pop.show(this.popup);
+    }
+
+    closeFilters() {
+        this._popIn?.ok();
     }
 }
