@@ -91,6 +91,7 @@ export interface MangaProgressData {
         pageProgress: number;
         favourite: boolean;
         bookmarks: number[];
+        hasBookmarks: boolean;
     }
 }
 

@@ -42,5 +42,8 @@
 
 		[JsonPropertyName("bookmarks")]
 		public int[] Bookmarks { get; set; } = Array.Empty<int>();
+
+		[JsonPropertyName("hasBookmarks")]
+		public bool HasBookmarks { get; set; } = false;
 	}
 }

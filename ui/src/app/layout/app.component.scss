@@ -55,10 +55,7 @@
             white-space: pre;
             overflow-x: hidden;
             text-overflow: ellipsis;
-        }
-
-        :last-child {
-            margin-left: auto;
+            flex: 1;
         }
 
         &.hide {

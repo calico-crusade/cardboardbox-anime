@@ -34,6 +34,7 @@ export class MangaCardComponent implements OnInit {
     get icon() {
         if (this.stats?.favourite) return { text: 'star', fill: true };
         if (this.stats?.chapterProgress === 100) return { text: 'check_circle' };
+        if (this.stats?.hasBookmarks) return { text: 'bookmarks' };
         if (this.progress) return { text: 'collections_bookmark' };
         return undefined;
     }
