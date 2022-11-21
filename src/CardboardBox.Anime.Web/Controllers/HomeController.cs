@@ -182,6 +182,27 @@ namespace CardboardBox.Anime.Web.Controllers
 			return File(data, "text/html");
 		}
 
+		[HttpGet, Route("series/{id}/book/{bookId}/chapter/{chapterId}")]
+		public async Task<IActionResult> Series(long id, long bookId, long chapterId)
+		{
+			var series = await _novels.Books.Fetch(bookId);
+			if (series == null) return File(await _og.Default(), "text/html");
+
+			var data = await _og.Replace(c =>
+			{
+				c.Title(series.Title)
+				 .Description($"Read `{series.Title}` online or download the ebooks!")
+				 .Locale("en-us")
+				 .Type("website")
+				 .Url($"https://cba.index-0.com/series/{id}/book/{bookId}/chapter/{chapterId}")
+				 .SiteName(SITE_NAME_BOOKS)
+				 .ProxiedImage(series.CoverImage ?? DEFAULT_IMAGE)
+				 .PublishTime(series.CreatedAt ?? DateTime.Now)
+				 .ModifiedTime(series.UpdatedAt ?? DateTime.Now);
+			});
+			return File(data, "text/html");
+		}
+
 		[HttpGet, Route("series/{**catchAll}"), Route("series")]
 		public async Task<IActionResult> Series()
 		{
