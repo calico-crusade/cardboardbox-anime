@@ -3,9 +3,6 @@
         <a class="logo" href="/">
             <img src="/assets/logo.png" />
         </a>
-        <!-- <a class="logo" href="/" *ngIf="!title">
-            Cardboard<b>Box</b> - Anime
-        </a> -->
         <span class="title">{{ title }}</span>
         <button class="menu" (click)="menuOpen = !menuOpen"  *ngIf="loggedIn">
             <img [src]="user?.avatar" alt="User Avatar" />

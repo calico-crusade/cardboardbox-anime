@@ -155,18 +155,32 @@ main {
     }
 
     &.invert {
-        img {
+        img, .page {
             filter: invert(100%)
         }
+    }
 
-        .page {
-            filter: invert(100%)
+    &.blue-light-low-brightness {
+        img, .page {
+            filter: sepia(40%) saturate(200%) brightness(60%);
         }
     }
 
     &.blue-light {
         img, .page {
-            filter: sepia(40%) saturate(200%) brightness(60%);
+            filter: sepia(40%) saturate(200%);
+        }
+    }
+
+    &.blue-print {
+        img, .page {
+            filter: sepia(100%) saturate(500%) hue-rotate(180deg);
+        }
+    }
+
+    &.custom {
+        img, .page {
+            filter: var(--custom-image-filter);
         }
     }
 
@@ -229,24 +243,6 @@ main {
     }
 }
 
-// .float-icon {
-//     position: absolute;
-//     top: 5px;
-//     right: 20px;
-//     outline: none;
-//     border: none;
-//     background-color: var(--brd-color-accent);
-//     padding: 10px;
-//     border-radius: 50%;
-//     color: var(--text-color);
-//     cursor: pointer;
-
-//     &:disabled {
-//         color: var(--text-color-muted);
-//         cursor: not-allowed;
-//     }
-// }
-
 h2 {
     padding: 0;
     margin: 5px 0;
@@ -280,7 +276,7 @@ h2 {
         outline: none;
         border: 1px solid var(--accent-2);
         background: var(--bg-accent);
-        padding: #{$select-list-padding / 2};
+        padding: calc(#{$select-list-padding} / 2);
         margin: 0;
         color: var(--text-color);
         line-height: 100%;
@@ -343,6 +339,37 @@ h2 {
 .bookmarks {
     display: flex;
     flex-flow: column;
+}
+
+.links {
+    display: flex;
+    flex-flow: column;
+
+    button, a {
+        display: flex;
+        flex-flow: row;
+        outline: none;
+        background-color: var(--bg-accent);
+        border: 1px solid var(--accent-2);
+        color: var(--text-color);
+        text-align: left;
+        font-size: 16px;
+        text-decoration: none;
+        padding: calc(#{$select-list-padding} / 2);
+        cursor: pointer;
+
+        .icon {
+            margin: auto 5px;
+        }
+
+        .text {
+            margin: auto 0;
+        }
+
+        &:not(:first-child) {
+            border-top: none;
+        }
+    }
 }
 
 @media only screen and (max-width: 720px) {

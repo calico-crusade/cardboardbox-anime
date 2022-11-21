@@ -7,17 +7,13 @@
             <button (click)="prevPage()" [disabled]="!hasPreviousPage" *ngIf="!settings.scroll.value">
                 <cba-icon>navigate_before</cba-icon>
             </button>
-            <button (click)="pageChange(0)">
-                <cba-icon>restart_alt</cba-icon>
-            </button>
             <ng-container *ngIf="!settings.hideExtraButtons.value">
                 <a [routerLink]="['/manga', id ]">
                     <cba-icon>menu_book</cba-icon>
                 </a>
-    
-                <a [href]="proxy(pageImage)" target="_blank">
-                    <cba-icon>download</cba-icon>
-                </a>
+                <button (click)="openLinks()">
+                    <cba-icon>more_vert</cba-icon>
+                </button>
             </ng-container>
 
     
@@ -42,10 +38,6 @@
             <ng-container *ngIf="!settings.hideExtraButtons.value && loggedIn">
                 <button (click)="bookmarkPage()">
                     <cba-icon [fill]="bookmarks.indexOf(page) !== -1">bookmark</cba-icon>
-                </button>
-    
-                <button (click)="showBookmarks()">
-                    <cba-icon>bookmarks</cba-icon>
                 </button>
             </ng-container>
             <button (click)="settingsShow()">
@@ -95,6 +87,9 @@
             <button class="float-icon" (click)="bookmarkPage()">
                 <cba-icon [fill]="bookmarks.indexOf(page) !== -1">bookmark</cba-icon>
             </button>
+            <button class="float-icon" (click)="openLinks()">
+                <cba-icon>more_vert</cba-icon>
+            </button>
         </div>
     </section>
 </cba-container>
@@ -120,12 +115,6 @@
                 Hide Header
             </label>
         </section>
-        <!-- <section>
-            <label>
-                <input type="checkbox" [(ngModel)]="settings.invert.value" />
-                Invert Colors (It's cursed)
-            </label>
-        </section> -->
         <section>
             <label>
                 <input type="checkbox" [(ngModel)]="settings.noDirectionalButton.value" />
@@ -144,7 +133,6 @@
                 <input type="number" class="fill" step="10" [(ngModel)]="settings.scrollAmount.value" />
             </div>
         </section>
-        
         <section><label>Image Size:</label></section>
         <section>
             <div class="select-list fill">
@@ -165,6 +153,14 @@
                 </select>
             </div>
         </section>
+        <ng-container *ngIf="settings.filter.value === 'custom'">
+            <section><label>Custom Filter:</label></section>
+            <section>
+                <div class="select-list fill">
+                    <input type="text" class="fill" [(ngModel)]="settings.customFilter.value" />
+                </div>
+            </section>
+        </ng-container>
         <section><label>Page Progress Bar:</label></section>
         <section>
             <div class="select-list fill">
@@ -210,6 +206,40 @@
                 </button>
             </div>
         </section>
+    </div>
+</cba-popup>
+
+<cba-popup #links>
+    <h2>More Options...</h2>
+    <div class="links">
+        <button (click)="share()">
+            <div class="icon"><cba-icon>share</cba-icon></div>
+            <div class="text">Copy Link</div>
+        </button>
+        <a [href]="proxy(pageImage)" target="_blank">
+            <div class="icon"><cba-icon>download</cba-icon></div>
+            <div class="text">Download Page</div>
+        </a>
+        <button (click)="pageChange(0)">
+            <div class="icon"><cba-icon>restart_alt</cba-icon></div>
+            <div class="text">Restart Chapter</div>
+        </button>
+        <button (click)="showBookmarks()">
+            <div class="icon"><cba-icon>bookmarks</cba-icon></div>
+            <div class="text">All Bookmarks</div>
+        </button>
+        <a [routerLink]="['/manga', id ]">
+            <div class="icon"><cba-icon>menu_book</cba-icon></div>
+            <div class="text">Manga Home Page</div>
+        </a>
+        <button (click)="resetOptions()">
+            <div class="icon"><cba-icon>settings_suggest</cba-icon></div>
+            <div class="text">Reset Settings</div>
+        </button>
+        <button (click)="fullscreen()">
+            <div class="icon"><cba-icon>fullscreen</cba-icon></div>
+            <div class="text">Toggle Fullscreen</div>
+        </button>
     </div>
 </cba-popup>
 

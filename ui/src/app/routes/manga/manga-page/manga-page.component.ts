@@ -13,13 +13,14 @@ const DEFAULT_IMAGE = 'https://wallpaperaccess.com/full/1979093.jpg';
 })
 export class MangaPageComponent implements OnInit, OnDestroy {
 
-    progressBarOptions = ['', 'bottom', 'left', 'right' ];
+    progressBarOptions = ['', 'bottom', 'left', 'right'];
     sizeOptions = ['Fit to Height', 'Fit to Width', 'Natural Image Size'];
-    filters = ['', 'invert', 'blue-light'];
+    filters = ['', 'invert', 'blue-light-low-brightness', 'blue-light', 'blue-print', 'custom'];
 
     @ViewChild('popup') popup!: PopupComponent;
     @ViewChild('scrollcont') el!: ElementRef<any>;
     @ViewChild('bookmarkspopup') bookmarkPop!: PopupComponent;
+    @ViewChild('links') linksPop!: PopupComponent;
 
     loading: boolean = false;
     error?: string;
@@ -45,7 +46,8 @@ export class MangaPageComponent implements OnInit, OnDestroy {
         progressBar: new StorageVar<string>('', 'progress-bar'),
         noDirectionalButton: new StorageVar<boolean>(false, 'no-directional-buttons'),
         hideExtraButtons: new StorageVar<boolean>(false, 'hide-extra-buttons'),
-        filter: new StorageVar<string>('', 'filter')
+        filter: new StorageVar<string>('', 'filter'),
+        customFilter: new StorageVar<string>('sepia(40%) saturate(200%) brightness(60%)', 'custom-filter', (v) => this.setRootFilter(v))
     };
 
     get loggedIn() { return !!this.auth.currentUser; }
@@ -68,7 +70,7 @@ export class MangaPageComponent implements OnInit, OnDestroy {
 
     get hasNextPage() {
         if (!this.manga || !this.chapter) return false;
-        
+
         const p = this.page;
         if (p >= 0 && p < this.chapter.pages.length) return true;
 
@@ -83,7 +85,7 @@ export class MangaPageComponent implements OnInit, OnDestroy {
 
         c += 1;
         if (c >= 0 && c < this.chapters.length) return true;
-        
+
         return false;
     }
 
@@ -104,7 +106,7 @@ export class MangaPageComponent implements OnInit, OnDestroy {
 
         c -= 1;
         if (c >= 0 && c < this.chapters.length) return true;
-        
+
         return false;
     }
 
@@ -128,16 +130,16 @@ export class MangaPageComponent implements OnInit, OnDestroy {
 
     @HostListener('window:keydown', ['$event'])
     keyDownEvent(event: KeyboardEvent) {
-        if (!this.fitToWidth && 
+        if (!this.fitToWidth &&
             !this.settings.scroll.value) return;
 
         const pos = this.el.nativeElement.scrollTop;
         const offset = this.settings.scrollAmount.value;
-        if (event.key == 'ArrowUp') { 
+        if (event.key == 'ArrowUp') {
             this.el.nativeElement.scrollTop = (pos - offset);
             return;
         }
-        if (event.key == 'ArrowDown') { 
+        if (event.key == 'ArrowDown') {
             this.el.nativeElement.scrollTop = (pos + offset);
             return;
         }
@@ -149,7 +151,7 @@ export class MangaPageComponent implements OnInit, OnDestroy {
 
         if (event.key == 'ArrowRight') { this.nextPage(); return; }
 
-        if (this.fitToWidth || 
+        if (this.fitToWidth ||
             this.settings.scroll.value) return;
 
         if (event.key == 'ArrowUp') { this.prevPage(); return; }
@@ -183,7 +185,7 @@ export class MangaPageComponent implements OnInit, OnDestroy {
 
     private async process(force: boolean = false) {
         this.loading = true;
-        
+
         try {
             this.data = await this.getMangaData(force);
         } catch (err) {
@@ -260,7 +262,7 @@ export class MangaPageComponent implements OnInit, OnDestroy {
         let p = page;
         if (page === undefined) p = this.page - 1;
         p = p || 0;
-        this.router.navigate([ '/manga', this.id, chapter || this.chapterId, p + 1 ]);
+        this.router.navigate(['/manga', this.id, chapter || this.chapterId, p + 1]);
     }
 
     pageChange(p: number) {
@@ -287,7 +289,7 @@ export class MangaPageComponent implements OnInit, OnDestroy {
             this.navigate(0, chapter.id);
             return;
         }
-        
+
         this.printState(null, 'No change detected', true);
     }
 
@@ -406,6 +408,54 @@ export class MangaPageComponent implements OnInit, OnDestroy {
         if (!isRight && this.hasPreviousPage) {
             this.prevPage();
             return;
+        }
+    }
+
+    async share() {
+        const url = window.location.href;
+        await navigator.clipboard.writeText(url);
+    }
+
+    openLinks() {
+        this.pop.show(this.linksPop);
+    }
+
+    resetOptions() {
+        const settings: { [key: string]: StorageVar<any> } = this.settings;
+        for (let key in settings) settings[key].value = undefined;
+    }
+
+    setRootFilter(value?: string) {
+        document.documentElement.style.setProperty('--custom-image-filter', value || '');
+    }
+
+    fullscreen() {
+        const elem = <any>document.documentElement;
+        const doc = <any>document;
+
+        const isFullScreen = () => {
+            return ((<any>window).fullScreen) || 
+                (window.innerWidth == screen.width && window.innerHeight == screen.height) ||
+                (!window.screenTop && !window.screenY);
+        };
+
+        if (isFullScreen()) {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (doc.webkitExitFullscreen) { /* Safari */
+                doc.webkitExitFullscreen();
+            } else if (doc.msExitFullscreen) { /* IE11 */
+                doc.msExitFullscreen();
+            }
+            return;
+        }
+
+        if (elem.requestFullscreen) {
+            elem.requestFullscreen();
+        } else if (elem.webkitRequestFullscreen) { /* Safari */
+            elem.webkitRequestFullscreen();
+        } else if (elem.msRequestFullscreen) { /* IE11 */
+            elem.msRequestFullscreen();
         }
     }
 }
