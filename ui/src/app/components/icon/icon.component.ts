@@ -9,4 +9,5 @@ export class IconComponent {
     @Input('font-size') size?: string; 
     @Input('unsize') unsize: boolean = false;
     @Input('fill') fill: boolean = false;
+    @Input('spin') spin: boolean = false;
 }

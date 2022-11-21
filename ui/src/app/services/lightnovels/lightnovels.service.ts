@@ -1,10 +1,8 @@
-import { HttpClient, HttpResponse } from "@angular/common/http";
+import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Observable, of, tap } from "rxjs";
 import { ConfigObject } from "../config.base";
 import { ChapterPages, NovelBook, NovelChapter, NovelSeries, PagesResult, Scaffold, SeriesResult } from "./lightnovels.model";
-import { saveAs } from "file-saver";
-
 
 @Injectable({
     providedIn: 'root'
@@ -57,23 +55,6 @@ export class LightNovelService extends ConfigObject {
 
         if ('seriesId' in item) return book(item.id);
         return series(item.id);
-    }
-
-    download(url: string): Observable<HttpResponse<Blob>> {
-        return this.http.get(url, {
-            observe: 'response',
-            responseType: 'blob'
-        }).pipe(
-            tap(t => {
-                const filename = t.headers.get('content-disposition')
-                    ?.split(';')[1]
-                    .split('filename')[1]
-                    .split('=')[1]
-                    .trim();
-
-                if (t.body) saveAs(t.body, filename);
-            })
-        );
     }
 
     load(url: string): Observable<{ count: number, isNew: boolean }>;

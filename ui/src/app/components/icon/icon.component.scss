@@ -14,3 +14,13 @@
     height: unset;
     width: unset;
 }
+
+.spin {
+    animation: spin 10s linear infinite;
+}
+
+@keyframes spin {
+    100% {
+        transform: rotate(360deg);
+    }
+}

@@ -1,12 +1,17 @@
 import { Injectable } from '@angular/core';
 import { Anime, List, ListMapItem } from './anime/anime.model';
+import { saveAs } from "file-saver";
+import { HttpClient, HttpResponse } from '@angular/common/http';
+import { Observable, of, tap } from "rxjs";
 
 @Injectable({
     providedIn: 'root'
 })
 export class UtilitiesService {
 
-    constructor() { }
+    constructor(
+        private http: HttpClient
+    ) { }
 
     all<T>(data: T[], pred: (item: T) => boolean) {
         for(let i of data) {
@@ -78,5 +83,22 @@ export class UtilitiesService {
 
         const ids = this.anime(map, list);
         return this.any(ids, anime);
+    }
+
+    download(url: string): Observable<HttpResponse<Blob>> {
+        return this.http.get(url, {
+            observe: 'response',
+            responseType: 'blob'
+        }).pipe(
+            tap(t => {
+                const filename = t.headers.get('content-disposition')
+                    ?.split(';')[1]
+                    .split('filename')[1]
+                    .split('=')[1]
+                    .trim();
+
+                if (t.body) saveAs(t.body, filename);
+            })
+        );
     }
 }

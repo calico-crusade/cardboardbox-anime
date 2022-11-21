@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { catchError, of } from 'rxjs';
-import { AuthService, LightNovelService, NovelBook, NovelChapter, Scaffold } from './../../../services';
+import { AuthService, LightNovelService, NovelBook, NovelChapter, Scaffold, UtilitiesService } from './../../../services';
 
 @Component({
     templateUrl: './book.component.html',
@@ -57,7 +57,8 @@ export class BookComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private api: LightNovelService,
         private auth: AuthService,
-        private title: Title
+        private title: Title,
+        private util: UtilitiesService
     ) { }
 
     ngOnInit(): void {
@@ -123,7 +124,7 @@ export class BookComponent implements OnInit, OnDestroy {
         this.downloading = true;
         const url = this.api.downloadUrl(this.book);
 
-        this.api
+        this.util
             .download(url)
             .pipe(
                 catchError(error => {

@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { catchError, of } from 'rxjs';
 import { LightNovelService, Scaffold } from './../../../services/lightnovels';
 import { Title } from '@angular/platform-browser';
-import { AuthService } from 'src/app/services';
+import { AuthService, UtilitiesService } from 'src/app/services';
 
 @Component({
     templateUrl: './series.component.html',
@@ -28,7 +28,8 @@ export class SeriesComponent implements OnInit, OnDestroy {
         private api: LightNovelService,
         private route: ActivatedRoute,
         private title: Title,
-        private auth: AuthService
+        private auth: AuthService,
+        private util: UtilitiesService
     ) { }
 
     ngOnInit(): void {
@@ -72,7 +73,7 @@ export class SeriesComponent implements OnInit, OnDestroy {
         this.downloading = true;
         const url = this.api.downloadUrl(this.series);
 
-        this.api
+        this.util
             .download(url)
             .pipe(
                 catchError(error => {

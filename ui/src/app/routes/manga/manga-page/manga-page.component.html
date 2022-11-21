@@ -216,10 +216,11 @@
             <div class="icon"><cba-icon>share</cba-icon></div>
             <div class="text">Copy Link</div>
         </button>
-        <a [href]="proxy(pageImage)" target="_blank">
-            <div class="icon"><cba-icon>download</cba-icon></div>
+        <button (click)="download(proxy(pageImage))" [disabled]="downloading">
+            <div class="icon" *ngIf="!downloading"><cba-icon>download</cba-icon></div>
+            <div class="icon" *ngIf="downloading"><cba-icon [spin]="true">sync</cba-icon></div>
             <div class="text">Download Page</div>
-        </a>
+        </button>
         <button (click)="pageChange(0)">
             <div class="icon"><cba-icon>restart_alt</cba-icon></div>
             <div class="text">Restart Chapter</div>

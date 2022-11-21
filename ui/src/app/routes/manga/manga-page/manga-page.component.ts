@@ -3,7 +3,7 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, lastValueFrom, of } from 'rxjs';
 import { PopupService, PopupComponent } from 'src/app/components';
-import { AuthService, LightNovelService, MangaChapter, MangaService, MangaWithChapters, StorageVar } from 'src/app/services';
+import { AuthService, LightNovelService, MangaChapter, MangaService, MangaWithChapters, StorageVar, UtilitiesService } from 'src/app/services';
 
 const DEFAULT_IMAGE = 'https://wallpaperaccess.com/full/1979093.jpg';
 
@@ -24,6 +24,7 @@ export class MangaPageComponent implements OnInit, OnDestroy {
 
     loading: boolean = false;
     error?: string;
+    downloading: boolean = false;
 
     id!: number;
     chapterId!: number;
@@ -120,7 +121,8 @@ export class MangaPageComponent implements OnInit, OnDestroy {
         private pop: PopupService,
         private lnApi: LightNovelService,
         private title: Title,
-        private auth: AuthService
+        private auth: AuthService,
+        private util: UtilitiesService
     ) { this.auth.showHeader = !this.settings.hideHeader.value; }
 
     proxy(url?: string) {
@@ -457,5 +459,26 @@ export class MangaPageComponent implements OnInit, OnDestroy {
         } else if (elem.msRequestFullscreen) { /* IE11 */
             elem.msRequestFullscreen();
         }
+    }
+
+    download(url: string) {
+        this.downloading = true;
+        this.util
+            .download(url)
+            .pipe(
+                catchError(error => {
+                    console.error('Error occurred while downloading file: ', {
+                        url,
+                        error
+                    });
+                    this.error = 'An error occurred while attempting to download your file!';
+                    setTimeout(() => {
+                        this.error = undefined;
+                    }, 3000);
+                    return of(undefined);
+                })
+            ).subscribe(t => {
+                this.downloading = false;
+            });
     }
 }
