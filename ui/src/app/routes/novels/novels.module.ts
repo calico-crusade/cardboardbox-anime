@@ -6,6 +6,7 @@ import { COMMON_IMPORTS, ComponentsModule } from "src/app/components/components.
 import { BookComponent } from "./book/book.component";
 import { SeriesListComponent } from "./series-list/series-list.component";
 import { SeriesComponent } from "./series/series.component";
+import { ChapterComponent } from './chapter/chapter.component';
 
 const ROUTES: Routes = [
     {
@@ -18,6 +19,9 @@ const ROUTES: Routes = [
     }, {
         path: ':id/book/:bookId',
         component: BookComponent
+    }, {
+        path: ':id/book/:bookId/chapter/:chapterId',
+        component: ChapterComponent
     }
 ];
 
@@ -34,7 +38,8 @@ const IMPORTS = [
     declarations: [
         SeriesListComponent,
         SeriesComponent,
-        BookComponent
+        BookComponent,
+        ChapterComponent
     ],
     imports: [ ...IMPORTS ]
 })

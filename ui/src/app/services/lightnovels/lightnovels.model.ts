@@ -53,3 +53,19 @@ export interface NovelSeries extends HashObject, MetaObject {
     genre: string[];
     tags: string[];
 }
+
+export interface ChapterPages {
+    page: {
+        ordinal: number;
+        seriesId: number;
+        url: string;
+        nextUrl: string;
+        content: string;
+        mimetype: string;
+    } & HashObject;
+    map: {
+        chapterId: number;
+        pageId: number;
+        ordinal: number;
+    } & HashObject
+}

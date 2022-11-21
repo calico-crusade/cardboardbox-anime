@@ -3,6 +3,7 @@
 namespace CardboardBox.Anime.Api.Controllers
 {
 	using LightNovel.Core;
+	using LightNovel.Core.Database;
 
 	[ApiController]
 	public class NovelsController : ControllerBase
@@ -56,6 +57,15 @@ namespace CardboardBox.Anime.Api.Controllers
 			return Ok(books);
 		}
 
+		[HttpGet, Route("novel/{bookId}/chapter/{chapterId}")]
+		[ProducesDefaultResponseType(typeof(ChapterPages[])), ProducesResponseType(404)]
+		public async Task<IActionResult> Chapter([FromRoute] long chapterId)
+		{
+			var chapters = await _db.ChapterPages.Chapter(chapterId);
+			if (chapters == null || chapters.Length <= 0) return NotFound();
+			return Ok(chapters);
+		}
+
 		[HttpGet, Route("novels/{seriesId}/pages")]
 		[ProducesDefaultResponseType(typeof(PaginatedResult<Page>))]
 		public async Task<IActionResult> Pages([FromRoute] long seriesId, [FromQuery] int page = 1, [FromQuery] int size = 100)
@@ -64,11 +74,8 @@ namespace CardboardBox.Anime.Api.Controllers
 			return Ok(data);
 		}
 
-		[HttpGet, Route("novels/load")]
-		[AdminAuthorize]
-		[ProducesResponseType(typeof(ErrorResponse), 400), ProducesResponseType(typeof(ErrorResponse), 404)]
-		[ProducesResponseType(401)]
-		[ProducesDefaultResponseType(typeof(LoadResponse))]
+		[HttpGet, Route("novels/load"), AdminAuthorize, ProducesDefaultResponseType(typeof(LoadResponse))]
+		[ProducesResponseType(typeof(ErrorResponse), 400), ProducesResponseType(typeof(ErrorResponse), 404), ProducesResponseType(401)]
 		public async Task<IActionResult> Load([FromQuery] string? url = null, [FromQuery] long? seriesId = null)
 		{
 			if (string.IsNullOrEmpty(url) && seriesId == null) return BadRequest(new ErrorResponse("Please specify the url or series ID"));

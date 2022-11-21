@@ -2,7 +2,7 @@ import { HttpClient, HttpResponse } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Observable, of, tap } from "rxjs";
 import { ConfigObject } from "../config.base";
-import { NovelBook, NovelChapter, NovelSeries, PagesResult, Scaffold, SeriesResult } from "./lightnovels.model";
+import { ChapterPages, NovelBook, NovelChapter, NovelSeries, PagesResult, Scaffold, SeriesResult } from "./lightnovels.model";
 import { saveAs } from "file-saver";
 
 
@@ -85,6 +85,10 @@ export class LightNovelService extends ConfigObject {
 
     invalidateCache() {
         this._scaffoldCache = {};
+    }
+
+    chapter(bookId: number, chapterId: number) {
+        return this.http.get<ChapterPages[]>(`${this.apiUrl}/novel/${bookId}/chapter/${chapterId}`);
     }
 
     private cacheItem<T>(id: number, url: string, cache: { [key: number]: T }) {

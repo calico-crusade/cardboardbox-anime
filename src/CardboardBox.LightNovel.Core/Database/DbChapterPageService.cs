@@ -12,7 +12,7 @@
 
 		Task Update(ChapterPage obj);
 
-		Task<(Page page, ChapterPage map)[]> Chapter(long chapterId);
+		Task<ChapterPages[]> Chapter(long chapterId);
 	}
 
 	public class DbChapterPageService : OrmMapExtended<ChapterPage>, IDbChapterPageService
@@ -34,7 +34,7 @@
 			return _sql.ExecuteScalar<long>(_upsertQuery, item);
 		}
 
-		public async Task<(Page page, ChapterPage map)[]> Chapter(long chapterId)
+		public async Task<ChapterPages[]> Chapter(long chapterId)
 		{
 			const string QUERY = @"
 SELECT 
@@ -48,9 +48,26 @@ WHERE
 ORDER BY cp.ordinal ASC";
 
 			using var con = _sql.CreateConnection();
-			return (await con.QueryAsync<Page, ChapterPage, (Page page, ChapterPage chapter)>(QUERY, 
-				(p, c) => (p, c),
+			return (await con.QueryAsync<Page, ChapterPage, ChapterPages>(QUERY, 
+				(p, c) => new(p, c),
 				new { chapterId })).ToArray();
+		}
+	}
+
+	public class ChapterPages
+	{
+		[JsonPropertyName("page")]
+		public Page Page { get; set; } = new();
+
+		[JsonPropertyName("map")]
+		public ChapterPage Map { get; set; } = new();
+
+		public ChapterPages() { }
+
+		public ChapterPages(Page page, ChapterPage map)
+		{
+			Page = page;
+			Map = map;
 		}
 	}
 }

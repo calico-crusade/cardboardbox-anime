@@ -56,9 +56,9 @@
         <main>
             <h1>Chapters: </h1>
             <div class="chapter-list">
-                <div class="chapter" *ngFor="let chap of chapters">
+                <a class="chapter" *ngFor="let chap of chapters" [routerLink]="['/series', seriesId, 'book', book.id, 'chapter', chap.id ]">
                     {{ chap.title }}
-                </div>
+                </a>
             </div>
             <h1>Images: </h1>
             <div class="image-list">

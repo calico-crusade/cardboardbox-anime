@@ -1,0 +1,39 @@
+<cba-container [loading]="loading" [error]="error" [handle-scroll]="true" flex-flow="column">
+    <header>
+        <button [disabled]="!bookPrev" (click)="move(bookPrev)"><cba-icon>skip_previous</cba-icon></button>
+        <button [disabled]="!chapterPrev" (click)="move(chapterPrev)"><cba-icon>navigate_before</cba-icon></button>
+        <button (click)="showChapters()"><cba-icon>menu_book</cba-icon></button>
+        <button (click)="move(book)"><cba-icon>book</cba-icon></button>
+
+        <div class="title">{{ chapter?.title }}</div>
+
+        <button><cba-icon>settings</cba-icon></button>
+        <button [disabled]="!chapterNext" (click)="move(chapterNext)"><cba-icon>navigate_next</cba-icon></button>
+        <button [disabled]="!bookNext" (click)="move(bookNext)"><cba-icon>skip_next</cba-icon></button>
+    </header>
+    <main>
+        <button [disabled]="!chapterPrev" (click)="move(chapterPrev)">
+            <cba-icon>navigate_before</cba-icon>
+        </button>
+        <div class="page" *ngFor="let p of pages" [ngSwitch]="p.page.mimetype">
+            <div class="page-content" *ngSwitchDefault [innerHTML]="p.page.content"></div>
+            <div class="page-image" *ngSwitchCase="'image/png'">
+                <img [src]="p.page.content" />
+            </div>
+        </div>
+        <button [disabled]="!chapterNext" (click)="move(chapterNext)">
+            <cba-icon>navigate_next</cba-icon>
+        </button>
+    </main>
+</cba-container>
+
+<cba-popup #popup>
+    <h2>Chapters:</h2>
+    <div class="chapter-list">
+        <a class="chapter" *ngFor="let chap of chapters" (click)="closeChapters()"
+            routerLinkActive="active"
+            [routerLink]="['/series', seriesId, 'book', bookId, 'chapter', chap.id ]">
+            {{ chap.title }}
+        </a>
+    </div>
+</cba-popup>
