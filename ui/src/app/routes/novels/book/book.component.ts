@@ -1,13 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { catchError, of } from 'rxjs';
-import { LightNovelService, NovelBook, NovelChapter, Scaffold } from './../../../services';
+import { AuthService, LightNovelService, NovelBook, NovelChapter, Scaffold } from './../../../services';
 
 @Component({
     templateUrl: './book.component.html',
     styleUrls: ['./book.component.scss']
 })
-export class BookComponent implements OnInit {
+export class BookComponent implements OnInit, OnDestroy {
 
     loading: boolean = false;
     downloading: boolean = false;
@@ -54,7 +55,9 @@ export class BookComponent implements OnInit {
 
     constructor(
         private route: ActivatedRoute,
-        private api: LightNovelService
+        private api: LightNovelService,
+        private auth: AuthService,
+        private title: Title
     ) { }
 
     ngOnInit(): void {
@@ -63,6 +66,11 @@ export class BookComponent implements OnInit {
             this.bookId = +t['bookId'];
             this.process();
         });
+    }
+
+    ngOnDestroy(): void {
+        this.title.setTitle(this.api.defaultTitle);
+        this.auth.title = undefined;
     }
 
     private process() {
@@ -95,6 +103,10 @@ export class BookComponent implements OnInit {
                 }
                 this.book = target?.book;
                 this.chapters = target?.chapters || [];
+                setTimeout(() => {
+                    this.title.setTitle(this.book?.title || 'CardboardBox | Anime');
+                    this.auth.title = this.book?.title;
+                }, 100);
 
                 if (this.book) {
                     this.nextBook = this.scaffold.books.find(t => t.book.ordinal === target.book.ordinal + 1)?.book;

@@ -1,14 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { catchError, of } from 'rxjs';
 import { LightNovelService, Scaffold } from './../../../services/lightnovels';
-import { saveAs } from 'file-saver';
+import { Title } from '@angular/platform-browser';
+import { AuthService } from 'src/app/services';
 
 @Component({
     templateUrl: './series.component.html',
     styleUrls: ['./series.component.scss']
 })
-export class SeriesComponent implements OnInit {
+export class SeriesComponent implements OnInit, OnDestroy {
 
     id: number = 0;
     scaffold?: Scaffold;
@@ -25,7 +26,9 @@ export class SeriesComponent implements OnInit {
 
     constructor(
         private api: LightNovelService,
-        private route: ActivatedRoute
+        private route: ActivatedRoute,
+        private title: Title,
+        private auth: AuthService
     ) { }
 
     ngOnInit(): void {
@@ -33,6 +36,11 @@ export class SeriesComponent implements OnInit {
             this.id = +t['id'];
             this.process();
         });
+    }
+
+    ngOnDestroy(): void {
+        this.title.setTitle(this.api.defaultTitle);
+        this.auth.title = undefined;
     }
 
     private process() {
@@ -52,6 +60,8 @@ export class SeriesComponent implements OnInit {
             )
             .subscribe(t => {
                 this.scaffold = t;
+                this.title.setTitle(this.scaffold?.series.title || 'CardboardBox | Anime');
+                this.auth.title = this.scaffold?.series.title || '';
                 this.loading = false;
             });
     }
