@@ -1,0 +1,41 @@
+<cba-popup #popup>
+    <h2>Dictionary:</h2>
+    <div class="loading" *ngIf="loading">
+        <img src="/assets/loading.gif" alt="Loading Icon" />
+        <span>Loading...</span>
+    </div>
+    <div class="loading" *ngIf="!loading && definition.length <= 0">
+        <img src="/assets/error.gif" alt="Loading Icon" />
+        <span>I couldn't find a definition for "{{ text }}"</span>
+    </div>
+    <div class="definition" *ngIf="!loading && definition.length > 0">
+        <button (click)="play()" *ngIf="audio">
+            <cba-icon>volume_up</cba-icon>
+        </button>
+        <div class="def" *ngFor="let def of definition">
+            <header>
+                <div class="title">{{ def.word }}</div>
+                <div class="phonetic">{{ def.phonetic }}</div>
+            </header>
+            <ul class="meanings">
+                <li *ngFor="let meaning of def.meanings" class="meaning">
+                    <div class="pos">{{ meaning.partOfSpeech }}</div>
+                    <ol>
+                        <li *ngFor="let d of meaning.definitions">
+                            <div class="meaning">{{ d.definition }}</div>
+                            <div class="example">{{ d.example }}</div>
+                        </li>
+                    </ol>
+                    <div class="syn" *ngIf="meaning.synonyms.length > 0">
+                        <b>Synonyms:</b>
+                        <span *ngFor="let s of meaning.synonyms" (click)="go(s)">{{ s }}</span>
+                    </div>
+                    <div class="syn" *ngIf="meaning.antonyms.length > 0">
+                        <b>Antonyms:</b>
+                        <span *ngFor="let s of meaning.antonyms" (click)="go(s)">{{ s }}</span>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</cba-popup>

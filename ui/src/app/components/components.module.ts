@@ -22,6 +22,7 @@ import { PopupComponent } from './popup/popup.component';
 import { ImageProxyDirective } from "./image-proxy.directive";
 import { MarkdownDirective } from "./markdown.directive";
 import { MagicCircleModule } from "./magic-circle";
+import { DictionaryDefinitionComponent } from './dictionary-definition/dictionary-definition.component';
 
 @Injectable()
 export class MyHammerConfig extends HammerGestureConfig {
@@ -41,7 +42,8 @@ const EXPORTS = [
     ImageFallbackDirective,
     ImageProxyDirective,
     PopupComponent,
-    MarkdownDirective
+    MarkdownDirective,
+    DictionaryDefinitionComponent
 ];
 
 export const COMMON_IMPORTS = [

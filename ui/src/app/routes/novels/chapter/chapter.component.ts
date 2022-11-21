@@ -3,6 +3,7 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import { PopupComponent, PopupInstance, PopupService } from 'src/app/components';
+import { DictionaryDefinitionService } from 'src/app/components/dictionary-definition/dictionary-definition.service';
 import { AuthService, ChapterPages, LightNovelService, NovelBook, NovelChapter, Scaffold } from 'src/app/services';
 
 @Component({
@@ -43,7 +44,8 @@ export class ChapterComponent implements OnInit, OnDestroy {
         private router: Router,
         private pop: PopupService,
         private auth: AuthService,
-        private title: Title
+        private title: Title,
+        private dic: DictionaryDefinitionService
     ) { }
 
     ngOnInit(): void {
@@ -58,6 +60,17 @@ export class ChapterComponent implements OnInit, OnDestroy {
     ngOnDestroy(): void {
         this.auth.title = undefined;
         this.title.setTitle(this.api.defaultTitle);
+    }
+
+    mouseEvent() {
+        const data = document.getSelection();
+        const text = data?.toString();
+        if (!text) return;
+        
+        const words = text.split(' ');
+        if (words.length > 4) return;
+
+        this.dic.definition(text);
     }
 
     private async process() {

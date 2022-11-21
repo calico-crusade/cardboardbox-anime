@@ -11,7 +11,7 @@
         <button [disabled]="!chapterNext" (click)="move(chapterNext)"><cba-icon>navigate_next</cba-icon></button>
         <button [disabled]="!bookNext" (click)="move(bookNext)"><cba-icon>skip_next</cba-icon></button>
     </header>
-    <main>
+    <main (mouseup)="mouseEvent()">
         <button [disabled]="!chapterPrev" (click)="move(chapterPrev)">
             <cba-icon>navigate_before</cba-icon>
         </button>
@@ -37,3 +37,5 @@
         </a>
     </div>
 </cba-popup>
+
+<cba-dictionary-definition></cba-dictionary-definition>
