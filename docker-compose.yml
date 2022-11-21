@@ -29,13 +29,6 @@ services:
       - cba-postgres
     volumes:
       - ./image-cache:/app/wwwroot/image-cache
-  cba-ui:
-    image: ghcr.io/calico-crusade/cardboardbox-anime/ui:latest
-    restart: always
-    ports:
-      - 8892:80
-    depends_on:
-      - cba-api
   cba-bot:
     image: ghcr.io/calico-crusade/cardboardbox-anime/bot:latest
     restart: always
