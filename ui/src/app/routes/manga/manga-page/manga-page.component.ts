@@ -15,6 +15,7 @@ export class MangaPageComponent implements OnInit, OnDestroy {
 
     progressBarOptions = ['', 'bottom', 'left', 'right' ];
     sizeOptions = ['Fit to Height', 'Fit to Width', 'Natural Image Size'];
+    filters = ['', 'invert', 'blue-light'];
 
     @ViewChild('popup') popup!: PopupComponent;
     @ViewChild('scrollcont') el!: ElementRef<any>;
@@ -44,6 +45,7 @@ export class MangaPageComponent implements OnInit, OnDestroy {
         progressBar: new StorageVar<string>('', 'progress-bar'),
         noDirectionalButton: new StorageVar<boolean>(false, 'no-directional-buttons'),
         hideExtraButtons: new StorageVar<boolean>(false, 'hide-extra-buttons'),
+        filter: new StorageVar<string>('', 'filter')
     };
 
     get loggedIn() { return !!this.auth.currentUser; }

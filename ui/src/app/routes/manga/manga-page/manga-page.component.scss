@@ -164,6 +164,12 @@ main {
         }
     }
 
+    &.blue-light {
+        img, .page {
+            filter: sepia(40%) saturate(200%) brightness(60%);
+        }
+    }
+
 }
 
 .progress-bar {

@@ -1,28 +1,56 @@
-<cba-container>
-    <div class="circle-rotater" *ngFor="let r of rotaters; let x = index" [style.animation-delay]="getDelay(x)" [ngClass]="{ 'animate': animate }">
-        <magic-circle width="100%" height="100%">
-            <mc-ring [text]="spell">
-                <mc-square *ngFor="let x of squares; let i = index" [index]="i" [total]="squares.length">
-                    <mc-ring *ngIf="i == 0" text="">
-                        <mc-square *ngFor="let x of squares; let i = index" [index]="i" [total]="squares.length">
-                            <mc-ring *ngIf="i == 0" text="">
-                                <mc-square *ngFor="let x of squares; let i = index" [index]="i" [total]="squares.length">
-                                </mc-square>
-                            </mc-ring>
-                        </mc-square>
-                    </mc-ring>
-                </mc-square>
-            </mc-ring>
-        </magic-circle>
-    </div>
+<ng-container [ngSwitch]="page">
+    <cba-container *ngSwitchCase="'magic-circle'">
+        <div class="circle-rotater" *ngFor="let r of rotaters; let x = index" [style.animation-delay]="getDelay(x)" [ngClass]="{ 'animate': animate }">
+            <magic-circle width="100%" height="100%">
+                <mc-ring [text]="spell">
+                    <mc-square *ngFor="let x of squares; let i = index" [index]="i" [total]="squares.length">
+                        <mc-ring *ngIf="i == 0" text="">
+                            <mc-square *ngFor="let x of squares; let i = index" [index]="i" [total]="squares.length">
+                                <mc-ring *ngIf="i == 0" text="">
+                                    <mc-square *ngFor="let x of squares; let i = index" [index]="i" [total]="squares.length">
+                                    </mc-square>
+                                </mc-ring>
+                            </mc-square>
+                        </mc-ring>
+                    </mc-square>
+                </mc-ring>
+            </magic-circle>
+        </div>
+    
+        <div class="options-float">
+            <label>Number of Magic Circles:</label>
+            <input type="number" [(ngModel)]="rotateCount" />
+            <label>Number of Squares:</label>
+            <input type="number" [(ngModel)]="squareCount" />
+            <label>The text in the ring:</label>
+            <input type="text" [(ngModel)]="spell" />
+            <button (click)="animate = !animate">Animate: {{ animate ? 'true' : 'false' }}</button>
+        </div>
+    </cba-container>
+    <cba-container *ngSwitchCase="'image-test'">
+        <img [style.filter]="getStyle()" 
+            src="https://cba-proxy.index-0.com/proxy?path=https%3A%2F%2Fuploads.mangadex.org%2Fdata%2Fa491a83710b84d0fde66962785487741%2F42-5da625e3baee942ba7c05eb66ff291e073ba8afaf88b9a3454486347076a03c7.png&group=manga-page" />
 
-    <div class="options-float">
-        <label>Number of Magic Circles:</label>
-        <input type="number" [(ngModel)]="rotateCount" />
-        <label>Number of Squares:</label>
-        <input type="number" [(ngModel)]="squareCount" />
-        <label>The text in the ring:</label>
-        <input type="text" [(ngModel)]="spell" />
-        <button (click)="animate = !animate">Animate: {{ animate ? 'true' : 'false' }}</button>
-    </div>
-</cba-container>
+        <div class="options-float">
+            <label>Sepai:</label>
+            <input type="number" [(ngModel)]="sepai" />
+            <label>Hue:</label>
+            <input type="number" [(ngModel)]="hue" />
+            <label>Saturate:</label>
+            <input type="number" [(ngModel)]="saturate" />
+            <label>Brightness:</label>
+            <input type="number" [(ngModel)]="brightness" />
+        </div>
+    </cba-container>
+</ng-container>
+
+
+
+<div class="float-icons">
+    <button class="float-icon" (click)="page = 'magic-circle'">
+        <cba-icon>circle</cba-icon>
+    </button>
+    <button class="float-icon" (click)="page = 'image-test'">
+        <cba-icon>image</cba-icon>
+    </button>
+</div>

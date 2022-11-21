@@ -58,7 +58,8 @@
                 <cba-icon>skip_next</cba-icon>
             </button>
         </header>
-        <main [ngClass]="{ 'fit-width': fitToWidth, 'natural-img-size': !fitToHeight && !fitToWidth , 'scroll': settings.scroll.value, 'invert': settings.invert.value }" 
+        <main [ngClass]="{ 'fit-width': fitToWidth, 'natural-img-size': !fitToHeight && !fitToWidth , 'scroll': settings.scroll.value }" 
+              [class]="settings.filter.value"
               #scrollcont (click)="imageClick($event)">
             <ng-container *ngIf="settings.scroll.value">
                 <button class="scroll-button" (click)="prevChap()" [disabled]="!hasPreviousChapter">
@@ -119,12 +120,12 @@
                 Hide Header
             </label>
         </section>
-        <section>
+        <!-- <section>
             <label>
                 <input type="checkbox" [(ngModel)]="settings.invert.value" />
                 Invert Colors (It's cursed)
             </label>
-        </section>
+        </section> -->
         <section>
             <label>
                 <input type="checkbox" [(ngModel)]="settings.noDirectionalButton.value" />
@@ -150,6 +151,16 @@
                 <select [(ngModel)]="settings.imgSize.value" class="fill">
                     <option *ngFor="let opt of sizeOptions" [value]="opt">
                         {{ opt }}
+                    </option>
+                </select>
+            </div>
+        </section>
+        <section><label>Image Filters:</label></section>
+        <section>
+            <div class="select-list fill">
+                <select [(ngModel)]="settings.filter.value" class="fill">
+                    <option *ngFor="let opt of filters" [value]="opt">
+                        {{ opt || 'none' }}
                     </option>
                 </select>
             </div>
