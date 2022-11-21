@@ -79,9 +79,9 @@ export class ChapterComponent implements OnInit, OnDestroy {
         this.loading = true;
 
         try {
-            const prom = this.api.chapter(this.bookId, this.chapterId);
+            const prom = this.api.chapter(this.bookId, this.chapterId).promise;
             this.scaffold = await lastValueFrom(this.api.seriesById(this.seriesId));
-            this.pages = await lastValueFrom(prom);
+            this.pages = await prom;
         } catch (error: any) {
             console.error('Error occurred while fetching series', { error });
             this.error = error?.status;

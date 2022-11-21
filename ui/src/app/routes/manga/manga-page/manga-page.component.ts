@@ -208,7 +208,7 @@ export class MangaPageComponent implements OnInit, OnDestroy {
         }
 
         if (this.chapter.pages.length === 0) {
-            this.chapter.pages = await lastValueFrom(this.api.manga(this.id, this.chapterId));
+            this.chapter.pages = await this.api.manga(this.id, this.chapterId).promise;
             if (this.chapter.pages.length == 0) {
                 this.loading = false;
                 this.printState(null, 'Could not polyfill pages', true);
@@ -240,12 +240,9 @@ export class MangaPageComponent implements OnInit, OnDestroy {
                 mangaChapterId: this.chapterId,
                 page: this.page
             })
-            .pipe(
-                catchError(err => {
-                    this.printState(err, 'Error occurred while updating progress', true);
-                    return of({});
-                })
-            )
+            .error(err => {
+                this.printState(err, 'Error occurred while updating progress', true);
+            }, {})
             .subscribe(t => {
                 this.printState(null, 'Manga Progress Updated');
             });
@@ -256,7 +253,7 @@ export class MangaPageComponent implements OnInit, OnDestroy {
 
         if (!this.id) return undefined;
 
-        return await lastValueFrom(this.api.manga(this.id));
+        return await this.api.manga(this.id).promise;
     }
 
     navigate(page?: number, chapter?: number) {

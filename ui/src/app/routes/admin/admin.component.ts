@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { catchError, of } from 'rxjs';
 import { LightNovelService } from './../../services';
 
 @Component({
@@ -23,15 +22,7 @@ export class AdminComponent implements OnInit {
         (typeof item === 'string' ? 
             this.api.load(item) : 
             this.api.load(item))
-                .pipe(
-                    catchError(error => {
-                        this.error = error.toString();
-                        setTimeout(() => {
-                            this.error = undefined;
-                        }, 3000);
-                        return of();
-                    })
-                )
+                .error(error => this.error = error.toString())
                 .subscribe(t => {
                     this.res = t;
                     this.loading = false;       

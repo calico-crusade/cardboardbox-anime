@@ -1,8 +1,7 @@
-import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { Observable } from "rxjs";
 import { Filters } from "../anime/anime.model";
 import { ConfigObject } from "../config.base";
+import { HttpService, RxjsHttpResp } from "../http.service";
 import { Manga, MangaChapter, MangaFilter, MangaProgress, MangaProgressData, MangaProgressUpdate, MangaWithChapters, PaginatedManga, PaginatedMangaProgress } from "./manga.model";
 
 @Injectable({
@@ -11,67 +10,67 @@ import { Manga, MangaChapter, MangaFilter, MangaProgress, MangaProgressData, Man
 export class MangaService extends ConfigObject {
 
     constructor(
-        private http: HttpClient
+        private http: HttpService
     ) { super(); }
 
-    manga(id: number): Observable<MangaWithChapters>;
-    manga(id: number, chapter: number): Observable<string[]>;
-    manga(url: string): Observable<MangaWithChapters>;
+    manga(id: number): RxjsHttpResp<MangaWithChapters>;
+    manga(id: number, chapter: number): RxjsHttpResp<string[]>;
+    manga(url: string): RxjsHttpResp<MangaWithChapters>;
     manga(idUrl: number | string, chapter?: number) {
         if (!idUrl && !chapter) return undefined;
 
-        if (idUrl && typeof idUrl === 'number' && !chapter) return this.http.get<MangaWithChapters>(`${this.apiUrl}/manga/${idUrl}`);
-        if (idUrl && typeof idUrl === 'string' && !chapter) return this.http.get<MangaWithChapters>(`${this.apiUrl}/manga/load`, { params: { url: idUrl }});
-        return this.http.get<string[]>(`${this.apiUrl}/manga/${idUrl}/${chapter}/pages`);
+        if (idUrl && typeof idUrl === 'number' && !chapter) return this.http.get<MangaWithChapters>(`manga/${idUrl}`);
+        if (idUrl && typeof idUrl === 'string' && !chapter) return this.http.get<MangaWithChapters>(`manga/load`, { params: { url: idUrl }});
+        return this.http.get<string[]>(`manga/${idUrl}/${chapter}/pages`);
     }
 
-    reload(manga: Manga): Observable<MangaWithChapters>;
-    reload(url: string): Observable<MangaWithChapters>;
+    reload(manga: Manga): RxjsHttpResp<MangaWithChapters>;
+    reload(url: string): RxjsHttpResp<MangaWithChapters>;
     reload(item: Manga | string) {
         if (typeof item !== 'string') item = item.url;
-        return this.http.get<MangaWithChapters>(`${this.apiUrl}/manga/load`, { params: { url: item, force: true }});
+        return this.http.get<MangaWithChapters>('/manga/load', { params: { url: item, force: true }});
     }
 
     allManga(page: number, size: number) {
-        return this.http.get<PaginatedManga>(`${this.apiUrl}/manga`, { params: { page, size }});
+        return this.http.get<PaginatedManga>(`manga`, { params: { page, size }});
     }
 
     inProgress() {
-        return this.http.get<MangaProgressData[]>(`${this.apiUrl}/manga/in-progress`);
+        return this.http.get<MangaProgressData[]>(`manga/in-progress`);
     }
 
-    progress(id: number): Observable<MangaProgress>;
-    progress(progress: MangaProgressUpdate): Observable<any>;
+    progress(id: number): RxjsHttpResp<MangaProgress>;
+    progress(progress: MangaProgressUpdate): RxjsHttpResp<any>;
     progress(item: number | MangaProgressUpdate) {
-        if (typeof item === 'number') return this.http.get<MangaProgress>(`${this.apiUrl}/manga/${item}/progress`);
-        return this.http.post<any>(`${this.apiUrl}/manga`, item);
+        if (typeof item === 'number') return this.http.get<MangaProgress>(`manga/${item}/progress`);
+        return this.http.post<any>(`manga`, item);
     }
 
     filters() {
-        return this.http.get<Filters>(`${this.apiUrl}/manga/filters`);
+        return this.http.get<Filters>(`manga/filters`);
     }
 
     search(filter: MangaFilter) {
-        return this.http.post<PaginatedManga>(`${this.apiUrl}/manga/search`, filter);
+        return this.http.post<PaginatedManga>(`manga/search`, filter);
     }
 
     searchV2(filter: MangaFilter) {
-        return this.http.post<PaginatedMangaProgress>(`${this.apiUrl}/manga/search-v2`, filter);
+        return this.http.post<PaginatedMangaProgress>(`manga/search-v2`, filter);
     }
 
     favourite(id: number) {
-        return this.http.get<boolean>(`${this.apiUrl}/manga/${id}/favourite`);
+        return this.http.get<boolean>(`manga/${id}/favourite`);
     }
 
     bookmark(chapter: MangaChapter, pages: number[]) {
-        return this.http.post(`${this.apiUrl}/manga/${chapter.mangaId}/${chapter.id}/bookmark`, pages);
+        return this.http.post(`manga/${chapter.mangaId}/${chapter.id}/bookmark`, pages);
     }
 
-    random() { return this.http.get<MangaWithChapters>(`${this.apiUrl}/manga/random`); }
+    random() { return this.http.get<MangaWithChapters>(`manga/random`); }
 
     touched(page: number, size: number, type?: ('favourite' | 'completed' | 'inprogress' | 'bookmarked' | number)) {
         let params: { [key: string]: any } = { page, size };
         if (type) params['type'] = type;
-        return this.http.get<PaginatedMangaProgress>(`${this.apiUrl}/manga/touched`, { params });
+        return this.http.get<PaginatedMangaProgress>(`manga/touched`, { params });
     }
 }

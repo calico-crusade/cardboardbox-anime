@@ -1,7 +1,6 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
-import { catchError, of } from 'rxjs';
 import { PopupComponent, PopupInstance, PopupService } from 'src/app/components';
 import { AuthService, LightNovelService, MangaProgressData, MangaService } from 'src/app/services';
 
@@ -47,18 +46,20 @@ export class MangaInProgressComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.title.setTitle('CardboardBox | In Progress Manga');
-        this.auth.onLogin.subscribe(t => this.process());
-        this.route.params.subscribe(t => {
-            this.type = t['type'];
-            this.page = 1;
-            this.records = [];
-            this.loading = true;
-            this.process();
-        })
+        this.route.params.subscribe(t => this.handleParams(t));
+        this.auth.onLogin.subscribe(t => this.handleParams());
     }
 
     ngOnDestroy() {
         this.title.setTitle(this.api.defaultTitle);
+    }
+
+    handleParams(map?: { [key: string]: any }) {
+        this.type = map ? map['type'] : this.route.snapshot.paramMap.get('type')?.toString();
+        this.page = 1;
+        this.records = [];
+        this.loading = true;
+        this.process();
     }
 
     proxy(url?: string) {
@@ -71,13 +72,7 @@ export class MangaInProgressComponent implements OnInit, OnDestroy {
 
         this.api
             .touched(this.page, this.size, this.properType)
-            .pipe(
-                catchError(err => {
-                    console.error('Error occurred while fetching in-progress', { err });
-                    this.error = err.status;
-                    return of({ pages: 0, count: 0, results: [] });
-                })
-            )
+            .error(err => this.error = err.status, { pages: 0, count: 0, results: [] })
             .subscribe(t => {
                 const { pages, count, results } = t;
                 this.pages = pages;

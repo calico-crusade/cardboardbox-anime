@@ -35,13 +35,8 @@ export class SeriesListComponent implements OnInit {
         this.loading = true;
         this._api
             .series(this._page, this._size)
-            .pipe(
-                catchError((e) => {
-                    console.error('Error occurred while handling novels request', { e });
-                    return of({ results: [], count: 0, pages: 0 });
-                })
-            )
-            .subscribe((t) => {
+            .error(() => {}, { results: [], count: 0, pages: 0 })
+            .subscribe(t => {
                 const { results, count, pages } = t;
                 this.total = count;
                 this.pages = pages;

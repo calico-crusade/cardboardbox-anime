@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Anime, List, ListMapItem } from './anime/anime.model';
 import { saveAs } from "file-saver";
 import { HttpClient, HttpResponse } from '@angular/common/http';
-import { Observable, of, tap } from "rxjs";
+import { Observable, tap } from "rxjs";
 
 @Injectable({
     providedIn: 'root'

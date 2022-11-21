@@ -1,6 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { catchError, of } from 'rxjs';
 import { AiService } from 'src/app/services';
 
 @Component({
@@ -20,12 +19,7 @@ export class AiAllImagesComponent implements OnInit, OnDestroy {
         this.title.setTitle('CBA | All Gened Images');
         this.api
             .images()
-            .pipe(
-                catchError(err => {
-                    console.error('Error occurred fetching admin images', { err });
-                    return of([]);
-                })
-            )
+            .error(() => {}, [])
             .subscribe(t => {
                 this.images = t.map(t => {
                     return {

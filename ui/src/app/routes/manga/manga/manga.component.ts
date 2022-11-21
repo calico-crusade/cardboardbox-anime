@@ -94,7 +94,7 @@ export class MangaComponent implements OnInit, OnDestroy {
         }
 
         try {
-            this.progress = await lastValueFrom(this.api.progress(this.data.manga.id));
+            this.progress = await this.api.progress(this.data.manga.id).promise;
         } catch (error) {
             console.error('Error occurred while fetching manga progress', {
                 error,
@@ -108,10 +108,10 @@ export class MangaComponent implements OnInit, OnDestroy {
 
     private getMangaData() {
         if (this.id <= 0) {
-            return lastValueFrom(this.api.random());
+            return this.api.random().promise;
         }
 
-        return lastValueFrom(this.api.manga(this.id));
+        return this.api.manga(this.id).promise;
     }
 
     nextRandom() {
@@ -125,18 +125,7 @@ export class MangaComponent implements OnInit, OnDestroy {
         this.loading = true;
         this.api
             .reload(this.manga)
-            .pipe(
-                catchError(err => {
-                    this.error = 'An error occurred while refreshing the manga!';
-                    console.error('Error occurred!', {
-                        manga: this.manga,
-                        chapters: this.chapters,
-                        id: this.id,
-                        err
-                    })
-                    return of(undefined);
-                })
-            )
+            .error(err => this.error = 'An error occurred while refreshing the manga!')
             .subscribe(t => {
                 this.data = t;
                 this.loading = false;

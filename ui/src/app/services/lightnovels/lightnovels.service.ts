@@ -1,7 +1,7 @@
-import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { Observable, of, tap } from "rxjs";
+import { of, tap } from "rxjs";
 import { ConfigObject } from "../config.base";
+import { HttpService, RxjsHttpResp } from "../http.service";
 import { ChapterPages, NovelBook, NovelChapter, NovelSeries, PagesResult, Scaffold, SeriesResult } from "./lightnovels.model";
 
 @Injectable({
@@ -12,11 +12,11 @@ export class LightNovelService extends ConfigObject {
     private _scaffoldCache: { [key: number]: Scaffold } = {};
 
     constructor(
-        private http: HttpClient
+        private http: HttpService
     ) { super(); }
 
     series(page: number = 1, size: number = 100) {
-        return this.http.get<SeriesResult>(`${this.apiUrl}/novels`, { params: { page, size }});
+        return this.http.get<SeriesResult>(`novels`, { params: { page, size }});
     }
 
     seriesById(seriesId: number) {
@@ -25,15 +25,15 @@ export class LightNovelService extends ConfigObject {
     }
 
     booksBySeriesId(seriesId: number) {
-        return this.http.get<NovelBook[]>(`${this.apiUrl}/novels/${seriesId}/books`);
+        return this.http.get<NovelBook[]>(`novels/${seriesId}/books`);
     }
 
     chapters(bookId: number) {
-        return this.http.get<NovelChapter>(`${this.apiUrl}/novels/${bookId}/chapters`);
+        return this.http.get<NovelChapter>(`novels/${bookId}/chapters`);
     }
 
     pages(seriesId: number, page: number = 1, size: number = 100) {
-        return this.http.get<PagesResult>(`${this.apiUrl}/novels/${seriesId}/pages`, { params: { page, size }});
+        return this.http.get<PagesResult>(`novels/${seriesId}/pages`, { params: { page, size }});
     }
 
     corsFallback(url: string, group: string = 'anime') {
@@ -57,11 +57,11 @@ export class LightNovelService extends ConfigObject {
         return series(item.id);
     }
 
-    load(url: string): Observable<{ count: number, isNew: boolean }>;
-    load(id: number): Observable<{ count: number, isNew: boolean }>;
+    load(url: string): RxjsHttpResp<{ count: number, isNew: boolean }>;
+    load(id: number): RxjsHttpResp<{ count: number, isNew: boolean }>;
     load(item: string | number) {
         let params: { [key: string]: any } = typeof item === 'string' ? { url: item } : { seriesId: item };
-        return this.http.get<{ count: number, isNew: boolean }>(`${this.apiUrl}/novels/load`, { params });
+        return this.http.get<{ count: number, isNew: boolean }>(`novels/load`, { params });
     }
 
     invalidateCache() {
@@ -69,7 +69,7 @@ export class LightNovelService extends ConfigObject {
     }
 
     chapter(bookId: number, chapterId: number) {
-        return this.http.get<ChapterPages[]>(`${this.apiUrl}/novel/${bookId}/chapter/${chapterId}`);
+        return this.http.get<ChapterPages[]>(`novel/${bookId}/chapter/${chapterId}`);
     }
 
     private cacheItem<T>(id: number, url: string, cache: { [key: number]: T }) {
@@ -77,6 +77,7 @@ export class LightNovelService extends ConfigObject {
 
         return this.http
             .get<T>(url)
+            .observable
             .pipe(
                 tap(t => { cache[id] = t; })
             );

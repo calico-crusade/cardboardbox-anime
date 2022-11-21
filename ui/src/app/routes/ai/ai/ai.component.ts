@@ -66,17 +66,11 @@ export class AiComponent implements OnInit, OnDestroy {
         this.error = undefined;
         this.api
             .embeddings()
-            .pipe(
-                catchError(err => {
-                    console.error('Error occurred while fetching embeds', { err });
-
-                    if (err.status !== 401) {
-                        this.error = err.statusText;
-                    }
-
-                    return of([]);
-                })
-            )
+            .error(err => {
+                if (err.status !== 401) {
+                    this.error = err.statusText;
+                }
+            })
             .subscribe(t => {
                 this.embeddings = t;
             });
@@ -91,23 +85,15 @@ export class AiComponent implements OnInit, OnDestroy {
         let req = (!this.img ? this.api.text2Image : this.api.image2image);
 
         req.call(this.api, this.request)
-            .pipe(
-                catchError(err => {
-                    const def = of({ urls: [] });
-                    console.error('Error occurred in AI request', { 
-                        req, err, request: this.request
-                    });
-
-                    let statusCode = err.status;
-                    if (statusCode != 400) {
-                        this.error = err.statusText || 'An error occurred.';
-                        return def;
-                    }
-                    
-                    this.issues = err.error.issues;
-                    return def;
-                })
-            )
+            .error(err => {
+                let statusCode = err.status;
+                if (statusCode != 400) {
+                    this.error = err.statusText || 'An error occurred.';
+                    return;
+                }
+                
+                this.issues = err.error.issues;
+            }, { urls: [] })
             .subscribe(t => {
                 this.urls = t.urls;
                 this.loading = false;

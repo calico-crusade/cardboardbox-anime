@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { PagedResults, Filters, FilterSearch, ListExt, ListPost, ListPut, Id, ListMap, Anime, List, ListMapItem, PublicLists, Chapter, Book } from './anime.model';
+import { PagedResults, Filters, FilterSearch, ListExt, ListPost, ListPut, Id, Anime, List, ListMapItem, PublicLists, Chapter, Book } from './anime.model';
 import { ConfigObject } from '../config.base';
-import { BehaviorSubject, combineLatestWith, lastValueFrom, map, Observable, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, combineLatestWith, map, Observable, switchMap, tap } from 'rxjs';
+import { HttpService, RxjsHttpResp } from '../http.service';
 
 export type ListsMaps = {
     lists: { [key: number]: ListExt },
@@ -29,24 +30,25 @@ export class AnimeService extends ConfigObject {
     }
 
     constructor(
-        private http: HttpClient
+        private http: HttpService,
+        private rawhttp: HttpClient
     ) { super(); }
 
     search(search: FilterSearch) {
         search.mature = +search.mature || 0;
-        return this.http.post<PagedResults<Anime>>(`${this.apiUrl}/anime`, search);
+        return this.http.post<PagedResults<Anime>>(`anime`, search);
     }
 
     filters() {
-        return this.http.get<Filters>(`${this.apiUrl}/anime/filters`);
+        return this.http.get<Filters>(`anime/filters`);
     }
 
     buildMap() {
         const mapOs = this.mapsGet();
         const listOs = this.listsGet();
 
-        return mapOs.pipe(
-            combineLatestWith(listOs),
+        return mapOs.observable.pipe(
+            combineLatestWith(listOs.observable),
             map(([ maps, lists ]) => {
                 const output: ListsMaps = {
                     lists: { },
@@ -75,29 +77,30 @@ export class AnimeService extends ConfigObject {
         );
     }
 
-    listsGet() { return this.http.get<ListExt[]>(`${this.apiUrl}/lists`); }
+    listsGet() { return this.http.get<ListExt[]>(`lists`); }
     
-    listsPublic(): Observable<PublicLists>;
-    listsPublic(page: number, size: number): Observable<PublicLists>;
-    listsPublic(id: number): Observable<ListExt>;
-    listsPublic(list: ListPut): Observable<ListExt>;
+    listsPublic(): RxjsHttpResp<PublicLists>;
+    listsPublic(page: number, size: number): RxjsHttpResp<PublicLists>;
+    listsPublic(id: number): RxjsHttpResp<ListExt>;
+    listsPublic(list: ListPut): RxjsHttpResp<ListExt>;
     listsPublic(list?: number | ListPut, size?: number) {
-        if (!list) return this.http.get<PublicLists>(`${this.apiUrl}/lists/public`);
+        if (!list) return this.http.get<PublicLists>(`lists/public`);
 
         if (typeof list === 'number' && size && typeof size === 'number')
-            return this.http.get<PublicLists>(`${this.apiUrl}/lists/public`, { params: { page: list, size } });
+            return this.http.get<PublicLists>(`lists/public`, { params: { page: list, size } });
 
         if (typeof list !== 'number') list = list.id;
-        return this.http.get<ListExt>(`${this.apiUrl}/lists/public/${list}`);
+        return this.http.get<ListExt>(`lists/public/${list}`);
     }
 
 
     listsPost(list: ListPost) { 
         return this.http
-            .post<Id>(`${this.apiUrl}/lists`, list)
+            .post<Id>(`lists`, list)
+            .observable
             .pipe(
                 switchMap(t => 
-                    this.listsGet()
+                    this.listsGet().observable
                         .pipe(
                             map(a => a.find(z => z.id === t.id))
                         )
@@ -106,7 +109,7 @@ export class AnimeService extends ConfigObject {
     }
 
     listsPut(list: ListPut) { 
-        return this.http
+        return this.rawhttp
             .put(`${this.apiUrl}/lists`, list).pipe(
                 switchMap(_ => this.buildMap())
             );
@@ -116,14 +119,14 @@ export class AnimeService extends ConfigObject {
     listsDelete(list: ListPut): Observable<any>;
     listsDelete(par: number | ListPut) {
         if (typeof par !== 'number') par = par.id;
-        return this.http
+        return this.rawhttp
             .delete(`${this.apiUrl}/lists/${par}`)
             .pipe(
                 switchMap(_ => this.buildMap())
             );
     }
 
-    mapsGet() { return this.http.get<ListMapItem[]>(`${this.apiUrl}/list-map`); }
+    mapsGet() { return this.http.get<ListMapItem[]>(`list-map`); }
 
     mapsToggle(animeId: number, listId: number): Observable<{ inList: boolean }>;
     mapsToggle(anime: Anime, listId: number): Observable<{ inList: boolean }>;
@@ -133,17 +136,18 @@ export class AnimeService extends ConfigObject {
         if (typeof anime !== 'number') anime = anime.id;
         if (typeof list !== 'number') list = list.id;
         return this.http
-            .get<{ inList: boolean }>(`${this.apiUrl}/list-map/${list}/${anime}`)
+            .get<{ inList: boolean }>(`list-map/${list}/${anime}`)
+            .observable
             .pipe(
                 switchMap(t => this.buildMap().pipe(map(_ => t)))
             );
     }
 
     lightnovel(id: string, page: number = 1, size: number = 10) {
-        return this.http.get<PagedResults<Chapter>>(`${this.apiUrl}/ln/${id}`, { params: { page, size }});
+        return this.http.get<PagedResults<Chapter>>(`ln/${id}`, { params: { page, size }});
     }
 
     lightnovels(page: number = 1, size: number = 100) {
-        return this.http.get<PagedResults<Book>>(`${this.apiUrl}/ln`, { params: { page, size }});
+        return this.http.get<PagedResults<Book>>(`ln`, { params: { page, size }});
     }
 }

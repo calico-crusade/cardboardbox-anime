@@ -1,7 +1,7 @@
-import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { BehaviorSubject } from "rxjs";
 import { ConfigObject } from "../config.base";
+import { HttpService } from "../http.service";
 import { AiDbRequest, AiRequest, AiRequestImg2Img, AiResults } from "./ai.models";
 
 export type UrlsResponse = { urls: string[] };
@@ -17,29 +17,29 @@ export class AiService extends ConfigObject {
     get cache() { return this._nextSub.value; }
 
     constructor(
-        private http: HttpClient
+        private http: HttpService
     ) { super(); }
 
     text2Image(req: AiRequest) {
-        return this.http.post<UrlsResponse>(`${this.apiUrl}/ai`, req, { params: { download: false } });
+        return this.http.post<UrlsResponse>(`ai`, req, { params: { download: false } });
     }
 
     image2image(req: AiRequestImg2Img) {
-        return this.http.post<UrlsResponse>(`${this.apiUrl}/ai/img`, req, { params: { download: false } });
+        return this.http.post<UrlsResponse>(`ai/img`, req, { params: { download: false } });
     }
 
     embeddings() {
-        return this.http.get<string[]>(`${this.apiUrl}/ai/embeddings`);
+        return this.http.get<string[]>(`ai/embeddings`);
     }
 
     images() {
-        return this.http.get<string[]>(`${this.apiUrl}/ai/images`);
+        return this.http.get<string[]>(`ai/images`);
     }
 
     requests(id?: number, page: number = 1, size: number = 100) {
         let res: any = id ? {  id, page, size } : { page, size };
 
-        return this.http.get<AiResults>(`${this.apiUrl}/ai/requests`, {
+        return this.http.get<AiResults>(`ai/requests`, {
             params: res
         })
     }

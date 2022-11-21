@@ -56,29 +56,14 @@ export class AiRequestsComponent implements OnInit, OnDestroy {
 
         this.api
             .requests(id, this.page, this.size)
-            .pipe(
-                catchError(err => {
-                    console.error('Error occurred while fetching request list', {
-                        id,
-                        page: this.page,
-                        size: this.size,
-                        err
-                    });
-
-                    let code = err.status;
-                    if (code === 401) {
-                        this.error = 'Unauthorized! You need to be logged in to do this!';
-                    } else {
-                        this.error = err.statusText || 'Unknown Error! Contact an admin!';
-                    }
-
-                    return of({
-                        pages: 0,
-                        count: 0,
-                        results: []
-                    });
-                })
-            )
+            .error(err => {
+                let code = err.status;
+                if (code === 401) {
+                    this.error = 'Unauthorized! You need to be logged in to do this!';
+                } else {
+                    this.error = err.statusText || 'Unknown Error! Contact an admin!';
+                }
+            }, { pages: 0, count: 0, results: [] })
             .subscribe(t => {
                 const { pages, count, results } = t;
                 this.pages = pages;
