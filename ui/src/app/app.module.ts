@@ -17,6 +17,7 @@ import { environment } from '../environments/environment';
 import { RerouteComponent } from './routes/reroute/reroute.component';
 import { TestComponent } from './routes/test/test.component';
 import { MagicCircleModule } from './components/magic-circle';
+import { InstallInstructionsComponent } from './routes/install-instructions/install-instructions.component';
 
 @NgModule({
     declarations: [
@@ -27,6 +28,7 @@ import { MagicCircleModule } from './components/magic-circle';
         AdminComponent,
         RerouteComponent,
         TestComponent,
+        InstallInstructionsComponent,
     ],
     imports: [
         ComponentsModule,

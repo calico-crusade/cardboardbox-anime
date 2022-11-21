@@ -1,0 +1,31 @@
+header {
+    position: sticky;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-flow: row;
+
+    a {
+        text-decoration: none;
+        color: var(--text-color);
+        flex: 1;
+        text-align: center;
+        border-bottom: 2px solid var(--text-color-muted);
+        padding: 10px;
+
+        &.active {
+            border-color: var(--accent-2);
+        }
+    }
+}
+main {
+    img {
+        max-width: 100%;
+    }
+}
+
+header, main {
+    max-width: 700px;
+    margin: 0 auto;
+    width: 100%;
+}

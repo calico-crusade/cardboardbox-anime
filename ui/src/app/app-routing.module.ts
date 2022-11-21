@@ -6,6 +6,7 @@ import { LightnovelsComponent } from './routes/lightnovels/lightnovels.component
 import { AdminComponent } from './routes/admin/admin.component';
 import { RerouteComponent } from './routes/reroute/reroute.component';
 import { TestComponent } from './routes/test/test.component';
+import { InstallInstructionsComponent } from './routes/install-instructions/install-instructions.component';
 
 const routes: Routes = [
     {
@@ -32,6 +33,13 @@ const routes: Routes = [
     }, {
        path: 'test',
        component: TestComponent 
+    }, {
+        path: 'install',
+        pathMatch: 'full',
+        redirectTo: 'install/windows'
+    }, {
+        path: 'install/:type',
+        component: InstallInstructionsComponent
     }, {
         path: '',
         pathMatch: 'full',

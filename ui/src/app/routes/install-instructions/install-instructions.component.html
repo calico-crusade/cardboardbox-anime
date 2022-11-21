@@ -1,0 +1,48 @@
+<cba-container [handle-scroll]="true" [ngSwitch]="type" flex-flow="column">
+    <header>
+        <a [routerLink]="['/install', 'windows']" routerLinkActive="active">Windows</a>
+        <a [routerLink]="['/install', 'ios']" routerLinkActive="active">iOS / MacOS</a>
+        <a [routerLink]="['/install', 'android']" routerLinkActive="active">Android</a>
+    </header>
+    <main *ngSwitchCase="'ios'">
+        <h2>iOS / MacOS App Install Instructions</h2>
+        <p>Unfortunately, it costs too much to develop an actual iOS app, so instead;</p>
+        <p>I went with the free Progressive Web App (PWA) alternative.</p>
+        <p>The installation steps are a little weird, but they're decently easy.</p>
+        <ol>
+            <li>Navigate to this site on the safari app (It <b>HAS</b> to be safari): <a href="https://cba.index-0.com">https://cba.index-0.com</a></li>
+            <li>Click the "Share" icon <cba-icon>ios_share</cba-icon></li>
+            <li>Click the "Add to Home Screen" button</li>
+            <li>Name it whatever you want and click "Add".</li>
+        </ol>
+        <p>Now you should see the app on your home page.</p>
+    </main>
+    <main *ngSwitchCase="'android'">
+        <h2>Android App Install Instructions</h2>
+        <p>To install the app on your android, follow these instructions:</p>
+        <ol>
+            <li>Open your favourite android browser (I suggest chrome or firefox)</li>
+            <li>Navigate to this site: <a href="https://cba.index-0.com">https://cba.index-0.com</a></li>
+            <li>Click the settings icon for the page <cba-icon>more_vert</cba-icon></li>
+            <li>Scroll down until you see "Install" or "Install App"</li>
+            <li>Click the "Install" button</li>
+        </ol>
+        <p>Now you should see the app on your home page.</p>
+    </main>
+    <main *ngSwitchDefault>
+        <h2>Windows App Install Instructions</h2>
+        <p>To install the app on your windows device, follow these instructions:</p>
+        <ol>
+            <li>Open Chrome on your computer (It <b>HAS</b> to be chrome): <a href="https://cba.index-0.com">https://cba.index-0.com</a></li>
+            <li>
+                <p>Click the install option either in the URL bar or the settings menu (see image below)</p>
+                <ul>
+                    <li>You should see an icon popup in the URL bar that prompts you to install the application.</li>
+                    <li>Alternatively you can click the settings icon and click "Install Cardboard Box..."</li>
+                </ul>
+            </li>
+        </ol>
+        <img src="/assets/pwa-install.png" />
+        <p>Now you should see the app on your desktop.</p>
+    </main>
+</cba-container>
