@@ -46,7 +46,7 @@ namespace CardboardBox.Anime.Bot.Commands
 			var url = $"https://cba.index-0.com/manga/{manga.Id}/{chapter.Id}/{page + 1}";
 
 			var ci = mangaWChap.Chapters.IndexOf(t => t.Id == chapter.Id);
-			return $"{manga.Title}\r\n[Read Ch. #{chapter.Ordinal} P. #{page + 1} Online]({url})\r\n" +
+			return $"{manga.Title}\r\n[Read Ch. #{chapter.Ordinal} P. #{page + 1} Online](<{url}>)\r\n" +
 				$"Chapters: {ci + 1}/{mangaWChap.Chapters.Length}. Pages: {page + 1}/{pages.Length}\r\n" +
 				$"<@{user}> is reading this!";
 		}

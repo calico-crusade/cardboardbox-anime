@@ -27,7 +27,7 @@ namespace CardboardBox.Anime.Bot.Commands
 
 		public (long id, long chapter, int page) GetState()
 		{
-			var parts = Message?.Content
+			var parts = Message?.Content.Replace("<", "").Replace(">", "")
 				.Split(')')[0]
 				.Split('(')
 				.Last()
