@@ -16,9 +16,6 @@ namespace CardboardBox.Anime.Funimation
         [JsonPropertyName("index")]
         public Index? Index { get; set; }
 
-        //[JsonPropertyName("licensorLogos")]
-        //public List<object> LicensorLogos { get; set; }
-
         [JsonPropertyName("yearOfProduction")]
         public int YearOfProduction { get; set; }
 

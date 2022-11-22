@@ -46,7 +46,6 @@ namespace CardboardBox.Anime.Bot.Commands
 		public async Task Do(bool next)
 		{
 			if (!await Validate()) return;
-			//await (Component?.DeferLoadingAsync() ?? Task.CompletedTask);
 
 			if (Message == null)
 			{
@@ -114,7 +113,6 @@ namespace CardboardBox.Anime.Bot.Commands
 		public async Task DoChap(bool next)
 		{
 			if (!await Validate()) return;
-			//await (Component?.DeferLoadingAsync() ?? Task.CompletedTask);
 
 			if (Message == null)
 			{

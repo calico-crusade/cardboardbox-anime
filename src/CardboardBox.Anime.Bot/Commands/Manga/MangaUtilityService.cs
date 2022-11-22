@@ -1,4 +1,8 @@
 ﻿using System.Net;
+using IS = SixLabors.ImageSharp;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
+using Color = Discord.Color;
 
 namespace CardboardBox.Anime.Bot.Commands
 {
@@ -12,6 +16,7 @@ namespace CardboardBox.Anime.Bot.Commands
 
 	public class MangaUtilityService : IMangaUtilityService
 	{
+		private const long MAX_SIZE = 8000000;
 		private readonly IApiService _api;
 
 		public MangaUtilityService(IApiService api)
@@ -55,8 +60,23 @@ namespace CardboardBox.Anime.Bot.Commands
 		{
 			var uri = WebUtility.UrlEncode(imageUrl);
 			var url = $"https://cba-proxy.index-0.com/proxy?path={uri}&group=manga-page";
-			var (stream, _, _, _) = await _api.GetData(url);
+			var (stream, length, _, _) = await _api.GetData(url);
+			if (length >= MAX_SIZE)
+				stream = await ResizeImage(stream);
 			return stream;
+		}
+
+		public async Task<Stream> ResizeImage(Stream data)
+		{
+			var output = new MemoryStream();
+			using var io = data;
+			using var image = await IS.Image.LoadAsync(io);
+
+			int w = (int)(image.Width / 0.66), h = (int)(image.Height / 0.66);
+			image.Mutate(x => x.Resize(w, h));
+			await image.SaveAsJpegAsync(output);
+			output.Position = 0;
+			return output;
 		}
 	}
 }
