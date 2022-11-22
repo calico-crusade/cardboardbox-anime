@@ -25,7 +25,7 @@ const ROUTES: Routes = [
     },{
         path: 'touched',
         pathMatch: 'full',
-        redirectTo: 'touched/all'
+        redirectTo: 'touched/in-progress'
     }, {
         path: 'all',
         component: MangaSelectorComponent

@@ -17,24 +17,34 @@
         </div>
         <div class="fade" (click)="menuOpen = false"></div>
         <aside>
-            <a routerLink="/anime/all" routerLinkActive="active" (click)="menuOpen = false">
-                <span class="icon">
-                    <cba-icon>filter_alt</cba-icon>
-                </span>
-                <span class="title">Anime</span>
-            </a>
-            <a routerLink="/anime/lists/public" routerLinkActive="active" (click)="menuOpen = false">
-                <span class="icon">
-                    <cba-icon>public</cba-icon>
-                </span>
-                <span class="title">Public Lists</span>
-            </a>
-            <a *ngIf="loggedIn" routerLink="/anime/lists/mine" routerLinkActive="active" (click)="menuOpen = false">
-                <span class="icon">
-                    <cba-icon>list</cba-icon>
-                </span>
-                <span class="title">My Lists</span>
-            </a>
+            <div class="dropdown-menu" [ngClass]="{'active': aaactive.isActive || apactive.isActive || (amactive?.isActive || false) }" >
+                <button class="menu" (click)="toggleDropdown(anime)">
+                    <span class="icon">
+                        <cba-icon>live_tv</cba-icon>
+                    </span>
+                    <span class="title">Anime</span>
+                </button>
+                <div class="dropdown" #anime>
+                    <a routerLink="/anime/all" routerLinkActive="active" #aaactive="routerLinkActive" (click)="menuOpen = false">
+                        <span class="icon">
+                            <cba-icon>search</cba-icon>
+                        </span>
+                        <span class="title">Search</span>
+                    </a>
+                    <a routerLink="/anime/lists/public" routerLinkActive="active" #apactive="routerLinkActive" (click)="menuOpen = false">
+                        <span class="icon">
+                            <cba-icon>public</cba-icon>
+                        </span>
+                        <span class="title">Public Lists</span>
+                    </a>
+                    <a [style.display]="!loggedIn ? 'none' : ''" routerLink="/anime/lists/mine" routerLinkActive="active" #amactive="routerLinkActive" (click)="menuOpen = false">
+                        <span class="icon">
+                            <cba-icon>list</cba-icon>
+                        </span>
+                        <span class="title">My Lists</span>
+                    </a>
+                </div>
+            </div>
             <a routerLink="/manga" routerLinkActive="active" (click)="menuOpen = false" *ngIf="!loggedIn">
                 <span class="icon">
                     <cba-icon>photo_album</cba-icon>
@@ -42,33 +52,33 @@
                 <span class="title">Manga</span>
             </a>
             <ng-container *ngIf="loggedIn">
-                <div class="dropdown-menu">
-                    <button class="menu" (click)="toggleDropdown(dropdown)">
+                <div class="dropdown-menu" [ngClass]="{ 'active': msactive.isActive || maactive.isActive || mtactive.isActive || mractive.isActive }">
+                    <button class="menu" (click)="toggleDropdown(manga)">
                         <span class="icon">
                             <cba-icon>photo_album</cba-icon>
                         </span>
                         <span class="title">Manga</span>
                     </button>
-                    <div class="dropdown" #dropdown>
-                        <a routerLink="/manga/all" routerLinkActive="active" (click)="menuOpen = false">
+                    <div class="dropdown" #manga>
+                        <a routerLink="/manga/all" routerLinkActive="active" #msactive="routerLinkActive" (click)="menuOpen = false">
                             <span class="icon">
                                 <cba-icon>search</cba-icon>
                             </span>
                             <span class="title">Search</span>
                         </a>
-                        <a routerLink="/manga/add" routerLinkActive="active" (click)="menuOpen = false">
+                        <a routerLink="/manga/add" routerLinkActive="active" #maactive="routerLinkActive" (click)="menuOpen = false">
                             <span class="icon">
                                 <cba-icon>add</cba-icon>
                             </span>
                             <span class="title">Add New</span>
                         </a>
-                        <a routerLink="/manga/touched/in-progress" routerLinkActive="active" (click)="menuOpen = false">
+                        <a routerLink="/manga/touched" routerLinkActive="active" #mtactive="routerLinkActive" (click)="menuOpen = false">
                             <span class="icon">
                                 <cba-icon>collections_bookmark</cba-icon>
                             </span>
                             <span class="title">In Progress</span>
                         </a>
-                        <a routerLink="/manga/random" routerLinkActive="active" (click)="menuOpen = false">
+                        <a routerLink="/manga/random" routerLinkActive="active" #mractive="routerLinkActive" (click)="menuOpen = false">
                             <span class="icon">
                                 <cba-icon>shuffle</cba-icon>
                             </span>
@@ -76,18 +86,17 @@
                         </a>
                     </div>
                 </div>
-
-                <a routerLink="/ai" routerLinkActive="active" (click)="menuOpen = false">
-                    <span class="icon">
-                        <cba-icon>photo_library</cba-icon>
-                    </span>
-                    <span class="title">Image Generation</span>
-                </a>
                 <a routerLink="/series" routerLinkActive="active" (click)="menuOpen = false">
                     <span class="icon">
                         <cba-icon>menu_book</cba-icon>
                     </span>
                     <span class="title">Novels</span>
+                </a>
+                <a routerLink="/ai" routerLinkActive="active" (click)="menuOpen = false">
+                    <span class="icon">
+                        <cba-icon>photo_library</cba-icon>
+                    </span>
+                    <span class="title">Image Generation</span>
                 </a>
                 <a *ngIf="isAdmin" routerLink="/admin" routerLinkActive="active" (click)="menuOpen = false">
                     <span class="icon">
@@ -120,32 +129,42 @@
                     <span class="title">Login</span>
                 </button>
             </ng-container>
-            <a href="https://github.com/calico-crusade/cardboardbox-anime" target="_blank">
-                <span class="icon">
-                    <svg height="24" width="24" aria-hidden="true" viewBox="0 0 16 16" version="1.1" data-view-component="true" class="octicon octicon-mark-github v-align-middle">
-                        <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
-                    </svg>
-                </span>
-                <span class="title">Source Code</span>
-            </a>
-            <a href="https://discord.com/api/oauth2/authorize?client_id=905632533981577247&permissions=8&scope=bot%20applications.commands" target="_blank">
-                <span class="icon">
-                    <cba-icon>smart_toy</cba-icon>
-                </span>
-                <span class="title">Discord Bot</span>
-            </a>
-            <a href="https://discord.gg/RV9MvvYXsp" target="_blank">
-                <span class="icon">
-                    <img src="/assets/discord-icon.png" alt="Discord Logo" />
-                </span>
-                <span class="title">Discord Server</span>
-            </a>
-            <a routerLink="/install" routerLinkActive="active" (click)="menuOpen = false">
-                <span class="icon">
-                    <cba-icon>install_mobile</cba-icon>
-                </span>
-                <span class="title">Install App</span>
-            </a>
+            <div class="dropdown-menu" [ngClass]="{ 'active': liactive.isActive }">
+                <button class="menu" (click)="toggleDropdown(links)">
+                    <span class="icon">
+                        <cba-icon>link</cba-icon>
+                    </span>
+                    <span class="title">Useful Links</span>
+                </button>
+                <div class="dropdown" #links>
+                    <a href="https://github.com/calico-crusade/cardboardbox-anime" target="_blank">
+                        <span class="icon">
+                            <svg height="24" width="24" aria-hidden="true" viewBox="0 0 16 16" version="1.1" data-view-component="true" class="octicon octicon-mark-github v-align-middle">
+                                <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+                            </svg>
+                        </span>
+                        <span class="title">Source Code</span>
+                    </a>
+                    <a href="https://discord.com/api/oauth2/authorize?client_id=905632533981577247&permissions=8&scope=bot%20applications.commands" target="_blank">
+                        <span class="icon">
+                            <cba-icon>smart_toy</cba-icon>
+                        </span>
+                        <span class="title">Discord Bot</span>
+                    </a>
+                    <a href="https://discord.gg/RV9MvvYXsp" target="_blank">
+                        <span class="icon">
+                            <img src="/assets/discord-icon.png" alt="Discord Logo" />
+                        </span>
+                        <span class="title">Discord Server</span>
+                    </a>
+                    <a routerLink="/install" routerLinkActive="active" #liactive="routerLinkActive" (click)="menuOpen = false">
+                        <span class="icon">
+                            <cba-icon>install_mobile</cba-icon>
+                        </span>
+                        <span class="title">Install App</span>
+                    </a>
+                </div>
+            </div>
         </aside>
     </main>
 </div>

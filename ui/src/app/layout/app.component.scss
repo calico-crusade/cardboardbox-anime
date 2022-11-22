@@ -176,8 +176,15 @@
                     }
                 }
 
-                &:hover {
+                &:hover, &.active {
                     .dropdown { max-height: 300px; }
+                }
+
+                &:first-child {
+                    margin-top: 20px;
+                }
+                &:last-child {
+                    margin-bottom: 20px;
                 }
             }
         }
