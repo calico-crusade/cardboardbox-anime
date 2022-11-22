@@ -45,17 +45,17 @@ Then you can follow these instructions:
 1. Download [docker-compose.yml](https://github.com/calico-crusade/cardboardbox-anime/blob/main/docker-compose.yml)
 2. Download [deploy.sh](https://github.com/calico-crusade/cardboardbox-anime/blob/main/deploy.sh)
 3. Create a `.env` file and fill out the following variables:
-  * `MONGO_CON_URL=mongodb://<user>:<password>@<host>` - Your hosted instance of MongoDB (this is not in the docker compose)
-  * `POSTGRES_HOST=<database>` - The database name you want to use for the postgres database
-  * `POSTGRES_USER=<username>` - The username you want to use for the postgres database
-  * `POSTGRES_PASS=<password>` - The password you want to use for the postgres database
-  * `OAUTH_APP_ID=<app-id>` - You can get this by heading over to [Cardboard OAuth](https://auth.index-0.com), logging in and clicking `Admin Panel`
-  * `OAUTH_SECRET=<app-secret>` - You'll get it with your `APP-ID`
-  * `OAUTH_KEY=<app-key>` - You'll get it with your `APP-ID`
-  * `DISCORD_KEY=<discord-key>` - You can get this from the [Discord Developer Panel](https://discord.com/developers)
-  * `DISCORD_APPID=<discord-app-id>` - Not actually needed right now (but maybe later)
-  * `DISCORD_TOKEN=<discord-token>` - You get it with your `discord-key`
-  * `DISCORD_AI_URL=<url>` - URL to your instance of the [stable-diffusion API](https://github.com/calico-crusade/stable-diffusion-webui)
+   * `MONGO_CON_URL=mongodb://<user>:<password>@<host>` - Your hosted instance of MongoDB (this is not in the docker compose)
+   * `POSTGRES_HOST=<database>` - The database name you want to use for the postgres database
+   * `POSTGRES_USER=<username>` - The username you want to use for the postgres database
+   * `POSTGRES_PASS=<password>` - The password you want to use for the postgres database
+   * `OAUTH_APP_ID=<app-id>` - You can get this by heading over to [Cardboard OAuth](https://auth.index-0.com), logging in and clicking `Admin Panel`
+   * `OAUTH_SECRET=<app-secret>` - You'll get it with your `APP-ID`
+   * `OAUTH_KEY=<app-key>` - You'll get it with your `APP-ID`
+   * `DISCORD_KEY=<discord-key>` - You can get this from the [Discord Developer Panel](https://discord.com/developers)
+   * `DISCORD_APPID=<discord-app-id>` - Not actually needed right now (but maybe later)
+   * `DISCORD_TOKEN=<discord-token>` - You get it with your `discord-key`
+   * `DISCORD_AI_URL=<url>` - URL to your instance of the [stable-diffusion API](https://github.com/calico-crusade/stable-diffusion-webui)
 4. Run the `./deploy.sh` script
 
 ### Notes:
