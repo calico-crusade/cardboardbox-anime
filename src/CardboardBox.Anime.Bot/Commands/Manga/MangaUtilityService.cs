@@ -5,6 +5,7 @@ namespace CardboardBox.Anime.Bot.Commands
 	public interface IMangaUtilityService
 	{
 		EmbedBuilder GenerateEmbed(DbManga manga);
+		EmbedBuilder GenerateEmbed(MangaProgress manga);
 		string GenerateRead(MangaWithChapters mangaWChap, DbMangaChapter chapter, string[] pages, int page, ulong user);
 		Task<Stream> GetImage(string imageUrl);
 	}
@@ -36,6 +37,8 @@ namespace CardboardBox.Anime.Bot.Commands
 
 			return e;
 		}
+
+		public EmbedBuilder GenerateEmbed(MangaProgress manga) => GenerateEmbed(manga.Manga);
 
 		public string GenerateRead(MangaWithChapters mangaWChap, DbMangaChapter chapter, string[] pages, int page, ulong user)
 		{

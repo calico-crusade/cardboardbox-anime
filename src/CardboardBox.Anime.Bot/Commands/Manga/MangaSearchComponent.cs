@@ -30,21 +30,21 @@
 			var search = await _api.Search(filter);
 			if (search == null || search.Count == 0 || search.Results.Length == 0) return (null, text, 0, 0);
 
-			var index = search.Results.IndexOf(t => t.Id == id);
+			var index = search.Results.IndexOf(t => t.Manga.Id == id);
 			if (index == -1) return (null, text, 0, 0);
 
 			int i = index;
 			switch(target)
 			{
-				case ButtonTarget.First: return (search.Results.First(), text, search.Count, 0);
-				case ButtonTarget.Last: return (search.Results.Last(), text, search.Count, (int)search.Count - 1);
+				case ButtonTarget.First: return (search.Results.First().Manga, text, search.Count, 0);
+				case ButtonTarget.Last: return (search.Results.Last().Manga, text, search.Count, (int)search.Count - 1);
 				case ButtonTarget.Next: i += 1; break;
 				case ButtonTarget.Prev: i -= 1; break;
 			}
 
-			if (i < 0) return (search.Results.First(), text, search.Count, 0);
-			if (i >= search.Count) return (search.Results.Last(), text, search.Count, (int)search.Count - 1);
-			return (search.Results[i], text, search.Count, i);
+			if (i < 0) return (search.Results.First().Manga, text, search.Count, 0);
+			if (i >= search.Count) return (search.Results.Last().Manga, text, search.Count, (int)search.Count - 1);
+			return (search.Results[i].Manga, text, search.Count, i);
 		}
 
 		public async Task Update(DbManga manga, string search, long count, int index)
