@@ -11,44 +11,10 @@ header {
     left: 0;
     z-index: 1;
 
-    span {
-        margin: auto 0;
-        &:first-child {
-            margin-left: 10px;
-        }
-
-        &:not(:first-child) {
-            margin: auto;
-        }
-    }
-
-    button.open {
-        transform: rotate(180deg);
-    }
-
     .select-list {
         display: flex;
         flex-flow: row;
         margin: 5px auto;
-    
-        select, input {
-            outline: none;
-            border: 1px solid var(--accent-2);
-            background-color: var(--bg-accent);
-            color: var(--text-color);
-            max-width: 240px;
-            padding: $select-list-padding;
-    
-            option {
-                background-color: transparent;
-                color: var(--text-color);
-            }
-    
-            &.fill {
-                flex: 1;
-                max-width: 100%;
-            }
-        }
     
         button, a {
             outline: none;
@@ -78,6 +44,10 @@ header {
                     margin-left: 3px;
                 }
             }
+        }
+
+        button {
+            padding: 0 calc(#{$select-list-padding} / 2);
         }
     
         .counts {

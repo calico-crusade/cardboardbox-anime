@@ -1,13 +1,8 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { ActivatedRoute, Router } from '@angular/router';
-import { PopupComponent, PopupInstance, PopupService } from 'src/app/components';
-import { Filter, LightNovelService, MangaFilter, MangaProgressData, MangaService } from 'src/app/services';
-
-type SearchTag = {
-    value: string;
-    state: 'none' | 'include' | 'exclude'
-};
+import { ActivatedRoute } from '@angular/router';
+import { PopupComponent, PopupService } from 'src/app/components';
+import { LightNovelService, MangaFilter, MangaProgressData, MangaService } from 'src/app/services';
 
 @Component({
     templateUrl: './manga-selector.component.html',
@@ -16,35 +11,16 @@ type SearchTag = {
 export class MangaSelectorComponent implements OnInit, OnDestroy {
 
     loading: boolean = false;
-
     data: MangaProgressData[] = [];
-    filters: Filter[] = [];
-    filterInstance?: PopupInstance;
-    
     pages: number = 0;
-
     url: string = '';
+    search!: MangaFilter;
 
     @ViewChild('popup') popup!: PopupComponent;
-    @ViewChild('searchpopup') searchPop!: PopupComponent;
-
-    allTags: string[] = [];
-    allSorts: string[] = [];
-
-    search: MangaFilter = {
-        page: 1,
-        size: 20,
-        search: '',
-        include: [],
-        exclude: [],
-        asc: true,
-        sort: 0
-    };
 
     constructor(
         private api: MangaService,
         private pop: PopupService,
-        private router: Router,
         private route: ActivatedRoute,
         private lnApi: LightNovelService,
         private title: Title
@@ -56,18 +32,10 @@ export class MangaSelectorComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        this.api.filters().subscribe(t => {
-            this.filters = t;
-            this.allTags = this.filters.find(t => t.key === 'tag')?.values || [];
-            this.allSorts = this.filters.find(t => t.key === 'sorts')?.values || [];
-        });
         this.title.setTitle('CardboardBox | Manga');
         this.route.queryParams.subscribe(t => {
-            if (t['search']) this.search.search = t['search'];
-            if (t['desc']) this.search.asc = false;
-            if (t['include']) this.search.include = t['include'].split(',');
-            if (t['exclude']) this.search.exclude = t['exclude'].split(',');
-            if (t['sort']) this.search.sort = +t['sort'];
+            this.search = this.api.routeFilter();
+            this.data = [];
             this.process();
         });
     }
@@ -76,27 +44,10 @@ export class MangaSelectorComponent implements OnInit, OnDestroy {
         this.title.setTitle(this.api.defaultTitle);
     }
 
-    doSearch() {
-        let pars: { [key: string]: any } = {};
-
-        if (this.search.search) pars['search'] = this.search.search;
-        if (this.search.include.length > 0) pars['include'] = this.search.include.join(',');
-        if (this.search.exclude.length > 0) pars['exclude'] = this.search.exclude.join(',');
-        if (!this.search.asc) pars['desc'] = true;
-        if (this.search.sort) pars['sort'] = this.search.sort;
-
-        this.search.page = 1;
-        this.router.navigate(['/manga'], { queryParams: pars });
-        this.filterInstance?.cancel();
-    }
-
     process() {
         this.api
-            .searchV2(this.search)
+            .search(this.search)
             .subscribe(t => {
-                if (this.search.page === 1)
-                    this.data = [];
-
                 const { results, pages } = t;
                 this.pages = pages;
                 this.data = [ ...this.data, ...results ];
@@ -112,41 +63,5 @@ export class MangaSelectorComponent implements OnInit, OnDestroy {
 
     add() { this.pop.show(this.popup); }
 
-    
-
-    filter() { this.filterInstance = this.pop.show(this.searchPop); }
-
-    toggleFilter(tag: string) {
-        const ii = this.search.include.indexOf(tag);
-        const ei = this.search.exclude.indexOf(tag);
-
-        if (ii === -1 && ei === -1) {
-            this.search.include.push(tag);
-            return;
-        }
-
-        if (ii !== -1 && ei !== -1) {
-            //This is technically, an error state?
-            this.search.include.splice(ii);
-            this.search.exclude.splice(ei);
-            return;
-        }
-
-        if (ii === -1 && ei !== -1) {
-            this.search.exclude.splice(ei);
-            return;
-        } 
-
-        if (ii !== -1 && ei === -1) {
-            this.search.include.splice(ii);
-            this.search.exclude.push(tag);
-            return;
-        }
-    }
-
-    getState(tag: string) {
-        if (this.search.include.indexOf(tag) !== -1) return 'include';
-        if (this.search.exclude.indexOf(tag) !== -1) return 'exclude';
-        return 'none';
-    }
+    filter() { this.api.isSearching = true; }
 }

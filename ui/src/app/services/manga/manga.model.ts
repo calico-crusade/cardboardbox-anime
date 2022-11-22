@@ -92,6 +92,11 @@ export interface MangaProgressData {
         favourite: boolean;
         bookmarks: number[];
         hasBookmarks: boolean;
+        latestChapter?: Date;
+        completed: boolean;
+        firstChapterId: number;
+        progressChapterId?: number;
+        progressId?: number;
     }
 }
 
@@ -103,4 +108,5 @@ export interface MangaFilter {
     include: string[];
     exclude: string[];
     sort?: number;
+    state?: number;
 }

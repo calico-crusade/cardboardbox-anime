@@ -45,5 +45,20 @@
 
 		[JsonPropertyName("hasBookmarks")]
 		public bool HasBookmarks { get; set; } = false;
+
+		[JsonPropertyName("latestChapter")]
+		public DateTime? LatestChapter { get; set; }
+
+		[JsonPropertyName("completed")]
+		public bool Completed { get; set; } = false;
+
+		[JsonPropertyName("firstChapterId")]
+		public long FirstChapterId { get; set; }
+
+		[JsonPropertyName("progressChapterId")]
+		public long? ProgressChapterId { get; set; }
+
+		[JsonPropertyName("progressId")]
+		public long? ProgressId { get; set; }
 	}
 }

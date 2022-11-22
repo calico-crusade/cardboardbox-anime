@@ -1,11 +1,11 @@
 <cba-container [loading]="loading" [error]="error" [requires-login]="true" [ifs-enabled]="true" (ifs)="onScroll()" flex-flow="column">
     <header>
         <div class="select-list">
-            <a [routerLink]="['/manga', 'touched', 'all']" routerLinkActive="active">All<span> ({{ total }})</span></a>
-            <a [routerLink]="['/manga', 'touched', 'completed']" routerLinkActive="active">Completed<span> ({{ total }})</span></a>
-            <a [routerLink]="['/manga', 'touched', 'in-progress']" routerLinkActive="active">In Progress<span> ({{ total }})</span></a>
-            <a [routerLink]="['/manga', 'touched', 'bookmarked']" routerLinkActive="active">Bookmarked<span> ({{ total }})</span></a>
-            <a [routerLink]="['/manga', 'touched', 'favourite']" routerLinkActive="active">Favourites<span> ({{ total }})</span></a>
+            <a *ngFor="let state of states" [routerLink]="state.routes" 
+                routerLinkActive="active">
+                {{ state.text }}<span> ({{ total }})</span>
+            </a>
+            <button (click)="filter()"><cba-icon>search</cba-icon></button>
         </div>
     </header>
     <main>
@@ -15,15 +15,19 @@
         <button class="float-icon" (click)="openFilters()">
             <cba-icon>filter_alt</cba-icon>
         </button>
+        <button class="float-icon" (click)="filter()">
+            <cba-icon>search</cba-icon>
+        </button>
     </div>
 </cba-container>
 
 <cba-popup #popup>
     <div class="links">
-        <a [routerLink]="['/manga', 'touched', 'all']" routerLinkActive="active" (click)="closeFilters()">All<span> ({{ total }})</span></a>
-        <a [routerLink]="['/manga', 'touched', 'completed']" routerLinkActive="active" (click)="closeFilters()">Completed<span> ({{ total }})</span></a>
-        <a [routerLink]="['/manga', 'touched', 'in-progress']" routerLinkActive="active" (click)="closeFilters()">In Progress<span> ({{ total }})</span></a>
-        <a [routerLink]="['/manga', 'touched', 'bookmarked']" routerLinkActive="active" (click)="closeFilters()">Bookmarked<span> ({{ total }})</span></a>
-        <a [routerLink]="['/manga', 'touched', 'favourite']" routerLinkActive="active" (click)="closeFilters()">Favourites<span> ({{ total }})</span></a>
+        <a *ngFor="let state of states" [routerLink]="state.routes" 
+            routerLinkActive="active" (click)="closeFilters()">
+            {{ state.text }}<span> ({{ total }})</span>
+        </a>
     </div>
 </cba-popup>
+
+<cba-manga-search-filters [override-state]="state" [route]="current?.routes || []"></cba-manga-search-filters>

@@ -67,6 +67,9 @@
 		[JsonPropertyName("sort")]
 		public int? Sort { get; set; }
 
+		[JsonPropertyName("state")]
+		public TouchedState State { get; set; } = TouchedState.All;
+
 		public void Deconstruct(
 			out int page, out int size, out string? search,
 			out string[] exclude, out string[] include,
@@ -94,5 +97,16 @@
 
 		[JsonPropertyName("asc")]
 		public bool Ascending { get; set; } = true;
+	}
+
+	public enum TouchedState
+	{
+		All = 99,
+		Favourite = 1,
+		Completed = 2,
+		InProgress = 3,
+		Bookmarked = 4,
+		Else = 5,
+		Touched = 6
 	}
 }

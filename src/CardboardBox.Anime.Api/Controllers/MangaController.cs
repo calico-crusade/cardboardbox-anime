@@ -42,16 +42,6 @@ namespace CardboardBox.Anime.Api.Controllers
 			return Ok(data);
 		}
 
-		[HttpGet, Route("manga/in-progress"), Authorize]
-		[ProducesDefaultResponseType(typeof(MangaProgress[]))]
-		public async Task<IActionResult> InProgress()
-		{
-			var id = this.UserFromIdentity()?.Id;
-			if (string.IsNullOrEmpty(id)) return BadRequest();
-			var data = await _db.Manga.InProgress(id);
-			return Ok(data);
-		}
-
 		[HttpGet, Route("manga/{id}")]
 		[ProducesDefaultResponseType(typeof(MangaWithChapters)), ProducesResponseType(404)]
 		public async Task<IActionResult> Get([FromRoute] long id)
@@ -125,15 +115,7 @@ namespace CardboardBox.Anime.Api.Controllers
 			return Ok();
 		}
 
-		[HttpPost, Route("manga/search")]
-		[ProducesDefaultResponseType(typeof(PaginatedResult<DbManga>))]
-		public async Task<IActionResult> Search([FromBody] MangaFilter filter)
-		{
-			var data = await _db.Manga.Search(filter);
-			return Ok(data);
-		}
-
-		[HttpPost, Route("manga/search-v2")]
+		[HttpPost, Route("manga/search-v2"), Route("manga/search")]
 		[ProducesDefaultResponseType(typeof(PaginatedResult<MangaProgress>))]
 		public async Task<IActionResult> SearchV2([FromBody] MangaFilter filter)
 		{
@@ -181,13 +163,19 @@ namespace CardboardBox.Anime.Api.Controllers
 
 		[HttpGet, Route("manga/touched")]
 		[ProducesDefaultResponseType(typeof(PaginatedResult<MangaProgress>))]
-		public async Task<IActionResult> Touched([FromQuery] int page = 1, [FromQuery] int size = 100, [FromQuery] string? type = null)
+		public Task<IActionResult> Touched([FromQuery] int page = 1, [FromQuery] int size = 100, [FromQuery] string? type = null)
 		{
 			if (!Enum.TryParse<TouchedState>(type, true, out var touchedType))
 				touchedType = TouchedState.All;
 
-			var data = await _db.Manga.Touched(this.UserFromIdentity()?.Id, page, size, touchedType);
-			return Ok(data);
+			var search = new MangaFilter()
+			{
+				Page = page,
+				Size = size,
+				State = touchedType
+			};
+
+			return SearchV2(search);
 		}
 	}
 }

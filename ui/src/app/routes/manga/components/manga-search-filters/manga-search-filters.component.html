@@ -1,0 +1,39 @@
+<cba-popup #searchpopup>
+    <div class="popup">
+        <h2>Search for your favourite manga!</h2>
+        <section>
+            <input type="text" [(ngModel)]="search.search" placeholder="Search for your favourite manga!" />
+        </section>
+        <section><label>Tags:</label></section>
+        <section class="tags">
+            <button *ngFor="let tag of tags" (click)="toggleFilter(tag)" [class]="tag.state">
+                <cba-icon *ngIf="tag.state == 'include'" [unsize]="true" [font-size]="'16px'">add</cba-icon>
+                <cba-icon *ngIf="tag.state == 'exclude'" [unsize]="true" [font-size]="'16px'">remove</cba-icon>
+                <span>{{ tag.text }}</span>
+            </button>
+        </section>
+        <section><label>Sort By:</label></section>
+        <section class="tags">
+            <button *ngFor="let sort of allSorts; let i = index" [ngClass]="{'include': search.sort === i}" (click)="search.sort = i">{{ sort }}</button>
+        </section>
+        <section class="toggles">
+            <div class="btn-group">
+                <button [ngClass]="{'active': search.asc}" (click)="search.asc = true">Ascending</button>
+                <button [ngClass]="{'active': !search.asc}" (click)="search.asc = false">Descending</button>
+            </div>
+        </section>
+
+        <ng-container *ngIf="overrideState < 0">
+            <section><label>State:</label></section>
+            <section class="tags">
+                <button *ngFor="let state of states; let i = index" [ngClass]="{'include': search.state === i}" (click)="search.state = i">{{ state }}</button>
+            </section>
+        </ng-container>
+
+        <section>
+            <button class="btn" (click)="doSearch()">
+                <cba-icon>search</cba-icon>
+            </button>
+        </section>
+    </div>
+</cba-popup>

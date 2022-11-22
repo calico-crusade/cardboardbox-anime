@@ -26,11 +26,7 @@ namespace CardboardBox.Anime.Database
 
 		Task<DbMangaProgress?> GetProgress(string platformId, long mangaId);
 
-		Task<MangaProgress[]> InProgress(string platformId);
-
 		Task<Filter[]> Filters();
-
-		Task<PaginatedResult<DbManga>> Search(MangaFilter filter);
 
 		Task<PaginatedResult<MangaProgress>> Search(MangaFilter filter, string? platformId);
 
@@ -86,7 +82,7 @@ namespace CardboardBox.Anime.Database
 			{
 				new MangaSortField("Title", 0, "m.title"),
 				new("Provider", 1, "m.provider"),
-				new("Latest Chapter", 2, "mcf.latest_chapter"),
+				new("Latest Chapter", 2, "t.latest_chapter"),
 				new("Description", 3, "m.description"),
 				new("Updated", 4, "m.updated_at"),
 				new("Created", 5, "m.created_at")
@@ -165,89 +161,6 @@ ORDER BY ordinal";
 			return _sql.Fetch<DbManga?>(_getMangaQuery, new { id });
 		}
 
-		public async Task<MangaProgress[]> InProgress(string platformId)
-		{
-			const string QUERY = @"WITH touched_manga AS (
-    SELECT DISTINCT m.*, p.id as profile_id FROM manga m
-    JOIN manga_bookmarks mb on m.id = mb.manga_id
-    JOIN profiles p on mb.profile_id = p.id
-    WHERE p.platform_id = :platformId
-
-    UNION
-
-    SELECT DISTINCT m.*, p.id as profile_id FROM manga m
-    JOIN manga_favourites mb on m.id = mb.manga_id
-    JOIN profiles p on mb.profile_id = p.id
-    WHERE p.platform_id = :platformId
-
-    UNION
-
-    SELECT DISTINCT m.*, p.id as profile_id FROM manga m
-    JOIN manga_progress mb on m.id = mb.manga_id
-    JOIN profiles p on mb.profile_id = p.id
-    WHERE p.platform_id = :platformId
-), chapter_numbers AS (
-    SELECT
-        c.*,
-        row_number() over (
-            PARTITION BY manga_id
-            ORDER BY ordinal ASC
-        ) as row_num
-    FROM manga_chapter c
-    JOIN touched_manga m ON m.id = c.manga_id
-), max_chapter_numbers AS (
-    SELECT
-        c.manga_id,
-        MAX(c.row_num) as max,
-        MIN(c.id) as first_chapter_id
-    FROM chapter_numbers c
-    GROUP BY c.manga_id
-), progress AS (
-    SELECT
-        mp.*
-    FROM manga_progress mp
-    JOIN profiles p ON p.id = mp.profile_id
-    WHERE
-        p.platform_id = :platformId
-) SELECT DISTINCT
-	m.*,
-	'' as split,
-	mp.*,
-	'' as split,
-	mc.*,
-	'' as split,
-	mmc.max as max_chapter_num,
-    mc.row_num as chapter_num,
-    coalesce(array_length(mc.pages, 1), 0) as page_count,
-    (
-        CASE
-            WHEN mmc.first_chapter_id = mc.id AND mp.page_index IS NULL THEN 0
-            ELSE round(mc.row_num / CAST(mmc.max as decimal) * 100, 2)
-        END
-    ) as chapter_progress,
-    coalesce(round(mp.page_index / CAST(array_length(mc.pages, 1) as decimal), 2), 0) * 100 as page_progress,
-    coalesce((
-        SELECT 1
-        FROM manga_favourites mf
-        WHERE mf.profile_id = m.profile_id AND mf.manga_id = m.id
-    ), 0) as favourite,
-    coalesce(mb.pages, '{}') as bookmarks
-FROM touched_manga m
-LEFT JOIN progress mp ON mp.manga_id = m.id
-LEFT JOIN max_chapter_numbers mmc ON mmc.manga_id = m.id
-LEFT JOIN chapter_numbers mc ON
-    (mp.id IS NOT NULL AND mc.id = mp.manga_chapter_id) OR
-    (mp.id IS NULL AND mmc.first_chapter_id = mc.id)
-LEFT JOIN manga_bookmarks mb ON mb.manga_chapter_id = mc.id
-WHERE
-	m.deleted_at IS NULL AND
-	mp.deleted_at IS NULL
-ORDER BY mp.updated_at DESC";
-
-			var res = await _sql.QueryAsync<DbManga, DbMangaProgress, DbMangaChapter, MangaStats>(QUERY, new { platformId });
-			return res.Select(t => new MangaProgress(t.item1, t.item2, t.item3, t.item4)).ToArray();
-		}
-
 		public Task<DbMangaChapter?> GetChapter(long id)
 		{
 			_getChapterQuery ??= _query.Select<DbMangaChapter>(TABLE_NAME_MANGA_CHAPTER, t => t.With(a => a.Id));
@@ -287,22 +200,33 @@ ORDER BY key, value";
 				.ToArray();
 		}
 
-		public async Task<PaginatedResult<DbManga>> Search(MangaFilter filter)
+		public async Task<PaginatedResult<MangaProgress>> Search(MangaFilter filter, string? platformId)
 		{
-			const string QUERY = @"WITH manga_chapter_filters AS (
-	SELECT
-		manga_id,
-		MAX(created_at) as latest_chapter,
-		MIN(created_at) as earliest_chapter
-	FROM manga_chapter
-	GROUP BY manga_id
-) SELECT m.*
-FROM manga m
-JOIN manga_chapter_filters mcf ON mcf.manga_id = m.id
-WHERE {0}
+			const string QUERY = @"CREATE TEMP TABLE touched_manga AS
+SELECT
+    t.*
+FROM get_manga(:platformId, :state) t
+JOIN manga m ON m.id = t.manga_id
+WHERE
+    {0};
+
+SELECT
+    m.*,
+    '' as split,
+    mp.*,
+    '' as split,
+    mc.*,
+    '' as split,
+    t.*
+FROM touched_manga t
+JOIN manga m ON m.id = t.manga_id
+JOIN manga_chapter mc ON mc.id = t.manga_chapter_id
+LEFT JOIN manga_progress mp ON mp.id = t.progress_id
 ORDER BY {2} {1}
 LIMIT :size OFFSET :offset;
-SELECT COUNT(*) FROM manga m WHERE {0};";
+
+SELECT COUNT(*) FROM touched_manga;
+DROP TABLE touched_manga;";
 
 			var sortField = SortFields().FirstOrDefault(t => t.Id == (filter.Sort ?? 0))?.SqlName ?? "m.title";
 
@@ -310,6 +234,8 @@ SELECT COUNT(*) FROM manga m WHERE {0};";
 			var pars = new DynamicParameters();
 			pars.Add("offset", (filter.Page - 1) * filter.Size);
 			pars.Add("size", filter.Size);
+			pars.Add("platformId", platformId);
+			pars.Add("state", (int)filter.State);
 
 			if (!string.IsNullOrEmpty(filter.Search))
 			{
@@ -334,137 +260,15 @@ SELECT COUNT(*) FROM manga m WHERE {0};";
 			var sort = filter.Ascending ? "ASC" : "DESC";
 
 			var query = string.Format(QUERY, where, sort, sortField);
+
+			var offset = (filter.Page - 1) * filter.Size;
 			using var con = _sql.CreateConnection();
 			using var rdr = await con.QueryMultipleAsync(query, pars);
 
-			var res = (await rdr.ReadAsync<DbManga>()).ToArray();
+			var results = rdr.Read<DbManga, DbMangaProgress, DbMangaChapter, MangaStats, MangaProgress>((m, p, c, s) => new MangaProgress(m, p, c, s), splitOn: "split");
 			var total = await rdr.ReadSingleAsync<int>();
 			var pages = (long)Math.Ceiling((double)total / filter.Size);
-			return new PaginatedResult<DbManga>(pages, total, res);
-		}
-
-		public async Task<PaginatedResult<MangaProgress>> Search(MangaFilter filter, string? platformId)
-		{
-			const string QUERY = @"WITH manga_chapter_filters AS (
-	SELECT
-		manga_id,
-		MAX(created_at) as latest_chapter,
-		MIN(created_at) as earliest_chapter
-	FROM manga_chapter
-	GROUP BY manga_id
-), limited_manga AS (
-    SELECT
-        m.*,
-		mcf.latest_chapter
-    FROM manga m
-    JOIN manga_chapter_filters mcf ON mcf.manga_id = m.id
-    WHERE
-        {0}
-    ORDER BY {2} {1}
-    LIMIT :size OFFSET :offset
-), chapter_numbers AS (
-    SELECT
-        c.*,
-        row_number() over (
-            PARTITION BY manga_id
-            ORDER BY ordinal ASC
-        ) as row_num
-    FROM manga_chapter c
-), max_chapter_numbers AS (
-    SELECT
-        c.manga_id,
-        MAX(c.row_num) as max,
-        MIN(c.id) as first_chapter_id
-    FROM chapter_numbers c
-    GROUP BY c.manga_id
-), progress AS (
-    SELECT mp.*
-    FROM manga_progress mp
-    JOIN profiles p ON mp.profile_id = p.id
-    WHERE p.platform_id = :platformId
-), bookmarks AS (
-    SELECT mb.*
-    FROM manga_bookmarks mb
-    JOIN profiles p ON mb.profile_id = p.id
-    WHERE p.platform_id = :platformId
-), favourites AS (
-	SELECT mb.manga_id, 1 as is_favourite
-    FROM manga_favourites mb
-    JOIN profiles p ON mb.profile_id = p.id
-    WHERE p.platform_id = :platformId
-) SELECT DISTINCT
-    m.*,
-    '' as split,
-    mp.*,
-    '' as split,
-    mc.*,
-    '' as split,
-    mmc.max as max_chapter_num,
-    mc.row_num as chapter_num,
-    coalesce(array_length(mc.pages, 1), 0) as page_count,
-    (
-        CASE
-            WHEN mmc.first_chapter_id = mc.id AND mp.page_index IS NULL THEN 0
-            ELSE round(mc.row_num / CAST(mmc.max as decimal) * 100, 2)
-        END
-    ) as chapter_progress,
-    coalesce(round(mp.page_index / CAST(array_length(mc.pages, 1) as decimal), 2), 0) * 100 as page_progress,
-    coalesce(mf.is_favourite, 0) as favourite,
-    coalesce(mb.pages, '{3}') as bookmarks,
-	mcf.latest_chapter
-FROM limited_manga m
-JOIN max_chapter_numbers mmc ON mmc.manga_id = m.id
-JOIN manga_chapter_filters mcf ON mcf.manga_id = m.id
-LEFT JOIN favourites mf ON mf.manga_id = m.id
-LEFT JOIN progress mp ON mp.manga_id = m.id
-LEFT JOIN chapter_numbers mc ON
-    (mp.id IS NOT NULL AND mc.id = mp.manga_chapter_id) OR
-    (mp.id IS NULL AND mmc.first_chapter_id = mc.id)
-LEFT JOIN bookmarks mb ON mb.manga_chapter_id = mc.id
-WHERE
-    mp.deleted_at IS NULL AND
-    {0}
-ORDER BY {2} {1};";
-			const string COUNT_QUERY = "SELECT COUNT(*) FROM manga m WHERE {0};";
-
-			var sortField = SortFields().FirstOrDefault(t => t.Id == (filter.Sort ?? 0))?.SqlName ?? "m.title";
-
-			var parts = new List<string>();
-			var pars = new DynamicParameters();
-			pars.Add("offset", (filter.Page - 1) * filter.Size);
-			pars.Add("size", filter.Size);
-			pars.Add("platformId", platformId);
-
-			if (!string.IsNullOrEmpty(filter.Search))
-			{
-				parts.Add("m.fts @@ phraseto_tsquery('english', :search)");
-				pars.Add("search", filter.Search);
-			}
-
-			if (filter.Include != null && filter.Include.Length > 0)
-			{
-				parts.Add("m.tags @> :include");
-				pars.Add("include", filter.Include);
-			}
-
-			if (filter.Exclude != null && filter.Exclude.Length > 0)
-			{
-				parts.Add("NOT (m.tags && :exclude )");
-				pars.Add("exclude", filter.Exclude);
-			}
-
-			parts.Add("m.deleted_at IS NULL");
-			var where = string.Join(" AND ", parts);
-			var sort = filter.Ascending ? "ASC" : "DESC";
-
-			var query = string.Format(QUERY, where, sort, sortField, "{}");
-			var countQuery = string.Format(COUNT_QUERY, where, sort, sortField, "{}");
-
-			var res = await _sql.QueryAsync<DbManga, DbMangaProgress, DbMangaChapter, MangaStats>(query, pars);
-			var results = res.Select(t => new MangaProgress(t.item1, t.item2, t.item3, t.item4)).ToArray();
-			var total = await _sql.Fetch<int>(countQuery, pars);
-			var pages = (long)Math.Ceiling((double)total / filter.Size);
-			return new PaginatedResult<MangaProgress>(pages, total, results);
+			return new PaginatedResult<MangaProgress>(pages, total, results.ToArray());
 		}
 
 		public async Task<DbMangaBookmark[]> Bookmarks(long id, string? platformId)
@@ -608,13 +412,7 @@ WHERE p.platform_id = :platformId AND mf.manga_id = :id";
 			const string QUERY = @"CREATE TEMP TABLE touched_manga AS
 SELECT
     *
-FROM get_touched_manga(:platformId) t
-WHERE
-    (t.favourite = true AND :state = 1) OR
-    (t.completed = true AND :state = 2) OR
-    (t.completed = false AND :state = 3) OR
-    (t.has_bookmarks = true AND :state = 4) OR
-    (:state < 1 OR :state > 4);
+FROM get_manga(:platformId, :state);
 
 SELECT
     m.*,
@@ -647,13 +445,4 @@ DROP TABLE touched_manga;";
 	}
 
 	public record class MangaSortField(string Name, int Id, string SqlName);
-
-	public enum TouchedState
-	{
-		All = 99,
-		Favourite = 1,
-		Completed = 2,
-		InProgress = 3,
-		Bookmarked = 4
-	}
 }
