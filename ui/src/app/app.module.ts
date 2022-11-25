@@ -8,8 +8,6 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './layout/app.component';
 import { ErrorComponent } from './routes/error/error.component';
-import { LightnovelComponent } from './routes/lightnovel/lightnovel.component';
-import { LightnovelsComponent } from './routes/lightnovels/lightnovels.component';
 import { AdminComponent } from './routes/admin/admin.component';
 import { COMMON_IMPORTS, ComponentsModule } from './components/components.module';
 import { ServiceWorkerModule } from '@angular/service-worker';
@@ -23,8 +21,6 @@ import { InstallInstructionsComponent } from './routes/install-instructions/inst
     declarations: [
         AppComponent,
         ErrorComponent,
-        LightnovelComponent,
-        LightnovelsComponent,
         AdminComponent,
         RerouteComponent,
         TestComponent,

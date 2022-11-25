@@ -1,14 +1,15 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
-import { catchError, of } from 'rxjs';
-import { AiDbRequest, AiService, AuthService } from 'src/app/services';
+import { AiDbRequest, AiService, AuthService, SubscriptionHandler } from 'src/app/services';
 
 @Component({
     templateUrl: './ai-requests.component.html',
     styleUrls: ['./ai-requests.component.scss']
 })
 export class AiRequestsComponent implements OnInit, OnDestroy {
+
+    private _subs = new SubscriptionHandler();
 
     loading: boolean = false;
     error?: string;
@@ -34,15 +35,14 @@ export class AiRequestsComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.title.setTitle('CBA | Image Gen History');
-        this.auth.onLogin.subscribe(_ => {
-            this.process();
-        });
 
+        this._subs.subscribe(this.auth.onLogin, t => this.process());
         this.process();
     }
 
     ngOnDestroy(): void {
-        this.title.setTitle(this.api.defaultTitle);    
+        this.title.setTitle(this.api.defaultTitle);
+        this._subs.unsubscribe();
     }
 
     process() {

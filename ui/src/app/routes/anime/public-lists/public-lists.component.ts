@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AnimeService, PublicList } from '../../../services';
+import { AnimeService, PublicList, SubscriptionHandler } from '../../../services';
 
 const DEFAULT_PAGE = 1,
       DEFAULT_SIZE = 100;
@@ -10,7 +10,9 @@ const DEFAULT_PAGE = 1,
     templateUrl: './public-lists.component.html',
     styleUrls: ['./public-lists.component.scss']
 })
-export class PublicListsComponent implements OnInit {
+export class PublicListsComponent implements OnInit, OnDestroy {
+
+    private _subs = new SubscriptionHandler();
 
     page: number = DEFAULT_PAGE;
     size: number = DEFAULT_SIZE;
@@ -41,15 +43,20 @@ export class PublicListsComponent implements OnInit {
     ) { }
 
     ngOnInit(): void {
-        this.route.queryParams.subscribe(t => {
-            let { page, size } = t;
+        this._subs
+            .subscribe(this.route.queryParams, t => {
+                let { page, size } = t;
 
-            if (!page || page < 1) page = DEFAULT_PAGE;
-            if (!size || size < 1) size = DEFAULT_SIZE;
-            this.page = +page;
-            this.size = +size;
-            this.load();
-        });
+                if (!page || page < 1) page = DEFAULT_PAGE;
+                if (!size || size < 1) size = DEFAULT_SIZE;
+                this.page = +page;
+                this.size = +size;
+                this.load();
+            });
+    }
+
+    ngOnDestroy(): void {
+        this._subs.unsubscribe();
     }
 
     private load() {

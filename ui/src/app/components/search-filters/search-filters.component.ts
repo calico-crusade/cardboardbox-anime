@@ -1,16 +1,17 @@
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
 import { AvailableParams, Filter, Filters, FilterSearch, MatureType } from 'src/app/services/anime/anime.model';
 import { AnimeService } from 'src/app/services/anime/anime.service';
-import { UtilitiesService } from 'src/app/services/utilities.service';
+import { SubscriptionHandler, UtilitiesService } from 'src/app/services/utilities.service';
 
 @Component({
     selector: 'cba-search-filters',
     templateUrl: './search-filters.component.html',
     styleUrls: ['./search-filters.component.scss']
 })
-export class SearchFiltersComponent implements OnInit {
+export class SearchFiltersComponent implements OnInit, OnDestroy {
 
+    private _subs = new SubscriptionHandler();
     private _loading: boolean = false;
 
     filter?: FilterSearch;
@@ -42,11 +43,14 @@ export class SearchFiltersComponent implements OnInit {
                 this.process();
             });
 
-        this.route.queryParams.subscribe(t => {
-            this.currentParams = t;
-            this.process();
-        });
+        this._subs
+            .subscribe(this.route.queryParams, t => {
+                this.currentParams = t;
+                this.process();
+            });
     }
+
+    ngOnDestroy(): void { this._subs.unsubscribe(); }
 
     toggleMature(value: MatureType) {
         if (!this.filter) return;

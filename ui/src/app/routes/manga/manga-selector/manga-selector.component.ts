@@ -2,13 +2,15 @@ import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { PopupComponent, PopupService } from 'src/app/components';
-import { LightNovelService, MangaFilter, MangaProgressData, MangaService } from 'src/app/services';
+import { LightNovelService, MangaFilter, MangaProgressData, MangaService, SubscriptionHandler } from 'src/app/services';
 
 @Component({
     templateUrl: './manga-selector.component.html',
     styleUrls: ['./manga-selector.component.scss']
 })
 export class MangaSelectorComponent implements OnInit, OnDestroy {
+
+    private _subs = new SubscriptionHandler();
 
     loading: boolean = false;
     data: MangaProgressData[] = [];
@@ -33,7 +35,7 @@ export class MangaSelectorComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.title.setTitle('CardboardBox | Manga');
-        this.route.queryParams.subscribe(t => {
+        this._subs.subscribe(this.route.queryParams, t => {
             this.search = this.api.routeFilter();
             this.data = [];
             this.process();
@@ -41,6 +43,7 @@ export class MangaSelectorComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
+        this._subs.unsubscribe();
         this.title.setTitle(this.api.defaultTitle);
     }
 

@@ -2,13 +2,15 @@ import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { PopupComponent, PopupInstance, PopupService } from 'src/app/components';
-import { AuthService, LightNovelService, MangaFilter, MangaProgressData, MangaService } from 'src/app/services';
+import { AuthService, LightNovelService, MangaFilter, MangaProgressData, MangaService, SubscriptionHandler } from 'src/app/services';
 
 @Component({
     templateUrl: './manga-in-progress.component.html',
     styleUrls: ['./manga-in-progress.component.scss']
 })
 export class MangaInProgressComponent implements OnInit, OnDestroy {
+
+    private _subs = new SubscriptionHandler();
 
     states = [
         { text: 'All', routes: ['/manga', 'touched', 'all'], index: 6 },
@@ -44,22 +46,24 @@ export class MangaInProgressComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.title.setTitle('CardboardBox | In Progress Manga');
-        this.route.params.subscribe(t => this.handleParams(t));
-        this.auth.onLogin.subscribe(() => this.handleParams());
-        this.route.queryParams.subscribe(() => this.handleParams());
+        this._subs
+            .subscribe(this.route.params, t => this.handleParams(t))
+            .subscribe(this.auth.onLogin, () => this.handleParams())
+            .subscribe(this.route.queryParams, () => this.handleParams());
     }
 
     ngOnDestroy() {
         this.title.setTitle(this.api.defaultTitle);
+        this._subs.unsubscribe();
     }
 
     handleParams(map?: { [key: string]: any }) {
         this.state = this.determineType(map ? map['type'] : undefined);
         this.search = this.api.routeFilter(this.state);
         this.records = [];
-        this.loading = true;
-        if (!this.auth.currentUser) return;
+        if (!this.auth.currentUser || this.loading) return;
 
+        this.loading = true;
         this.process();
     }
 

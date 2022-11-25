@@ -1,15 +1,16 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
-import { catchError, lastValueFrom, of } from 'rxjs';
 import { PopupComponent, PopupService } from 'src/app/components';
-import { AuthService, LightNovelService, MangaProgress, MangaService, MangaWithChapters } from 'src/app/services';
+import { AuthService, LightNovelService, MangaProgress, MangaService, MangaWithChapters, SubscriptionHandler } from 'src/app/services';
 
 @Component({
     templateUrl: './manga.component.html',
     styleUrls: ['./manga.component.scss']
 })
 export class MangaComponent implements OnInit, OnDestroy {
+
+    private _subs = new SubscriptionHandler();
 
     @ViewChild('bookmarkspopup') bookmarkPop!: PopupComponent;
 
@@ -54,18 +55,20 @@ export class MangaComponent implements OnInit, OnDestroy {
     ) { }
 
     ngOnInit(): void {
-        this.route.params.subscribe(t => {
-            const id = t['id'] + '';
-            this.id = id.toLowerCase() === 'random' ? -1 : +id;
-            this.isRandom = this.id === -1;
-            this.process();
-        });
-        this.auth.onLogin.subscribe(t => {
-            this.process();
-        });
+        this._subs
+            .subscribe(this.route.params, t => {
+                const id = t['id'] + '';
+                this.id = id.toLowerCase() === 'random' ? -1 : +id;
+                this.isRandom = this.id === -1;
+                this.process();
+            })
+            .subscribe(this.auth.onLogin, t => {
+                this.process();
+            });
     }
 
     ngOnDestroy(): void {
+        this._subs.unsubscribe();
         this.title.setTitle(this.api.defaultTitle);
         this.auth.title = undefined;
     }

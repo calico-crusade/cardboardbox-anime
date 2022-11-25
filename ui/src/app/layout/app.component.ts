@@ -1,5 +1,6 @@
-import { Component, ElementRef, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
+import { SubscriptionHandler } from '../services';
 import { AuthUser } from '../services/auth/auth.model';
 import { AuthService } from '../services/auth/auth.service';
 
@@ -8,7 +9,9 @@ import { AuthService } from '../services/auth/auth.service';
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.scss']
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
+
+    private _subs = new SubscriptionHandler();
 
     user?: AuthUser;
     menuOpen = false;
@@ -29,20 +32,20 @@ export class AppComponent implements OnInit {
     ) { }
 
     async ngOnInit() {
-        this.router
-            .events
-            .subscribe(t => {
+        this._subs
+            .subscribe(this.router.events, t => {
                 if (t instanceof NavigationEnd) {
                     const url = t.url.substring(1);
                     this.auth.lastRoute = url;
                 }
-            });
-
-        this.auth.onHeaderChange.subscribe(t => this.showTitle = t);
-        this.auth.onLogin.subscribe(t => this.user = t);
-        this.auth.onTitleChange.subscribe(t => this.title = t);
+            })
+            .subscribe(this.auth.onHeaderChange, t => this.showTitle = t)
+            .subscribe(this.auth.onLogin, t => this.user = t)
+            .subscribe(this.auth.onTitleChange, t => this.title = t);
         await this.auth.bump();
     }
+
+    ngOnDestroy(): void { this._subs.unsubscribe(); }
 
     async login() {
         await this.auth.login();

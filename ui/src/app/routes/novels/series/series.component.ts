@@ -3,13 +3,15 @@ import { ActivatedRoute } from '@angular/router';
 import { catchError, of } from 'rxjs';
 import { LightNovelService, Scaffold } from './../../../services/lightnovels';
 import { Title } from '@angular/platform-browser';
-import { AuthService, UtilitiesService } from 'src/app/services';
+import { AuthService, SubscriptionHandler, UtilitiesService } from 'src/app/services';
 
 @Component({
     templateUrl: './series.component.html',
     styleUrls: ['./series.component.scss']
 })
 export class SeriesComponent implements OnInit, OnDestroy {
+
+    private _subs = new SubscriptionHandler();
 
     id: number = 0;
     scaffold?: Scaffold;
@@ -33,7 +35,7 @@ export class SeriesComponent implements OnInit, OnDestroy {
     ) { }
 
     ngOnInit(): void {
-        this.route.params.subscribe(t => {
+        this._subs.subscribe(this.route.params, t => {
             this.id = +t['id'];
             this.process();
         });
@@ -42,6 +44,7 @@ export class SeriesComponent implements OnInit, OnDestroy {
     ngOnDestroy(): void {
         this.title.setTitle(this.api.defaultTitle);
         this.auth.title = undefined;
+        this._subs.unsubscribe();
     }
 
     private process() {

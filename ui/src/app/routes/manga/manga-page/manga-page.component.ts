@@ -1,9 +1,9 @@
 import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { catchError, lastValueFrom, of } from 'rxjs';
+import { catchError, of } from 'rxjs';
 import { PopupService, PopupComponent } from 'src/app/components';
-import { AuthService, LightNovelService, MangaChapter, MangaService, MangaWithChapters, StorageVar, UtilitiesService } from 'src/app/services';
+import { AuthService, LightNovelService, MangaChapter, MangaService, MangaWithChapters, StorageVar, SubscriptionHandler, UtilitiesService } from 'src/app/services';
 
 const DEFAULT_IMAGE = 'https://wallpaperaccess.com/full/1979093.jpg';
 
@@ -12,6 +12,8 @@ const DEFAULT_IMAGE = 'https://wallpaperaccess.com/full/1979093.jpg';
     styleUrls: ['./manga-page.component.scss']
 })
 export class MangaPageComponent implements OnInit, OnDestroy {
+
+    private _subs = new SubscriptionHandler();
 
     progressBarOptions = ['', 'bottom', 'left', 'right'];
     sizeOptions = ['Fit to Height', 'Fit to Width', 'Natural Image Size'];
@@ -161,13 +163,9 @@ export class MangaPageComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
-        this.auth
-            .onLogin
-            .subscribe(t => this.process(true));
-
-        this.route
-            .params
-            .subscribe(t => {
+        this._subs
+            .subscribe(this.auth.onLogin, t => this.process(true))
+            .subscribe(this.route.params, t => {
                 this.id = +t['id'];
                 this.chapterId = +t['chapter'];
                 this.page = +t['page'];
@@ -176,13 +174,13 @@ export class MangaPageComponent implements OnInit, OnDestroy {
 
                 this.process();
             });
-
     }
 
     ngOnDestroy(): void {
         this.title.setTitle(this.api.defaultTitle);
         this.auth.title = undefined;
         this.auth.showHeader = true;
+        this._subs.unsubscribe();
     }
 
     private async process(force: boolean = false) {

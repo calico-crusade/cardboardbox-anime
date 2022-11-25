@@ -1,8 +1,7 @@
 import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subscription } from 'rxjs';
 import { PopupComponent, PopupInstance, PopupService } from 'src/app/components';
-import { Filter, MangaFilter, MangaService } from 'src/app/services';
+import { Filter, MangaFilter, MangaService, SubscriptionHandler } from 'src/app/services';
 
 type Tag = {
     text: string;
@@ -16,7 +15,7 @@ type Tag = {
 })
 export class MangaSearchFiltersComponent implements OnInit, OnDestroy {
 
-    private _sub?: Subscription;
+    private _subs = new SubscriptionHandler();
 
     @ViewChild('searchpopup') searchPop!: PopupComponent;
     @Input('override-state') overrideState: number = -1;
@@ -63,25 +62,23 @@ export class MangaSearchFiltersComponent implements OnInit, OnDestroy {
             this.allSorts = this.filters.find(t => t.key === 'sorts')?.values || [];
             this.setTags();
         });
-        this._sub = this.api.onSearch.subscribe(t => {
-            if (!t) {
-                this.filterInstance?.cancel();
-                return;
-            }
-
-            if (this.searchPop) this.filterInstance = this.pop.show(this.searchPop);
-        });
-        this.route.queryParams.subscribe(t => {
-            const state = this.overrideState < 0 ? undefined : this.overrideState;
-            this.search = this.api.routeFilter(state);
-            this.setTags();
-        });
+        this._subs
+            .subscribe(this.api.onSearch, t => {
+                if (!t) {
+                    this.filterInstance?.cancel();
+                    return;
+                }
+    
+                if (this.searchPop) this.filterInstance = this.pop.show(this.searchPop);
+            })
+            .subscribe(this.route.queryParams, t => {
+                const state = this.overrideState < 0 ? undefined : this.overrideState;
+                this.search = this.api.routeFilter(state);
+                this.setTags();
+            });
     }
 
-    ngOnDestroy(): void {
-        this._sub?.unsubscribe();
-        this._sub = undefined;
-    }
+    ngOnDestroy(): void { this._subs.unsubscribe(); }
 
     toggleFilter(tag: Tag) {
         if (tag.state === 'include') {

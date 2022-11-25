@@ -1,6 +1,6 @@
-import { Component, Injectable, OnInit } from '@angular/core';
+import { Component, Injectable, OnDestroy, OnInit } from '@angular/core';
 import { lastValueFrom, Subject } from 'rxjs';
-import { AnimeService, Anime, AuthService, AuthUser, ListExt, UtilitiesService, ListsMaps } from './../../services';
+import { AnimeService, Anime, AuthService, AuthUser, ListsMaps, SubscriptionHandler } from './../../services';
 import { ListSelectService } from '../list-select/list-select.component';
 
 const DEF_IMG = '/assets/default-background.webp';
@@ -10,7 +10,9 @@ const DEF_IMG = '/assets/default-background.webp';
     templateUrl: './anime-modal.component.html',
     styleUrls: ['./anime-modal.component.scss']
 })
-export class AnimeModalComponent implements OnInit {
+export class AnimeModalComponent implements OnInit, OnDestroy {
+
+    private _subs = new SubscriptionHandler();
 
     /** 
      * The @see {@link Anime} object to display in the modal 
@@ -69,20 +71,22 @@ export class AnimeModalComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        //When the modal gets opened
-        this.srv.onClicked.subscribe(t => {
-            this.anime = t;
-            this.open = true;
-        });
-
-        //When the logged in state changes
-        this.auth.onLogin.subscribe(t => {
-            this.curUser = t;
-            if (!this.curUser) return;
-            //Trigger a fetch of the user's lists
-            this.api.map.subscribe(t => this.map = t);
-        });
+        this._subs
+            //When the modal gets opened
+            .subscribe(this.srv.onClicked, t => {
+                this.anime = t;
+                this.open = true;
+            })
+            //When the logged in state changes
+            .subscribe(this.auth.onLogin, t => {
+                this.curUser = t;
+                if (!this.curUser) return;
+                //Trigger a fetch of the user's lists
+                this.api.map.subscribe(t => this.map = t);
+            });
     }
+
+    ngOnDestroy(): void { this._subs.unsubscribe(); }
 
     /** 
      * Closes & Cancels the modal 

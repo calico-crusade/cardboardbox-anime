@@ -1,6 +1,6 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { IInfiniteScrollEvent } from 'ngx-infinite-scroll';
-import { AuthService } from 'src/app/services';
+import { AuthService, SubscriptionHandler } from 'src/app/services';
 
 type state = 'loading' | 'error' |
     'requires-login-loading' |
@@ -13,7 +13,9 @@ type state = 'loading' | 'error' |
     templateUrl: './component-container.component.html',
     styleUrls: ['./component-container.component.scss']
 })
-export class ComponentContainerComponent implements OnInit {
+export class ComponentContainerComponent implements OnInit, OnDestroy {
+
+    private _subs = new SubscriptionHandler();
 
     private _loading: boolean = false;
     private _error?: string;
@@ -66,9 +68,12 @@ export class ComponentContainerComponent implements OnInit {
     ) { }
 
     ngOnInit(): void {
-        this.auth.onLogin.subscribe(_ => this.process());
-        this.auth.onIsLoggingIn.subscribe(_ => this.process());
+        this._subs
+            .subscribe(this.auth.onLogin, _ => this.process())
+            .subscribe(this.auth.onIsLoggingIn, _ => this.process());
     }
+
+    ngOnDestroy(): void { this._subs.unsubscribe(); }
 
     process() {
         if (this._loading) {

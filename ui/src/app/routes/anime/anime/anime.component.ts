@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { 
     AnimeService, AuthService, UtilitiesService,
-    Anime, FilterSearch, MatureType, AuthUser, ListsMaps, ListExt
+    Anime, FilterSearch, MatureType, AuthUser, ListsMaps, ListExt, SubscriptionHandler
 } from '../../../services';
 
 const STORE_TUT = 'showTut';
@@ -15,6 +15,7 @@ type VrvAnimeImage = Anime & { src: string; };
 })
 export class AnimeComponent implements OnInit, OnDestroy {
 
+    private _subs = new SubscriptionHandler();
     private _list?: ListExt;
 
     defaultImage = '/assets/default-background.webp';
@@ -54,14 +55,16 @@ export class AnimeComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.showTut = !localStorage.getItem(STORE_TUT);
-        this.auth.onLogin.subscribe(t => {
-            this.curUser = t;
-            if (!this.curUser) return;
-            this.api.map.subscribe(t => this.map = t);
-        });
-        this.route.params.subscribe(t => {
-            this.listId = !t['id'] ? undefined : +t['id'];
-        });
+
+        this._subs
+            .subscribe(this.auth.onLogin, t => {
+                this.curUser = t;
+                if (!this.curUser) return;
+                this.api.map.subscribe(t => this.map = t);
+            })
+            .subscribe(this.route.params, t => {
+                this.listId = !t['id'] ? undefined : +t['id'];
+            });
     }
 
     process() {
@@ -169,6 +172,7 @@ export class AnimeComponent implements OnInit, OnDestroy {
 
     ngOnDestroy(): void {
         clearInterval(this.interval);
+        this._subs.unsubscribe();
     }
 
     getMaxImage(anime: Anime) {

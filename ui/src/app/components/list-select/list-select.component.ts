@@ -1,13 +1,15 @@
-import { Component, Injectable, OnInit } from '@angular/core';
-import { lastValueFrom, Subject, tap } from 'rxjs';
-import { Anime, AnimeService, AuthService, AuthUser, ListExt, ListsMaps, UtilitiesService } from './../../services';
+import { Component, Injectable, OnDestroy, OnInit } from '@angular/core';
+import { lastValueFrom, Subject } from 'rxjs';
+import { Anime, AnimeService, AuthService, AuthUser, ListExt, ListsMaps, SubscriptionHandler, UtilitiesService } from './../../services';
 
 @Component({
     selector: 'cba-list-select',
     templateUrl: './list-select.component.html',
     styleUrls: ['./list-select.component.scss']
 })
-export class ListSelectComponent implements OnInit {
+export class ListSelectComponent implements OnInit, OnDestroy {
+
+    private _subs = new SubscriptionHandler();
 
     /**
      * Whether or not we have an active API request
@@ -58,21 +60,23 @@ export class ListSelectComponent implements OnInit {
     ) { }
 
     async ngOnInit() {
-        //When the modal is opened
-        this.srv.onOpened.subscribe(t => {
-            this.cur = t;
-            this.open = true;
-        });
-        
-        //When the logged in state changes
-        this.auth.onLogin.subscribe(t => {
-            this.curUser = t;
-            if (!this.curUser) return;
-
-            //Trigger a fetch of the user's lists
-            this.api.map.subscribe(t => this.map = t);
-        });
+        this._subs
+            //When the modal is opened
+            .subscribe(this.srv.onOpened, t => {
+                this.cur = t;
+                this.open = true;
+            })
+            //When the logged in state changes
+            .subscribe(this.auth.onLogin, t => {
+                this.curUser = t;
+                if (!this.curUser) return;
+    
+                //Trigger a fetch of the user's lists
+                this._subs.subscribe(this.api.map, t => this.map = t);
+            });
     }
+
+    ngOnDestroy(): void { this._subs.unsubscribe(); }
 
     /**
      * Close / Cancel the current modal

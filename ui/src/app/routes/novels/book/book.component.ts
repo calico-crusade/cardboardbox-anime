@@ -2,13 +2,15 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { catchError, of } from 'rxjs';
-import { AuthService, LightNovelService, NovelBook, NovelChapter, Scaffold, UtilitiesService } from './../../../services';
+import { AuthService, LightNovelService, NovelBook, NovelChapter, Scaffold, SubscriptionHandler, UtilitiesService } from './../../../services';
 
 @Component({
     templateUrl: './book.component.html',
     styleUrls: ['./book.component.scss']
 })
 export class BookComponent implements OnInit, OnDestroy {
+
+    private _subs = new SubscriptionHandler();
 
     loading: boolean = false;
     downloading: boolean = false;
@@ -62,16 +64,18 @@ export class BookComponent implements OnInit, OnDestroy {
     ) { }
 
     ngOnInit(): void {
-        this.route.params.subscribe(t => {
-            this.seriesId = +t['id'];
-            this.bookId = +t['bookId'];
-            this.process();
-        });
+        this._subs
+            .subscribe(this.route.params, t => {
+                this.seriesId = +t['id'];
+                this.bookId = +t['bookId'];
+                this.process();
+            });
     }
 
     ngOnDestroy(): void {
         this.title.setTitle(this.api.defaultTitle);
         this.auth.title = undefined;
+        this._subs.unsubscribe();
     }
 
     private process() {

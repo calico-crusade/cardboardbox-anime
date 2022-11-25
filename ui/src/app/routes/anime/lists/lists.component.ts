@@ -1,12 +1,14 @@
-import { Component, OnInit } from '@angular/core';
-import { ListsMaps, AuthUser, AnimeService, AuthService, ListExt } from '../../../services';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ListsMaps, AuthUser, AnimeService, AuthService, ListExt, SubscriptionHandler } from '../../../services';
 
 @Component({
     selector: 'cba-lists',
     templateUrl: './lists.component.html',
     styleUrls: ['./lists.component.scss']
 })
-export class ListsComponent implements OnInit {
+export class ListsComponent implements OnInit, OnDestroy {
+
+    private _subs = new SubscriptionHandler();
 
     /**
      * Whether or not we have an active API request
@@ -39,11 +41,16 @@ export class ListsComponent implements OnInit {
     ) { }
 
     ngOnInit(): void {
-        this.auth.onLogin.subscribe(t => {
-            this.curUser = t;
-            if (!this.curUser) return;
-            this.api.map.subscribe(t => this.map = t);
-        });
+        this._subs
+            .subscribe(this.auth.onLogin, t => {
+                this.curUser = t;
+                if (!this.curUser) return;
+                this.api.map.subscribe(t => this.map = t);
+            });
+    }
+
+    ngOnDestroy(): void {
+        this._subs.unsubscribe();
     }
 
     remove(list: ListExt) {

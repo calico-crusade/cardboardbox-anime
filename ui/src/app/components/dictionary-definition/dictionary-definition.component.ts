@@ -1,6 +1,5 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { Subscription } from 'rxjs';
-import { Definition } from 'src/app/services';
+import { Definition, SubscriptionHandler } from 'src/app/services';
 import { PopupComponent } from '../popup/popup.component';
 import { PopupInstance, PopupService } from '../popup/popup.service';
 import { DictionaryDefinitionService } from './dictionary-definition.service';
@@ -14,7 +13,7 @@ export class DictionaryDefinitionComponent implements OnInit, OnDestroy {
 
     @ViewChild('popup') popup!: PopupComponent;
 
-    private subs: Subscription[] = [];
+    private _subs = new SubscriptionHandler();
     private popIn?: PopupInstance;
 
     loading: boolean = false;
@@ -36,25 +35,21 @@ export class DictionaryDefinitionComponent implements OnInit, OnDestroy {
     ) { }
 
     ngOnInit(): void {
-        this.subs = [
-            this.dic.onClose.subscribe(t => {
+        this._subs
+            .subscribe(this.dic.onClose, t => {
                 this.popIn?.ok();
                 this.popIn = undefined;
-            }),
-
-            this.dic.onLoading.subscribe(t => {
+            })
+            .subscribe(this.dic.onLoading, t => {
                 this.loading = t;
                 if (t) this.popIn = this.pop.show(this.popup);
-            }),
-
-            this.dic.onText.subscribe(t => this.text = t),
-            this.dic.onDefinition.subscribe(t => this.definition = t)
-        ];
+            })
+            .subscribe(this.dic.onText, t => this.text = t)
+            .subscribe(this.dic.onDefinition, t => this.definition = t);
     }
 
     ngOnDestroy(): void {
-        for(let sub of [...this.subs]) sub.unsubscribe();
-        this.subs = [];
+        this._subs.unsubscribe();
     }
 
     go(text: string) {

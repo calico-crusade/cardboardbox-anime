@@ -4,13 +4,15 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import { PopupComponent, PopupInstance, PopupService } from 'src/app/components';
 import { DictionaryDefinitionService } from 'src/app/components/dictionary-definition/dictionary-definition.service';
-import { AuthService, ChapterPages, LightNovelService, NovelBook, NovelChapter, Scaffold } from 'src/app/services';
+import { AuthService, ChapterPages, LightNovelService, NovelBook, NovelChapter, Scaffold, SubscriptionHandler } from 'src/app/services';
 
 @Component({
   templateUrl: './chapter.component.html',
   styleUrls: ['./chapter.component.scss']
 })
 export class ChapterComponent implements OnInit, OnDestroy {
+
+    private _subs = new SubscriptionHandler();
 
     private _popIn?: PopupInstance;
     @ViewChild('popup') popup!: PopupComponent;
@@ -49,7 +51,7 @@ export class ChapterComponent implements OnInit, OnDestroy {
     ) { }
 
     ngOnInit(): void {
-        this.route.params.subscribe(t => {
+        this._subs.subscribe(this.route.params, t => {
             this.seriesId = +t['id'];
             this.bookId = +t['bookId'];
             this.chapterId = +t['chapterId'];
@@ -60,6 +62,7 @@ export class ChapterComponent implements OnInit, OnDestroy {
     ngOnDestroy(): void {
         this.auth.title = undefined;
         this.title.setTitle(this.api.defaultTitle);
+        this._subs.unsubscribe();
     }
 
     mouseEvent() {

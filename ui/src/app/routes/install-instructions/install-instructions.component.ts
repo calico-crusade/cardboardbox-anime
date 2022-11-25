@@ -1,11 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { SubscriptionHandler } from 'src/app/services';
 
 @Component({
     templateUrl: './install-instructions.component.html',
     styleUrls: ['./install-instructions.component.scss']
 })
-export class InstallInstructionsComponent implements OnInit {
+export class InstallInstructionsComponent implements OnInit, OnDestroy {
+
+    private _subs = new SubscriptionHandler();
 
     type?: string;
 
@@ -14,9 +17,13 @@ export class InstallInstructionsComponent implements OnInit {
     ) { }
 
     ngOnInit(): void {
-        this.route.params.subscribe(t => {
+        this._subs.subscribe(this.route.params, t => {
             this.type = t['type'];
         });
+    }
+
+    ngOnDestroy(): void {
+        this._subs.unsubscribe();
     }
 
 }

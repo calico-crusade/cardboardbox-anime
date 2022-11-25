@@ -1,13 +1,14 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { catchError, of } from 'rxjs';
-import { AiRequestImg2Img, AiService, AuthService } from 'src/app/services';
+import { AiRequestImg2Img, AiService, AuthService, SubscriptionHandler } from 'src/app/services';
 
 @Component({
     templateUrl: './ai.component.html',
     styleUrls: ['./ai.component.scss']
 })
 export class AiComponent implements OnInit, OnDestroy {
+
+    private _subs = new SubscriptionHandler();
 
     loading: boolean = false;
     issues: string[] = [];
@@ -41,9 +42,9 @@ export class AiComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.title.setTitle('CBA | Image Gen')
-        this.auth
-            .onLogin
-            .subscribe(t => {
+
+        this._subs
+            .subscribe(this.auth.onLogin, t => {
                 this.process();
             });
 
@@ -60,6 +61,7 @@ export class AiComponent implements OnInit, OnDestroy {
 
     ngOnDestroy(): void {
         this.title.setTitle(this.api.defaultTitle);
+        this._subs.unsubscribe();
     }
 
     private process() {
