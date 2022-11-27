@@ -4,7 +4,9 @@ import { BehaviorSubject } from "rxjs";
 import { Filters } from "../anime/anime.model";
 import { ConfigObject } from "../config.base";
 import { HttpService, RxjsHttpResp } from "../http.service";
-import { Manga, MangaChapter, MangaFilter, MangaProgress, MangaProgressUpdate, MangaWithChapters, PaginatedManga, PaginatedMangaProgress } from "./manga.model";
+import { StorageVar } from "../storage-var";
+import { Manga, MangaChapter, MangaFilter, MangaProgress, MangaProgressUpdate, MangaStripReq, MangaWithChapters, PaginatedManga, PaginatedMangaProgress } from "./manga.model";
+import { DateTime } from 'luxon';
 
 @Injectable({
     providedIn: 'root'
@@ -12,11 +14,19 @@ import { Manga, MangaChapter, MangaFilter, MangaProgress, MangaProgressUpdate, M
 export class MangaService extends ConfigObject {
 
     private _searchSub = new BehaviorSubject<boolean>(false);
+    private _lastCheck = new StorageVar<string | undefined>(undefined, 'manga-last-check');
 
     get onSearch() { return this._searchSub.asObservable(); }
 
     get isSearching() { return this._searchSub.getValue(); }
     set isSearching(value: boolean) { this._searchSub.next(value); }
+
+    get lastCheck() { 
+        const value = this._lastCheck.value; 
+        if (!value) return undefined;
+        return new Date(value); 
+    }
+    set lastCheck(value: Date | undefined) { this._lastCheck.value = value?.toISOString(); }
 
     constructor(
         private http: HttpService,
@@ -30,7 +40,10 @@ export class MangaService extends ConfigObject {
         if (!idUrl && !chapter) return undefined;
 
         if (idUrl && typeof idUrl === 'number' && !chapter) return this.http.get<MangaWithChapters>(`manga/${idUrl}`);
-        if (idUrl && typeof idUrl === 'string' && !chapter) return this.http.get<MangaWithChapters>(`manga/load`, { params: { url: idUrl }});
+        if (idUrl && typeof idUrl === 'string' && !chapter) {
+            if (idUrl.toLocaleLowerCase().startsWith('http')) return this.http.get<MangaWithChapters>(`manga/load`, { params: { url: idUrl }});
+            return this.http.get<MangaWithChapters>(`manga/${idUrl}`);
+        }
         return this.http.get<string[]>(`manga/${idUrl}/${chapter}/pages`);
     }
 
@@ -98,5 +111,19 @@ export class MangaService extends ConfigObject {
         if (t['state'] && state === undefined) filter.state = +t['state'];
 
         return filter;
+    }
+
+    strip(req: MangaStripReq) { return this.http.download('manga/strip', req); }
+
+    since(date: Date, page: number, size: number) {
+        return this.http.get<PaginatedMangaProgress>(`manga/since/${date.toISOString()}`, { params: { page, size }});
+    }
+
+    promptCheck() {
+        let check = this.lastCheck;
+        if (!check) { this.lastCheck = new Date(); return; }
+
+
+
     }
 }

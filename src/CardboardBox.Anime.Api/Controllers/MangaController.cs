@@ -15,15 +15,18 @@ namespace CardboardBox.Anime.Api.Controllers
 		private readonly IMangaService _manga;
 		private readonly IDbService _db;
 		private readonly IMangaEpubService _epub;
+		private readonly IMangaImageService _image;
 
 		public MangaController(
 			IMangaService manga,
 			IDbService db,
-			IMangaEpubService epub)
+			IMangaEpubService epub,
+			IMangaImageService image)
 		{
 			_manga = manga;
 			_db = db;
 			_epub = epub;
+			_image = image;
 		}
 
 		[HttpGet, Route("manga")]
@@ -44,21 +47,27 @@ namespace CardboardBox.Anime.Api.Controllers
 
 		[HttpGet, Route("manga/{id}")]
 		[ProducesDefaultResponseType(typeof(MangaWithChapters)), ProducesResponseType(404)]
-		public async Task<IActionResult> Get([FromRoute] long id)
+		public async Task<IActionResult> Get([FromRoute] string id)
 		{
-			var manga = await _manga.Manga(id, this.UserFromIdentity()?.Id);
+			var pid = this.UserFromIdentity()?.Id;
+			var manga = long.TryParse(id, out long mid) ?
+				await _manga.Manga(mid, pid) :
+				await _db.Manga.GetManga(id, pid);
+
 			if (manga == null) return NotFound();
 			return Ok(manga);
 		}
 
 		[HttpGet, Route("manga/{id}/progress"), Authorize]
 		[ProducesDefaultResponseType(typeof(DbMangaProgress)), ProducesResponseType(404)]
-		public async Task<IActionResult> GetProgress([FromRoute] long id)
+		public async Task<IActionResult> GetProgress([FromRoute] string id)
 		{
 			var platform = this.UserFromIdentity()?.Id;
 			if (string.IsNullOrEmpty(platform)) return BadRequest();
 
-			var progress = await _db.Manga.GetProgress(platform, id);
+			var progress = long.TryParse(id, out long mid) ?
+				await _db.Manga.GetProgress(platform, mid) :
+				await _db.Manga.GetProgress(platform, id);
 			if (progress == null) return NotFound();
 
 			return Ok(progress);
@@ -176,6 +185,23 @@ namespace CardboardBox.Anime.Api.Controllers
 			};
 
 			return SearchV2(search);
+		}
+
+		[HttpGet, Route("manga/since/{date}")]
+		[ProducesDefaultResponseType(typeof(PaginatedResult<MangaProgress>))]
+		public async Task<IActionResult> Since([FromRoute] DateTime date, [FromQuery] int page = 1, [FromQuery] int size = 100)
+		{
+			var records = await _db.Manga.Since(this.UserFromIdentity()?.Id, date, page, size);
+			return Ok(records);
+		}
+
+		[HttpPost, Route("manga/strip")]
+		public async Task<IActionResult> Strip([FromBody] MangaStripRequest req)
+		{
+			var stream = await _image.Combine(req);
+			if (stream == null) return BadRequest();
+
+			return File(stream, "image/png", "output.png");
 		}
 	}
 }

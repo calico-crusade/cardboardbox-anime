@@ -4,6 +4,7 @@ export interface Manga {
     updatedAt: Date;
     deletedAt?: Date;
 
+    hashId: string;
     title: string;
     sourceId: string;
     provider: string;
@@ -109,4 +110,14 @@ export interface MangaFilter {
     exclude: string[];
     sort?: number;
     state?: number;
+}
+
+export interface MangaStrip {
+    chapterId: number;
+    page: number;
+}
+
+export interface MangaStripReq {
+    mangaId: number;
+    pages: MangaStrip[];
 }

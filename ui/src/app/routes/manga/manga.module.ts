@@ -12,6 +12,7 @@ import { MangaAddRouteComponent } from './manga-add-route/manga-add-route.compon
 import { MangaCardComponent } from './components/manga-card/manga-card.component';
 import { MangaBookmarksComponent } from './components/manga-bookmarks/manga-bookmarks.component';
 import { MangaSearchFiltersComponent } from './components/manga-search-filters/manga-search-filters.component';
+import { MangaStripMakerComponent } from './manga-strip-maker/manga-strip-maker.component';
 
 const ROUTES: Routes = [
     {
@@ -41,6 +42,9 @@ const ROUTES: Routes = [
     }, {
         path: ':id/:chapter/:page',
         component: MangaPageComponent
+    }, {
+        path: 'strip/:id/:chapter/:page',
+        component: MangaStripMakerComponent
     }
 ];
 
@@ -64,6 +68,7 @@ const IMPORTS = [
         MangaCardComponent,
         MangaBookmarksComponent,
         MangaSearchFiltersComponent,
+        MangaStripMakerComponent,
     ],
     imports: [ ...IMPORTS ]
 })

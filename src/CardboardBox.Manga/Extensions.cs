@@ -11,6 +11,7 @@
 				.AddTransient<IMangakakalotSource, MangakakalotSource>()
 				.AddTransient<IMangaDexSource, MangaDexSource>()
 				.AddTransient<IMangaEpubService, MangaEpubService>()
+				.AddTransient<IMangaImageService, MangaImageService>()
 				.AddMangadex();
 		}
 

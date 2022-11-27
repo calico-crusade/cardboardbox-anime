@@ -221,6 +221,10 @@
             <div class="icon" *ngIf="downloading"><cba-icon [spin]="true">sync</cba-icon></div>
             <div class="text">Download Page</div>
         </button>
+        <a [routerLink]="['/manga', 'strip', id, chapterId, page ]">
+            <div class="icon"><cba-icon>auto_fix</cba-icon></div>
+            <div class="text">Create Strip</div>
+        </a>
         <button (click)="pageChange(0)">
             <div class="icon"><cba-icon>restart_alt</cba-icon></div>
             <div class="text">Restart Chapter</div>

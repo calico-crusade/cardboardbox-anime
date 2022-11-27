@@ -1,0 +1,58 @@
+<cba-container [loading]="loading" [error]="error" [handle-scroll]="true" flex-flow="column">
+    <header>
+        <h2>Strip Maker: </h2>
+        <h2 class="title">{{ manga?.title }}</h2>
+    </header>
+    <main>
+        <h3>Selected: </h3>
+        <div class="selected">
+            <div class="selected-image" *ngFor="let sel of selected; let i = index">
+                <div class="image" (click)="view(sel.url)" [style.background-image]="'url(' + proxy(sel.url) + ')'"></div>
+                <div class="icons">
+                    <button (click)="del(i)" class="danger">
+                        <cba-icon>delete</cba-icon>
+                    </button>
+                    <button (click)="move(i, -1)">
+                        <cba-icon>arrow_back</cba-icon>
+                    </button>
+                    <button (click)="move(i, 1)">
+                        <cba-icon>arrow_forward</cba-icon>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="chap-selector">
+            <h3>Available: </h3>
+            <div class="select-list">
+                <div class="counts">Chapters: </div>
+                <select [(ngModel)]="chapterId" (ngModelChange)="selectChapter()">
+                    <option *ngFor="let chap of chapters" [value]="chap.id">
+                        <span *ngIf="chap.volume">Vol. {{ chap.volume }}&nbsp;</span>
+                        <span>Ch. {{ chap.ordinal }}</span>
+                        <span *ngIf="chap.title">&nbsp;- {{ chap.title }}</span>
+                    </option>
+                </select>
+                <button (click)="download()">
+                    <cba-icon>download</cba-icon>
+                </button>
+            </div>
+        </div>
+        <div class="selected up-down">
+            <div class="selected-image" [ngClass]="{ 'active': isActive(sel) }" *ngFor="let sel of chapter?.pages; let i = index">
+                <div class="image" (click)="view(sel)" [style.background-image]="'url(' + proxy(sel) + ')'"></div>
+                <div class="icons">
+                    <button (click)="del(i)" class="danger">
+                        <cba-icon [fill]="true">delete</cba-icon>
+                    </button>
+                    <button (click)="select(i, sel)" class="primary">
+                        <cba-icon>location_searching</cba-icon>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+</cba-container>
+
+<cba-popup #viewpop>
+    <div class="popup-image" [style.background-image]="'url(' + proxy(viewUrl) + ')'"></div>
+</cba-popup>

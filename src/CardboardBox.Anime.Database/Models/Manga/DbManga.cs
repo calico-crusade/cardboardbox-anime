@@ -2,6 +2,9 @@
 {
 	public class DbManga : DbObject
 	{
+		[JsonPropertyName("hashId")]
+		public string HashId { get; set; } = string.Empty;
+
 		[JsonPropertyName("title")]
 		public string Title { get; set; } = string.Empty;
 

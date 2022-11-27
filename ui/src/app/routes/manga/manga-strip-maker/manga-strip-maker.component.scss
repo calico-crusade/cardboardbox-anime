@@ -1,0 +1,175 @@
+$img-size: 200px;
+$select-list-padding: 10px;
+
+header {
+    display: flex;
+    flex-flow: row;
+    margin: 5px 10px;
+    h2 {
+        flex: 1;
+        margin: 0;
+
+        &.title {
+            text-align: right;
+            font-family: 'animeace';
+        }
+    }
+}
+
+main {
+    display: flex;
+    flex-flow: column;
+
+    .selected {
+        display: flex;
+        flex-flow: row;
+        max-width: 100vw;
+        overflow-x: auto;
+        overflow-y: hidden;
+
+        .selected-image {
+            position: relative;
+            min-width: $img-size;
+            min-height: $img-size;
+            border: 1px solid transparent;
+
+            &.active {
+                border-color: var(--suc-color);
+            }
+
+            .image {
+                position: absolute;
+                top: 0; right: 0;
+                width: 100%;
+                height: 100%;
+                background-position: center;
+                background-size: contain;
+                background-repeat: no-repeat;
+                cursor: pointer;
+            }
+
+            .icons {
+                position: absolute;
+                top: 0; right: 0;
+                display: flex; flex-flow: column;
+
+                button {
+                    cursor: pointer;
+                    color: var(--suc-color);
+                    outline: none;
+                    background-color: var(--brd-color-accent);
+                    border: none;
+                    padding: 5px;
+                    border-radius: 50%;
+                    transition: all 1s;
+                    &:hover { transform: rotate(360deg); }
+
+                    &.danger { color: var(--dgr-color); }
+                }
+            }
+        }
+
+        &.up-down {
+            overflow: hidden;
+            flex-flow: row wrap;
+
+            .selected-image {
+                margin: 10px auto;
+            }
+        }
+    }
+
+    .chap-selector {
+        display: flex;
+        flex-flow: row;
+    }
+    
+    h3 {
+        margin: 10px;
+    }
+}
+
+.select-list {
+    display: flex;
+    flex-flow: row;
+    margin: 5px auto;
+
+    select, input {
+        outline: none;
+        border: 1px solid var(--accent-2);
+        background-color: var(--bg-accent);
+        color: var(--text-color);
+        max-width: 240px;
+        padding: $select-list-padding;
+
+        option {
+            background-color: transparent;
+            color: var(--text-color);
+        }
+
+        &.fill {
+            flex: 1;
+            max-width: 100%;
+        }
+    }
+
+    button, a {
+        outline: none;
+        border: 1px solid var(--accent-2);
+        background: var(--bg-accent);
+        padding: calc(#{$select-list-padding} / 2);
+        margin: 0;
+        color: var(--text-color);
+        line-height: 100%;
+        cursor: pointer;
+        text-decoration: none;
+        text-align: center;
+
+        &:disabled {
+            color: var(--text-color-muted);
+            cursor: not-allowed;
+        }
+    }
+
+    .counts {
+        border: 1px solid var(--accent-2);
+        background-color: var(--bg-accent);
+        padding: $select-list-padding;
+    }
+
+    :first-child {
+        border-top-left-radius: 5px;
+        border-bottom-left-radius: 5px;
+    }
+
+    :not(:first-child) {
+        border-left: none;
+    }
+
+    :last-child {
+        border-top-right-radius: 5px;
+        border-bottom-right-radius: 5px;
+    }
+
+    :not(:first-child):not(:last-child) {
+        border-radius: 0;
+    }
+
+    select, input, button, .counts {
+        margin: 0;
+    }
+
+    &.fill {
+        width: 100%;
+    }
+}
+
+.popup-image {
+    max-width: 90vw;
+    max-height: 90vh;
+    width: 900px;
+    height: 900px;
+    background-position: center;
+    background-size: contain;
+    background-repeat: no-repeat;
+}

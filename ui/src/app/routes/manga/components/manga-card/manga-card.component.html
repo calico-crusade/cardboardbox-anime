@@ -1,4 +1,4 @@
-<a *ngIf="manga" class="manga" [routerLink]="['/manga', manga.id]">
+<a *ngIf="manga" class="manga" [routerLink]="['/manga', manga.hashId || manga.id ]">
     <div class="image" [style.background-image]="'url(' + proxy(manga.cover) + ')'"></div>
     <div class="details masked-overflow">
         <div class="title">

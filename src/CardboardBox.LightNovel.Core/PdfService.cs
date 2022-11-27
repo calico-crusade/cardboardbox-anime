@@ -1,4 +1,4 @@
-﻿using iText.Html2pdf;
+﻿//using iText.Html2pdf;
 
 namespace CardboardBox.LightNovel.Core
 {
@@ -23,25 +23,27 @@ namespace CardboardBox.LightNovel.Core
 			_logger = logger;
 		}
 
-		public async Task ToPdf(string bookId, int chunks = 100)
+		public Task ToPdf(string bookId, int chunks = 100)
 		{
-			var chapToHtml = (DbChapter chap) => $"<h2 style=\"page-break-before: always\">{chap.Chapter}</h2><hr />{chap.Content}";
+			throw new NotImplementedException();
 
-			int page = 1;
-			while (true)
-			{
-				var (_, chaps) = await _db.Chapters(bookId, page, chunks);
+			//var chapToHtml = (DbChapter chap) => $"<h2 style=\"page-break-before: always\">{chap.Chapter}</h2><hr />{chap.Content}";
 
-				if (chaps.Length == 0) break;
-				var fc = chaps.First();
-				var filename = $"{fc.Book}-Vol-{page}.pdf".PurgePathChars();
+			//int page = 1;
+			//while (true)
+			//{
+			//	var (_, chaps) = await _db.Chapters(bookId, page, chunks);
 
-				var html = $"<h1>{fc.Book}</h1><hr />{string.Join("<br />", chaps.Select(chapToHtml))}";
+			//	if (chaps.Length == 0) break;
+			//	var fc = chaps.First();
+			//	var filename = $"{fc.Book}-Vol-{page}.pdf".PurgePathChars();
 
-				using var io = File.Create(filename);
-				HtmlConverter.ConvertToPdf(html, io);
-				page++;
-			}
+			//	var html = $"<h1>{fc.Book}</h1><hr />{string.Join("<br />", chaps.Select(chapToHtml))}";
+
+			//	using var io = File.Create(filename);
+			//	HtmlConverter.ConvertToPdf(html, io);
+			//	page++;
+			//}
 		}
 	}
 }

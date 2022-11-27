@@ -1,8 +1,9 @@
-import { HttpClient, HttpContext, HttpHeaders, HttpParams } from "@angular/common/http";
+import { HttpClient, HttpContext, HttpHeaders, HttpParams, HttpResponse } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { catchError, lastValueFrom, Observable, of } from "rxjs";
+import { catchError, lastValueFrom, Observable, of, tap } from "rxjs";
 import { environment } from "src/environments/environment";
 import { ConfigObject } from "./config.base";
+import { saveAs } from "file-saver";
 
 export type HttpOptions = {
     headers?: HttpHeaders | {
@@ -95,5 +96,25 @@ export class HttpService extends ConfigObject {
             options
         );
         return new RxjsHttpResp<T>(req, url);
+    }
+
+    download(url: string): Observable<HttpResponse<Blob>>;
+    download(url: string, body: any): Observable<HttpResponse<Blob>>;
+    download(url: string, body?: any) {
+        const u = this.formatUrl(url);
+        const req = body ? 
+            this.http.post(u, body, { observe: 'response', responseType: 'blob' }) : 
+            this.http.get(u, { observe: 'response', responseType: 'blob' });
+        return req.pipe(
+            tap(t => {
+                const filename = t.headers.get('content-disposition')
+                    ?.split(';')[1]
+                    .split('filename')[1]
+                    .split('=')[1]
+                    .trim();
+
+                if (t.body) saveAs(t.body, filename);
+            })
+        )
     }
 }

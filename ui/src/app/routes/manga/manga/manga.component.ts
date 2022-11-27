@@ -16,7 +16,7 @@ export class MangaComponent implements OnInit, OnDestroy {
 
     loading: boolean = false;
     error?: string;
-    id!: number;
+    id!: string;
     data?: MangaWithChapters;
     progress?: MangaProgress;
     isRandom: boolean = false;
@@ -56,13 +56,12 @@ export class MangaComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this._subs
-            .subscribe(this.route.params, t => {
-                const id = t['id'] + '';
-                this.id = id.toLowerCase() === 'random' ? -1 : +id;
-                this.isRandom = this.id === -1;
+            .subscribe(this.auth.onLogin, t => {
                 this.process();
             })
-            .subscribe(this.auth.onLogin, t => {
+            .subscribe(this.route.params, t => {
+                this.id = (t['id'] + '').toLowerCase();
+                this.isRandom = this.id === 'random';
                 this.process();
             });
     }
@@ -74,11 +73,11 @@ export class MangaComponent implements OnInit, OnDestroy {
     }
 
     private async process() {
+        if (this.loading) return;
+
         this.loading = true;
         try {
-            if (this.data?.manga.id !== this.id)
-                this.data = await this.getMangaData();
-            this.id = this.data?.manga.id;
+            this.data = await this.getMangaData();
         } catch (error) {
             console.error('Error occurred while fetching manga', {
                 error,
@@ -90,7 +89,7 @@ export class MangaComponent implements OnInit, OnDestroy {
         this.auth.title = this.manga?.title;
 
         if (!this.data ||
-            this.progress?.mangaId === this.id || 
+            this.progress?.mangaId === this.manga?.id || 
             !this.auth.currentUser) {
             this.loading = false;
             return;
@@ -110,7 +109,7 @@ export class MangaComponent implements OnInit, OnDestroy {
     }
 
     private getMangaData() {
-        if (this.id <= 0) {
+        if (this.id.toLowerCase() === 'random') {
             return this.api.random().promise;
         }
 
@@ -118,7 +117,6 @@ export class MangaComponent implements OnInit, OnDestroy {
     }
 
     nextRandom() {
-        this.id = -1;
         this.process();
     }
 
@@ -136,9 +134,9 @@ export class MangaComponent implements OnInit, OnDestroy {
     }
 
     toggleFavourite() {
-        if (!this.loggedIn) return;
+        if (!this.loggedIn || !this.manga) return;
         this.api
-            .favourite(this.id)
+            .favourite(this.manga.id)
             .subscribe(t => {
                 if (!this.data) return;
                 this.data.favourite = t;

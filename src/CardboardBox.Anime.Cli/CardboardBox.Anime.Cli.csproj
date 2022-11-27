@@ -8,10 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SixLabors.ImageSharp" Version="2.1.3" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\CardboardBox.Anime.All\CardboardBox.Anime.All.csproj" />
     <ProjectReference Include="..\CardboardBox.Epub\CardboardBox.Epub.csproj" />
     <ProjectReference Include="..\CardboardBox.Manga.MangaDex\CardboardBox.Manga.MangaDex.csproj" />

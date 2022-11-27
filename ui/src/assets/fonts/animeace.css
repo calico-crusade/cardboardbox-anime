@@ -1,0 +1,16 @@
+@font-face {
+    font-family: 'animeace';
+    src: url('/assets/fonts/animeace2_reg.ttf');
+}
+
+@font-face {
+    font-family: 'animeace';
+    src: url('/assets/fonts/animeace2_ital.ttf');
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'animeace';
+    src: url('/assets/fonts/animeace2_bld.ttf');
+    font-weight: bold;
+}

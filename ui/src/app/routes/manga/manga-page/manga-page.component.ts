@@ -2,7 +2,7 @@ import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } fro
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, of } from 'rxjs';
-import { PopupService, PopupComponent } from 'src/app/components';
+import { PopupService, PopupComponent, PopupInstance } from 'src/app/components';
 import { AuthService, LightNovelService, MangaChapter, MangaService, MangaWithChapters, StorageVar, SubscriptionHandler, UtilitiesService } from 'src/app/services';
 
 const DEFAULT_IMAGE = 'https://wallpaperaccess.com/full/1979093.jpg';
@@ -28,7 +28,7 @@ export class MangaPageComponent implements OnInit, OnDestroy {
     error?: string;
     downloading: boolean = false;
 
-    id!: number;
+    id!: string;
     chapterId!: number;
     page!: number;
 
@@ -166,7 +166,7 @@ export class MangaPageComponent implements OnInit, OnDestroy {
         this._subs
             .subscribe(this.auth.onLogin, t => this.process(true))
             .subscribe(this.route.params, t => {
-                this.id = +t['id'];
+                this.id = t['id'];
                 this.chapterId = +t['chapter'];
                 this.page = +t['page'];
 
@@ -206,7 +206,7 @@ export class MangaPageComponent implements OnInit, OnDestroy {
         }
 
         if (this.chapter.pages.length === 0) {
-            this.chapter.pages = await this.api.manga(this.id, this.chapterId).promise;
+            this.chapter.pages = await this.api.manga(this.manga.id, this.chapterId).promise;
             if (this.chapter.pages.length == 0) {
                 this.loading = false;
                 this.printState(null, 'Could not polyfill pages', true);
@@ -230,11 +230,11 @@ export class MangaPageComponent implements OnInit, OnDestroy {
     }
 
     progressUpdate() {
-        if (!this.auth.currentUser) return;
+        if (!this.auth.currentUser || !this.manga) return;
 
         this.api
             .progress({
-                mangaId: this.id,
+                mangaId: this.manga.id,
                 mangaChapterId: this.chapterId,
                 page: this.page
             })
@@ -247,7 +247,7 @@ export class MangaPageComponent implements OnInit, OnDestroy {
     }
 
     async getMangaData(force: boolean) {
-        if (this.manga && this.manga.id === this.id && !force) return this.data;
+        if (this.manga && (this.manga.id.toString() === this.id || this.manga.hashId == this.id) && !force) return this.data;
 
         if (!this.id) return undefined;
 
@@ -361,7 +361,7 @@ export class MangaPageComponent implements OnInit, OnDestroy {
         this.api
             .bookmark(this.chapter, this.bookmarks)
             .subscribe(t => {
-                if (!this.data) return;
+                if (!this.data || !this.manga) return;
 
                 if (!this.data.bookmarks)
                     this.data.bookmarks = [];
@@ -373,7 +373,7 @@ export class MangaPageComponent implements OnInit, OnDestroy {
                         createdAt: new Date(),
                         updatedAt: new Date(),
                         profileId: -1,
-                        mangaId: this.id,
+                        mangaId: this.manga?.id,
                         mangaChapterId: this.chapterId,
                         pages: [this.page]
                     });

@@ -12,7 +12,9 @@
 		Task<MangaWithChapters?> Manga(string url, string? platformId, bool forceUpdate = false);
 		Task<MangaWithChapters?> Manga(long id, string? platformId);
 		Task<string[]> MangaPages(long chapterId, bool refetch);
+		Task<string[]> MangaPages(DbMangaChapter? chapter, bool refetch);
 		Task<MangaWorked[]> Updated(int count, string? platformId);
+		Task<long?> ResolveId(string id);
 	}
 
 	public class MangaService : IMangaService
@@ -49,6 +51,11 @@
 		public async Task<string[]> MangaPages(long chapterId, bool refetch)
 		{
 			var chapter = await _db.GetChapter(chapterId);
+			return await MangaPages(chapter, refetch);
+		}
+
+		public async Task<string[]> MangaPages(DbMangaChapter? chapter, bool refetch)
+		{
 			if (chapter == null) return Array.Empty<string>();
 			if (chapter.Pages.Length > 0 && !refetch) return chapter.Pages;
 
@@ -102,6 +109,7 @@
 			var m = new DbManga
 			{
 				Title = manga.Title,
+				HashId = GenerateHashId(manga.Provider + " " + manga.Title).ToLower(),
 				SourceId = manga.Id,
 				Provider = manga.Provider,
 				Url = manga.HomePage,
@@ -112,6 +120,11 @@
 			};
 			m.Id = await _db.Upsert(m);
 			return m;
+		}
+
+		public string GenerateHashId(string title)
+		{
+			return Regex.Replace(title, "[^a-zA-Z0-9 ]", string.Empty).Replace(" ", "-");
 		}
 
 		public async IAsyncEnumerable<DbMangaChapter> ConvertChapters(Manga manga, long id, string language = "en")
@@ -146,6 +159,14 @@
 				var res = await LoadManga(src, id, platformId);
 				return new(res?.Manga ?? t, res != null);
 			}).WhenAll();
+		}
+
+		public async Task<long?> ResolveId(string id)
+		{
+			if (long.TryParse(id, out var mid))
+				return mid;
+
+			return (await _db.GetByHashId(id))?.Id;
 		}
 	}
 
