@@ -44,7 +44,7 @@ namespace CardboardBox.Anime.Web.Controllers
 		}
 
 		[HttpGet, Route("manga/{id}")]
-		public async Task<IActionResult> Manga(long id)
+		public async Task<IActionResult> Manga(string id)
 		{
 			var manga = await _mangaDb.GetManga(id, null);
 			if (manga == null)
@@ -66,7 +66,7 @@ namespace CardboardBox.Anime.Web.Controllers
 		}
 
 		[HttpGet, Route("manga/{id}/{chapId}/{page}")]
-		public async Task<IActionResult> Manga(long id, long chapId, int page)
+		public async Task<IActionResult> Manga(string id, long chapId, int page)
 		{
 			page--;
 			var manga = await _mangaDb.GetManga(id, null);

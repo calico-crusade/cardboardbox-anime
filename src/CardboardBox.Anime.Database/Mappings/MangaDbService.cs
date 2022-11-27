@@ -398,6 +398,9 @@ WHERE p.platform_id = :platformId AND mf.manga_id = :id";
 
 		public async Task<MangaWithChapters?> GetManga(string id, string? platformId)
 		{
+			if (long.TryParse(id, out long mid))
+				return await GetManga(mid, platformId);
+
 			const string QUERY = "SELECT * FROM manga WHERE hash_id = :id;" +
 				@"SELECT c.* FROM manga_chapter c
 JOIN manga m ON m.id = c.manga_id
