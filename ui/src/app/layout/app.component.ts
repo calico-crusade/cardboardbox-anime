@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
-import { MangaProgressData, MangaService, SubscriptionHandler } from '../services';
+import { LightNovelService, MangaProgressData, MangaService, SubscriptionHandler } from '../services';
 import { AuthUser } from '../services/auth/auth.model';
 import { AuthService } from '../services/auth/auth.service';
 
@@ -30,7 +30,8 @@ export class AppComponent implements OnInit, OnDestroy {
     constructor(
         private auth: AuthService,
         private router: Router,
-        private manga: MangaService
+        private manga: MangaService,
+        private ln: LightNovelService
     ) { }
 
     async ngOnInit() {
@@ -62,6 +63,10 @@ export class AppComponent implements OnInit, OnDestroy {
     
     toggleDropdown(el: HTMLElement) {
         el.classList.toggle('active');
+    }
+
+    proxy(url?: string) {
+        return url ? this.ln.corsFallback(url, 'manga-covers') : '';
     }
 
     async bumpManga() {

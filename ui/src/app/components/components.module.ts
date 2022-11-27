@@ -23,6 +23,7 @@ import { ImageProxyDirective } from "./image-proxy.directive";
 import { MarkdownDirective } from "./markdown.directive";
 import { MagicCircleModule } from "./magic-circle";
 import { DictionaryDefinitionComponent } from './dictionary-definition/dictionary-definition.component';
+import { TooltipDirective } from "./tooltip.directive";
 
 @Injectable()
 export class MyHammerConfig extends HammerGestureConfig {
@@ -43,7 +44,8 @@ const EXPORTS = [
     ImageProxyDirective,
     PopupComponent,
     MarkdownDirective,
-    DictionaryDefinitionComponent
+    DictionaryDefinitionComponent,
+    TooltipDirective
 ];
 
 export const COMMON_IMPORTS = [

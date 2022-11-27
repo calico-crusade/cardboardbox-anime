@@ -1,17 +1,17 @@
 <cba-container [loading]="loading" [error]="error">
     <section class="context">
         <header *ngIf="!settings.hideHeader.value">
-            <button (click)="prevChap()" [disabled]="!hasPreviousChapter">
+            <button (click)="prevChap()" [disabled]="!hasPreviousChapter" cba-tooltip="Previous Chapter" direction="right">
                 <cba-icon>skip_previous</cba-icon>
             </button>
-            <button (click)="prevPage()" [disabled]="!hasPreviousPage" *ngIf="!settings.scroll.value">
+            <button (click)="prevPage()" [disabled]="!hasPreviousPage" *ngIf="!settings.scroll.value" cba-tooltip="Previous Page" direction="right">
                 <cba-icon>navigate_before</cba-icon>
             </button>
             <ng-container *ngIf="!settings.hideExtraButtons.value">
-                <a [routerLink]="['/manga', id ]">
+                <a [routerLink]="['/manga', id ]" cba-tooltip="Manga home page" direction="right">
                     <cba-icon>menu_book</cba-icon>
                 </a>
-                <button (click)="openLinks()">
+                <button (click)="openLinks()" cba-tooltip="More options" direction="right">
                     <cba-icon>more_vert</cba-icon>
                 </button>
             </ng-container>
@@ -36,17 +36,17 @@
             <div class="mobile-bump"></div>
 
             <ng-container *ngIf="!settings.hideExtraButtons.value && loggedIn">
-                <button (click)="bookmarkPage()">
+                <button (click)="bookmarkPage()" cba-tooltip="Bookmark this page">
                     <cba-icon [fill]="bookmarks.indexOf(page) !== -1">bookmark</cba-icon>
                 </button>
             </ng-container>
-            <button (click)="settingsShow()">
+            <button (click)="settingsShow()" cba-tooltip="Settings menu">
                 <cba-icon>settings</cba-icon>
             </button>
-            <button (click)="nextPage()" [disabled]="!hasNextPage" *ngIf="!settings.scroll.value">
+            <button (click)="nextPage()" [disabled]="!hasNextPage" *ngIf="!settings.scroll.value" cba-tooltip="Next Page">
                 <cba-icon>navigate_next</cba-icon>
             </button>
-            <button (click)="nextChap()" [disabled]="!hasNextChapter">
+            <button (click)="nextChap()" [disabled]="!hasNextChapter" cba-tooltip="Next Chapter">
                 <cba-icon>skip_next</cba-icon>
             </button>
         </header>
@@ -54,13 +54,13 @@
               [class]="settings.filter.value"
               #scrollcont (click)="imageClick($event)">
             <ng-container *ngIf="settings.scroll.value">
-                <button class="scroll-button" (click)="prevChap()" [disabled]="!hasPreviousChapter">
+                <button class="scroll-button" (click)="prevChap()" [disabled]="!hasPreviousChapter" cba-tooltip="Previous Chapter" direction="down">
                     <cba-icon>skip_previous</cba-icon>
                 </button>
 
                 <img *ngFor="let page of chapter?.pages" [proxy]="page" group="manga-page" />
 
-                <button class="scroll-button" (click)="nextChap()" [disabled]="!hasNextChapter">
+                <button class="scroll-button" (click)="nextChap()" [disabled]="!hasNextChapter" cba-tooltip="Next Chapter" direction="down">
                     <cba-icon>skip_next</cba-icon>
                 </button>
             </ng-container>
@@ -78,16 +78,16 @@
             </div>
         </ng-container>
         <div class="float-icons" *ngIf="settings.hideHeader.value">
-            <button class="float-icon" (click)="settingsShow()">
+            <button class="float-icon" (click)="settingsShow()" cba-tooltip="Open the settings menu">
                 <cba-icon>settings</cba-icon>
             </button>
-            <a [routerLink]="['/manga', id ]" class="float-icon">
+            <a [routerLink]="['/manga', id ]" class="float-icon" cba-tooltip="Manga Home Page">
                 <cba-icon>menu_book</cba-icon>
             </a>
-            <button class="float-icon" (click)="bookmarkPage()">
+            <button class="float-icon" (click)="bookmarkPage()" cba-tooltip="Bookmark this page">
                 <cba-icon [fill]="bookmarks.indexOf(page) !== -1">bookmark</cba-icon>
             </button>
-            <button class="float-icon" (click)="openLinks()">
+            <button class="float-icon" (click)="openLinks()" cba-tooltip="More options">
                 <cba-icon>more_vert</cba-icon>
             </button>
         </div>
@@ -161,6 +161,12 @@
                 </div>
             </section>
         </ng-container>
+        <section><label>Image Brightness ({{ settings.brightness.value }}%):</label></section>
+        <section>
+            <div class="select-list fill brightness">
+                <input type="range" min="1" max="100" [(ngModel)]="settings.brightness.value" />
+            </div>
+        </section>
         <section><label>Page Progress Bar:</label></section>
         <section>
             <div class="select-list fill">
@@ -174,7 +180,7 @@
         <section><label>Chapters:</label></section>
         <section>
             <div class="select-list fill">
-                <button (click)="prevChap()" [disabled]="!hasPreviousChapter">
+                <button (click)="prevChap()" [disabled]="!hasPreviousChapter" cba-tooltip="Previous Chapter" direction="up">
                     <cba-icon>skip_previous</cba-icon>
                 </button>
                 <select [(ngModel)]="chapterId" (ngModelChange)="pageChange(0)">
@@ -182,7 +188,7 @@
                         Ch. {{ chapter.ordinal }} - {{ chapter.title }}
                     </option>
                 </select>
-                <button (click)="nextChap()" [disabled]="!hasNextChapter">
+                <button (click)="nextChap()" [disabled]="!hasNextChapter" cba-tooltip="Next Chapter" direction="up">
                     <cba-icon>skip_next</cba-icon>
                 </button>
             </div>
@@ -190,10 +196,10 @@
         <section *ngIf="!settings.scroll.value"><label>Pages:</label></section>
         <section *ngIf="!settings.scroll.value">
             <div class="select-list fill">
-                <button (click)="prevPage()" [disabled]="!hasPreviousPage">
+                <button (click)="prevPage()" [disabled]="!hasPreviousPage" cba-tooltip="Previous Page" direction="up">
                     <cba-icon>navigate_before</cba-icon>
                 </button>
-                <button (click)="pageChange(0)">
+                <button (click)="pageChange(0)" cba-tooltip="Restart Chapter" direction="up">
                     <cba-icon>restart_alt</cba-icon>
                 </button>
                 <select [(ngModel)]="page" (ngModelChange)="pageChange(page - 1)">
@@ -201,7 +207,8 @@
                         Page: #{{ i + 1 }}
                     </option>
                 </select>
-                <button (click)="nextPage()" [disabled]="!hasNextPage" *ngIf="!settings.scroll.value">
+                <button (click)="nextPage()" [disabled]="!hasNextPage" 
+                        *ngIf="!settings.scroll.value" cba-tooltip="Next Page" direction="up">
                     <cba-icon>navigate_next</cba-icon>
                 </button>
             </div>

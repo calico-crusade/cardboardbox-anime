@@ -203,5 +203,21 @@ namespace CardboardBox.Anime.Api.Controllers
 
 			return File(stream, "image/png", "output.png");
 		}
+
+		[HttpDelete, Route("manga/progress/{id}"), Authorize]
+		public async Task<IActionResult> RemoveProgress([FromRoute] string id)
+		{
+			var pid = this.UserFromIdentity()?.Id;
+			if (string.IsNullOrEmpty(pid)) return Unauthorized();
+
+			var profile = await _db.Profiles.Fetch(pid);
+			if (profile == null) return Unauthorized();
+
+			var manga = await _db.Manga.GetManga(id, pid);
+			if (manga == null || manga.Manga == null) return NotFound();
+
+			await _db.Manga.DeleteProgress(profile.Id, manga.Manga.Id);
+			return Ok();
+		}
 	}
 }

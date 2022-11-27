@@ -17,7 +17,7 @@ export class MangaPageComponent implements OnInit, OnDestroy {
 
     progressBarOptions = ['', 'bottom', 'left', 'right'];
     sizeOptions = ['Fit to Height', 'Fit to Width', 'Natural Image Size'];
-    filters = ['', 'invert', 'blue-light-low-brightness', 'blue-light', 'blue-print', 'custom'];
+    filters = ['', 'invert', 'blue-light', 'blue-print', 'custom'];
 
     @ViewChild('popup') popup!: PopupComponent;
     @ViewChild('scrollcont') el!: ElementRef<any>;
@@ -50,7 +50,8 @@ export class MangaPageComponent implements OnInit, OnDestroy {
         noDirectionalButton: new StorageVar<boolean>(false, 'no-directional-buttons'),
         hideExtraButtons: new StorageVar<boolean>(false, 'hide-extra-buttons'),
         filter: new StorageVar<string>('', 'filter'),
-        customFilter: new StorageVar<string>('sepia(40%) saturate(200%) brightness(60%)', 'custom-filter', (v) => this.setRootFilter(v))
+        customFilter: new StorageVar<string>('sepia(40%) saturate(200%)', 'custom-filter', (v) => this.setRootFilter(v)),
+        brightness: new StorageVar<number>(100, 'manga-brightness', (v) => this.setRootVar('--image-bightness', '100%', v ? v + '%' : '100%'))
     };
 
     get loggedIn() { return !!this.auth.currentUser; }
@@ -174,6 +175,9 @@ export class MangaPageComponent implements OnInit, OnDestroy {
 
                 this.process();
             });
+
+        this.settings.customFilter.value = this.settings.customFilter.value;
+        this.settings.brightness.value = this.settings.brightness.value;
     }
 
     ngOnDestroy(): void {
@@ -420,6 +424,10 @@ export class MangaPageComponent implements OnInit, OnDestroy {
     resetOptions() {
         const settings: { [key: string]: StorageVar<any> } = this.settings;
         for (let key in settings) settings[key].value = undefined;
+    }
+
+    setRootVar(name: string, def: string, value?: string) {
+        document.documentElement.style.setProperty(name, value || def);
     }
 
     setRootFilter(value?: string) {

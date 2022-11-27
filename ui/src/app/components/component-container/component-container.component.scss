@@ -30,5 +30,12 @@
         span {
             margin: auto 5px;
         }
+
+        &.magic-circle {
+            width: 95vw;
+            height: 95vw;
+            max-width: 400px;
+            max-height: 400px;
+        }
     }
 }

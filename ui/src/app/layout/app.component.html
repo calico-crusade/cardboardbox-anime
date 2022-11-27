@@ -172,7 +172,7 @@
 <div class="updates" *ngIf="updated.length > 0">
     <main>
         <a *ngFor="let manga of updated" [routerLink]="['/manga', manga.manga.id]">
-            <div class="image" [style.background-image]="'url(' + manga.manga.cover + ')'"></div>
+            <div class="image" [style.background-image]="'url(' + proxy(manga.manga.cover) + ')'"></div>
             <div class="details">
                 <div class="title">{{ manga.manga.title }}</div>
                 <div class="updated">Updated: {{ manga.stats.latestChapter | date:'yyyy-MM-dd HH:mm' }}</div>

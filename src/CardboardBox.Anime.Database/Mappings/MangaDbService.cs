@@ -54,6 +54,8 @@ namespace CardboardBox.Anime.Database
 		Task<PaginatedResult<MangaProgress>> Touched(string? platformId, int page, int size, TouchedState state = TouchedState.All);
 
 		Task<PaginatedResult<MangaProgress>> Since(string? platform, DateTime since, int page, int size);
+
+		Task DeleteProgress(long profileId, long mangaId);
 	}
 
 	public class MangaDbService : OrmMapExtended<DbManga>, IMangaDbService
@@ -70,6 +72,7 @@ namespace CardboardBox.Anime.Database
 		private string? _upsertMangaBookmarkQuery;
 		private string? _getChapterQuery;
 		private string? _getMangaQuery;
+		private string? _deleteMangaProgress;
 
 		public override string TableName => TABLE_NAME_MANGA;
 
@@ -133,6 +136,12 @@ namespace CardboardBox.Anime.Database
 				v => v.Id);
 
 			return _sql.ExecuteScalar<long>(_upsertMangaProgressQuery, progress);
+		}
+
+		public Task DeleteProgress(long profileId, long mangaId)
+		{
+			const string QUERY = "DELETE FROM manga_progress WHERE profile_id = :profileId AND manga_id = :mangaId";
+			return _sql.Execute(QUERY, new { profileId, mangaId });
 		}
 
 		public override Task<PaginatedResult<DbManga>> Paginate(int page = 1, int size = 100)

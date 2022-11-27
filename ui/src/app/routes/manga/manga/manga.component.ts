@@ -154,4 +154,14 @@ export class MangaComponent implements OnInit, OnDestroy {
     showBookmarks() {
         this.pop.show(this.bookmarkPop);
     }
+
+    resetProgress() {
+        if (!this.manga) return;
+
+        this.api
+            .resetProgress(this.manga?.id)
+            .subscribe(t => {
+                this.progress = undefined;
+            });
+    }
 }

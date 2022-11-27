@@ -160,12 +160,6 @@ main {
         }
     }
 
-    &.blue-light-low-brightness {
-        img, .page {
-            filter: sepia(40%) saturate(200%) brightness(60%);
-        }
-    }
-
     &.blue-light {
         img, .page {
             filter: sepia(40%) saturate(200%);
@@ -182,6 +176,10 @@ main {
         img, .page {
             filter: var(--custom-image-filter);
         }
+    }
+
+    img, .page {
+        filter: brightness(var(--image-bightness));
     }
 
 }
@@ -320,6 +318,13 @@ h2 {
 
     &.fill {
         width: 100%;
+    }
+
+    &.brightness {
+        input {
+            width: 100%;
+            margin: auto;
+        }
     }
 }
 

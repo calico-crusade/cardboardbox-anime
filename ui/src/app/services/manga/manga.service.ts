@@ -136,4 +136,8 @@ export class MangaService extends ConfigObject {
         return this.since(date)
             .tap(() => this.lastCheck = now);
     }
+
+    resetProgress(mangaId: number) {
+        return this.http.delete(`manga/progress/${mangaId}`);
+    }
 }

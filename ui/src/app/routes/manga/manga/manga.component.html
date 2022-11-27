@@ -24,7 +24,7 @@
         </div>
     </header>
     <main>
-        <a class="chapter resume" *ngIf="currentChapter" [routerLink]="[ '/manga', id, currentChapter.id, progress?.pageIndex ]">
+        <a class="chapter resume" *ngIf="currentChapter" [routerLink]="[ '/manga', manga?.hashId, currentChapter.id, progress?.pageIndex ]">
             <div class="header">
                 <div class="number">Resume Reading! </div>
                 <div class="title">{{ currentChapter.title }}</div>
@@ -43,7 +43,7 @@
             </div>
         </a>
         <a class="chapter" *ngFor="let chapter of chapters" 
-           [routerLink]="['/manga', id, chapter.id, 1]"
+           [routerLink]="['/manga', manga?.hashId, chapter.id, 1]"
            [ngClass]="{ 'active': chapter.id === progress?.mangaChapterId }">
             <div class="header">
                 <div class="number">
@@ -65,17 +65,20 @@
         </a>
     </main>
     <div class="float-icons">
-        <button class="float-icon" (click)="update()">
+        <button class="float-icon" (click)="update()" cba-tooltip="Refresh manga from source">
             <cba-icon>update</cba-icon>
         </button>
-        <button class="float-icon" (click)="toggleFavourite()" *ngIf="loggedIn">
+        <button class="float-icon" (click)="toggleFavourite()" *ngIf="loggedIn" cba-tooltip="Add to favourites">
             <cba-icon [fill]="favourite">star</cba-icon>
         </button>
-        <button class="float-icon" (click)="showBookmarks()" *ngIf="hasBookmarks">
+        <button class="float-icon" (click)="showBookmarks()" *ngIf="hasBookmarks" cba-tooltip="See all bookmarks">
             <cba-icon>bookmarks</cba-icon>
         </button>
-        <button class="float-icon" (click)="nextRandom()" *ngIf="isRandom">
+        <button class="float-icon" (click)="nextRandom()" *ngIf="isRandom" cba-tooltip="Next Random Manga">
             <cba-icon>shuffle</cba-icon>
+        </button>
+        <button class="float-icon" (click)="resetProgress()" *ngIf="progress" cba-tooltip="Reset Progress">
+            <cba-icon>restart_alt</cba-icon>
         </button>
     </div>
 </cba-container>

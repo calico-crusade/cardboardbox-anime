@@ -3,13 +3,13 @@
 </cba-container>
 
 <div class="float-icons">
-    <button class="float-icon" (click)="add()">
+    <button class="float-icon" (click)="add()" cba-tooltip="Load a new Manga">
         <cba-icon>add</cba-icon>
     </button>
-    <button class="float-icon" (click)="filter()">
+    <button class="float-icon" (click)="filter()" cba-tooltip="Search / Filter Manga">
         <cba-icon>search</cba-icon>
     </button>
-    <a class="float-icon" [routerLink]="['/manga', 'in-progress']">
+    <a class="float-icon" [routerLink]="['/manga', 'in-progress']" cba-tooltip="In Progress Manga">
         <cba-icon>collections_bookmark</cba-icon>
     </a>
 </div>

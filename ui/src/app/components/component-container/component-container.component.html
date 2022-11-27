@@ -1,7 +1,18 @@
 <div class="component-container" [ngSwitch]="state">
-    <main *ngSwitchCase="'loading'" class="loading">
-        <img src="/assets/loading.gif" alt="Loading Icon" />
-        <span>Loading...</span>
+    <main *ngSwitchCase="'loading'" class="loading magic-circle">
+        <magic-circle width="100%" height="100%" spin-speed="10s">
+            <mc-ring text="Some fancy stuff is happening... Sit tight...">
+                <mc-square [total]="3" [index]="0"></mc-square>
+                <mc-square [total]="3" [index]="1"></mc-square>
+                <mc-square [total]="3" [index]="2">
+                    <mc-ring text="Loading... Loading... Loading... Loading... ">
+                        <mc-square [total]="3" [index]="0"></mc-square>
+                        <mc-square [total]="3" [index]="1"></mc-square>
+                        <mc-square [total]="3" [index]="2"></mc-square>
+                    </mc-ring>
+                </mc-square>
+            </mc-ring>
+        </magic-circle>
     </main>
 
     <main *ngSwitchCase="'error'" class="loading">

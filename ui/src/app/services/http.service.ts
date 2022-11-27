@@ -103,6 +103,11 @@ export class HttpService extends ConfigObject {
         return new RxjsHttpResp<T>(req, url);
     }
 
+    delete<T>(url: string, options?: HttpOptions) {
+        let req = this.http.delete<T>(this.formatUrl(url), options);
+        return new RxjsHttpResp<T>(req, url);
+    }
+
     download(url: string): Observable<HttpResponse<Blob>>;
     download(url: string, body: any): Observable<HttpResponse<Blob>>;
     download(url: string, body?: any) {

@@ -37,6 +37,8 @@
     --color-hidive-dark: rgb(0, 95, 133);
     --color-vrv-trans: rgba(255, 221, 0, 0.842);
     --color-funimation: #6030a1;
+
+    --image-bightness: 100%;
 }
 .component-container {
     width: 100%;
@@ -185,4 +187,21 @@ input.ipt, textarea.ipt {
             margin-top: 5px;
         }
     }
+}
+
+.tooltip-container {
+    font-family: 'Roboto';
+    text-align: center;
+    z-index: 999;
+    position: fixed;
+    padding: 10px;
+    border-radius: 5px;
+    color: var(--text-color);
+    background-color: var(--bg-card);
+    box-sizing: border-box;
+    opacity: 1;
+    animation-fill-mode: forwards;
+    pointer-events: none;
+    white-space: nowrap;
+    box-shadow: 0px 0px 11px 1px rgba(0,0,0,0.62);
 }

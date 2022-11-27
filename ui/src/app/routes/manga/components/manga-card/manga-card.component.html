@@ -7,9 +7,14 @@
                 <cba-icon [fill]="!!icon.fill">{{ icon.text }}</cba-icon>
             </div>
         </div>
-        <div class="source" *ngIf="stats && progress">
-            <b>Progress: </b>&nbsp; {{ stats.chapterProgress }}% - {{ progress.updatedAt | date:'yyyy-MM-dd' }}
-        </div>
+        <ng-container *ngIf="stats">
+            <div class="source" *ngIf="progress">
+                <span><b>Progress: </b>&nbsp; {{ stats.chapterProgress }}% - {{ progress.updatedAt | date:'yyyy-MM-dd' }}</span>
+            </div>
+            <div class="source">
+                <span><b>Latest Chapter: </b>&nbsp; {{ stats.latestChapter | date:'yyyy-MM-dd HH:mm' }}</span>
+            </div>
+        </ng-container>
         <div class="source">
             <b>Source:</b>&nbsp;{{ manga.provider }}
         </div>
