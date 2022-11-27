@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
-import { SubscriptionHandler } from '../services';
+import { MangaProgressData, MangaService, SubscriptionHandler } from '../services';
 import { AuthUser } from '../services/auth/auth.model';
 import { AuthService } from '../services/auth/auth.service';
 
@@ -17,6 +17,7 @@ export class AppComponent implements OnInit, OnDestroy {
     menuOpen = false;
     title?: string;
     showTitle: boolean = true;
+    updated: MangaProgressData[] = [];
 
     get isAdmin() {
         if (!this.user) return false;
@@ -28,7 +29,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
     constructor(
         private auth: AuthService,
-        private router: Router
+        private router: Router,
+        private manga: MangaService
     ) { }
 
     async ngOnInit() {
@@ -37,6 +39,7 @@ export class AppComponent implements OnInit, OnDestroy {
                 if (t instanceof NavigationEnd) {
                     const url = t.url.substring(1);
                     this.auth.lastRoute = url;
+                    this.bumpManga();
                 }
             })
             .subscribe(this.auth.onHeaderChange, t => this.showTitle = t)
@@ -59,5 +62,11 @@ export class AppComponent implements OnInit, OnDestroy {
     
     toggleDropdown(el: HTMLElement) {
         el.classList.toggle('active');
+    }
+
+    async bumpManga() {
+        const { results } = await this.manga.promptCheck().promise;
+        if (results.length === 0) return;
+        this.updated = results;
     }
 }

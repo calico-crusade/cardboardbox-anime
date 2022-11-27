@@ -168,3 +168,22 @@
         </aside>
     </main>
 </div>
+
+<div class="updates" *ngIf="updated.length > 0">
+    <main>
+        <a *ngFor="let manga of updated" [routerLink]="['/manga', manga.manga.id]">
+            <div class="image" [style.background-image]="'url(' + manga.manga.cover + ')'"></div>
+            <div class="details">
+                <div class="title">{{ manga.manga.title }}</div>
+                <div class="updated">Updated: {{ manga.stats.latestChapter | date:'yyyy-MM-dd HH:mm' }}</div>
+                <div class="description" [innerHTML]="manga.manga.description"></div>
+            </div>
+        </a>
+    </main>
+    <footer>
+        <h2>Recent Updates</h2>
+        <button (click)="updated = []">
+            <cba-icon>close</cba-icon>
+        </button>
+    </footer>
+</div>

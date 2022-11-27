@@ -132,6 +132,9 @@
                 .title {
                     margin: auto 10px;
                     flex: 1;
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
                 }
                 &:hover {
                     background-color: #474658;
@@ -198,6 +201,83 @@
             aside {
                 right: 0;
             }
+        }
+    }
+}
+
+.updates {
+    font-family: 'Roboto';
+    position: fixed;
+    bottom: 10px; right: 10px;
+
+    width: 500px;
+    max-width: calc(100vw - 20px);
+    max-height: 600px;
+    display: flex;
+    flex-flow: column;
+    overflow: hidden;
+    background-color: var(--bg-card);
+    border-radius: 10px;
+    color: var(--text-color);
+    box-shadow: 0px 0px 17px 20px rgba(0,0,0,0.39);
+
+    main {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+
+        a {
+            text-decoration: none;
+            position: relative;
+            display: flex;
+            flex-flow: row;
+            margin: 5px;
+            padding: 5px;
+            border-radius: 10px;
+            cursor: pointer;
+
+            .image {
+                width: 100px;
+                height: 100px;
+                background-position: center;
+                background-size: contain;
+                background-repeat: no-repeat;
+            }
+
+            .details {
+                display: flex;
+                flex-flow: column;
+                overflow: hidden;
+                flex: 1;
+                max-height: 100px;
+                text-overflow: ellipsis;
+
+                .title {
+                    white-space: nowrap;
+                    font-weight: bold;
+                }
+            }
+
+            &:hover {
+                background-color: var(--bg-accent);
+            }
+        }
+    }
+
+    footer {
+        display: flex;
+        flex-flow: row;
+
+        h2 {
+            flex: 1;
+            margin: 5px;
+        }
+
+        button {
+            background-color: transparent;
+            color: var(--text-color);
+            border: none; outline: none;
+            cursor: pointer;
         }
     }
 }

@@ -1,12 +1,13 @@
 import { Injectable } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
-import { BehaviorSubject } from "rxjs";
+import { BehaviorSubject, Observable, of } from "rxjs";
 import { Filters } from "../anime/anime.model";
 import { ConfigObject } from "../config.base";
 import { HttpService, RxjsHttpResp } from "../http.service";
 import { StorageVar } from "../storage-var";
 import { Manga, MangaChapter, MangaFilter, MangaProgress, MangaProgressUpdate, MangaStripReq, MangaWithChapters, PaginatedManga, PaginatedMangaProgress } from "./manga.model";
 import { DateTime } from 'luxon';
+import { AuthService } from "../auth/auth.service";
 
 @Injectable({
     providedIn: 'root'
@@ -24,13 +25,14 @@ export class MangaService extends ConfigObject {
     get lastCheck() { 
         const value = this._lastCheck.value; 
         if (!value) return undefined;
-        return new Date(value); 
+        return DateTime.fromISO(value); 
     }
-    set lastCheck(value: Date | undefined) { this._lastCheck.value = value?.toISOString(); }
+    set lastCheck(value: DateTime | undefined) { this._lastCheck.value = value?.toISO(); }
 
     constructor(
         private http: HttpService,
-        private route: ActivatedRoute
+        private route: ActivatedRoute,
+        private auth: AuthService
     ) { super(); }
 
     manga(id: number): RxjsHttpResp<MangaWithChapters>;
@@ -115,15 +117,23 @@ export class MangaService extends ConfigObject {
 
     strip(req: MangaStripReq) { return this.http.download('manga/strip', req); }
 
-    since(date: Date, page: number, size: number) {
+    since(date: Date, page: number = 1, size: number = 100) {
         return this.http.get<PaginatedMangaProgress>(`manga/since/${date.toISOString()}`, { params: { page, size }});
     }
 
-    promptCheck() {
-        let check = this.lastCheck;
-        if (!check) { this.lastCheck = new Date(); return; }
+    promptCheck(): RxjsHttpResp<PaginatedMangaProgress> {
+        const now = DateTime.now(),
+              check = this.lastCheck,
+              def = new RxjsHttpResp<PaginatedMangaProgress>(of({ results: [], pages: 0, count: 0 }), 'prompt-check');
 
+        if (!this.auth.currentUser) return def;
+        if (!check) { this.lastCheck = now; return def; }
 
+        const diff = now.diff(check, 'minutes').minutes;
+        if (diff <= 5) { return def; }
 
+        const date = check.toJSDate();
+        return this.since(date)
+            .tap(() => this.lastCheck = now);
     }
 }

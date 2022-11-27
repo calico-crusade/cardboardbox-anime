@@ -52,6 +52,11 @@ export class RxjsHttpResp<T> {
         return this;
     }
 
+    tap(handler: (item: T) => void) {
+        this.observable = this.observable.pipe(tap(t => handler(t)));
+        return this;
+    }
+
     subscribe(handler: (item: T) => void) { 
         return this.observable.subscribe(t => {
             if (!environment.production)

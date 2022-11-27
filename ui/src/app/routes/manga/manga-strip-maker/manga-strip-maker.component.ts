@@ -150,7 +150,7 @@ export class MangaStripMakerComponent implements OnInit, OnDestroy {
             }
         }
 
-        const curPage = this.chapter.pages[this.page];
+        const curPage = this.chapter.pages[this.page - 1];
         if (curPage === undefined) return;
 
         this.selected = [

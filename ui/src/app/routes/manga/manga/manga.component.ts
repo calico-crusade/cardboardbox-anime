@@ -64,6 +64,9 @@ export class MangaComponent implements OnInit, OnDestroy {
                 this.isRandom = this.id === 'random';
                 this.process();
             });
+
+        this.api.promptCheck()
+            .subscribe(t => console.log('Results', t));
     }
 
     ngOnDestroy(): void {
