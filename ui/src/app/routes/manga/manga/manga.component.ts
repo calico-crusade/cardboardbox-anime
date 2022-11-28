@@ -3,12 +3,13 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { PopupComponent, PopupService } from 'src/app/components';
 import { AuthService, LightNovelService, MangaProgress, MangaService, MangaWithChapters, SubscriptionHandler } from 'src/app/services';
+import { MangaPartial } from '../manga-data.partial';
 
 @Component({
     templateUrl: './manga.component.html',
     styleUrls: ['./manga.component.scss']
 })
-export class MangaComponent implements OnInit, OnDestroy {
+export class MangaComponent extends MangaPartial implements OnInit, OnDestroy {
 
     private _subs = new SubscriptionHandler();
 
@@ -17,32 +18,15 @@ export class MangaComponent implements OnInit, OnDestroy {
     loading: boolean = false;
     error?: string;
     id!: string;
-    data?: MangaWithChapters;
     progress?: MangaProgress;
     isRandom: boolean = false;
-
-    get manga() {
-        return this.data?.manga;
-    }
-
-    get chapters() {
-        return this.data?.chapters || [];
-    }
 
     get currentChapter() {
         return this.chapters.find(t => t.id === this.progress?.mangaChapterId);
     }
 
-    get favourite() {
-        return this.data?.favourite ?? false;
-    }
-
     get loggedIn() {
         return !!this.auth.currentUser;
-    }
-
-    get hasBookmarks() {
-        return (this.data?.bookmarks.length || 0) > 0;
     }
 
     constructor(
@@ -52,21 +36,16 @@ export class MangaComponent implements OnInit, OnDestroy {
         private title: Title,
         private auth: AuthService,
         private pop: PopupService
-    ) { }
+    ) { super(); }
 
     ngOnInit(): void {
         this._subs
-            .subscribe(this.auth.onLogin, t => {
-                this.process();
-            })
+            .subscribe(this.auth.onLogin, t => this.process())
             .subscribe(this.route.params, t => {
                 this.id = (t['id'] + '').toLowerCase();
                 this.isRandom = this.id === 'random';
                 this.process();
             });
-
-        this.api.promptCheck()
-            .subscribe(t => console.log('Results', t));
     }
 
     ngOnDestroy(): void {
@@ -119,9 +98,7 @@ export class MangaComponent implements OnInit, OnDestroy {
         return this.api.manga(this.id).promise;
     }
 
-    nextRandom() {
-        this.process();
-    }
+    nextRandom() { this.process(); }
 
     update() {
         if (!this.manga) return;
@@ -151,17 +128,13 @@ export class MangaComponent implements OnInit, OnDestroy {
         return this.lnApi.corsFallback(url, 'manga-covers');
     }
 
-    showBookmarks() {
-        this.pop.show(this.bookmarkPop);
-    }
+    showBookmarks() { this.pop.show(this.bookmarkPop); }
 
     resetProgress() {
         if (!this.manga) return;
 
         this.api
             .resetProgress(this.manga?.id)
-            .subscribe(t => {
-                this.progress = undefined;
-            });
+            .subscribe(t => this.progress = undefined);
     }
 }

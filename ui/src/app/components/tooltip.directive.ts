@@ -16,9 +16,7 @@ export class TooltipDirective implements OnDestroy {
         private ref: ElementRef
     ) { }
 
-    ngOnDestroy(): void {
-        this.destroy();
-    }
+    ngOnDestroy(): void { this.destroy(); }
 
     @HostListener('mouseenter') 
     mouseEnter() {

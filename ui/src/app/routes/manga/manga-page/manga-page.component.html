@@ -51,8 +51,7 @@
             </button>
         </header>
         <main [ngClass]="{ 'fit-width': fitToWidth, 'natural-img-size': !fitToHeight && !fitToWidth , 'scroll': settings.scroll.value }" 
-              [class]="settings.filter.value"
-              #scrollcont (click)="imageClick($event)">
+              [class]="settings.filter.value" #scrollcont (click)="imageClick($event)">
             <ng-container *ngIf="settings.scroll.value">
                 <button class="scroll-button" (click)="prevChap()" [disabled]="!hasPreviousChapter" cba-tooltip="Previous Chapter" direction="down">
                     <cba-icon>skip_previous</cba-icon>
@@ -193,26 +192,27 @@
                 </button>
             </div>
         </section>
-        <section *ngIf="!settings.scroll.value"><label>Pages:</label></section>
-        <section *ngIf="!settings.scroll.value">
-            <div class="select-list fill">
-                <button (click)="prevPage()" [disabled]="!hasPreviousPage" cba-tooltip="Previous Page" direction="up">
-                    <cba-icon>navigate_before</cba-icon>
-                </button>
-                <button (click)="pageChange(0)" cba-tooltip="Restart Chapter" direction="up">
-                    <cba-icon>restart_alt</cba-icon>
-                </button>
-                <select [(ngModel)]="page" (ngModelChange)="pageChange(page - 1)">
-                    <option *ngFor="let page of chapter?.pages; let i = index" [value]="i + 1">
-                        Page: #{{ i + 1 }}
-                    </option>
-                </select>
-                <button (click)="nextPage()" [disabled]="!hasNextPage" 
-                        *ngIf="!settings.scroll.value" cba-tooltip="Next Page" direction="up">
-                    <cba-icon>navigate_next</cba-icon>
-                </button>
-            </div>
-        </section>
+        <ng-container *ngIf="!settings.scroll.value">
+            <section><label>Pages:</label></section>
+            <section>
+                <div class="select-list fill">
+                    <button (click)="prevPage()" [disabled]="!hasPreviousPage" cba-tooltip="Previous Page" direction="up">
+                        <cba-icon>navigate_before</cba-icon>
+                    </button>
+                    <button (click)="pageChange(0)" cba-tooltip="Restart Chapter" direction="up">
+                        <cba-icon>restart_alt</cba-icon>
+                    </button>
+                    <select [(ngModel)]="page" (ngModelChange)="pageChange(page - 1)">
+                        <option *ngFor="let page of chapter?.pages; let i = index" [value]="i + 1">
+                            Page: #{{ i + 1 }}
+                        </option>
+                    </select>
+                    <button (click)="nextPage()" [disabled]="!hasNextPage" cba-tooltip="Next Page" direction="up">
+                        <cba-icon>navigate_next</cba-icon>
+                    </button>
+                </div>
+            </section>
+        </ng-container>
     </div>
 </cba-popup>
 

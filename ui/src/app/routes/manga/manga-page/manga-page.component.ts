@@ -2,16 +2,15 @@ import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } fro
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, of } from 'rxjs';
-import { PopupService, PopupComponent, PopupInstance } from 'src/app/components';
-import { AuthService, LightNovelService, MangaChapter, MangaService, MangaWithChapters, StorageVar, SubscriptionHandler, UtilitiesService } from 'src/app/services';
-
-const DEFAULT_IMAGE = 'https://wallpaperaccess.com/full/1979093.jpg';
+import { PopupService, PopupComponent } from 'src/app/components';
+import { AuthService, LightNovelService, MangaService, StorageVar, SubscriptionHandler, UtilitiesService } from 'src/app/services';
+import { MangaPagePartial } from '../manga-data.partial';
 
 @Component({
     templateUrl: './manga-page.component.html',
     styleUrls: ['./manga-page.component.scss']
 })
-export class MangaPageComponent implements OnInit, OnDestroy {
+export class MangaPageComponent extends MangaPagePartial implements OnInit, OnDestroy {
 
     private _subs = new SubscriptionHandler();
 
@@ -29,15 +28,6 @@ export class MangaPageComponent implements OnInit, OnDestroy {
     downloading: boolean = false;
 
     id!: string;
-    chapterId!: number;
-    page!: number;
-
-    data?: MangaWithChapters;
-
-    chapter?: MangaChapter;
-    bookmarks: number[] = [];
-    get manga() { return this.data?.manga; }
-    get chapters() { return this.data?.chapters || []; }
 
     settings = {
         invertControls: new StorageVar<boolean>(false, 'invert-controls'),
@@ -55,65 +45,6 @@ export class MangaPageComponent implements OnInit, OnDestroy {
     };
 
     get loggedIn() { return !!this.auth.currentUser; }
-
-    get pageImage() {
-        if (!this.manga || !this.chapter) return DEFAULT_IMAGE;
-        return this.chapter.pages[this.page - 1] || DEFAULT_IMAGE;
-    }
-
-    get nextPageImage() {
-        if (!this.manga || !this.chapter) return DEFAULT_IMAGE;
-        return this.chapter.pages[this.page] || DEFAULT_IMAGE;
-    }
-
-    get chapterIndex() {
-        if (!this.manga || !this.chapter) return -1;
-
-        return this.chapters.findIndex(a => a.id === this.chapter?.id);
-    }
-
-    get hasNextPage() {
-        if (!this.manga || !this.chapter) return false;
-
-        const p = this.page;
-        if (p >= 0 && p < this.chapter.pages.length) return true;
-
-        return this.hasNextChapter;
-    }
-
-    get hasNextChapter() {
-        if (!this.manga || !this.chapter) return false;
-
-        let c = this.chapterIndex;
-        if (c == -1) return false;
-
-        c += 1;
-        if (c >= 0 && c < this.chapters.length) return true;
-
-        return false;
-    }
-
-    get hasPreviousPage() {
-        if (!this.manga || !this.chapter) return false;
-
-        const p = this.page - 2;
-        if (p >= 0 && p < this.chapter.pages.length) return true;
-
-        return this.hasPreviousChapter;
-    }
-
-    get hasPreviousChapter() {
-        if (!this.manga || !this.chapter) return false;
-
-        let c = this.chapterIndex;
-        if (c == -1) return false;
-
-        c -= 1;
-        if (c >= 0 && c < this.chapters.length) return true;
-
-        return false;
-    }
-
     get fitToWidth() { return this.settings.imgSize.value === 'Fit to Width'; }
     get fitToHeight() { return this.settings.imgSize.value === 'Fit to Height'; }
 
@@ -126,7 +57,7 @@ export class MangaPageComponent implements OnInit, OnDestroy {
         private title: Title,
         private auth: AuthService,
         private util: UtilitiesService
-    ) { this.auth.showHeader = !this.settings.hideHeader.value; }
+    ) { super(); this.auth.showHeader = !this.settings.hideHeader.value; }
 
     proxy(url?: string) {
         if (!url) return '';
@@ -192,6 +123,7 @@ export class MangaPageComponent implements OnInit, OnDestroy {
 
         try {
             this.data = await this.getMangaData(force);
+            this.updateProperties();
         } catch (err) {
             this.loading = false;
             this.printState(err, 'Error loading manga', true);
@@ -203,7 +135,6 @@ export class MangaPageComponent implements OnInit, OnDestroy {
             return;
         }
 
-        this.chapter = this.chapters.find(t => t.id === this.chapterId);
         if (!this.chapter) {
             this.loading = false;
             return;
@@ -218,7 +149,6 @@ export class MangaPageComponent implements OnInit, OnDestroy {
             }
         }
 
-        this.bookmarks = this.data?.bookmarks.find(t => t.mangaChapterId === this.chapterId)?.pages || [];
         this.title.setTitle('CBA | ' + this.manga.title);
         this.auth.title = this.manga?.title;
 
@@ -226,8 +156,8 @@ export class MangaPageComponent implements OnInit, OnDestroy {
 
         if (p < 0) p = 0;
         if (p >= this.chapter.pages.length) p = this.chapter.pages.length - 1;
-
         this.page = p + 1;
+        this.updateProperties();
         this.progressUpdate();
         this.loading = false;
         this.printState(null, 'Manga State Updated');
@@ -388,9 +318,7 @@ export class MangaPageComponent implements OnInit, OnDestroy {
             });
     }
 
-    showBookmarks() {
-        this.pop.show(this.bookmarkPop);
-    }
+    showBookmarks() { this.pop.show(this.bookmarkPop); }
 
     imageClick(event: MouseEvent) {
         if (this.settings.scroll.value) return;
@@ -412,14 +340,9 @@ export class MangaPageComponent implements OnInit, OnDestroy {
         }
     }
 
-    async share() {
-        const url = window.location.href;
-        await navigator.clipboard.writeText(url);
-    }
+    async share() { await navigator.clipboard.writeText(window.location.href); }
 
-    openLinks() {
-        this.pop.show(this.linksPop);
-    }
+    openLinks() { this.pop.show(this.linksPop); }
 
     resetOptions() {
         const settings: { [key: string]: StorageVar<any> } = this.settings;
@@ -430,9 +353,7 @@ export class MangaPageComponent implements OnInit, OnDestroy {
         document.documentElement.style.setProperty(name, value || def);
     }
 
-    setRootFilter(value?: string) {
-        document.documentElement.style.setProperty('--custom-image-filter', value || '');
-    }
+    setRootFilter(value?: string) { this.setRootVar('--custom-image-filter', '', value); }
 
     fullscreen() {
         const elem = <any>document.documentElement;
