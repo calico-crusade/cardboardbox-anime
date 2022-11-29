@@ -154,33 +154,33 @@ main {
         }
     }
 
-    &.invert {
-        img, .page {
-            filter: invert(100%) brightness(var(--image-bightness))
-        }
-    }
+    // &.invert {
+    //     img, .page {
+    //         filter: invert(100%) brightness(var(--image-bightness))
+    //     }
+    // }
 
-    &.blue-light {
-        img, .page {
-            filter: sepia(40%) saturate(200%) brightness(var(--image-bightness));
-        }
-    }
+    // &.blue-light {
+    //     img, .page {
+    //         filter: sepia(40%) saturate(200%) brightness(var(--image-bightness));
+    //     }
+    // }
 
-    &.blue-print {
-        img, .page {
-            filter: sepia(100%) saturate(500%) hue-rotate(180deg) brightness(var(--image-bightness));
-        }
-    }
+    // &.blue-print {
+    //     img, .page {
+    //         filter: sepia(100%) saturate(500%) hue-rotate(180deg) brightness(var(--image-bightness));
+    //     }
+    // }
 
-    &.custom {
-        img, .page {
-            filter: var(--custom-image-filter);
-        }
-    }
+    // &.custom {
+    //     img, .page {
+    //         filter: var(--custom-image-filter);
+    //     }
+    // }
 
-    img, .page {
-        filter: brightness(var(--image-bightness));
-    }
+    // img, .page {
+    //     filter: brightness(var(--image-bightness));
+    // }
 
 }
 

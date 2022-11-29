@@ -57,15 +57,15 @@
                     <cba-icon>skip_previous</cba-icon>
                 </button>
 
-                <img *ngFor="let page of chapter?.pages" [proxy]="page" group="manga-page" />
+                <img *ngFor="let page of chapter?.pages" [proxy]="page" group="manga-page" [ngStyle]="{ 'filter': imageFilter() }" />
 
                 <button class="scroll-button" (click)="nextChap()" [disabled]="!hasNextChapter" cba-tooltip="Next Chapter" direction="down">
                     <cba-icon>skip_next</cba-icon>
                 </button>
             </ng-container>
             <ng-container *ngIf="!settings.scroll.value">
-                <img [proxy]="pageImage" group="manga-page" />
-                <div class="page" [style.background-image]="'url('+ proxy(pageImage) +')'"></div>
+                <img [proxy]="pageImage" group="manga-page" [ngStyle]="{ 'filter': imageFilter() }" />
+                <div class="page" [style.background-image]="'url('+ proxy(pageImage) +')'" [ngStyle]="{ 'filter': imageFilter() }"></div>
                 <div class="next" [style.background-image]="'url(' + proxy(nextPageImage) + ')'"></div>
             </ng-container>
         </main>

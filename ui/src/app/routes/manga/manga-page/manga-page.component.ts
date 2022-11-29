@@ -405,4 +405,28 @@ export class MangaPageComponent extends MangaPagePartial implements OnInit, OnDe
                 this.downloading = false;
             });
     }
+
+    imageFilter() {
+        let filters: { [key: string]: string } = {
+            'brightness': this.settings.brightness.value + '%'
+        };
+
+        switch(this.settings.filter.value) {
+            case 'invert': filters['invert'] = '100%'; break;
+            case 'blue-light': 
+                filters['sepia'] = '40%';
+                filters['saturate'] = '200%';
+                break;
+            case 'blue-print':
+                filters['sepia'] = '100%';
+                filters['saturate'] = '500%';
+                filters['hue-rotate'] = '180deg';
+                break;
+            case 'custom': return this.settings.customFilter.value;
+        }
+
+        return Object.keys(filters)
+            .map(key => `${key}(${filters[key]})`)
+            .join(' ');
+    }
 }
