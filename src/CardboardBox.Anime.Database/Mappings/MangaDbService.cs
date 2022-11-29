@@ -63,16 +63,15 @@ namespace CardboardBox.Anime.Database
 		private const string TABLE_NAME_MANGA = "manga";
 		private const string TABLE_NAME_MANGA_CHAPTER = "manga_chapter";
 		private const string TABLE_NAME_MANGA_PROGRESS = "manga_progress";
-		private const string TABLE_NAME_MANGA_FAVOURITES = "manga_favourites";
 		private const string TABLE_NAME_MANGA_BOOKMARKS = "manga_bookmarks";
 
-		private string? _upsertMangaQuery;
-		private string? _upsertMangaChapterQuery;
-		private string? _upsertMangaProgressQuery;
-		private string? _upsertMangaBookmarkQuery;
 		private string? _getChapterQuery;
 		private string? _getMangaQuery;
-		private string? _deleteMangaProgress;
+
+		private List<string> _upsertChapters = new();
+		private List<string> _upsertManga = new();
+		private List<string> _upsertProgress = new();
+		private List<string> _upsertBookmark = new();
 
 		public override string TableName => TABLE_NAME_MANGA;
 
@@ -84,6 +83,33 @@ namespace CardboardBox.Anime.Database
 			IProfileDbService prof) : base(query, sql) 
 		{ 
 			_prof = prof;
+		}
+
+		public async Task<long> FakeUpsert<T>(T item, string table, List<string> queryCache,
+			Action<PropertyExpressionBuilder<T>> conflicts,
+			Action<PropertyExpressionBuilder<T>>? inserts = null,
+			Action<PropertyExpressionBuilder<T>>? updates = null) where T: DbObject
+		{
+			//Note: This is purely to combat the issue of postgres SERIAL and BIGSERIAL 
+			//		primary keys incrementing even if it was an update was preformed
+			//		because the record already exists
+			if (queryCache.Count != 3)
+			{
+				queryCache.Clear();
+				queryCache.Add(_query.Update(table, updates));
+				queryCache.Add(_query.InsertReturn(table, v => v.Id, inserts));
+				queryCache.Add(_query.Select(table, conflicts));
+			}
+
+			string update = queryCache[0], insert = queryCache[1], select = queryCache[2];
+
+			var exists = await _sql.Fetch<T>(select, item);
+			if (exists == null)
+				return await _sql.ExecuteScalar<long>(insert, item);
+
+			item.Id = exists.Id;
+			await _sql.Execute(update, item);
+			return exists.Id;
 		}
 
 		public MangaSortField[] SortFields()
@@ -101,41 +127,33 @@ namespace CardboardBox.Anime.Database
 
 		public Task<long> Upsert(DbManga manga)
 		{
-			_upsertMangaQuery ??= _query.Upsert<DbManga, long>(TableName,
+			return FakeUpsert(manga, TABLE_NAME_MANGA, _upsertManga,
 				(v) => v.With(t => t.Provider).With(t => t.SourceId),
 				(v) => v.With(t => t.Id),
-				(v) => v.With(t => t.Id).With(t => t.CreatedAt),
-				(v) => v.Id);
-
-			return _sql.ExecuteScalar<long>(_upsertMangaQuery, manga);
+				(v) => v.With(t => t.Id).With(t => t.CreatedAt));
 		}
 
 		public Task<long> Upsert(DbMangaChapter chapter)
 		{
-			_upsertMangaChapterQuery ??= _query.Upsert<DbMangaChapter, long>(TABLE_NAME_MANGA_CHAPTER,
-				v => v.With(t => t.MangaId).With(t => t.SourceId).With(t => t.Language),
-				v => v.With(t => t.Id),
-				v => v.With(t => t.Id).With(t => t.CreatedAt).With(t => t.Pages),
-				v => v.Id);
+			return FakeUpsert(chapter, TABLE_NAME_MANGA_CHAPTER,
+				_upsertChapters,
+				(v) => v.With(t => t.MangaId).With(t => t.SourceId).With(t => t.Language),
+				(v) => v.With(t => t.Id),
+				v => v.With(t => t.Id).With(t => t.CreatedAt).With(t => t.Pages));
+		}
 
-			return _sql.ExecuteScalar<long>(_upsertMangaChapterQuery, chapter);
+		public Task<long> Upsert(DbMangaProgress progress)
+		{
+			return FakeUpsert(progress, TABLE_NAME_MANGA_PROGRESS, _upsertProgress,
+				v => v.With(t => t.ProfileId).With(t => t.MangaId),
+				v => v.With(t => t.Id),
+				v => v.With(t => t.Id).With(t => t.CreatedAt));
 		}
 
 		public Task SetPages(long id, string[] pages)
 		{
 			const string QUERY = "UPDATE manga_chapter SET pages = :pages WHERE id = :id";
 			return _sql.Execute(QUERY, new { id, pages });
-		}
-
-		public Task<long> Upsert(DbMangaProgress progress)
-		{
-			_upsertMangaProgressQuery ??= _query.Upsert<DbMangaProgress, long>(TABLE_NAME_MANGA_PROGRESS,
-				v => v.With(t => t.ProfileId).With(t => t.MangaId),
-				v => v.With(t => t.Id),
-				v => v.With(t => t.Id).With(t => t.CreatedAt),
-				v => v.Id);
-
-			return _sql.ExecuteScalar<long>(_upsertMangaProgressQuery, progress);
 		}
 
 		public Task DeleteProgress(long profileId, long mangaId)
@@ -331,10 +349,6 @@ WHERE id IN (
 		  mb.manga_id = :id AND
 		  mb.manga_chapter_id = :chapterId
 )";
-			_upsertMangaBookmarkQuery ??= _query.Upsert<DbMangaBookmark>(TABLE_NAME_MANGA_BOOKMARKS,
-				v => v.With(t => t.ProfileId).With(t => t.MangaId).With(t => t.MangaChapterId),
-				v => v.With(t => t.Id),
-				v => v.With(t => t.Id).With(t => t.CreatedAt));
 			if (pages.Length == 0)
 			{
 				await _sql.Execute(DELETE_QUERY, new { id, chapterId, pages, platformId });
@@ -344,13 +358,16 @@ WHERE id IN (
 			var pid = await _prof.Fetch(platformId);
 			if (pid == null) return;
 
-			await _sql.Execute(_upsertMangaBookmarkQuery, new DbMangaBookmark
+			await FakeUpsert(new DbMangaBookmark
 			{
 				ProfileId = pid.Id,
 				MangaId = id,
 				MangaChapterId = chapterId,
 				Pages = pages
-			});
+			}, TABLE_NAME_MANGA_BOOKMARKS, _upsertBookmark, 
+				v => v.With(t => t.ProfileId).With(t => t.MangaId).With(t => t.MangaChapterId),
+				v => v.With(t => t.Id),
+				v => v.With(t => t.Id).With(t => t.CreatedAt));
 		}
 
 		public async Task<bool> IsFavourite(string? platformId, long mangaId)
