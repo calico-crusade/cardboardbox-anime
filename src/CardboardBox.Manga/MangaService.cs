@@ -25,13 +25,15 @@
 		public MangaService(
 			IMangaDbService db,
 			IMangakakalotSource mangakakalot, 
-			IMangaDexSource mangaDex)
+			IMangaDexSource mangaDex,
+			IMangaClashSource mangaClash)
 		{
 			_db = db;
 			_sources = new IMangaSource[]
 			{
 				mangaDex,
-				mangakakalot
+				mangakakalot,
+				mangaClash
 			};
 		}
 

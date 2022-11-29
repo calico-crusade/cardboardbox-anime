@@ -16,6 +16,7 @@ namespace CardboardBox.Anime.Cli
 	using LightNovel.Core.Sources.Utilities;
 
 	using Manga.MangaDex;
+	using Manga.Providers;
 
 	public interface IRunner
 	{
@@ -43,6 +44,7 @@ namespace CardboardBox.Anime.Cli
 		private readonly INovelUpdatesService _info;
 		private readonly IReLibSourceService _reL;
 		private readonly IMangaDexService _mangaDex;
+		private readonly IMangaClashSource _mangaClash;
 
 		public Runner(
 			IVrvApiService vrv, 
@@ -60,7 +62,8 @@ namespace CardboardBox.Anime.Cli
 			INovelApiService napi,
 			INovelUpdatesService info,
 			IReLibSourceService reL,
-			IMangaDexService mangaDex)
+			IMangaDexService mangaDex,
+			IMangaClashSource mangaClash)
 		{
 			_vrv = vrv;
 			_logger = logger;
@@ -78,6 +81,7 @@ namespace CardboardBox.Anime.Cli
 			_info = info;
 			_reL = reL;
 			_mangaDex = mangaDex;
+			_mangaClash = mangaClash;
 		}
 
 		public async Task<int> Run(string[] args)
@@ -108,6 +112,7 @@ namespace CardboardBox.Anime.Cli
 					case "pickup": await PickupNew(); break;
 					case "lnmigr": await DoJm(); break;
 					case "mangadex": await TestMangaDex(); break;
+					case "clash": await TestMangaClash(); break;
 					default: _logger.LogInformation("Invalid command: " + command); break;
 				}
 
@@ -677,6 +682,17 @@ namespace CardboardBox.Anime.Cli
 			var item = await _mangaDex.Pages("341dbe2f-4b4d-468d-91b5-367441a9feb2");
 
 			Console.WriteLine($"Manga: {item?.Images?.Length}");
+		}
+
+		public async Task TestMangaClash()
+		{
+			const string id = "ore-no-ie-ga-maryoku-spot-datta-ken-sundeiru-dake-de-sekai-saikyou",
+				chapId = "chapter-118";
+
+			var manga = await _mangaClash.Manga(id);
+			var chap = await _mangaClash.ChapterPages(id, chapId);
+
+			Console.WriteLine("Manga Source: " + manga?.Title);
 		}
 	}
 }
