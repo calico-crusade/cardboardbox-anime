@@ -8,9 +8,12 @@
 		{
 			return services
 				.AddTransient<IMangaService, MangaService>()
+
 				.AddTransient<IMangakakalotSource, MangakakalotSource>()
 				.AddTransient<IMangaDexSource, MangaDexSource>()
 				.AddTransient<IMangaClashSource, MangaClashSource>()
+				.AddTransient<INhentaiSource, NhentaiSource>()
+
 				.AddTransient<IMangaEpubService, MangaEpubService>()
 				.AddTransient<IMangaImageService, MangaImageService>()
 				.AddMangadex();

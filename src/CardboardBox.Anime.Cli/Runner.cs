@@ -45,6 +45,7 @@ namespace CardboardBox.Anime.Cli
 		private readonly IReLibSourceService _reL;
 		private readonly IMangaDexService _mangaDex;
 		private readonly IMangaClashSource _mangaClash;
+		private readonly INhentaiSource _nhentai;
 
 		public Runner(
 			IVrvApiService vrv, 
@@ -63,7 +64,8 @@ namespace CardboardBox.Anime.Cli
 			INovelUpdatesService info,
 			IReLibSourceService reL,
 			IMangaDexService mangaDex,
-			IMangaClashSource mangaClash)
+			IMangaClashSource mangaClash,
+			INhentaiSource nhentai)
 		{
 			_vrv = vrv;
 			_logger = logger;
@@ -82,6 +84,7 @@ namespace CardboardBox.Anime.Cli
 			_reL = reL;
 			_mangaDex = mangaDex;
 			_mangaClash = mangaClash;
+			_nhentai = nhentai;
 		}
 
 		public async Task<int> Run(string[] args)
@@ -686,11 +689,11 @@ namespace CardboardBox.Anime.Cli
 
 		public async Task TestMangaClash()
 		{
-			const string id = "ore-no-ie-ga-maryoku-spot-datta-ken-sundeiru-dake-de-sekai-saikyou",
+			const string id = "402922",
 				chapId = "chapter-118";
 
-			var manga = await _mangaClash.Manga(id);
-			var chap = await _mangaClash.ChapterPages(id, chapId);
+			var manga = await _nhentai.Manga(id);
+			var chap = await _nhentai.ChapterPages(id, chapId);
 
 			Console.WriteLine("Manga Source: " + manga?.Title);
 		}

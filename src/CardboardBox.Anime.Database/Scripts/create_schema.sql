@@ -56,6 +56,8 @@ CREATE TABLE profiles (
     platform_id text not null,
     admin bool not null,
     email text not null,
+    provider text null,
+    provider_id text null,
 
     created_at timestamp,
     updated_at timestamp,

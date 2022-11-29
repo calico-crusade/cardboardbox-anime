@@ -28,5 +28,8 @@
 
 		[JsonPropertyName("chapters"), BsonElement("chapters")]
 		public List<MangaChapter> Chapters { get; set; } = new();
+
+		[JsonPropertyName("nsfw"), BsonElement("nsfw")]
+		public bool Nsfw { get; set; } = false;
 	}
 }

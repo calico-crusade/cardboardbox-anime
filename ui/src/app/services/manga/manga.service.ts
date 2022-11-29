@@ -111,6 +111,7 @@ export class MangaService extends ConfigObject {
         if (t['exclude']) filter.exclude = t['exclude'].split(',');
         if (t['sort']) filter.sort = +t['sort'];
         if (t['state'] && state === undefined) filter.state = +t['state'];
+        if (t['nsfw']) filter.nsfw = +t['nsfw'];
 
         return filter;
     }

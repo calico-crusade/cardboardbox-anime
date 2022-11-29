@@ -51,6 +51,8 @@
 
 			var title = DetermineTitle(manga);
 
+			var nsfwRatings = new[] { "erotica", "suggestive" };
+
 			return new Manga
 			{
 				Title = title,
@@ -68,7 +70,8 @@
 						 .Name
 						 .PreferedOrFirst(t => t.Key == DEFAULT_LANG)
 						 .Value).ToArray(),
-				Chapters = chapters
+				Chapters = chapters,
+				Nsfw = nsfwRatings.Contains(manga.Data.Attributes.ContentRating)
 			};
 		}
 

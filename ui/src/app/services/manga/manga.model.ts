@@ -13,6 +13,7 @@ export interface Manga {
     tags: string[];
     altTitles: string[];
     description: string;
+    nsfw: boolean;
 }
 
 export interface MangaChapter {
@@ -110,6 +111,7 @@ export interface MangaFilter {
     exclude: string[];
     sort?: number;
     state?: number;
+    nsfw?: number;
 }
 
 export interface MangaStrip {

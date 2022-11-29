@@ -28,5 +28,8 @@
 
 		[JsonPropertyName("tags")]
 		public string[] Tags { get; set; } = Array.Empty<string>();
+
+		[JsonPropertyName("nsfw")]
+		public bool Nsfw { get; set; } = false;
 	}
 }

@@ -70,6 +70,9 @@
 		[JsonPropertyName("state")]
 		public TouchedState State { get; set; } = TouchedState.All;
 
+		[JsonPropertyName("nsfw")]
+		public NsfwCheck Nsfw { get; set; } = NsfwCheck.Sfw;
+
 		public void Deconstruct(
 			out int page, out int size, out string? search,
 			out string[] exclude, out string[] include,
@@ -97,6 +100,13 @@
 
 		[JsonPropertyName("asc")]
 		public bool Ascending { get; set; } = true;
+	}
+
+	public enum NsfwCheck
+	{
+		Sfw = 0,
+		Nsfw = 1,
+		DontCare = 2
 	}
 
 	public enum TouchedState

@@ -9,6 +9,7 @@
     tags text[] not null default '{}',
     alt_titles text[] not null default '{}',
     description text not null,
+    nsfw boolean not null default False,
 
     created_at timestamp not null default CURRENT_TIMESTAMP,
     updated_at timestamp not null default CURRENT_TIMESTAMP,

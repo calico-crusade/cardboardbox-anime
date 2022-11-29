@@ -26,14 +26,16 @@
 			IMangaDbService db,
 			IMangakakalotSource mangakakalot, 
 			IMangaDexSource mangaDex,
-			IMangaClashSource mangaClash)
+			IMangaClashSource mangaClash,
+			INhentaiSource nhentai)
 		{
 			_db = db;
 			_sources = new IMangaSource[]
 			{
 				mangaDex,
 				mangakakalot,
-				mangaClash
+				mangaClash,
+				nhentai
 			};
 		}
 
@@ -118,7 +120,8 @@
 				Cover = manga.Cover,
 				Tags = manga.Tags,
 				Description = manga.Description,
-				AltTitles = manga.AltTitles
+				AltTitles = manga.AltTitles,
+				Nsfw = manga.Nsfw
 			};
 			m.Id = await _db.Upsert(m);
 			return m;

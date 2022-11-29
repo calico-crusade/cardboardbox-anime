@@ -245,7 +245,8 @@ FROM (
         DISTINCT 
         'tag' as key,
         unnest(tags) as value
-    FROM manga) x 
+    FROM manga
+	WHERE nsfw = False) x 
 ORDER BY key, value";
 			var filters = await _sql.Get<DbFilter>(QUERY);
 			return filters
@@ -308,6 +309,12 @@ DROP TABLE touched_manga;";
 			{
 				parts.Add("NOT (m.tags && :exclude )");
 				pars.Add("exclude", filter.Exclude);
+			}
+
+			if (filter.Nsfw != NsfwCheck.DontCare)
+			{
+				parts.Add("m.nsfw = :nsfw");
+				pars.Add("nsfw", filter.Nsfw == NsfwCheck.Nsfw);
 			}
 
 			parts.Add("m.deleted_at IS NULL");
@@ -565,9 +572,10 @@ SELECT COUNT(*) FROM touched_manga;
 
 DROP TABLE touched_manga;";
 
+			var state = string.IsNullOrEmpty(platformId) ? TouchedState.All : TouchedState.InProgress;
 			var offset = (page - 1) * size;
 			using var con = _sql.CreateConnection();
-			using var rdr = await con.QueryMultipleAsync(QUERY, new { platformId, state = (int)TouchedState.InProgress, offset, size, since });
+			using var rdr = await con.QueryMultipleAsync(QUERY, new { platformId, state = (int)state, offset, size, since });
 
 			var results = rdr.Read<DbManga, DbMangaProgress, DbMangaChapter, MangaStats, MangaProgress>((m, p, c, s) => new MangaProgress(m, p, c, s), splitOn: "split");
 			var total = await rdr.ReadSingleAsync<int>();

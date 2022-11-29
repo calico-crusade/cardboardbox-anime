@@ -111,6 +111,7 @@ export class MangaSearchFiltersComponent implements OnInit, OnDestroy {
         if (!this.search.asc) pars['desc'] = true;
         if (this.search.sort) pars['sort'] = this.search.sort;
         if (this.search.state && this.overrideState < 0) pars['state'] = this.search.state;
+        if (this.search.nsfw) pars['nsfw'] = this.search.nsfw;
 
         this.search.page = 1;
         this.router.navigate(this.routeParts, { queryParams: pars });

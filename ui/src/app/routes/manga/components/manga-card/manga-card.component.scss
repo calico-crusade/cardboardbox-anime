@@ -57,6 +57,10 @@
                 background-color: var(--def-color);
                 border: 1px solid var(--brd-color-accent);
                 border-radius: 3px;
+
+                &.nsfw {
+                    background-color: var(--dgr-color);
+                }
             }
         }
     }
