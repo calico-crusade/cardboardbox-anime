@@ -60,6 +60,7 @@ namespace CardboardBox.Anime.Auth
 				.AddClaim(ClaimTypes.Email, resp.User.Email)
 				.AddClaim(ClaimTypes.UserData, resp.User.Avatar)
 				.AddClaim(ClaimTypes.PrimarySid, resp.Provider)
+				.AddClaim(ClaimTypes.PrimaryGroupSid, resp.User.ProviderId)
 				.AddClaim(roles.Select(t => new Claim(ClaimTypes.Role, t)).ToArray())
 				.Write();
 		}

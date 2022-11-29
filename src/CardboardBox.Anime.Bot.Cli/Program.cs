@@ -14,7 +14,8 @@ var bot = DiscordBotBuilder.Start()
 		 .AddTransient<IAiAnimeService, AiAnimeService>()
 		 .AddTransient<IMangaApiService, MangaApiService>()
 		 .AddTransient<IMangaUtilityService, MangaUtilityService>()
-		 .AddTransient<MangaUpdater>();
+		 .AddTransient<MangaUpdater>()
+		 .AddTransient<EasterEggs>();
 	})
 	.WithSlashCommands(c =>
 	{
@@ -28,6 +29,7 @@ var bot = DiscordBotBuilder.Start()
 
 await bot.Login();
 
-bot.Background<MangaUpdater>(t => t.Update(), out _, 60 * 30);
+bot.Background<MangaUpdater>(t => t.Update(), out _, 60 * 5)
+   .Background<EasterEggs>(t => t.Setup(), out _);
 
 await Task.Delay(-1);

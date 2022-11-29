@@ -16,5 +16,11 @@
 
 		[JsonIgnore]
 		public string Email { get; set; } = "";
+
+		[JsonPropertyName("provider")]
+		public string Provider { get; set; } = string.Empty;
+
+		[JsonPropertyName("providerId")]
+		public string ProviderId { get; set; } = string.Empty;
 	}
 }

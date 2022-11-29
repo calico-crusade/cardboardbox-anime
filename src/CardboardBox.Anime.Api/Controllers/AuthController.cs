@@ -40,6 +40,8 @@ namespace CardboardBox.Anime.Api.Controllers
 				Email = res.User.Email,
 				PlatformId = res.User.Id,
 				Username = res.User.Nickname,
+				Provider = res.User.Provider,
+				ProviderId = res.User.ProviderId,
 			};
 			var id = await _db.Profiles.Upsert(profile);
 

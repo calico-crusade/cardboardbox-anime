@@ -47,6 +47,12 @@ namespace CardboardBox.Anime.Auth
 
 		[JsonPropertyName("email")]
 		public string Email { get; set; } = string.Empty;
+
+		[JsonPropertyName("provider")]
+		public string Provider { get; set; } = string.Empty;
+
+		[JsonPropertyName("providerId")]
+		public string ProviderId { get; set; } = string.Empty;
 	}
 
 	public class TokenApp

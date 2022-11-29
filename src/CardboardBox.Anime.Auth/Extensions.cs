@@ -92,7 +92,9 @@ namespace CardboardBox.Anime.Auth
 				Id = id,
 				Nickname = getClaim(ClaimTypes.Name),
 				Email = getClaim(ClaimTypes.Email),
-				Avatar = getClaim(ClaimTypes.UserData)
+				Avatar = getClaim(ClaimTypes.UserData),
+				Provider = getClaim(ClaimTypes.PrimarySid),
+				ProviderId = getClaim(ClaimTypes.PrimaryGroupSid)
 			};
 		}
 
