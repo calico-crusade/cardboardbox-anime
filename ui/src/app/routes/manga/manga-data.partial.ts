@@ -1,8 +1,9 @@
-import { MangaChapter, MangaWithChapters } from "src/app/services";
+import { AuthService, MangaChapter, MangaWithChapters } from "src/app/services";
+import { SettingsPartial } from "src/app/settings.partial";
 
 const DEFAULT_IMAGE = 'https://wallpaperaccess.com/full/1979093.jpg';
 
-export abstract class MangaPartial {
+export abstract class MangaPartial extends SettingsPartial {
 
     data?: MangaWithChapters;
 

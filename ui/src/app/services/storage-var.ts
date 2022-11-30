@@ -1,4 +1,6 @@
 export class StorageVar<T> {
+    private _value?: T;
+
     constructor(
         public defValue: T,
         public name: string,
@@ -6,19 +8,17 @@ export class StorageVar<T> {
     ) { }
 
     get value(): T {
+        if (this._value !== undefined) return this._value;
         const val = localStorage.getItem(this.name);
-
-        return <any>this.convertType(val);
+        return this._value = <any>this.convertType(val);
     }
 
     set value(item: T | undefined) {
-        if (!item) {
-            localStorage.removeItem(this.name);
-            if (this.fun) this.fun(item);
-            return;
-        }
+        this._value = item;
 
-        localStorage.setItem(this.name, <any>item);
+        if (item !== undefined) localStorage.setItem(this.name, <any>item);
+        else localStorage.removeItem(this.name);
+
         if (this.fun) this.fun(item);
     }
 

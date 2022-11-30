@@ -28,26 +28,7 @@ export class MangaPageComponent extends MangaPagePartial implements OnInit, OnDe
     downloading: boolean = false;
 
     id!: string;
-
-    settings = {
-        invertControls: new StorageVar<boolean>(false, 'invert-controls'),
-        imgSize: new StorageVar<string>('Fit to Height', 'img-size'),
-        scroll: new StorageVar<boolean>(false, 'scroll-chapter'),
-        hideHeader: new StorageVar<boolean>(false, 'hide-header', (v) => this.auth.showHeader = !v),
-        invert: new StorageVar<boolean>(false, 'invert-image'),
-        scrollAmount: new StorageVar<number>(100, 'scroll-amount'),
-        progressBar: new StorageVar<string>('', 'progress-bar'),
-        noDirectionalButton: new StorageVar<boolean>(false, 'no-directional-buttons'),
-        hideExtraButtons: new StorageVar<boolean>(false, 'hide-extra-buttons'),
-        filter: new StorageVar<string>('', 'filter'),
-        customFilter: new StorageVar<string>('sepia(40%) saturate(200%)', 'custom-filter', (v) => this.setRootFilter(v)),
-        brightness: new StorageVar<number>(100, 'manga-brightness', (v) => this.setRootVar('--image-bightness', '100%', v ? v + '%' : '100%'))
-    };
-
-    get loggedIn() { return !!this.auth.currentUser; }
-    get fitToWidth() { return this.settings.imgSize.value === 'Fit to Width'; }
-    get fitToHeight() { return this.settings.imgSize.value === 'Fit to Height'; }
-
+    
     constructor(
         private route: ActivatedRoute,
         private router: Router,
@@ -57,7 +38,7 @@ export class MangaPageComponent extends MangaPagePartial implements OnInit, OnDe
         private title: Title,
         private auth: AuthService,
         private util: UtilitiesService
-    ) { super(); this.auth.showHeader = !this.settings.hideHeader.value; }
+    ) { super(auth); }
 
     proxy(url?: string) {
         if (!url) return '';
@@ -67,10 +48,10 @@ export class MangaPageComponent extends MangaPagePartial implements OnInit, OnDe
     @HostListener('window:keydown', ['$event'])
     keyDownEvent(event: KeyboardEvent) {
         if (!this.fitToWidth &&
-            !this.settings.scroll.value) return;
+            !this.mangaScroll) return;
 
         const pos = this.el.nativeElement.scrollTop;
-        const offset = this.settings.scrollAmount.value;
+        const offset = this.mangaScrollAmount;
         if (event.key == 'ArrowUp') {
             this.el.nativeElement.scrollTop = (pos - offset);
             return;
@@ -87,14 +68,14 @@ export class MangaPageComponent extends MangaPagePartial implements OnInit, OnDe
 
         if (event.key == 'ArrowRight') { this.nextPage(); return; }
 
-        if (this.fitToWidth ||
-            this.settings.scroll.value) return;
+        if (this.fitToWidth || this.mangaScroll) return;
 
         if (event.key == 'ArrowUp') { this.prevPage(); return; }
         if (event.key == 'ArrowDown') { this.nextPage(); return; }
     }
 
     ngOnInit(): void {
+        this.initManga();
         this._subs
             .subscribe(this.auth.onLogin, t => this.process(true))
             .subscribe(this.route.params, t => {
@@ -106,9 +87,6 @@ export class MangaPageComponent extends MangaPagePartial implements OnInit, OnDe
 
                 this.process();
             });
-
-        this.settings.customFilter.value = this.settings.customFilter.value;
-        this.settings.brightness.value = this.settings.brightness.value;
     }
 
     ngOnDestroy(): void {
@@ -254,28 +232,28 @@ export class MangaPageComponent extends MangaPagePartial implements OnInit, OnDe
     }
 
     nextPage() {
-        if (this.settings.invertControls.value)
+        if (this.mangaInvertControls)
             this.pageChange(this.page - 2);
         else
             this.pageChange(this.page);
     }
 
     prevPage() {
-        if (this.settings.invertControls.value)
+        if (this.mangaInvertControls)
             this.pageChange(this.page);
         else
             this.pageChange(this.page - 2);
     }
 
     nextChap() {
-        if (this.settings.invertControls.value)
+        if (this.mangaInvertControls)
             this.pageChange(-1)
         else
             this.pageChange(999);
     }
 
     prevChap() {
-        if (this.settings.invertControls.value)
+        if (this.mangaInvertControls)
             this.pageChange(999);
         else
             this.pageChange(-1);
@@ -321,12 +299,12 @@ export class MangaPageComponent extends MangaPagePartial implements OnInit, OnDe
     showBookmarks() { this.pop.show(this.bookmarkPop); }
 
     imageClick(event: MouseEvent) {
-        if (this.settings.scroll.value) return;
+        if (this.mangaScroll) return;
 
         const el = <HTMLElement>event.target;
         const rect = el.getBoundingClientRect();
 
-        const isRight = this.settings.noDirectionalButton.value ||
+        const isRight = this.mangaNoDirectionalButton ||
             event.clientX >= (rect.x + rect.width) / 2;
 
         if (isRight && this.hasNextPage) {
@@ -345,15 +323,8 @@ export class MangaPageComponent extends MangaPagePartial implements OnInit, OnDe
     openLinks() { this.pop.show(this.linksPop); }
 
     resetOptions() {
-        const settings: { [key: string]: StorageVar<any> } = this.settings;
-        for (let key in settings) settings[key].value = undefined;
+        for(let settings of this.mangaSettings) settings.value = undefined;
     }
-
-    setRootVar(name: string, def: string, value?: string) {
-        document.documentElement.style.setProperty(name, value || def);
-    }
-
-    setRootFilter(value?: string) { this.setRootVar('--custom-image-filter', '', value); }
 
     fullscreen() {
         const elem = <any>document.documentElement;
@@ -408,10 +379,10 @@ export class MangaPageComponent extends MangaPagePartial implements OnInit, OnDe
 
     imageFilter() {
         let filters: { [key: string]: string } = {
-            'brightness': this.settings.brightness.value + '%'
+            'brightness': this.mangaBrightness + '%'
         };
 
-        switch(this.settings.filter.value) {
+        switch(this.mangaFilter) {
             case 'invert': filters['invert'] = '100%'; break;
             case 'blue-light': 
                 filters['sepia'] = '40%';
@@ -422,7 +393,7 @@ export class MangaPageComponent extends MangaPagePartial implements OnInit, OnDe
                 filters['saturate'] = '500%';
                 filters['hue-rotate'] = '180deg';
                 break;
-            case 'custom': return this.settings.customFilter.value;
+            case 'custom': return this.mangaCustomFilter;
         }
 
         return Object.keys(filters)

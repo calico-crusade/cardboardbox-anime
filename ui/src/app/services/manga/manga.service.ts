@@ -116,6 +116,20 @@ export class MangaService extends ConfigObject {
         return filter;
     }
 
+    routerParameters(search: MangaFilter, overrideState: number) {
+        let pars: { [key: string]: any } = {};
+
+        if (search.search) pars['search'] = search.search;
+        if (search.include.length > 0) pars['include'] = search.include.join(',');
+        if (search.exclude.length > 0) pars['exclude'] = search.exclude.join(',');
+        if (!search.asc) pars['desc'] = true;
+        if (search.sort) pars['sort'] = search.sort;
+        if (search.state && overrideState < 0) pars['state'] = search.state;
+        if (search.nsfw) pars['nsfw'] = search.nsfw;
+
+        return pars;
+    }
+
     strip(req: MangaStripReq) { return this.http.download('manga/strip', req); }
 
     since(date: Date, page: number = 1, size: number = 100) {

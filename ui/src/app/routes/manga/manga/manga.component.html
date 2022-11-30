@@ -5,21 +5,18 @@
             <div class="title">
                 <a [href]="manga?.url" target="_blank">{{ manga?.title }}</a>
             </div>
-            <div class="description" *ngIf="manga?.description">
-                <div class="content" [markdown]="manga?.description"></div>
-            </div>
-        </div>
-    </header>
-    <header>
-        <div class="details">
-            <div class="tags">
-                <div class="header">Tags: </div>
-                <a class="tag" *ngFor="let tag of manga?.tags" routerLink="/manga" [queryParams]="{include: tag}">{{ tag }}</a>
-            </div>
-
             <div class="tags">
                 <div class="header">Alt Titles: </div>
                 <div class="tag secondary" *ngFor="let tag of manga?.altTitles">{{ tag }}</div>
+            </div>
+            <div class="tags">
+                <div class="header">Tags: </div>
+                <div class="tag nsfw" *ngIf="manga?.nsfw">Nsfw</div>
+                <a class="tag" *ngFor="let tag of manga?.tags" routerLink="/manga/filter/all" [queryParams]="{include: tag}">{{ tag }}</a>
+            </div>
+            <div class="description" *ngIf="manga?.description">
+                <b>Description:</b>
+                <div class="content" [markdown]="manga?.description"></div>
             </div>
         </div>
     </header>
@@ -78,7 +75,7 @@
             <cba-icon>shuffle</cba-icon>
         </button>
         <button class="float-icon" (click)="resetProgress()" *ngIf="progress" cba-tooltip="Reset Progress">
-            <cba-icon>restart_alt</cba-icon>
+            <cba-icon>delete</cba-icon>
         </button>
     </div>
 </cba-container>

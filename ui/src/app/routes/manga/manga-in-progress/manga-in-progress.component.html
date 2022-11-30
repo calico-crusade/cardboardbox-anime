@@ -2,32 +2,41 @@
     <header>
         <div class="select-list">
             <a *ngFor="let state of states" [routerLink]="state.routes" 
-                routerLinkActive="active">
+                routerLinkActive="active" [queryParams]="params">
                 {{ state.text }}<span> ({{ total }})</span>
             </a>
-            <button (click)="filter()"><cba-icon>search</cba-icon></button>
+            <button (click)="filter()" cba-tooltip="Search Filters" direction="down"><cba-icon>search</cba-icon></button>
+            <button (click)="addManga()" cba-tooltip="Add New Manga" direction="down"><cba-icon>add</cba-icon></button>
         </div>
     </header>
     <main>
         <cba-manga-card *ngFor="let manga of records" [data]="manga"></cba-manga-card>
     </main>
     <div class="float-icons">
-        <button class="float-icon" (click)="openFilters()">
+        <button class="float-icon" cba-tooltip="Switch List" (click)="openFilters()">
             <cba-icon>filter_alt</cba-icon>
         </button>
-        <button class="float-icon" (click)="filter()">
+        <button class="float-icon" cba-tooltip="Filter Results" (click)="filter()">
             <cba-icon>search</cba-icon>
+        </button>
+        <button class="float-icon" cba-tooltip="Add New Manga" (click)="addManga()">
+            <cba-icon>add</cba-icon>
         </button>
     </div>
 </cba-container>
 
 <cba-popup #popup>
+    <h2>Filter Manga To: </h2>
     <div class="links">
         <a *ngFor="let state of states" [routerLink]="state.routes" 
             routerLinkActive="active" (click)="closeFilters()">
             {{ state.text }}<span> ({{ total }})</span>
         </a>
     </div>
+</cba-popup>
+
+<cba-popup #mangaadd [background]="!loading">
+    <cba-manga-add></cba-manga-add>
 </cba-popup>
 
 <cba-manga-search-filters [override-state]="state" [route]="current?.routes || []"></cba-manga-search-filters>

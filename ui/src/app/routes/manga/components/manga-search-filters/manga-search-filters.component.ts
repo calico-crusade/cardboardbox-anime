@@ -101,19 +101,12 @@ export class MangaSearchFiltersComponent implements OnInit, OnDestroy {
     }
 
     doSearch() {
-        let pars: { [key: string]: any } = {};
-
         let { includes, excludes } = this.reverseTags();
-
-        if (this.search.search) pars['search'] = this.search.search;
-        if (includes.length > 0) pars['include'] = includes.join(',');
-        if (excludes.length > 0) pars['exclude'] = excludes.join(',');
-        if (!this.search.asc) pars['desc'] = true;
-        if (this.search.sort) pars['sort'] = this.search.sort;
-        if (this.search.state && this.overrideState < 0) pars['state'] = this.search.state;
-        if (this.search.nsfw) pars['nsfw'] = this.search.nsfw;
-
+        this.search.include = includes;
+        this.search.exclude = excludes;
         this.search.page = 1;
+
+        const pars = this.api.routerParameters(this.search, this.overrideState);
         this.router.navigate(this.routeParts, { queryParams: pars });
         this.filterInstance?.cancel();
     }

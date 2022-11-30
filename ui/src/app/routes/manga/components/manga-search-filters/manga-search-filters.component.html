@@ -16,11 +16,9 @@
         <section class="tags">
             <button *ngFor="let sort of allSorts; let i = index" [ngClass]="{'include': search.sort === i}" (click)="search.sort = i">{{ sort }}</button>
         </section>
-        <section class="toggles">
-            <div class="btn-group">
-                <button [ngClass]="{'active': search.asc}" (click)="search.asc = true">Ascending</button>
-                <button [ngClass]="{'active': !search.asc}" (click)="search.asc = false">Descending</button>
-            </div>
+        <section class="btn-group">
+            <button [ngClass]="{'active': search.asc}" (click)="search.asc = true">Ascending</button>
+            <button [ngClass]="{'active': !search.asc}" (click)="search.asc = false">Descending</button>
         </section>
 
         <ng-container *ngIf="overrideState < 0">
@@ -31,12 +29,10 @@
         </ng-container>
 
         <section><label>NSFW:</label></section>
-        <section class="toggles">
-            <div class="btn-group">
-                <button [ngClass]="{'active': !search.nsfw }" (click)="search.nsfw = 0">SFW</button>
-                <button [ngClass]="{'active': search.nsfw === 1 }" (click)="search.nsfw = 1">NSFW</button>
-                <button [ngClass]="{'active': search.nsfw === 2 }" (click)="search.nsfw = 2">Both</button>
-            </div>
+        <section class="btn-group">
+            <button [ngClass]="{'active': !search.nsfw }" (click)="search.nsfw = 0">SFW</button>
+            <button [ngClass]="{'active': search.nsfw === 1 }" (click)="search.nsfw = 1">NSFW</button>
+            <button [ngClass]="{'active': search.nsfw === 2 }" (click)="search.nsfw = 2">Both</button>
         </section>
 
         <section>

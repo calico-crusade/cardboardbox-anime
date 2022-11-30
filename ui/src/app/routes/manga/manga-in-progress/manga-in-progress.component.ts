@@ -13,15 +13,17 @@ export class MangaInProgressComponent implements OnInit, OnDestroy {
     private _subs = new SubscriptionHandler();
 
     states = [
-        { text: 'All', routes: ['/manga', 'touched', 'all'], index: 6 },
-        { text: 'Completed', routes: ['/manga', 'touched', 'completed'], index: 2 },
-        { text: 'In Progress', routes: ['/manga', 'touched', 'in-progress'], index: 3, aliases: ['inprogress'] },
-        { text: 'Bookmarked', routes: ['/manga', 'touched', 'bookmarked'], index: 4 },
-        { text: 'Favourites', routes: ['/manga', 'touched', 'favourite'], index: 1, aliases: [] },
-        { text: 'Not Touched', routes: ['/manga', 'touched', 'not' ], index: 5, aliases: [] }
+        { text: 'All', routes: ['/manga', 'filter', 'all'], index: 0 },
+        { text: 'Completed', routes: ['/manga', 'filter', 'completed'], index: 2 },
+        { text: 'In Progress', routes: ['/manga', 'filter', 'in-progress'], index: 3, aliases: ['inprogress'] },
+        { text: 'Bookmarked', routes: ['/manga', 'filter', 'bookmarked'], index: 4 },
+        { text: 'Favourites', routes: ['/manga', 'filter', 'favourite'], index: 1, aliases: [] },
+        { text: 'Not Touched', routes: ['/manga', 'filter', 'not' ], index: 5, aliases: [] }
     ];
 
     @ViewChild('popup') popup!: PopupComponent;
+    @ViewChild('mangaadd') mangaAdd!: PopupComponent;
+
     private _popIn?: PopupInstance;
 
     loading: boolean = false;
@@ -35,6 +37,8 @@ export class MangaInProgressComponent implements OnInit, OnDestroy {
 
     get current() { return this.states.find(t => t.index === this.state); }
 
+    get params() { return this.api.routerParameters(this.search, this.state); }
+
     constructor(
         private api: MangaService,
         private auth: AuthService,
@@ -43,6 +47,10 @@ export class MangaInProgressComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private pop: PopupService
     ) { }
+
+    addManga() {
+        this.pop.show(this.mangaAdd);
+    }
 
     ngOnInit() {
         this.title.setTitle('CardboardBox | In Progress Manga');

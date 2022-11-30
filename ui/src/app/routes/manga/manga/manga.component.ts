@@ -25,10 +25,6 @@ export class MangaComponent extends MangaPartial implements OnInit, OnDestroy {
         return this.chapters.find(t => t.id === this.progress?.mangaChapterId);
     }
 
-    get loggedIn() {
-        return !!this.auth.currentUser;
-    }
-
     constructor(
         private route: ActivatedRoute,
         private api: MangaService,
@@ -36,7 +32,7 @@ export class MangaComponent extends MangaPartial implements OnInit, OnDestroy {
         private title: Title,
         private auth: AuthService,
         private pop: PopupService
-    ) { super(); }
+    ) { super(auth); }
 
     ngOnInit(): void {
         this._subs

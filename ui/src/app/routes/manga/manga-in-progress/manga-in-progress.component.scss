@@ -49,6 +49,10 @@ header {
         button {
             padding: 0 calc(#{$select-list-padding} / 2);
         }
+
+        .button {
+            padding: calc(#{$select-list-padding} / 2 - 5px) calc(#{$select-list-padding} / 2);
+        }
     
         .counts {
             border: 1px solid var(--accent-2);
@@ -142,10 +146,18 @@ main {
                 margin-left: 3px;
             }
         }
+
+        &:not(:first-child) {
+            border-top: none;
+        }
     }
 }
 
-@media only screen and (max-width: 700px) {
+h2 {
+    margin: 0;
+}
+
+@media only screen and (max-width: 720px) {
     header {
         display: none;
     }

@@ -1,13 +1,13 @@
 <cba-container [loading]="loading" [error]="error">
     <section class="context">
-        <header *ngIf="!settings.hideHeader.value">
+        <header *ngIf="!mangaHideHeader">
             <button (click)="prevChap()" [disabled]="!hasPreviousChapter" cba-tooltip="Previous Chapter" direction="right">
                 <cba-icon>skip_previous</cba-icon>
             </button>
-            <button (click)="prevPage()" [disabled]="!hasPreviousPage" *ngIf="!settings.scroll.value" cba-tooltip="Previous Page" direction="right">
+            <button (click)="prevPage()" [disabled]="!hasPreviousPage" *ngIf="!mangaScroll" cba-tooltip="Previous Page" direction="right">
                 <cba-icon>navigate_before</cba-icon>
             </button>
-            <ng-container *ngIf="!settings.hideExtraButtons.value">
+            <ng-container *ngIf="!mangaHideExtraButtons">
                 <a [routerLink]="['/manga', id ]" cba-tooltip="Manga home page" direction="right">
                     <cba-icon>menu_book</cba-icon>
                 </a>
@@ -15,27 +15,26 @@
                     <cba-icon>more_vert</cba-icon>
                 </button>
             </ng-container>
-
-    
+            
             <div class="select-list">
                 <select [(ngModel)]="chapterId" (ngModelChange)="pageChange(0)">
                     <option *ngFor="let chapter of chapters" [value]="chapter.id">
                         Ch. {{ chapter.ordinal}} - {{ chapter.title }}
                     </option>
                 </select>
-                <select [(ngModel)]="page" (ngModelChange)="pageChange(page - 1)" *ngIf="!settings.scroll.value">
+                <select [(ngModel)]="page" (ngModelChange)="pageChange(page - 1)" *ngIf="!mangaScroll">
                     <option *ngFor="let page of chapter?.pages; let i = index" [value]="i + 1">
                         #{{ i + 1 }}
                     </option>
                 </select>
-                <div class="counts" *ngIf="!settings.scroll.value">
+                <div class="counts" *ngIf="!mangaScroll">
                     of {{ chapter?.pages?.length }}
                 </div>
             </div>
 
             <div class="mobile-bump"></div>
 
-            <ng-container *ngIf="!settings.hideExtraButtons.value && loggedIn">
+            <ng-container *ngIf="!mangaHideExtraButtons && loggedIn">
                 <button (click)="bookmarkPage()" cba-tooltip="Bookmark this page">
                     <cba-icon [fill]="bookmarks.indexOf(page) !== -1">bookmark</cba-icon>
                 </button>
@@ -43,16 +42,16 @@
             <button (click)="settingsShow()" cba-tooltip="Settings menu">
                 <cba-icon>settings</cba-icon>
             </button>
-            <button (click)="nextPage()" [disabled]="!hasNextPage" *ngIf="!settings.scroll.value" cba-tooltip="Next Page">
+            <button (click)="nextPage()" [disabled]="!hasNextPage" *ngIf="!mangaScroll" cba-tooltip="Next Page">
                 <cba-icon>navigate_next</cba-icon>
             </button>
             <button (click)="nextChap()" [disabled]="!hasNextChapter" cba-tooltip="Next Chapter">
                 <cba-icon>skip_next</cba-icon>
             </button>
         </header>
-        <main [ngClass]="{ 'fit-width': fitToWidth, 'natural-img-size': !fitToHeight && !fitToWidth , 'scroll': settings.scroll.value }" 
-              [class]="settings.filter.value" #scrollcont (click)="imageClick($event)">
-            <ng-container *ngIf="settings.scroll.value">
+        <main [ngClass]="{ 'fit-width': fitToWidth, 'natural-img-size': !fitToHeight && !fitToWidth , 'scroll': mangaScroll }" 
+              [class]="mangaFilter" #scrollcont (click)="imageClick($event)">
+            <ng-container *ngIf="mangaScroll">
                 <button class="scroll-button" (click)="prevChap()" [disabled]="!hasPreviousChapter" cba-tooltip="Previous Chapter" direction="down">
                     <cba-icon>skip_previous</cba-icon>
                 </button>
@@ -63,20 +62,20 @@
                     <cba-icon>skip_next</cba-icon>
                 </button>
             </ng-container>
-            <ng-container *ngIf="!settings.scroll.value">
+            <ng-container *ngIf="!mangaScroll">
                 <img [proxy]="pageImage" group="manga-page" [ngStyle]="{ 'filter': imageFilter() }" />
                 <div class="page" [style.background-image]="'url('+ proxy(pageImage) +')'" [ngStyle]="{ 'filter': imageFilter() }"></div>
                 <div class="next" [style.background-image]="'url(' + proxy(nextPageImage) + ')'"></div>
             </ng-container>
         </main>
-        <ng-container *ngIf="!settings.scroll.value && settings.progressBar.value">
-            <div class="progress-bar pages" [class]="settings.progressBar.value">
+        <ng-container *ngIf="!mangaScroll && mangaProgressBar">
+            <div class="progress-bar pages" [class]="mangaProgressBar">
                 <a class="progress" *ngFor="let p of chapter?.pages; let i = index"
                    [ngClass]="{ 'active': i <= page - 1 }"
                    (click)="pageChange(i)"></a>
             </div>
         </ng-container>
-        <div class="float-icons" *ngIf="settings.hideHeader.value">
+        <div class="float-icons" *ngIf="mangaHideHeader">
             <button class="float-icon" (click)="settingsShow()" cba-tooltip="Open the settings menu">
                 <cba-icon>settings</cba-icon>
             </button>
@@ -98,44 +97,44 @@
     <div class="settings">
         <section>
             <label>
-                <input type="checkbox" [(ngModel)]="settings.invertControls.value" />
+                <input type="checkbox" [(ngModel)]="mangaInvertControls" />
                 Invert Controls
             </label>
         </section>
         <section>
             <label>
-                <input type="checkbox" [(ngModel)]="settings.scroll.value" />
+                <input type="checkbox" [(ngModel)]="mangaScroll" />
                 Scroll through Chapter
             </label>
         </section>
         <section>
             <label>
-                <input type="checkbox" [(ngModel)]="settings.hideHeader.value" />
+                <input type="checkbox" [(ngModel)]="mangaHideHeader" />
                 Hide Header
             </label>
         </section>
         <section>
             <label>
-                <input type="checkbox" [(ngModel)]="settings.noDirectionalButton.value" />
+                <input type="checkbox" [(ngModel)]="mangaNoDirectionalButton" />
                 No Directional Buttons
             </label>
         </section>
         <section>
             <label>
-                <input type="checkbox" [(ngModel)]="settings.hideExtraButtons.value" />
+                <input type="checkbox" [(ngModel)]="mangaHideExtraButtons" />
                 Hide Extra Buttons in Header
             </label>
         </section>
         <section><label>How much to scroll on key event:</label></section>
         <section>
             <div class="select-list fill">
-                <input type="number" class="fill" step="10" [(ngModel)]="settings.scrollAmount.value" />
+                <input type="number" class="fill" step="10" [(ngModel)]="mangaScrollAmount" />
             </div>
         </section>
         <section><label>Image Size:</label></section>
         <section>
             <div class="select-list fill">
-                <select [(ngModel)]="settings.imgSize.value" class="fill">
+                <select [(ngModel)]="mangaImgSize" class="fill">
                     <option *ngFor="let opt of sizeOptions" [value]="opt">
                         {{ opt }}
                     </option>
@@ -145,31 +144,31 @@
         <section><label>Image Filters:</label></section>
         <section>
             <div class="select-list fill">
-                <select [(ngModel)]="settings.filter.value" class="fill">
+                <select [(ngModel)]="mangaFilter" class="fill">
                     <option *ngFor="let opt of filters" [value]="opt">
                         {{ opt || 'none' }}
                     </option>
                 </select>
             </div>
         </section>
-        <ng-container *ngIf="settings.filter.value === 'custom'">
+        <ng-container *ngIf="mangaFilter === 'custom'">
             <section><label>Custom Filter:</label></section>
             <section>
                 <div class="select-list fill">
-                    <input type="text" class="fill" [(ngModel)]="settings.customFilter.value" />
+                    <input type="text" class="fill" [(ngModel)]="mangaCustomFilter" />
                 </div>
             </section>
         </ng-container>
-        <section><label>Image Brightness ({{ settings.brightness.value }}%):</label></section>
+        <section><label>Image Brightness ({{ mangaBrightness }}%):</label></section>
         <section>
             <div class="select-list fill brightness">
-                <input type="range" min="1" max="100" [(ngModel)]="settings.brightness.value" />
+                <input type="range" min="1" max="100" [(ngModel)]="mangaBrightness" />
             </div>
         </section>
         <section><label>Page Progress Bar:</label></section>
         <section>
             <div class="select-list fill">
-                <select [(ngModel)]="settings.progressBar.value" class="fill">
+                <select [(ngModel)]="mangaProgressBar" class="fill">
                     <option *ngFor="let opt of progressBarOptions" [value]="opt">
                         {{ opt || 'none' }}
                     </option>
@@ -192,7 +191,7 @@
                 </button>
             </div>
         </section>
-        <ng-container *ngIf="!settings.scroll.value">
+        <ng-container *ngIf="!mangaScroll">
             <section><label>Pages:</label></section>
             <section>
                 <div class="select-list fill">

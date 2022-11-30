@@ -5,7 +5,6 @@ import { RouterModule, Routes } from "@angular/router";
 import { COMMON_IMPORTS, ComponentsModule } from "src/app/components/components.module";
 import { MangaPageComponent } from "./manga-page/manga-page.component";
 import { MangaComponent } from './manga/manga.component';
-import { MangaSelectorComponent } from './manga-selector/manga-selector.component';
 import { MangaInProgressComponent } from './manga-in-progress/manga-in-progress.component';
 import { MangaAddComponent } from './components/manga-add/manga-add.component';
 import { MangaAddRouteComponent } from './manga-add-route/manga-add-route.component';
@@ -18,20 +17,21 @@ const ROUTES: Routes = [
     {
         path: '',
         pathMatch: "full",
-        redirectTo: 'all'
+        redirectTo: 'filter/all'
     }, {
         path: 'in-progress',
         pathMatch: 'full',
-        redirectTo: 'touched/in-progress'
+        redirectTo: 'filter/in-progress'
     },{
         path: 'touched',
         pathMatch: 'full',
-        redirectTo: 'touched/in-progress'
+        redirectTo: 'filter/in-progress'
     }, {
         path: 'all',
-        component: MangaSelectorComponent
+        pathMatch: 'full',
+        redirectTo: 'filter/all'
     }, {
-        path: 'touched/:type',
+        path: 'filter/:type',
         component: MangaInProgressComponent
     }, {
         path: 'add',
@@ -61,7 +61,6 @@ const IMPORTS = [
     declarations: [
         MangaPageComponent,
         MangaComponent,
-        MangaSelectorComponent,
         MangaInProgressComponent,
         MangaAddComponent,
         MangaAddRouteComponent,
