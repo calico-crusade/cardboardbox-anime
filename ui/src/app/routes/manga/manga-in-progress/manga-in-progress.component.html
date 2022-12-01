@@ -1,4 +1,4 @@
-<cba-container [loading]="loading" [error]="error" [requires-login]="true" [ifs-enabled]="true" (ifs)="onScroll()" flex-flow="column">
+<cba-container [loading]="loading" [error]="error" [ifs-enabled]="true" (ifs)="onScroll()" flex-flow="column">
     <header>
         <div class="select-list">
             <a *ngFor="let state of states" [routerLink]="state.routes" 

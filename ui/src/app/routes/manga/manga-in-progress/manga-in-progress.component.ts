@@ -69,7 +69,7 @@ export class MangaInProgressComponent implements OnInit, OnDestroy {
         this.state = this.determineType(map ? map['type'] : undefined);
         this.search = this.api.routeFilter(this.state);
         this.records = [];
-        if (!this.auth.currentUser || this.loading) return;
+        if (this.loading) return;
 
         this.loading = true;
         this.process();
