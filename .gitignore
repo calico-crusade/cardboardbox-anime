@@ -362,3 +362,4 @@ dist/
 
 image-cache/
 /src/CardboardBox.Anime.Web/wwwroot
+creds.json

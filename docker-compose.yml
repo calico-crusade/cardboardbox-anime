@@ -37,8 +37,11 @@ services:
       - Discord:AppId=${DISCORD_APPID}
       - Discord:Token=${DISCORD_TOKEN}
       - Ai:Url=${DISCORD_AI_URL}
+      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
     depends_on:
       - cba-api
+    volumes:
+      - ./creds.json:/app/creds.json
   cba-proxy:
     image: ghcr.io/calico-crusade/cardboardbox-proxy/api:latest
     restart: always

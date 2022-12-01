@@ -3,10 +3,14 @@
 	public class EasterEggs
 	{
 		private readonly DiscordSocketClient _client;
+		private readonly IGoogleVisionService _vision;
 
-		public EasterEggs(DiscordSocketClient client)
+		public EasterEggs(
+			DiscordSocketClient client, 
+			IGoogleVisionService vision)
 		{
 			_client = client;
+			_vision = vision;
 		}
 
 		public Task Setup()
@@ -15,7 +19,12 @@
 			return Task.CompletedTask;
 		}
 
-		private async Task _client_MessageReceived(SocketMessage arg)
+		private Task _client_MessageReceived(SocketMessage arg)
+		{
+			return Task.Run(() => HandOff(arg));
+		}
+
+		public async void HandOff(SocketMessage arg)
 		{
 			var reference = new MessageReference(arg.Id, arg.Channel.Id);
 			if (arg.Author.IsBot) return;
@@ -29,11 +38,18 @@
 			if (!arg.MentionedUsers.Any(t => t.Id == _client.CurrentUser.Id))
 				return;
 
-			if (arg.Reference != null && arg.Reference.MessageId.IsSpecified)
+			if (arg.Reference == null || !arg.Reference.MessageId.IsSpecified)
+				return;
+
+			var msg = await arg.Channel.GetMessageAsync(arg.Reference.MessageId.Value);
+
+			if (arg.Content.ToLower().Contains("lookup"))
 			{
-				var msg = await arg.Channel.GetMessageAsync(arg.Reference.MessageId.Value);
-				await HandleEmotes(msg, arg, reference);
+				await HandleMangaLookup(msg, arg, reference);
+				return;
 			}
+
+			await HandleEmotes(msg, arg, reference);
 		}
 
 		public string DetermineExtension(StickerFormatType type)
@@ -43,6 +59,45 @@
 				StickerFormatType.Png => "png",
 				_ => "webp",
 			};
+		}
+
+		public async Task HandleMangaLookup(IMessage msg, SocketMessage rpl, MessageReference refe)
+		{
+			if (msg.Attachments.Count == 0)
+			{
+				await msg.Channel.SendMessageAsync("The tagged message has no attachments!", messageReference: refe);
+				return;
+			}
+
+			var img = msg.Attachments.FirstOrDefault(t => t.ContentType.StartsWith("image"));
+			if (img == null)
+			{
+				await msg.Channel.SendMessageAsync("I don't see any image attachments on the tagged message.", messageReference: refe);
+				return;
+			}
+
+			var request = await _vision.ExecuteVisionRequest(img.Url);
+			if (request == null)
+			{
+				await msg.Channel.SendMessageAsync("I couldn't find any matches for that image.", messageReference: refe);
+				return;
+			}
+
+			var bob = new EmbedBuilder()
+				.WithTitle("Manga Lookup Request")
+				.WithDescription($"My best guess is: {request.Guess} ({request.Score * 100:0.00}%)")
+				.WithImageUrl(img.Url)
+				.WithCurrentTimestamp()
+				.WithAuthor(msg.Author)
+				.WithUrl("https://cba.index-0.com/manga");
+
+			for (var i = 0; i < request.WebPages.Length && i < 5; i++)
+			{
+				var cur = request.WebPages[i];
+				bob.AddField("Result #" + (i + 1), $"[{cur.Title}]({cur.Url})");
+			}
+
+			await msg.Channel.SendMessageAsync(embed: bob.Build(), messageReference: refe);
 		}
 
 		public async Task HandleEmotes(IMessage msg, SocketMessage rpl, MessageReference refe)

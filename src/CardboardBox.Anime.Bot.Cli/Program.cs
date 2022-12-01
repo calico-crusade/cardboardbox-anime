@@ -14,6 +14,7 @@ var bot = DiscordBotBuilder.Start()
 		 .AddTransient<IAiAnimeService, AiAnimeService>()
 		 .AddTransient<IMangaApiService, MangaApiService>()
 		 .AddTransient<IMangaUtilityService, MangaUtilityService>()
+		 .AddTransient<IGoogleVisionService, GoogleVisionService>()
 		 .AddTransient<MangaUpdater>()
 		 .AddTransient<EasterEggs>();
 	})
