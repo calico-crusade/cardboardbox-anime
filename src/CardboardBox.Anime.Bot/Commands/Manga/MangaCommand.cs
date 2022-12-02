@@ -5,15 +5,20 @@
 		private readonly IComponentService _components;
 		private readonly IMangaApiService _api;
 		private readonly IMangaUtilityService _util;
+		private readonly IDiscordApiService _settings;
+
+		private const ulong CARDBOARD_BOX = 1009959054073933885;
 
 		public MangaCommand(
 			IComponentService components,
 			IMangaApiService api,
-			IMangaUtilityService util)
+			IMangaUtilityService util,
+			IDiscordApiService settings)
 		{
 			_components = components;
 			_api = api;
 			_util = util;
+			_settings = settings;
 		}
 
 		[Command("manga", "Search for a manga available on https://cba.index-0.com/manga", LongRunning = true)]
@@ -51,6 +56,13 @@
 				f.Content = "Search Text: " + search;
 				f.Components = comp;
 			});
+		}
+
+		[GuildCommand("clear-settings-cache", "Clears the settings cache", CARDBOARD_BOX)]
+		public async Task ClearCache(SocketSlashCommand cmd)
+		{
+			_settings.ClearCache();
+			await cmd.Respond("Done", ephemeral: true);
 		}
 	}
 }

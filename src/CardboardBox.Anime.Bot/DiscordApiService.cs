@@ -3,6 +3,7 @@
 	public interface IDiscordApiService
 	{
 		Task<DbDiscordGuildSettings?> Settings(ulong guildId);
+		void ClearCache();
 	}
 
 	public class DiscordApiService : IDiscordApiService
@@ -18,6 +19,8 @@
 			_api = api;
 			_config = config;
 		}
+
+		public void ClearCache() => _cache.Clear();
 
 		public Task<DbDiscordGuildSettings?> Settings(ulong guildId)
 		{
