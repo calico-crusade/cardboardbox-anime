@@ -261,12 +261,15 @@ export class DiscordService {
 
         if ('ownerId' in user) {
             const { iconId, id } = user;
-            const animated = iconId.startsWith('a_');
-            return `https://cdn.discordapp.com/icons/${id}/${iconId}.${(animated ? 'gif' : 'png')}`;
+            if (!iconId) return '/assets/error.gif';
+
+            const animated = iconId?.startsWith('a_');
+            return `https://cdn.discordapp.com/icons/${id}/${iconId || ''}.${(animated ? 'gif' : 'png')}`;
         }
 
         const { avatarId, id } = user;
+        if (!avatarId) return '/assets/error.gif';
         const animated = avatarId?.startsWith('a_') || false;
-        return `https://cdn.discordapp.com/avatars/${id}/${avatarId}.${(animated ? 'gif' : 'png')}`;
+        return `https://cdn.discordapp.com/avatars/${id}/${avatarId || ''}.${(animated ? 'gif' : 'png')}`;
     }
 }
