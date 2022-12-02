@@ -23,6 +23,9 @@ services:
       - OAuth:Secret=${OAUTH_SECRET}
       - OAuth:Key=${OAUTH_KEY}
       - Ai:Url=${DISCORD_AI_URL}
+      - Discord:PublicKey=${DISCORD_KEY}
+      - Discord:AppId=${DISCORD_APPID}
+      - Discord:Token=${DISCORD_TOKEN}
     ports:
       - 8891:80
     depends_on:
