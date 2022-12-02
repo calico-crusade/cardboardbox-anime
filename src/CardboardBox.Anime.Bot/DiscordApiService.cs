@@ -8,7 +8,7 @@
 
 	public class DiscordApiService : IDiscordApiService
 	{
-		private Dictionary<ulong, CacheItem<DbDiscordGuildSettings?>> _cache = new();
+		private static Dictionary<ulong, CacheItem<DbDiscordGuildSettings?>> _cache = new();
 		private readonly IApiService _api;
 		private readonly IConfiguration _config;
 
