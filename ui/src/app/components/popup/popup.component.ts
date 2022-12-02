@@ -12,6 +12,7 @@ export class PopupComponent {
     @Input('background') offClick: boolean = true;
     @Input('size') size: ('big' | 'normal' | 'medium') = 'normal';
     @Input('color') color: string = 'var(--color-vrv)';
+    @Input('remove-close') removeClose: boolean = false;
 
     @Output() canceled: EventEmitter<void> = new EventEmitter();
     @Output() confirmed: EventEmitter<void> = new EventEmitter();

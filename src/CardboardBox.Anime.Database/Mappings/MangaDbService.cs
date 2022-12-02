@@ -85,33 +85,6 @@ namespace CardboardBox.Anime.Database
 			_prof = prof;
 		}
 
-		public async Task<long> FakeUpsert<T>(T item, string table, List<string> queryCache,
-			Action<PropertyExpressionBuilder<T>> conflicts,
-			Action<PropertyExpressionBuilder<T>>? inserts = null,
-			Action<PropertyExpressionBuilder<T>>? updates = null) where T: DbObject
-		{
-			//Note: This is purely to combat the issue of postgres SERIAL and BIGSERIAL 
-			//		primary keys incrementing even if it was an update was preformed
-			//		because the record already exists
-			if (queryCache.Count != 3)
-			{
-				queryCache.Clear();
-				queryCache.Add(_query.Update(table, updates));
-				queryCache.Add(_query.InsertReturn(table, v => v.Id, inserts));
-				queryCache.Add(_query.Select(table, conflicts));
-			}
-
-			string update = queryCache[0], insert = queryCache[1], select = queryCache[2];
-
-			var exists = await _sql.Fetch<T>(select, item);
-			if (exists == null)
-				return await _sql.ExecuteScalar<long>(insert, item);
-
-			item.Id = exists.Id;
-			await _sql.Execute(update, item);
-			return exists.Id;
-		}
-
 		public MangaSortField[] SortFields()
 		{
 			return new[]

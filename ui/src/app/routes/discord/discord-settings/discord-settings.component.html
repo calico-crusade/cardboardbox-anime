@@ -1,0 +1,89 @@
+<cba-container [loading]="loading" [requires-admin]="true" [handle-scroll]="true">
+    <div class="table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Avatar</th>
+                    <th>Name</th>
+                    <th>Lookup</th>
+                    <th>Theft</th>
+                    <th>Manga Channel Id</th>
+                    <th>Manga NSFW</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let item of data">
+                    <td>
+                        <img [src]="item.image" />
+                    </td>
+                    <td>{{ item.guild.name }}</td>
+                    <td>{{ item.settings.enableLookup }}</td>
+                    <td>{{ item.settings.enableTheft }}</td>
+                    <td>{{ item.settings.mangaUpdatesChannel }}</td>
+                    <td>{{ item.settings.mangaUpdatesNsfw }}</td>
+                    <td>
+                        <a [routerLink]="['/discord', item.guild.id]">
+                            <cba-icon>edit</cba-icon>
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</cba-container>
+
+<cba-popup [background]="false" #popup [remove-close]="true">
+    <div class="popup" *ngIf="selected">
+        <header>
+            <h2>Edit Settings: {{ selected.guild.name }}</h2>
+            <p>{{ selected.guild.id }}</p>
+        </header>
+        <main>
+            <section>
+                <label>
+                    <input type="checkbox" [(ngModel)]="selected.settings.enableLookup" />
+                    Enable Image Lookup
+                </label>
+            </section>
+            <section>
+                <label>
+                    <input type="checkbox" [(ngModel)]="selected.settings.enableTheft" />
+                    Enable Emote / Sticker Theft
+                </label>
+            </section>
+            <section>
+                <label>
+                    <input type="checkbox" [(ngModel)]="selected.settings.mangaUpdatesNsfw" />
+                    Enable NSFW Manga Updates
+                </label>
+            </section>
+            <section>
+                <label>Manga Channel Id:</label>
+                <div class="select-list">
+                    <input type="number" [(ngModel)]="selected.settings.mangaUpdatesChannel" />
+                </div>
+            </section>
+            <section>
+                <label>Manga Ids:</label>
+                <div class="select-list">
+                    <input type="text" [(ngModel)]="selected.mangaIds" />
+                </div>
+            </section>
+            <section>
+                <label>Authed Users:</label>
+                <div class="select-list">
+                    <input type="text" [(ngModel)]="selected.authUsers" />
+                </div>
+            </section>
+        </main>
+        <footer>
+            <button cba-tooltip="Cancel" direction="up" (click)="cancel()">
+                <cba-icon>close</cba-icon>
+            </button>
+            <button cba-tooltip="Save" direction="up" (click)="save()">
+                <cba-icon>save</cba-icon>
+            </button>
+        </footer>
+    </div>
+</cba-popup>

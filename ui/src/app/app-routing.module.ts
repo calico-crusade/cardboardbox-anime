@@ -19,7 +19,10 @@ const routes: Routes = [
     }, {
         path: 'manga',
         loadChildren: () => import('./routes/manga').then(m => m.MangaModule)
-    },{
+    }, { 
+        path: 'discord', 
+        loadChildren: () => import('./routes/discord').then(m => m.DiscordModule) 
+    }, {
        path: 'admin',
        component: AdminComponent
     }, {

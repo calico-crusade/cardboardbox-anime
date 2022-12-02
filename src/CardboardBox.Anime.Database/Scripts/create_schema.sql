@@ -124,3 +124,20 @@ CREATE TABLE light_novels (
 
 CREATE UNIQUE INDEX light_novels_uiq ON light_novels (book_id, hash_id);
 
+CREATE TABLE discord_guild_settings (
+     id BIGSERIAL PRIMARY KEY,
+
+     guild_id text not null,
+     authed_users text[] not null default '{}',
+     enable_lookup boolean not null default false,
+     enable_theft boolean not null default false,
+     manga_updates_channel text,
+     manga_updates_ids text[] not null default '{}',
+     manga_updates_nsfw boolean not null default false,
+
+     created_at timestamp not null default CURRENT_TIMESTAMP,
+     updated_at timestamp not null default CURRENT_TIMESTAMP,
+     deleted_at timestamp,
+
+     CONSTRAINT uiq_discord_guild_settings_guild_id UNIQUE(guild_id)
+);

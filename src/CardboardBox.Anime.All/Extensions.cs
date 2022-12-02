@@ -11,6 +11,7 @@ namespace CardboardBox.Anime
 	using Core;
 	using Core.Models;
 	using Database;
+	using DiscordIntermediary;
 	using Funimation;
 	using HiDive;
 	using Manga;
@@ -37,6 +38,7 @@ namespace CardboardBox.Anime
 				.AddMongo<Anime, AnimeConfig>()
 				.AddTransient<IAnimeMongoService, AnimeMongoService>()
 				.AddTransient<IAiAnimeService, AiAnimeService>()
+				.AddTransient<IDiscordClient, DiscordClient>()
 				.AddManga();
 		}
 	}

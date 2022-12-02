@@ -91,5 +91,32 @@ namespace CardboardBox.Anime.Database.Generation
 			_paginateQuery ??= _query.Pagniate<T, long>(TableName, (c) => { }, t => t.Id);
 			return Paginate(_paginateQuery, null, page, size);
 		}
+
+		public async Task<long> FakeUpsert<T2>(T2 item, string table, List<string> queryCache,
+			Action<PropertyExpressionBuilder<T2>> conflicts,
+			Action<PropertyExpressionBuilder<T2>>? inserts = null,
+			Action<PropertyExpressionBuilder<T2>>? updates = null) where T2 : DbObject
+		{
+			//Note: This is purely to combat the issue of postgres SERIAL and BIGSERIAL 
+			//		primary keys incrementing even if it was an update was preformed
+			//		because the record already exists
+			if (queryCache.Count != 3)
+			{
+				queryCache.Clear();
+				queryCache.Add(_query.Update(table, updates));
+				queryCache.Add(_query.InsertReturn(table, v => v.Id, inserts));
+				queryCache.Add(_query.Select(table, conflicts));
+			}
+
+			string update = queryCache[0], insert = queryCache[1], select = queryCache[2];
+
+			var exists = await _sql.Fetch<T>(select, item);
+			if (exists == null)
+				return await _sql.ExecuteScalar<long>(insert, item);
+
+			item.Id = exists.Id;
+			await _sql.Execute(update, item);
+			return exists.Id;
+		}
 	}
 }

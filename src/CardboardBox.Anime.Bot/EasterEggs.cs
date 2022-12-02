@@ -4,13 +4,16 @@
 	{
 		private readonly DiscordSocketClient _client;
 		private readonly IGoogleVisionService _vision;
+		private readonly IDiscordApiService _api;
 
 		public EasterEggs(
 			DiscordSocketClient client, 
-			IGoogleVisionService vision)
+			IGoogleVisionService vision,
+			IDiscordApiService api)
 		{
 			_client = client;
 			_vision = vision;
+			_api = api;
 		}
 
 		public Task Setup()
@@ -63,6 +66,19 @@
 
 		public async Task HandleMangaLookup(IMessage msg, SocketMessage rpl, MessageReference refe)
 		{
+			if (rpl.Channel is not SocketGuildChannel guild)
+			{
+				await msg.Channel.SendMessageAsync("This can only be used within servers.", messageReference: refe);
+				return;
+			}
+
+			var settings = await _api.Settings(guild.Guild.Id);
+			if (settings == null || !settings.EnableLookup)
+			{
+				await msg.Channel.SendMessageAsync("This feature is not enabled within this server. Contact Cardboard to get it enabled!", messageReference: refe);
+				return;
+			}
+
 			if (msg.Attachments.Count == 0)
 			{
 				await msg.Channel.SendMessageAsync("The tagged message has no attachments!", messageReference: refe);
@@ -122,6 +138,19 @@
 
 			var compiled = bob.ToString();
 			if (string.IsNullOrEmpty(compiled)) return;
+
+			if (rpl.Channel is not SocketGuildChannel guild)
+			{
+				await msg.Channel.SendMessageAsync("This can only be used within servers.", messageReference: refe);
+				return;
+			}
+
+			var settings = await _api.Settings(guild.Guild.Id);
+			if (settings == null || !settings.EnableTheft)
+			{
+				await msg.Channel.SendMessageAsync("This feature is not enabled within this server. Contact Cardboard to get it enabled!", messageReference: refe);
+				return;
+			}
 
 			await rpl.Channel.SendMessageAsync(compiled, messageReference: refe);
 		}

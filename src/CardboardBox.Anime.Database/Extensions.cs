@@ -71,6 +71,7 @@ namespace CardboardBox.Anime.Database
 				 .ForEntity<DbListExt>()
 				 .ForEntity<DbListMap>()
 				 .ForEntity<DbListMapStripped>()
+				 .ForEntity<DbDiscordGuildSettings>()
 				 
 				 .ForEntity<DbChapter>()
 				 .ForEntity<DbBook>()
@@ -100,6 +101,7 @@ namespace CardboardBox.Anime.Database
 				.AddTransient<IListMapDbService, ListMapDbService>()
 				.AddTransient<IChapterDbService, ChapterDbService>()
 				.AddTransient<IMangaDbService, MangaDbService>()
+				.AddTransient<IDiscordGuildDbService, DiscordGuildDbService>()
 
 				.AddTransient<IAiRequestDbService, AiRequestDbService>()
 				

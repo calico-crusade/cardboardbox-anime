@@ -1,0 +1,179 @@
+$select-list-padding: 10px;
+
+.table {
+    flex: 1;
+    overflow: auto;
+    position: relative;
+
+    table {
+        min-width: 100%;
+        border-collapse: collapse;
+
+        th, td {
+            border-bottom: 1px solid var(--brd-color-accent);
+        }
+
+        th {
+            text-align: left;
+            padding: 10px 0;
+            position: sticky;
+            top: 0;
+            background-color: var(--bg-card);
+        }
+
+
+        img {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+        }
+
+        a {
+            text-decoration: none;
+        }
+    }
+}
+
+.select-list {
+    display: flex;
+    flex-flow: row;
+    margin: 5px auto;
+
+    select, input {
+        outline: none;
+        border: 1px solid var(--accent-2);
+        background-color: var(--bg-accent);
+        color: var(--text-color);
+        padding: $select-list-padding;
+
+        option {
+            background-color: transparent;
+            color: var(--text-color);
+        }
+
+        &.fill {
+            flex: 1;
+            max-width: 100%;
+        }
+    }
+
+    select { height: 36px; }
+
+    button, a {
+        outline: none;
+        border: 1px solid var(--accent-2);
+        background: var(--bg-accent);
+        padding: calc(#{$select-list-padding} / 2);
+        margin: 0;
+        color: var(--text-color);
+        line-height: 100%;
+        cursor: pointer;
+        text-decoration: none;
+        text-align: center;
+
+        &:disabled {
+            color: var(--text-color-muted);
+            cursor: not-allowed;
+        }
+    }
+
+    .counts {
+        border: 1px solid var(--accent-2);
+        background-color: var(--bg-accent);
+        padding: $select-list-padding;
+    }
+
+    :first-child {
+        border-top-left-radius: 5px;
+        border-bottom-left-radius: 5px;
+    }
+
+    :not(:first-child) {
+        border-left: none;
+    }
+
+    :last-child {
+        border-top-right-radius: 5px;
+        border-bottom-right-radius: 5px;
+    }
+
+    :not(:first-child):not(:last-child) {
+        border-radius: 0;
+    }
+
+    select, input, button, .counts {
+        margin: 0;
+    }
+
+    &.fill {
+        width: 100%;
+    }
+
+    &.brightness {
+        input {
+            width: 100%;
+            margin: auto;
+        }
+    }
+}
+
+.popup {
+    display: flex;
+    flex-flow: column;
+
+    min-width: 450px;
+    max-width: 100vw;
+    header {
+        display: flex;
+        flex-flow: row;
+
+        h2 {
+            flex: 1;
+            margin: 0;
+        }
+
+        p {
+            margin: auto 0;
+            color: var(--text-color-muted);
+        }
+    }
+
+    main {
+        section {
+            display: flex;
+            flex-flow: row;
+            margin-top: 5px;
+            label {
+                flex: 1;
+                margin: auto 0;
+            }
+
+            .select-list {
+                min-width: 300px;
+                input {
+                    width: 100%;
+                }
+            }
+        }
+    }
+
+    footer {
+        display: flex;
+        flex-flow: row;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid var(--brd-color-accent);
+
+        button {
+            border: none;
+            outline: none;
+            color: var(--text-color);
+            cursor: pointer;
+            background-color: transparent;
+
+            &:first-child {
+                margin-left: auto;
+            }
+        }
+    }
+}

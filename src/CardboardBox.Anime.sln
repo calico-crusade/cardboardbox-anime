@@ -65,7 +65,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Manga", "Manga", "{1DC133EE
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CardboardBox.Manga.MangaDex", "CardboardBox.Manga.MangaDex\CardboardBox.Manga.MangaDex.csproj", "{D0C66829-CB1D-4162-A2D8-35496D97C8D5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CardboardBox.Anime.Web", "CardboardBox.Anime.Web\CardboardBox.Anime.Web.csproj", "{AC5B646E-0F86-409A-9114-B612E8BA4D50}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CardboardBox.Anime.Web", "CardboardBox.Anime.Web\CardboardBox.Anime.Web.csproj", "{AC5B646E-0F86-409A-9114-B612E8BA4D50}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CardboardBox.Anime.DiscordIntermediary", "CardboardBox.Anime.DiscordIntermediary\CardboardBox.Anime.DiscordIntermediary.csproj", "{0549144D-90D7-4C06-A577-AFCF38CEBB79}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -153,6 +155,10 @@ Global
 		{AC5B646E-0F86-409A-9114-B612E8BA4D50}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AC5B646E-0F86-409A-9114-B612E8BA4D50}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AC5B646E-0F86-409A-9114-B612E8BA4D50}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0549144D-90D7-4C06-A577-AFCF38CEBB79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0549144D-90D7-4C06-A577-AFCF38CEBB79}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0549144D-90D7-4C06-A577-AFCF38CEBB79}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0549144D-90D7-4C06-A577-AFCF38CEBB79}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -174,6 +180,7 @@ Global
 		{341CFB74-07A7-4BE4-AAC1-C463D6D74978} = {1DC133EE-3636-480D-AB7D-91F6BE870927}
 		{D0C66829-CB1D-4162-A2D8-35496D97C8D5} = {1DC133EE-3636-480D-AB7D-91F6BE870927}
 		{AC5B646E-0F86-409A-9114-B612E8BA4D50} = {C0D571C4-DBA0-49C8-B3F5-19C040C6E267}
+		{0549144D-90D7-4C06-A577-AFCF38CEBB79} = {1910D6AC-09FF-4281-8278-11482CBE65E5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F429A525-1A87-4D64-8900-FDC4C26EE386}
