@@ -7,8 +7,7 @@ import { COMMON_IMPORTS, ComponentsModule } from '../../components/components.mo
 import { DiscordSettingsComponent } from './discord-settings/discord-settings.component';
 
 const ROUTES: Routes = [
-    { path: '', component: DiscordSettingsComponent },
-    { path: ':id', component: DiscordSettingsComponent },
+    { path: '', component: DiscordSettingsComponent }
 ];
 
 const IMPORTS = [

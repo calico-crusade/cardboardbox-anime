@@ -71,7 +71,12 @@ export class MangaService extends ConfigObject {
         return this.http.get<Filters>(`manga/filters`);
     }
 
-    search(filter: MangaFilter) {
+    search(search: MangaFilter) {
+        let filter = this.clone(search);
+
+        if (filter.nsfw === undefined && this.auth.currentUser)
+            filter.nsfw = 2;
+
         return this.http.post<PaginatedMangaProgress>(`manga/search`, filter);
     }
 
@@ -155,4 +160,6 @@ export class MangaService extends ConfigObject {
     resetProgress(mangaId: number) {
         return this.http.delete(`manga/progress/${mangaId}`);
     }
+
+    clone<T>(item: T): T { return JSON.parse(JSON.stringify(item)); }
 }

@@ -11,7 +11,7 @@
             <cba-icon>menu</cba-icon>
         </button>        
     </header>
-    <main [ngClass]="{ 'open': menuOpen }">
+    <main [ngClass]="{ 'open': menuOpen, 'pin': menuPin }">
         <div class="content">
             <router-outlet></router-outlet>
         </div>
@@ -60,7 +60,7 @@
                         <span class="title">Manga</span>
                     </button>
                     <div class="dropdown active" #manga>
-                        <a routerLink="/manga/all" routerLinkActive="active" #msactive="routerLinkActive" (click)="menuOpen = false">
+                        <a routerLink="/manga/filter/all" routerLinkActive="active" #msactive="routerLinkActive" (click)="menuOpen = false">
                             <span class="icon">
                                 <cba-icon>search</cba-icon>
                             </span>
@@ -72,7 +72,7 @@
                             </span>
                             <span class="title">Add New</span>
                         </a>
-                        <a routerLink="/manga/touched" routerLinkActive="active" #mtactive="routerLinkActive" (click)="menuOpen = false">
+                        <a routerLink="/manga/filter/in-progress" routerLinkActive="active" #mtactive="routerLinkActive" (click)="menuOpen = false">
                             <span class="icon">
                                 <cba-icon>collections_bookmark</cba-icon>
                             </span>
@@ -129,6 +129,9 @@
                     <span class="title">Login</span>
                 </button>
             </ng-container>
+            <div class="float" (click)="menuPin = !menuPin">
+                <cba-icon>push_pin</cba-icon>
+            </div>
             <div class="dropdown-menu" [ngClass]="{ 'active': liactive.isActive }">
                 <button class="menu" (click)="toggleDropdown(links)">
                     <span class="icon">
@@ -165,6 +168,7 @@
                     </a>
                 </div>
             </div>
+            
         </aside>
     </main>
 </div>

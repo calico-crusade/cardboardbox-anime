@@ -11,11 +11,12 @@ $select-list-padding: 10px;
 
         th, td {
             border-bottom: 1px solid var(--brd-color-accent);
+            padding-top: 5px;
         }
 
         th {
             text-align: left;
-            padding: 10px 0;
+            padding: 10px 5px;
             position: sticky;
             top: 0;
             background-color: var(--bg-card);
@@ -30,6 +31,7 @@ $select-list-padding: 10px;
 
         a {
             text-decoration: none;
+            cursor: pointer;
         }
     }
 }
@@ -126,16 +128,20 @@ $select-list-padding: 10px;
     header {
         display: flex;
         flex-flow: row;
+        padding-bottom: 10px;
+        margin-bottom: 10px;
 
         h2 {
             flex: 1;
             margin: 0;
+            padding-right: 10px;
         }
 
         p {
             margin: auto 0;
             color: var(--text-color-muted);
         }
+        border-bottom: 1px solid var(--brd-color-accent);
     }
 
     main {

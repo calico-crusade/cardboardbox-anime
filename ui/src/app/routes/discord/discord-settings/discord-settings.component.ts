@@ -1,5 +1,4 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
 import { PopupComponent, PopupInstance, PopupService } from 'src/app/components';
 import { AuthService, SubscriptionHandler } from 'src/app/services';
 import { DiscordGuild, DiscordService, DiscordSettings } from '../discord.service';
@@ -43,8 +42,8 @@ export class DiscordSettingsComponent implements OnInit, OnDestroy {
     settings: DiscordSettings[] = [];
     data: SettingsMap[] = [];
 
-    id?: string;
     selected?: SettingsMap;
+    original?: SettingsMap;
 
     @ViewChild('popup') popup!: PopupComponent;
 
@@ -53,8 +52,6 @@ export class DiscordSettingsComponent implements OnInit, OnDestroy {
     constructor(
         private api: DiscordService,
         private auth: AuthService,
-        private route: ActivatedRoute,
-        private router: Router,
         private pop: PopupService
     ) { }
 
@@ -62,10 +59,6 @@ export class DiscordSettingsComponent implements OnInit, OnDestroy {
         this._subs
             .subscribe(this.auth.onLogin, t => { 
                 this.process(); 
-            })
-            .subscribe(this.route.params, t => {
-                this.id = t['id'];
-                this.process();
             });
     }
 
@@ -78,16 +71,7 @@ export class DiscordSettingsComponent implements OnInit, OnDestroy {
 
         this.loading = true;
         await this.getData();
-
-        if (!this.id) {
-            this.loading = false;
-            return;
-        }
-
-        this.selected = this.data.find(t => t.guild.id === this.id);
         this.loading = false;
-
-        this._ins = this.pop.show(this.popup);
     }
 
     private async getData(force?: boolean) {
@@ -130,13 +114,34 @@ export class DiscordSettingsComponent implements OnInit, OnDestroy {
 
         this._ins?.cancel();
         this.loading = true;
-        await this.api.settings(this.selected.settings).promise;
-        this.router.navigate(['/discord']);
+        let updated = await this.api.settings(this.selected.settings).promise;
+
+        const ci = this.data.findIndex(t => t.guild.id === updated.guildId);
+        if (ci === -1) {
+            this.loading = false;
+            return;
+        }
+
+        this.data[ci] = this.selected;
         this.loading = false;
     }
 
     async cancel() {
+        this.loading = true;
         this._ins?.cancel();
-        this.router.navigate(['/discord']);
+        this.loading = false;
+    }
+
+    open(item: SettingsMap) {
+        this.selected = new SettingsMap(
+            this.clone(item.guild),
+            this.clone(item.settings),
+            item.image
+        );
+        this._ins = this.pop.show(this.popup);
+    }
+
+    clone<T>(item: T): T {
+        return JSON.parse(JSON.stringify(item));
     }
 }

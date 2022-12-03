@@ -23,7 +23,7 @@
                     <td>{{ item.settings.mangaUpdatesChannel }}</td>
                     <td>{{ item.settings.mangaUpdatesNsfw }}</td>
                     <td>
-                        <a [routerLink]="['/discord', item.guild.id]">
+                        <a (click)="open(item)">
                             <cba-icon>edit</cba-icon>
                         </a>
                     </td>

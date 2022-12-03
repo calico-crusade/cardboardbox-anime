@@ -100,6 +100,7 @@
             display: flex;
             flex-flow: column;
             transition: all 250ms;
+
             a, button {
                 border: none;
                 outline: none;
@@ -151,6 +152,13 @@
                 }
             }
 
+            .float {
+                position: absolute;
+                top: 5px;
+                right: 5px;
+                cursor: pointer;
+            }
+
             .dropdown-menu {
                 display: flex;
                 flex-flow: column;
@@ -200,6 +208,28 @@
 
             aside {
                 right: 0;
+            }
+        }
+
+        &.pin {
+            flex-flow: row-reverse;
+            .fade { display: none; }
+
+            aside {
+                position: relative;
+                right: 0;
+
+                a,button {
+                    border-left: none;
+                    border-right: 2px solid var(--bg-card);
+                    &.active {
+                        border-right: 2px solid var(--color-vrv);
+                    }
+                }
+
+                .float {
+                    transform: rotate(90deg);
+                }
             }
         }
     }
@@ -278,6 +308,20 @@
             color: var(--text-color);
             border: none; outline: none;
             cursor: pointer;
+        }
+    }
+}
+
+@media only screen and (max-width: 1050px) {
+    main {
+        aside {
+            .float { display: none; }
+        }
+
+        &.pin {
+            aside {
+                .float { display: block !important; }
+            }
         }
     }
 }
