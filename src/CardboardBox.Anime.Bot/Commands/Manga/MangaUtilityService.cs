@@ -12,10 +12,12 @@ namespace CardboardBox.Anime.Bot
 	{
 		EmbedBuilder GenerateEmbed(DbManga manga);
 		EmbedBuilder GenerateEmbed(MangaProgress manga);
-		EmbedBuilder GenerateEmbed(Manga manga);
+		EmbedBuilder GenerateEmbed(Manga manga, bool local = true);
 		EmbedBuilder GenerateShortEmbed(MangaProgress manga);
 		string GenerateRead(MangaWithChapters mangaWChap, DbMangaChapter chapter, string[] pages, int page, ulong user);
 		Task<Stream> GetImage(string imageUrl);
+		int Compute(string s, string t);
+		double DiceMatch(string string1, string string2);
 	}
 
 	public class MangaUtilityService : IMangaUtilityService
@@ -74,14 +76,14 @@ namespace CardboardBox.Anime.Bot
 			return e;
 		}
 
-		public EmbedBuilder GenerateEmbed(Manga manga)
+		public EmbedBuilder GenerateEmbed(Manga manga, bool local = true)
 		{
 			var e = new EmbedBuilder()
 				.WithTitle(manga.Title)
 				.WithDescription(manga.Description)
 				.WithColor(Color.Blue)
 				.WithThumbnailUrl(manga.Cover)
-				.WithUrl("https://cba.index-0.com/manga/" + manga.Id)
+				.WithUrl(local ? "https://cba.index-0.com/manga/" + manga.Id : "https://mangadex.org/title/" + manga.Id)
 				.WithCurrentTimestamp()
 				.WithFooter("CardboardBox | Manga")
 				.AddOptField("Tags", string.Join(", ", manga.Tags))
@@ -125,6 +127,79 @@ namespace CardboardBox.Anime.Bot
 			await image.SaveAsJpegAsync(output);
 			output.Position = 0;
 			return output;
+		}
+
+		public int Compute(string s, string t)
+		{
+			if (string.IsNullOrEmpty(s))
+			{
+				if (string.IsNullOrEmpty(t))
+					return 0;
+				return t.Length;
+			}
+
+			if (string.IsNullOrEmpty(t))
+			{
+				return s.Length;
+			}
+
+			int n = s.Length;
+			int m = t.Length;
+			int[,] d = new int[n + 1, m + 1];
+
+			// initialize the top and right of the table to 0, 1, 2, ...
+			for (int i = 0; i <= n; d[i, 0] = i++) ;
+			for (int j = 1; j <= m; d[0, j] = j++) ;
+
+			for (int i = 1; i <= n; i++)
+			{
+				for (int j = 1; j <= m; j++)
+				{
+					int cost = (t[j - 1] == s[i - 1]) ? 0 : 1;
+					int min1 = d[i - 1, j] + 1;
+					int min2 = d[i, j - 1] + 1;
+					int min3 = d[i - 1, j - 1] + cost;
+					d[i, j] = Math.Min(Math.Min(min1, min2), min3);
+				}
+			}
+			return d[n, m];
+		}
+
+		public double DiceMatch(string string1, string string2)
+		{
+			if (string.IsNullOrEmpty(string1) || string.IsNullOrEmpty(string2))
+				return 0;
+
+			if (string1 == string2)
+				return 1;
+
+			int strlen1 = string1.Length;
+			int strlen2 = string2.Length;
+
+			if (strlen1 < 2 || strlen2 < 2)
+				return 0;
+
+			int length1 = strlen1 - 1;
+			int length2 = strlen2 - 1;
+
+			double matches = 0;
+			int i = 0;
+			int j = 0;
+
+			while (i < length1 && j < length2)
+			{
+				string a = string1.Substring(i, 2);
+				string b = string2.Substring(j, 2);
+				int cmp = string.Compare(a, b);
+
+				if (cmp == 0)
+					matches += 2;
+
+				++i;
+				++j;
+			}
+
+			return matches / (length1 + length2);
 		}
 	}
 }

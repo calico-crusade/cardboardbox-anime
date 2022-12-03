@@ -1,5 +1,8 @@
-﻿namespace CardboardBox.Anime.Bot
+﻿using F23.StringSimilarity;
+
+namespace CardboardBox.Anime.Bot
 {
+	using Manga;
 	using Manga.Providers;
 	using Services;
 
@@ -145,18 +148,50 @@
 				var search = await _mangadex.Search(modTitle);
 				if (search == null || search.Length == 0) continue;
 
-				var manga = search.First();
+				var sort = Rank(modTitle, search)
+					.OrderByDescending(t => t.Compute)
+					.ToArray();
+				var (compute, main, manga) = sort.First();
 
 				await mod.ModifyAsync(t =>
 				{
-					t.Content = $"Here is a manga I found on Mangadex that matches.\r\nThe title I found was: \"{current}\" from: {url}";
-					t.Embed = _util.GenerateEmbed(manga).Build();
+					t.Content = $"Here you go:\r\nThe title I found was: \"{current}\"\r\nI found it here: {url}\r\nCompute Cof: {compute:0.0}";
+					t.Embed = _util.GenerateEmbed(manga, false).Build();
 				});
 
 				return true;
 			}
 
 			return false;
+		}
+
+		public IEnumerable<(double Compute, bool Main, Manga Manga)> Rank(string title, Manga[] manga)
+		{
+			var check = new NormalizedLevenshtein();
+
+			foreach (var m in manga)
+			{
+				var mt = m.Title.ToLower();
+				if (mt == title)
+				{
+					yield return (1.2, true, m);
+					continue;
+				}
+
+				yield return (check.Distance(title, mt), true, m);
+
+				foreach (var t in m.AltTitles)
+				{
+					var mtt = t.ToLower();
+					if (mtt == title)
+					{
+						yield return (1.1, false, m);
+						continue;
+					}
+
+					yield return (check.Distance(title, mtt), false, m);
+				}
+			}
 		}
 
 		public string PurgeCharacters(string title)

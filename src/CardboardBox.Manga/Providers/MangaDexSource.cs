@@ -92,7 +92,18 @@
 			};
 		}
 
-		public Task<Manga[]> Search(string title) => Search(new MangaFilter { Title = title });
+		public Task<Manga[]> Search(string title)
+		{
+			var filter = new MangaFilter
+			{
+				Title = title,
+				Order = new()
+				{
+					[MangaFilter.OrderKey.relevance] = MangaFilter.OrderValue.asc
+				}
+			};
+			return Search(filter);
+		}
 
 		public async Task<Manga[]> Search(MangaFilter filter)
 		{
