@@ -50,7 +50,6 @@
 				.ToListAsync();
 
 			var title = DetermineTitle(manga);
-
 			var nsfwRatings = new[] { "erotica", "suggestive" };
 
 			return new Manga
@@ -65,13 +64,28 @@
 				Tags = manga.Data
 					.Attributes
 					.Tags
-					.Select(t => 
+					.Select(t =>
 						t.Attributes
 						 .Name
 						 .PreferedOrFirst(t => t.Key == DEFAULT_LANG)
 						 .Value).ToArray(),
 				Chapters = chapters,
-				Nsfw = nsfwRatings.Contains(manga.Data.Attributes.ContentRating)
+				Nsfw = nsfwRatings.Contains(manga.Data.Attributes.ContentRating),
+				Attributes = new[] 
+					{ 
+						new MangaAttribute("Content Rating", manga.Data.Attributes.ContentRating),
+						new("Original Language", manga.Data.Attributes.OriginalLanguage),
+						new("Status", manga.Data.Attributes.Status),
+						new("Publication State", manga.Data.Attributes.State)
+					}
+					.Concat(manga.Data.Relationships.Select(t =>  t switch
+					{
+						PersonRelationship person => new MangaAttribute(person.Type == "author" ? "Author" : "Artist", person.Attributes.Name),
+						ScanlationGroupRelationship group => new MangaAttribute("Scanlation Group", group.Attributes.Name),
+						_ => new("", "")
+					})
+					.Where(t => !string.IsNullOrEmpty(t.Name)))
+					.ToList()
 			};
 		}
 

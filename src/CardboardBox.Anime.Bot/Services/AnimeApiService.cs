@@ -1,4 +1,4 @@
-﻿namespace CardboardBox.Anime.Bot
+﻿namespace CardboardBox.Anime.Bot.Services
 {
 	public interface IAnimeApiService
 	{

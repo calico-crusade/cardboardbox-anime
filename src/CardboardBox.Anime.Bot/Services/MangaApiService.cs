@@ -1,7 +1,8 @@
 ﻿using System.Net;
 
-namespace CardboardBox.Anime.Bot
+namespace CardboardBox.Anime.Bot.Services
 {
+	using CardboardBox;
 	using Core.Models;
 	using Database;
 	using Manga;
@@ -29,7 +30,7 @@ namespace CardboardBox.Anime.Bot
 		public string ApiUrl => _config["CBA:Url"];
 
 		public MangaApiService(
-			IConfiguration config, 
+			IConfiguration config,
 			IApiService api)
 		{
 			_config = config;
@@ -60,7 +61,7 @@ namespace CardboardBox.Anime.Bot
 			if (!_pagesCache.ContainsKey(key))
 				_pagesCache.Add(key, new CacheItem<string[]>(async () => await GetRawPages(mangaId, chapterId)));
 
-			return (await _pagesCache[key].Get()) ?? Array.Empty<string>();
+			return await _pagesCache[key].Get() ?? Array.Empty<string>();
 		}
 
 		public async Task<string[]> GetRawPages(long mangaId, long chapterId)

@@ -14,6 +14,12 @@
                 <div class="tag nsfw" *ngIf="manga?.nsfw">Nsfw</div>
                 <a class="tag" *ngFor="let tag of manga?.tags" routerLink="/manga/filter/all" [queryParams]="{include: tag}">{{ tag }}</a>
             </div>
+            <div class="attribution">
+                <div class="value">
+                    <a [href]="manga?.url" target="_blank"><b>Source</b>: {{ manga?.provider }}</a>
+                    <span *ngFor="let atr of manga?.attributes"><b>{{ atr.name }}</b>: {{ atr.value }}</span>
+                </div>
+            </div>
             <div class="description" *ngIf="manga?.description">
                 <b>Description:</b>
                 <div class="content" [markdown]="manga?.description"></div>

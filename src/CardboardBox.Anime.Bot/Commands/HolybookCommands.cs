@@ -2,6 +2,7 @@
 using CardboardBox.Anime.Holybooks;
 using Maturity = CardboardBox.Anime.Core.Models.AnimeFilter.MatureType;
 using DiscordClient = Discord.WebSocket.DiscordSocketClient;
+using CardboardBox.Anime.Bot.Services;
 
 namespace CardboardBox.Anime.Bot.Commands
 {

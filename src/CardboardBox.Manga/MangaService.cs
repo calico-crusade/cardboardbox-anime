@@ -121,7 +121,10 @@
 				Tags = manga.Tags,
 				Description = manga.Description,
 				AltTitles = manga.AltTitles,
-				Nsfw = manga.Nsfw
+				Nsfw = manga.Nsfw,
+				Attributes = manga.Attributes
+					.Select(t => new DbMangaAttribute(t.Name, t.Value))
+					.ToArray()
 			};
 			m.Id = await _db.Upsert(m);
 			return m;

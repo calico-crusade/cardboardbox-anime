@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using CardboardBox.Anime.Bot.Services;
+using System.Net;
 
 namespace CardboardBox.Anime.Bot.Commands
 {

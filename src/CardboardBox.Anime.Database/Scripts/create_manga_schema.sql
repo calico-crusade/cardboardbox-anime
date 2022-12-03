@@ -1,4 +1,9 @@
-﻿CREATE TABLE manga (
+﻿CREATE TYPE manga_attribute AS (
+    name text,
+    value text
+);
+
+CREATE TABLE manga (
     id BIGSERIAL PRIMARY KEY,
 
     title text not null,
@@ -10,6 +15,8 @@
     alt_titles text[] not null default '{}',
     description text not null,
     nsfw boolean not null default False,
+
+    attributes manga_attribute[] not null default '{}',
 
     created_at timestamp not null default CURRENT_TIMESTAMP,
     updated_at timestamp not null default CURRENT_TIMESTAMP,

@@ -14,6 +14,11 @@ export interface Manga {
     altTitles: string[];
     description: string;
     nsfw: boolean;
+
+    attributes: {
+        name: string;
+        value: string;
+    }[];
 }
 
 export interface MangaChapter {

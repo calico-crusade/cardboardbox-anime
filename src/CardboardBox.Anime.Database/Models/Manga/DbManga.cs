@@ -31,5 +31,8 @@
 
 		[JsonPropertyName("nsfw")]
 		public bool Nsfw { get; set; } = false;
+
+		[JsonPropertyName("attributes")]
+		public DbMangaAttribute[] Attributes { get; set; } = Array.Empty<DbMangaAttribute>();
 	}
 }

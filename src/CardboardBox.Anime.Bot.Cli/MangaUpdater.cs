@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using CardboardBox.Anime.Bot.Services;
+using Microsoft.Extensions.Logging;
 
 namespace CardboardBox.Anime.Bot.Cli
 {

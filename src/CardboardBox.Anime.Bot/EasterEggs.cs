@@ -1,4 +1,6 @@
-﻿namespace CardboardBox.Anime.Bot
+﻿using CardboardBox.Anime.Bot.Services;
+
+namespace CardboardBox.Anime.Bot
 {
 	public class EasterEggs
 	{

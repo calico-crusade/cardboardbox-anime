@@ -1,4 +1,6 @@
-﻿namespace CardboardBox.Anime.Bot.Commands
+﻿using CardboardBox.Anime.Bot.Services;
+
+namespace CardboardBox.Anime.Bot.Commands
 {
 	public class MangaCommand
 	{

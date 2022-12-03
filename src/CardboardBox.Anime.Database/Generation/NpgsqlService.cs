@@ -25,6 +25,7 @@ namespace CardboardBox.Anime.Database.Generation
 
 			con.TypeMapper.MapComposite<DbImage>("image");
 			con.TypeMapper.MapComposite<DbExtension>("ext");
+			con.TypeMapper.MapComposite<DbMangaAttribute>("manga_attribute");
 
 			return con;
 		}

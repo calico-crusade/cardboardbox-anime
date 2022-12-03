@@ -2,6 +2,7 @@
 using CardboardBox.Anime.Bot;
 using CardboardBox.Anime.Bot.Cli;
 using CardboardBox.Anime.Bot.Commands;
+using CardboardBox.Anime.Bot.Services;
 using CardboardBox.Anime.Holybooks;
 using CardboardBox.Discord;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,7 +16,7 @@ var bot = DiscordBotBuilder.Start()
 		 .AddTransient<IMangaApiService, MangaApiService>()
 		 .AddTransient<IMangaUtilityService, MangaUtilityService>()
 		 .AddTransient<IGoogleVisionService, GoogleVisionService>()
-		 .AddTransient<IDiscordApiService, DiscordApiService>()
+		 .AddSingleton<IDiscordApiService, DiscordApiService>()
 		 .AddTransient<MangaUpdater>()
 		 .AddTransient<EasterEggs>();
 	})

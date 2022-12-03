@@ -1,7 +1,7 @@
 ﻿using Google.Cloud.Vision.V1;
 using Image = Google.Cloud.Vision.V1.Image;
 
-namespace CardboardBox.Anime.Bot
+namespace CardboardBox.Anime.Bot.Services
 {
 	public interface IGoogleVisionService
 	{

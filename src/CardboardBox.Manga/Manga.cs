@@ -31,5 +31,25 @@
 
 		[JsonPropertyName("nsfw"), BsonElement("nsfw")]
 		public bool Nsfw { get; set; } = false;
+
+		[JsonPropertyName("attributes"), BsonElement("attributes")]
+		public List<MangaAttribute> Attributes { get; set; } = new();
+	}
+
+	public class MangaAttribute
+	{
+		[JsonPropertyName("name")]
+		public string Name { get; set; } = string.Empty;
+
+		[JsonPropertyName("value")]
+		public string Value { get; set; } = string.Empty;
+
+		public MangaAttribute() { }
+
+		public MangaAttribute(string name, string value)
+		{
+			Name = name;
+			Value = value;
+		}
 	}
 }

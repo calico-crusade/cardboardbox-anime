@@ -30,25 +30,25 @@ header {
         }
 
         .attribution {
-            display: flex;
-            flex-flow: row;
+            display: inline-block;
 
             .type {
                 font-weight: bold;
+                display: inline-block;
+                margin-right: 5px;
             }
 
             .value {
-                margin-left: 5px;
+                display: inline;
 
-                span {
-                    margin-left: 5px;
-                
-                    &:not(:last-child)::after { content: ','; }
+                span, a {
+                    text-transform: capitalize;
+                    &:not(:last-child)::after { content: ', '; }
                 }
 
                 a {
                     color: var(--text-color);
-                    text-decoration: dashed;
+                    text-decoration: none;
                 }
             }
         }
