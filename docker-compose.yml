@@ -45,7 +45,7 @@ services:
       - cba-api
     volumes:
       - ./creds.json:/app/creds.json
-      - ./persistence.json:/app/persistence.json
+      - ./persist:/app/persist
   cba-proxy:
     image: ghcr.io/calico-crusade/cardboardbox-proxy/api:latest
     restart: always

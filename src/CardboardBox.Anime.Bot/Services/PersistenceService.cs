@@ -7,18 +7,24 @@
 
 	public class PersistenceService : IPersistenceService
 	{
+		private const string DIR = "persist";
 		private const string FILE_PATH = "persistence.json";
 
 		public async Task<IPersistence> Load()
 		{
-			if (!File.Exists(FILE_PATH))
+			if (!Directory.Exists(DIR))
+				Directory.CreateDirectory(DIR);
+
+			var path = Path.Combine(DIR, FILE_PATH);
+
+			if (!File.Exists(path))
 			{
 				var res = new Persistence();
 				res.Saver = () => Save(res);
 				return res;
 			}
 
-			using var io = File.OpenRead(FILE_PATH);
+			using var io = File.OpenRead(path);
 			var results = await JsonSerializer.DeserializeAsync<Persistence>(io) ?? new();
 			results.Saver = () => Save(results);
 			return results;
