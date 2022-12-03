@@ -15,7 +15,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
     user?: AuthUser;
     menuOpen = false;
-    menuPin = true;
+    menuPin = false;
     title?: string;
     showTitle: boolean = true;
     updated: MangaProgressData[] = [];
