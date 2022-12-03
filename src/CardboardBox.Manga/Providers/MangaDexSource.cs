@@ -3,7 +3,12 @@
 	using MangaDex;
 	using MangaDex.Models;
 
-	public interface IMangaDexSource : IMangaSource { }
+	public interface IMangaDexSource : IMangaSource 
+	{
+		Task<Manga[]> Search(string title);
+
+		Task<Manga[]> Search(MangaFilter filter);
+	}
 
 	public class MangaDexSource : IMangaDexSource
 	{
@@ -37,17 +42,15 @@
 			};
 		}
 
-		public async Task<Manga?> Manga(string id)
+		public async Task<Manga> Convert(MangaDexManga manga, bool getChaps = true)
 		{
-			var manga = await _mangadex.Manga(id);
-			if (manga == null) return null;
-
-			var coverFile = (manga.Data.Relationships.FirstOrDefault(t => t is CoverArtRelationship) as CoverArtRelationship)?.Attributes?.FileName;
+			var id = manga.Id;
+			var coverFile = (manga.Relationships.FirstOrDefault(t => t is CoverArtRelationship) as CoverArtRelationship)?.Attributes?.FileName;
 			var coverUrl = $"{HomeUrl}/covers/{id}/{coverFile}";
 
-			var chapters = await GetChapters(id, DEFAULT_LANG)
+			var chapters = getChaps ? await GetChapters(id, DEFAULT_LANG)
 				.OrderBy(t => t.Number)
-				.ToListAsync();
+				.ToListAsync() : new List<MangaChapter>();
 
 			var title = DetermineTitle(manga);
 			var nsfwRatings = new[] { "erotica", "suggestive" };
@@ -59,9 +62,9 @@
 				Provider = Provider,
 				HomePage = $"{HomeUrl}/title/{id}",
 				Cover = coverUrl,
-				Description = manga.Data.Attributes.Description.PreferedOrFirst(t => t.Key == DEFAULT_LANG).Value,
-				AltTitles = manga.Data.Attributes.AltTitles.SelectMany(t => t.Values).Distinct().ToArray(),
-				Tags = manga.Data
+				Description = manga.Attributes.Description.PreferedOrFirst(t => t.Key == DEFAULT_LANG).Value,
+				AltTitles = manga.Attributes.AltTitles.SelectMany(t => t.Values).Distinct().ToArray(),
+				Tags = manga
 					.Attributes
 					.Tags
 					.Select(t =>
@@ -70,15 +73,15 @@
 						 .PreferedOrFirst(t => t.Key == DEFAULT_LANG)
 						 .Value).ToArray(),
 				Chapters = chapters,
-				Nsfw = nsfwRatings.Contains(manga.Data.Attributes.ContentRating),
-				Attributes = new[] 
-					{ 
-						new MangaAttribute("Content Rating", manga.Data.Attributes.ContentRating),
-						new("Original Language", manga.Data.Attributes.OriginalLanguage),
-						new("Status", manga.Data.Attributes.Status),
-						new("Publication State", manga.Data.Attributes.State)
+				Nsfw = nsfwRatings.Contains(manga.Attributes.ContentRating),
+				Attributes = new[]
+					{
+						new MangaAttribute("Content Rating", manga.Attributes.ContentRating),
+						new("Original Language", manga.Attributes.OriginalLanguage),
+						new("Status", manga.Attributes.Status),
+						new("Publication State", manga.Attributes.State)
 					}
-					.Concat(manga.Data.Relationships.Select(t =>  t switch
+					.Concat(manga.Relationships.Select(t => t switch
 					{
 						PersonRelationship person => new MangaAttribute(person.Type == "author" ? "Author" : "Artist", person.Attributes.Name),
 						ScanlationGroupRelationship group => new MangaAttribute("Scanlation Group", group.Attributes.Name),
@@ -89,12 +92,31 @@
 			};
 		}
 
-		public string DetermineTitle(MangaDexRoot<MangaDexManga> manga)
+		public Task<Manga[]> Search(string title) => Search(new MangaFilter { Title = title });
+
+		public async Task<Manga[]> Search(MangaFilter filter)
 		{
-			var title = manga.Data.Attributes.Title.PreferedOrFirst(t => t.Key.ToLower() == DEFAULT_LANG);
+			var results = await _mangadex.Search(filter);
+			if (results == null || results.Data == null || results.Data.Count == 0) 
+				return Array.Empty<Manga>();
+
+			return await results.Data.Select(t => Convert(t)).WhenAll();
+		}
+
+		public async Task<Manga?> Manga(string id)
+		{
+			var manga = await _mangadex.Manga(id);
+			if (manga == null || manga.Data == null) return null;
+
+			return await Convert(manga.Data);
+		}
+
+		public string DetermineTitle(MangaDexManga manga)
+		{
+			var title = manga.Attributes.Title.PreferedOrFirst(t => t.Key.ToLower() == DEFAULT_LANG);
 			if (title.Key.ToLower() == DEFAULT_LANG) return title.Value;
 
-			var prefered = manga.Data.Attributes.AltTitles.FirstOrDefault(t => t.Keys.Contains(DEFAULT_LANG));
+			var prefered = manga.Attributes.AltTitles.FirstOrDefault(t => t.Keys.Contains(DEFAULT_LANG));
 			if (prefered != null)
 				return prefered.PreferedOrFirst(t => t.Key.ToLower() == DEFAULT_LANG).Value;
 

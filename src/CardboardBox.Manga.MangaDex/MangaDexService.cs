@@ -13,6 +13,10 @@
 		Task<MangaDexRoot<MangaDexChapter>?> Chapter(string id, string[]? includes = null);
 
 		Task<MangaDexPages?> Pages(string id);
+
+		Task<MangaDexCollection<MangaDexManga>?> Search(MangaFilter filter);
+
+		Task<MangaDexCollection<MangaDexManga>?> Search(string title);
 	}
 
 	public class MangaDexService : IMangaDexService
@@ -22,6 +26,18 @@
 		public MangaDexService(IApiService api)
 		{
 			_api = api;
+		}
+
+		public Task<MangaDexCollection<MangaDexManga>?> Search(string title)
+		{
+			var filter = new MangaFilter { Title = title };
+			return Search(filter);
+		}
+
+		public Task<MangaDexCollection<MangaDexManga>?> Search(MangaFilter filter)
+		{
+			var url = $"https://api.mangadex.org/manga?{filter.BuildQuery()}";
+			return _api.Get<MangaDexCollection<MangaDexManga>>(url);
 		}
 
 		public Task<MangaDexRoot<MangaDexManga>?> Manga(string id, string[]? includes = null)

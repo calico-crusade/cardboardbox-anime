@@ -6,10 +6,13 @@ using Color = Discord.Color;
 
 namespace CardboardBox.Anime.Bot
 {
+	using Manga;
+
 	public interface IMangaUtilityService
 	{
 		EmbedBuilder GenerateEmbed(DbManga manga);
 		EmbedBuilder GenerateEmbed(MangaProgress manga);
+		EmbedBuilder GenerateEmbed(Manga manga);
 		EmbedBuilder GenerateShortEmbed(MangaProgress manga);
 		string GenerateRead(MangaWithChapters mangaWChap, DbMangaChapter chapter, string[] pages, int page, ulong user);
 		Task<Stream> GetImage(string imageUrl);
@@ -49,7 +52,6 @@ namespace CardboardBox.Anime.Bot
 		public EmbedBuilder GenerateShortEmbed(MangaProgress progress)
 		{
 			var manga = progress.Manga;
-			var chapter = progress.Chapter;
 			var mangaCreated = (manga.CreatedAt ?? DateTime.Now).AddMinutes(1);
 			var latestChapter = progress.Stats.LatestChapter ?? DateTime.Now;
 			var isNew = latestChapter < mangaCreated;
@@ -65,6 +67,25 @@ namespace CardboardBox.Anime.Bot
 				.AddOptField("Tags", string.Join(", ", manga.Tags))
 				.AddOptField("Source", $"[{manga.Provider}]({manga.Url})", true)
 				.AddOptField("Update Type", isNew ? "New Upload" : "New Chapter", true);
+
+			if (manga.Nsfw)
+				e.AddOptField("NSFW", "yes", true);
+
+			return e;
+		}
+
+		public EmbedBuilder GenerateEmbed(Manga manga)
+		{
+			var e = new EmbedBuilder()
+				.WithTitle(manga.Title)
+				.WithDescription(manga.Description)
+				.WithColor(Color.Blue)
+				.WithThumbnailUrl(manga.Cover)
+				.WithUrl("https://cba.index-0.com/manga/" + manga.Id)
+				.WithCurrentTimestamp()
+				.WithFooter("CardboardBox | Manga")
+				.AddOptField("Tags", string.Join(", ", manga.Tags))
+				.AddOptField("Source", $"[{manga.Provider}]({manga.HomePage})", true);
 
 			if (manga.Nsfw)
 				e.AddOptField("NSFW", "yes", true);

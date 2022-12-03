@@ -9,12 +9,28 @@
 	{
 		public List<(string key, string value)> Parameters { get; } = new();
 
+		public FilterBuilder Add(string key, string? value)
+		{
+			if (string.IsNullOrEmpty(value)) return this;
+
+			Parameters.Add((key, value));
+			return this;
+		}
+
 		public FilterBuilder Add(string key, string[] items)
 		{
 			foreach(var item in items)
 				Parameters.Add((key + "[]", item));
 
 			return this;
+		}
+
+		public FilterBuilder Add<T>(string key, T[] items)
+		{
+			return Add(key, items
+				.Select(t => t?.ToString() ?? "")
+				.Where(t => !string.IsNullOrEmpty(t))
+				.ToArray());
 		}
 
 		public FilterBuilder Add(string key, DateTime? date)
@@ -65,6 +81,17 @@
 				Parameters.Add((type, v.ToString() ?? ""));
 			}
 
+			return this;
+		}
+
+		public FilterBuilder Add<T>(string key, T? item) where T: struct, IConvertible
+		{
+			if (!typeof(T).IsEnum) throw new ArgumentException("Type must be an enum", nameof(item));
+
+			var value = item?.ToString();
+			if (string.IsNullOrEmpty(value)) return this;
+
+			Parameters.Add((key, value));
 			return this;
 		}
 

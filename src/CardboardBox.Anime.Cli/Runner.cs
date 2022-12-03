@@ -682,9 +682,9 @@ namespace CardboardBox.Anime.Cli
 
 		public async Task TestMangaDex()
 		{
-			var item = await _mangaDex.Pages("341dbe2f-4b4d-468d-91b5-367441a9feb2");
+			var item = await _mangaDex.Search("sonna hiroki");
 
-			Console.WriteLine($"Manga: {item?.Images?.Length}");
+			Console.WriteLine($"Manga: {item?.Data?.Count}");
 		}
 
 		public async Task TestMangaClash()

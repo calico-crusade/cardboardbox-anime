@@ -4,6 +4,7 @@ using CardboardBox.Anime.Bot.Commands;
 using CardboardBox.Anime.Bot.Services;
 using CardboardBox.Anime.Holybooks;
 using CardboardBox.Discord;
+using CardboardBox.Manga;
 using Microsoft.Extensions.DependencyInjection;
 
 var bot = DiscordBotBuilder.Start()
@@ -18,7 +19,8 @@ var bot = DiscordBotBuilder.Start()
 		 .AddSingleton<IDiscordApiService, DiscordApiService>()
 		 .AddTransient<IPersistenceService, PersistenceService>()
 		 .AddTransient<MangaUpdater>()
-		 .AddTransient<EasterEggs>();
+		 .AddTransient<EasterEggs>()
+		 .AddManga();
 	})
 	.WithSlashCommands(c =>
 	{

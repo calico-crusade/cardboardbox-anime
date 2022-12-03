@@ -1,5 +1,6 @@
 ﻿namespace CardboardBox.Anime.Bot
 {
+	using Manga.Providers;
 	using Services;
 
 	public class EasterEggs
@@ -7,15 +8,21 @@
 		private readonly DiscordSocketClient _client;
 		private readonly IGoogleVisionService _vision;
 		private readonly IDiscordApiService _api;
+		private readonly IMangaDexSource _mangadex;
+		private readonly IMangaUtilityService _util;
 
 		public EasterEggs(
 			DiscordSocketClient client, 
 			IGoogleVisionService vision,
-			IDiscordApiService api)
+			IDiscordApiService api,
+			IMangaDexSource mangadex,
+			IMangaUtilityService util)
 		{
 			_client = client;
 			_vision = vision;
 			_api = api;
+			_mangadex = mangadex;
+			_util = util;
 		}
 
 		public Task Setup()
@@ -94,12 +101,17 @@
 				return;
 			}
 
+			var mod = await msg.Channel.SendMessageAsync("<a:loading:1048471999065903244> Processing your request...", messageReference: refe);
+
 			var request = await _vision.ExecuteVisionRequest(img.Url);
 			if (request == null)
 			{
-				await msg.Channel.SendMessageAsync("I couldn't find any matches for that image.", messageReference: refe);
+				await mod.ModifyAsync(t => t.Content = "I couldn't find any matches for that image.");
 				return;
 			}
+
+			if (await CheckForMangaDex(request, mod))
+				return;
 
 			var bob = new EmbedBuilder()
 				.WithTitle("Manga Lookup Request")
@@ -115,7 +127,44 @@
 				bob.AddField("Result #" + (i + 1), $"[{cur.Title}]({cur.Url})");
 			}
 
-			await msg.Channel.SendMessageAsync(embed: bob.Build(), messageReference: refe);
+			await mod.ModifyAsync(t =>
+			{
+				t.Content = "Here are your lookup results: ";
+				t.Embed = bob.Build();
+			});
+		}
+
+		public async Task<bool> CheckForMangaDex(VisionResults results, IUserMessage mod)
+		{
+			for(var i = 0; i < results.WebPages.Length && i < 5; i++)
+			{
+				var (url, current) = results.WebPages[i];
+				var modTitle = PurgeCharacters(current);
+				if (string.IsNullOrEmpty(modTitle)) continue;
+
+				var search = await _mangadex.Search(modTitle);
+				if (search == null || search.Length == 0) continue;
+
+				var manga = search.First();
+
+				await mod.ModifyAsync(t =>
+				{
+					t.Content = $"Here is a manga I found on Mangadex that matches.\r\nThe title I found was: \"{current}\" from: {url}";
+					t.Embed = _util.GenerateEmbed(manga).Build();
+				});
+
+				return true;
+			}
+
+			return false;
+		}
+
+		public string PurgeCharacters(string title)
+		{
+			title = title.ToLower();
+			if (title.Contains("chapter")) title = title.Split(new[] { "chapter", "-", ":" }, StringSplitOptions.RemoveEmptyEntries).First();
+
+			return Regex.Replace(title, "[^a-zA-Z0-9 ]", string.Empty);
 		}
 
 		public async Task HandleEmotes(IMessage msg, SocketMessage rpl, MessageReference refe)
