@@ -2,7 +2,6 @@
 
 namespace CardboardBox.Anime.Bot.Services
 {
-	using CardboardBox;
 	using Core.Models;
 	using Database;
 	using Manga;
@@ -88,7 +87,7 @@ namespace CardboardBox.Anime.Bot.Services
 
 		public Task<PaginatedResult<MangaProgress>?> Since(DateTime date, int page = 1, int size = 100)
 		{
-			return _api.Get<PaginatedResult<MangaProgress>>($"{ApiUrl}/manga/since/{date}?page={page}&size={size}");
+			return _api.Get<PaginatedResult<MangaProgress>>($"{ApiUrl}/manga/since/{date:yyyy-MM-ddTHH:mm:ssZ}?page={page}&size={size}");
 		}
 	}
 }

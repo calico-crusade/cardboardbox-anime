@@ -1,7 +1,7 @@
-﻿using CardboardBox.Anime.Bot.Services;
-
-namespace CardboardBox.Anime.Bot
+﻿namespace CardboardBox.Anime.Bot
 {
+	using Services;
+
 	public class EasterEggs
 	{
 		private readonly DiscordSocketClient _client;

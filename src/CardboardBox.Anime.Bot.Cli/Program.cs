@@ -1,6 +1,5 @@
 ﻿using CardboardBox.Anime.AI;
 using CardboardBox.Anime.Bot;
-using CardboardBox.Anime.Bot.Cli;
 using CardboardBox.Anime.Bot.Commands;
 using CardboardBox.Anime.Bot.Services;
 using CardboardBox.Anime.Holybooks;
@@ -17,6 +16,7 @@ var bot = DiscordBotBuilder.Start()
 		 .AddTransient<IMangaUtilityService, MangaUtilityService>()
 		 .AddTransient<IGoogleVisionService, GoogleVisionService>()
 		 .AddSingleton<IDiscordApiService, DiscordApiService>()
+		 .AddTransient<IPersistenceService, PersistenceService>()
 		 .AddTransient<MangaUpdater>()
 		 .AddTransient<EasterEggs>();
 	})
@@ -33,6 +33,7 @@ var bot = DiscordBotBuilder.Start()
 await bot.Login();
 
 bot.Background<MangaUpdater>(t => t.Update(), out _, 60 * 5)
+   .Background<MangaUpdater>(t => t.Channels(), out _, 60)
    .Background<EasterEggs>(t => t.Setup(), out _);
 
 await Task.Delay(-1);
