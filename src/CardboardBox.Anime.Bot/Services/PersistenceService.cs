@@ -12,10 +12,7 @@
 
 		public async Task<IPersistence> Load()
 		{
-			if (!Directory.Exists(DIR))
-				Directory.CreateDirectory(DIR);
-
-			var path = Path.Combine(DIR, FILE_PATH);
+			var path = GetPath();
 
 			if (!File.Exists(path))
 			{
@@ -32,8 +29,16 @@
 
 		public async Task Save(IPersistence data)
 		{
-			using var io = File.Create(FILE_PATH);
+			using var io = File.Create(GetPath());
 			await JsonSerializer.SerializeAsync(io, data);
+		}
+
+		public string GetPath()
+		{
+			if (!Directory.Exists(DIR))
+				Directory.CreateDirectory(DIR);
+
+			return Path.Combine(DIR, FILE_PATH);
 		}
 	}
 
