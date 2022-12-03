@@ -19,7 +19,7 @@ namespace CardboardBox.Anime.Api.Controllers
 			_client = client;
 		}
 
-		[HttpGet, Route("discord/settings"), AdminAuthorize]
+		[HttpGet, Route("discord/settings")]
 		[ProducesDefaultResponseType(typeof(DbDiscordGuildSettings[]))]
 		public async Task<IActionResult> Get()
 		{
