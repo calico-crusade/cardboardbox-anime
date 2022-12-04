@@ -46,6 +46,7 @@ CREATE TABLE manga_chapter (
     volume numeric,
     language text not null,
     pages text[] not null default '{}',
+    external_url text,
 
     created_at timestamp not null default CURRENT_TIMESTAMP,
     updated_at timestamp not null default CURRENT_TIMESTAMP,

@@ -8,6 +8,28 @@ $select-list-padding: 10px;
     flex-flow: column;
 }
 
+.center {
+    margin: auto;
+    padding: 10px;
+    background-color: var(--bg-card);
+    border-top: 2px solid var(--color-vrv);
+    display: flex;
+    flex-flow: column;
+
+    footer {
+        display: flex;
+        flex-flow: row;
+
+        a {
+            text-decoration: none;
+            cursor: pointer;
+            &:first-child {
+                margin-left: auto;
+            }
+        }
+    }
+}
+
 header {
     display: flex;
     flex-flow: row;

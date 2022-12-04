@@ -28,18 +28,23 @@
 			var chapter = await _mangadex.Chapter(chapterId);
 			if (chapter == null) return null;
 
-			var pages = await _mangadex.Pages(chapterId);
-			if (pages == null) return null;
-
-			return new MangaChapterPages
+			var chap = new MangaChapterPages
 			{
 				Title = chapter.Data.Attributes.Title ?? string.Empty,
 				Url = $"{HomeUrl}/chapter/{chapter.Data.Id}",
 				Id = chapter.Data.Id ?? string.Empty,
 				Number = double.TryParse(chapter.Data.Attributes.Chapter, out var a) ? a : 0,
 				Volume = double.TryParse(chapter.Data.Attributes.Volume, out var b) ? b : null,
-				Pages = pages.Images
+				ExternalUrl = chapter.Data.Attributes.ExternalUrl
 			};
+
+			if (chapter.Data.Attributes.Pages == 0) return chap;
+
+			var pages = await _mangadex.Pages(chapterId);
+			if (pages == null) return null;
+
+			chap.Pages = pages.Images;
+			return chap;
 		}
 
 		public async Task<Manga> Convert(MangaDexManga manga, bool getChaps = true)
@@ -155,7 +160,8 @@
 							Url = $"{HomeUrl}/chapter/{t?.Id}",
 							Id = t?.Id ?? string.Empty,
 							Number = double.TryParse(t?.Attributes.Chapter, out var a) ? a : 0,
-							Volume = double.TryParse(t?.Attributes.Volume, out var b) ? b : null
+							Volume = double.TryParse(t?.Attributes.Volume, out var b) ? b : null,
+							ExternalUrl = t?.Attributes.ExternalUrl,
 						};
 					})
 					.OrderBy(t => t.Number);

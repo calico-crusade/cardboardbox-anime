@@ -78,9 +78,7 @@ namespace CardboardBox.Anime.Api.Controllers
 		public async Task<IActionResult> GetPages([FromRoute] long chapterId, [FromQuery] bool refetch = false)
 		{
 			var manga = await _manga.MangaPages(chapterId, refetch);
-			if (manga == null || manga.Length == 0) return NotFound();
-
-			return Ok(manga);
+			return Ok(manga ?? Array.Empty<string>());
 		}
 
 		[HttpPost, Route("manga/{id}/{chapterId}/bookmark"), Authorize]

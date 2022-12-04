@@ -147,7 +147,8 @@
 					SourceId = chapter.Id,
 					Ordinal = chapter.Number,
 					Volume = chapter.Volume,
-					Language = language
+					Language = language,
+					ExternalUrl = chapter.ExternalUrl
 				};
 
 				chap.Id = await _db.Upsert(chap);

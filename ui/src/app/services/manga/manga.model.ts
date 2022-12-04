@@ -35,6 +35,7 @@ export interface MangaChapter {
     volume?: number;
     language: string;
     pages: string[];
+    externalUrl?: string;
 }
 
 export interface MangaBookmark {

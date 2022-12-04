@@ -25,5 +25,8 @@
 
 		[JsonPropertyName("pages")]
 		public string[] Pages { get; set; } = Array.Empty<string>();
+
+		[JsonPropertyName("externalUrl")]
+		public string? ExternalUrl { get; set; }
 	}
 }

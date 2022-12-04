@@ -87,6 +87,8 @@ export class MangaComponent extends MangaPartial implements OnInit, OnDestroy {
     }
 
     private getMangaData() {
+        if (!this.id) return undefined;
+
         if (this.id.toLowerCase() === 'random') {
             return this.api.random().promise;
         }

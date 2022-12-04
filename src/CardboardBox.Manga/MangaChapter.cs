@@ -16,6 +16,9 @@
 
 		[JsonPropertyName("volume"), BsonElement("volume")]
 		public double? Volume { get; set; }
+
+		[JsonPropertyName("externalUrl"), BsonElement("external_url")]
+		public string? ExternalUrl { get; set; }
 	}
 
 	public class MangaChapterPages : MangaChapter

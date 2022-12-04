@@ -26,6 +26,7 @@ export class MangaPageComponent extends MangaPagePartial implements OnInit, OnDe
     loading: boolean = false;
     error?: string;
     downloading: boolean = false;
+    isExternal: boolean = false;
 
     id!: string;
     
@@ -121,6 +122,12 @@ export class MangaPageComponent extends MangaPagePartial implements OnInit, OnDe
         if (this.chapter.pages.length === 0) {
             this.chapter.pages = await this.api.manga(this.manga.id, this.chapterId).promise;
             if (this.chapter.pages.length == 0) {
+                if (this.chapter.externalUrl) {
+                    this.isExternal = true;
+                    this.loading = false;
+                    return;
+                }
+
                 this.loading = false;
                 this.printState(null, 'Could not polyfill pages', true);
                 return;
