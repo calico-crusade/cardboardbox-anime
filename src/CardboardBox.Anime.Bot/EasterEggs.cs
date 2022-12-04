@@ -13,19 +13,22 @@ namespace CardboardBox.Anime.Bot
 		private readonly IDiscordApiService _api;
 		private readonly IMangaDexSource _mangadex;
 		private readonly IMangaUtilityService _util;
+		private readonly ILogger _logger;
 
 		public EasterEggs(
 			DiscordSocketClient client, 
 			IGoogleVisionService vision,
 			IDiscordApiService api,
 			IMangaDexSource mangadex,
-			IMangaUtilityService util)
+			IMangaUtilityService util,
+			ILogger<EasterEggs> logger)
 		{
 			_client = client;
 			_vision = vision;
 			_api = api;
 			_mangadex = mangadex;
 			_util = util;
+			_logger = logger;
 		}
 
 		public Task Setup()
@@ -106,63 +109,161 @@ namespace CardboardBox.Anime.Bot
 
 			var mod = await msg.Channel.SendMessageAsync("<a:loading:1048471999065903244> Processing your request...", messageReference: refe);
 
-			var request = await _vision.ExecuteVisionRequest(img.Url);
-			if (request == null)
+			try
 			{
-				await mod.ModifyAsync(t => t.Content = "I couldn't find any matches for that image.");
-				return;
+				var request = await _vision.ExecuteVisionRequest(img.Url);
+				if (request == null)
+				{
+					await mod.ModifyAsync(t => t.Content = "I couldn't find any matches for that image.");
+					return;
+				}
+
+				if (await CheckForMangaDex(request, mod, img.Url, msg))
+					return;
+
+				var bob = new EmbedBuilder()
+					.WithTitle("Manga Lookup Request")
+					.WithDescription($"My best guess is: {request.Guess} ({request.Score * 100:0.00}%)")
+					.WithImageUrl(img.Url)
+					.WithCurrentTimestamp()
+					.WithAuthor(msg.Author)
+					.WithUrl("https://cba.index-0.com/manga");
+
+				for (var i = 0; i < request.WebPages.Length && i < 5; i++)
+				{
+					var cur = request.WebPages[i];
+					bob.AddField("Result #" + (i + 1), $"[{cur.Title}]({cur.Url})");
+				}
+
+				await mod.ModifyAsync(t =>
+				{
+					t.Content = "Here are your lookup results: ";
+					t.Embed = bob.Build();
+				});
 			}
-
-			if (await CheckForMangaDex(request, mod))
-				return;
-
-			var bob = new EmbedBuilder()
-				.WithTitle("Manga Lookup Request")
-				.WithDescription($"My best guess is: {request.Guess} ({request.Score * 100:0.00}%)")
-				.WithImageUrl(img.Url)
-				.WithCurrentTimestamp()
-				.WithAuthor(msg.Author)
-				.WithUrl("https://cba.index-0.com/manga");
-
-			for (var i = 0; i < request.WebPages.Length && i < 5; i++)
+			catch (Exception ex)
 			{
-				var cur = request.WebPages[i];
-				bob.AddField("Result #" + (i + 1), $"[{cur.Title}]({cur.Url})");
+				_logger.LogError(ex, $"Error occurred during manga lookup: {img.Url}");
+				await mod.ModifyAsync(t =>
+				{
+					t.Content = "Something went wrong! Contact Cardboard for more assistance or try again later!\r\n" +
+					"Error Message: " + ex.Message;
+				});
 			}
-
-			await mod.ModifyAsync(t =>
-			{
-				t.Content = "Here are your lookup results: ";
-				t.Embed = bob.Build();
-			});
 		}
 
-		public async Task<bool> CheckForMangaDex(VisionResults results, IUserMessage mod)
+		public async Task<bool> CheckForMangaDex(VisionResults results, IUserMessage mod, string imageUrl, IMessage target)
 		{
+			var found = new Dictionary<string, (double, bool, Manga)>();
+			var used = new List<(string url, string title)>();
 			for(var i = 0; i < results.WebPages.Length && i < 5; i++)
 			{
 				var (url, current) = results.WebPages[i];
 				var modTitle = PurgeCharacters(current);
 				if (string.IsNullOrEmpty(modTitle)) continue;
 
-				var search = await _mangadex.Search(modTitle);
-				if (search == null || search.Length == 0) continue;
+				var search = Array.Empty<Manga>();
+
+				try
+				{
+					search = await _mangadex.Search(modTitle);
+					if (search == null || search.Length == 0) continue;
+				}
+				catch (Exception ex)
+				{
+					_logger.LogError(ex, $"Error while processing manga dex results: {results.Guess} >> {current} >> {url}");
+					continue;
+				}
 
 				var sort = Rank(modTitle, search)
 					.OrderByDescending(t => t.Compute)
 					.ToArray();
 				var (compute, main, manga) = sort.First();
+				for(var x = 0; x < sort.Length && x < 3; x++)
+				{
+					var cur = sort[x];
+					if (cur.Compute == 1.2)
+					{
+						var searchEmbed = new EmbedBuilder()
+							.WithTitle("Manga Search Results")
+							.WithDescription($"Here is what I found [{current}]({url}). (CF: {compute:0.00}. MT: {main})")
+							.WithAuthor(target.Author)
+							.WithCurrentTimestamp()
+							.WithFooter("Cardboard Box | Manga")
+							.WithThumbnailUrl(imageUrl);
+
+						await mod.ModifyAsync(t =>
+						{
+							t.Content = $"Here you go:";
+							t.Embeds = new Embed[]
+							{
+						searchEmbed.Build(),
+						_util.GenerateEmbed(manga, false).Build()
+							};
+						});
+						return true;
+					}
+
+					if (found.ContainsKey(cur.Manga.Id)) continue;
+
+					found.Add(cur.Manga.Id, cur);
+					used.Add((url, current));
+				}
+
+			}
+
+			if (found.Count == 0) return false;
+
+			var distinctUsed = used.DistinctBy(t => t.url).ToArray();
+			if (distinctUsed.Length == 1 && found.Count == 1)
+			{
+				var (url, title) = distinctUsed.First();
+				var (compute, main, manga) = found.First().Value;
+				var searchEmbed = new EmbedBuilder()
+					.WithTitle("Manga Search Results")
+					.WithDescription($"Here is what I found [{title}]({url}). (CF: {compute:0.00}. MT: {main})")
+					.WithAuthor(target.Author)
+					.WithCurrentTimestamp()
+					.WithFooter("Cardboard Box | Manga")
+					.WithThumbnailUrl(imageUrl);
 
 				await mod.ModifyAsync(t =>
 				{
-					t.Content = $"Here you go:\r\nThe title I found was: \"{current}\"\r\nI found it here: {url}\r\nCompute Cof: {compute:0.0}";
-					t.Embed = _util.GenerateEmbed(manga, false).Build();
+					t.Content = $"Here you go:";
+					t.Embeds = new Embed[]
+					{
+						searchEmbed.Build(),
+						_util.GenerateEmbed(manga, false).Build()
+					};
 				});
-
 				return true;
 			}
 
-			return false;
+			var titleList = string.Join("\r\n", used
+				.DistinctBy(t => t.url)
+				.Select(t => $"[{t.title}]({t.url})"));
+
+			var e = new EmbedBuilder()
+				.WithTitle("Manga Search Results")
+				.WithThumbnailUrl(imageUrl)
+				.WithDescription($"Here is what I found:\r\n{titleList}\r\nBelow are some results from MangaDex: ")
+				.WithAuthor(target.Author)
+				.WithFooter("Cardboard Box | Manga")
+				.WithCurrentTimestamp();
+
+			foreach(var item in found)
+			{
+				var (comp, main, manga) = item.Value;
+				e.AddOptField(manga.Title, $"[Link](https://mangadex.org/title/{item.Key}) (CF: {comp:0.00}. MT: {main})");
+			}
+
+			await mod.ModifyAsync(t =>
+			{
+				t.Content = $"Here you go:";
+				t.Embed = e.Build();
+			});
+
+			return true;
 		}
 
 		public IEnumerable<(double Compute, bool Main, Manga Manga)> Rank(string title, Manga[] manga)

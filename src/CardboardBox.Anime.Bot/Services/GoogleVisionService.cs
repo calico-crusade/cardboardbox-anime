@@ -33,7 +33,7 @@ namespace CardboardBox.Anime.Bot.Services
 				var guess = entities.Description;
 				var score = entities.Score;
 
-				var pages = detection.PagesWithMatchingImages.OrderByDescending(t => t.Score).Select(t => (t.Url, t.PageTitle)).ToArray();
+				var pages = detection.PagesWithMatchingImages.OrderByDescending(t => t.PageTitle.Length).Select(t => (t.Url, t.PageTitle)).ToArray();
 
 				return new(guess, score, pages);
 			}

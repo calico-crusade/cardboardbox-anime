@@ -111,7 +111,7 @@
 			if (results == null || results.Data == null || results.Data.Count == 0) 
 				return Array.Empty<Manga>();
 
-			return await results.Data.Select(t => Convert(t)).WhenAll();
+			return await results.Data.Select(t => Convert(t, false)).WhenAll();
 		}
 
 		public async Task<Manga?> Manga(string id)
