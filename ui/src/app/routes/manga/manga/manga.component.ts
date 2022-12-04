@@ -36,12 +36,12 @@ export class MangaComponent extends MangaPartial implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this._subs
-            .subscribe(this.auth.onLogin, t => this.process())
             .subscribe(this.route.params, t => {
                 this.id = (t['id'] + '').toLowerCase();
                 this.isRandom = this.id === 'random';
                 this.process();
-            });
+            })
+            .subscribe(this.auth.onLogin, t => this.process());
     }
 
     ngOnDestroy(): void {
@@ -87,8 +87,6 @@ export class MangaComponent extends MangaPartial implements OnInit, OnDestroy {
     }
 
     private getMangaData() {
-        if (!this.id) return undefined;
-
         if (this.id.toLowerCase() === 'random') {
             return this.api.random().promise;
         }
