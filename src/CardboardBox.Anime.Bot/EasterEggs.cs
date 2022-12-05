@@ -1,4 +1,5 @@
 ﻿using F23.StringSimilarity;
+using System.Net;
 
 namespace CardboardBox.Anime.Bot
 {
@@ -317,6 +318,17 @@ namespace CardboardBox.Anime.Bot
 			};
 
 			title = title.ToLower();
+
+			if (title.Contains("<"))
+			{
+				var doc = new HtmlDocument();
+				doc.LoadHtml(title);
+				title = doc.DocumentNode.InnerText;
+			}
+
+
+			if (title.Contains("&")) title = WebUtility.HtmlDecode(title);
+
 			foreach (var (text, regex) in regexPurgers)
 				if (title.Contains(text))
 					title = Regex.Replace(title, regex, string.Empty);
