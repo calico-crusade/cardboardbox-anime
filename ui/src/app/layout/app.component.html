@@ -17,27 +17,21 @@
         </div>
         <div class="fade" (click)="menuOpen = false"></div>
         <aside>
-            <div class="dropdown-menu" [ngClass]="{'active': aaactive.isActive || apactive.isActive || (amactive?.isActive || false) }" >
-                <button class="menu" (click)="toggleDropdown(anime)">
+            <div class="dropdown-menu active">
+                <a class="menu" routerLink="/anime/all" routerLinkActive="active" (click)="menuOpen = false">
                     <span class="icon">
                         <cba-icon>live_tv</cba-icon>
                     </span>
                     <span class="title">Anime</span>
-                </button>
-                <div class="dropdown active" #anime>
-                    <a routerLink="/anime/all" routerLinkActive="active" #aaactive="routerLinkActive" (click)="menuOpen = false">
-                        <span class="icon">
-                            <cba-icon>search</cba-icon>
-                        </span>
-                        <span class="title">Search</span>
-                    </a>
-                    <a routerLink="/anime/lists/public" routerLinkActive="active" #apactive="routerLinkActive" (click)="menuOpen = false">
+                </a>
+                <div class="dropdown active">
+                    <a routerLink="/anime/lists/public" routerLinkActive="active" (click)="menuOpen = false">
                         <span class="icon">
                             <cba-icon>public</cba-icon>
                         </span>
                         <span class="title">Public Lists</span>
                     </a>
-                    <a [style.display]="!loggedIn ? 'none' : ''" routerLink="/anime/lists/mine" routerLinkActive="active" #amactive="routerLinkActive" (click)="menuOpen = false">
+                    <a [style.display]="!loggedIn ? 'none' : ''" routerLink="/anime/lists/mine" routerLinkActive="active" (click)="menuOpen = false">
                         <span class="icon">
                             <cba-icon>list</cba-icon>
                         </span>
@@ -45,40 +39,34 @@
                     </a>
                 </div>
             </div>
-            <a routerLink="/manga" routerLinkActive="active" (click)="menuOpen = false" *ngIf="!loggedIn">
+            <a routerLink="/manga/filter/all" routerLinkActive="active" (click)="menuOpen = false" *ngIf="!loggedIn">
                 <span class="icon">
                     <cba-icon>photo_album</cba-icon>
                 </span>
                 <span class="title">Manga</span>
             </a>
             <ng-container *ngIf="loggedIn">
-                <div class="dropdown-menu" [ngClass]="{ 'active': msactive.isActive || maactive.isActive || mtactive.isActive || mractive.isActive }">
-                    <button class="menu" (click)="toggleDropdown(manga)">
+                <div class="dropdown-menu active">
+                    <a class="menu" routerLink="/manga/filter/all" routerLinkActive="active" (click)="menuOpen = false">
                         <span class="icon">
                             <cba-icon>photo_album</cba-icon>
                         </span>
                         <span class="title">Manga</span>
-                    </button>
-                    <div class="dropdown active" #manga>
-                        <a routerLink="/manga/filter/all" routerLinkActive="active" #msactive="routerLinkActive" (click)="menuOpen = false">
-                            <span class="icon">
-                                <cba-icon>search</cba-icon>
-                            </span>
-                            <span class="title">Search</span>
-                        </a>
-                        <a routerLink="/manga/add" routerLinkActive="active" #maactive="routerLinkActive" (click)="menuOpen = false">
+                    </a>
+                    <div class="dropdown active">
+                        <a routerLink="/manga/add" routerLinkActive="active" (click)="menuOpen = false">
                             <span class="icon">
                                 <cba-icon>add</cba-icon>
                             </span>
                             <span class="title">Add New</span>
                         </a>
-                        <a routerLink="/manga/filter/in-progress" routerLinkActive="active" #mtactive="routerLinkActive" (click)="menuOpen = false">
+                        <a routerLink="/manga/filter/in-progress" routerLinkActive="active" (click)="menuOpen = false">
                             <span class="icon">
                                 <cba-icon>collections_bookmark</cba-icon>
                             </span>
                             <span class="title">In Progress</span>
                         </a>
-                        <a routerLink="/manga/random" routerLinkActive="active" #mractive="routerLinkActive" (click)="menuOpen = false">
+                        <a routerLink="/manga/random" routerLinkActive="active" (click)="menuOpen = false">
                             <span class="icon">
                                 <cba-icon>shuffle</cba-icon>
                             </span>
@@ -132,7 +120,7 @@
             <div class="float" (click)="menuPin = !menuPin">
                 <cba-icon>push_pin</cba-icon>
             </div>
-            <div class="dropdown-menu" [ngClass]="{ 'active': liactive.isActive }">
+            <div class="dropdown-menu active">
                 <button class="menu" (click)="toggleDropdown(links)">
                     <span class="icon">
                         <cba-icon>link</cba-icon>
@@ -160,7 +148,7 @@
                         </span>
                         <span class="title">Discord Server</span>
                     </a>
-                    <a routerLink="/install" routerLinkActive="active" #liactive="routerLinkActive" (click)="menuOpen = false">
+                    <a routerLink="/install" routerLinkActive="active" (click)="menuOpen = false">
                         <span class="icon">
                             <cba-icon>install_mobile</cba-icon>
                         </span>

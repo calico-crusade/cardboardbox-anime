@@ -79,6 +79,17 @@ namespace CardboardBox.Anime.Bot
 			};
 		}
 
+		public string? DetermineUrl(IMessage msg)
+		{
+			var img = msg.Attachments.FirstOrDefault(t => t.ContentType.StartsWith("image"));
+			if (img != null) return img.Url;
+
+			var content = msg.Content;
+			if (Uri.IsWellFormedUriString(content, UriKind.Absolute)) return msg.Content;
+
+			return null;
+		}
+
 		public async Task HandleMangaLookup(IMessage msg, SocketMessage rpl, MessageReference refe)
 		{
 			if (rpl.Channel is not SocketGuildChannel guild)
@@ -94,37 +105,32 @@ namespace CardboardBox.Anime.Bot
 				return;
 			}
 
-			if (msg.Attachments.Count == 0)
-			{
-				await msg.Channel.SendMessageAsync("The tagged message has no attachments!", messageReference: refe);
-				return;
-			}
-
-			var img = msg.Attachments.FirstOrDefault(t => t.ContentType.StartsWith("image"));
+			var img = DetermineUrl(msg);
 			if (img == null)
 			{
-				await msg.Channel.SendMessageAsync("I don't see any image attachments on the tagged message.", messageReference: refe);
+				await msg.Channel.SendMessageAsync("I don't see any image attachments or URLs on the tagged message.", messageReference: refe);
 				return;
+
 			}
 
 			var mod = await msg.Channel.SendMessageAsync("<a:loading:1048471999065903244> Processing your request...", messageReference: refe);
 
 			try
 			{
-				var request = await _vision.ExecuteVisionRequest(img.Url);
+				var request = await _vision.ExecuteVisionRequest(img);
 				if (request == null)
 				{
 					await mod.ModifyAsync(t => t.Content = "I couldn't find any matches for that image.");
 					return;
 				}
 
-				if (await CheckForMangaDex(request, mod, img.Url, msg))
+				if (await CheckForMangaDex(request, mod, img, msg))
 					return;
 
 				var bob = new EmbedBuilder()
 					.WithTitle("Manga Lookup Request")
 					.WithDescription($"My best guess is: {request.Guess} ({request.Score * 100:0.00}%)")
-					.WithImageUrl(img.Url)
+					.WithImageUrl(img)
 					.WithCurrentTimestamp()
 					.WithAuthor(msg.Author)
 					.WithUrl("https://cba.index-0.com/manga");
@@ -143,7 +149,7 @@ namespace CardboardBox.Anime.Bot
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, $"Error occurred during manga lookup: {img.Url}");
+				_logger.LogError(ex, $"Error occurred during manga lookup: {img}");
 				await mod.ModifyAsync(t =>
 				{
 					t.Content = "Something went wrong! Contact Cardboard for more assistance or try again later!\r\n" +
@@ -297,10 +303,36 @@ namespace CardboardBox.Anime.Bot
 
 		public string PurgeCharacters(string title)
 		{
-			title = title.ToLower();
-			if (title.Contains("chapter")) title = title.Split(new[] { "chapter", "-", ":" }, StringSplitOptions.RemoveEmptyEntries).First();
+			var regexPurgers = new[]
+			{
+				("manga", "manga[a-z]{1,}\\b")
+			};
 
-			return Regex.Replace(title, "[^a-zA-Z0-9 ]", string.Empty);
+			var purgers = new[]
+			{
+				("chapter", new[] { "chapter" }),
+				("read", new[] { "read" }),
+				("online", new[] { "online" }),
+				("manga", new[] { "manga" })
+			};
+
+			title = title.ToLower();
+			foreach (var (text, regex) in regexPurgers)
+				if (title.Contains(text))
+					title = Regex.Replace(title, regex, string.Empty);
+
+			foreach (var (text, replacers) in purgers)
+				if (title.Contains(text))
+					foreach(var regex in replacers)
+						title = title.Replace(regex, "").Trim();
+
+			return new string(title
+				.Where(t => 
+					!char.IsPunctuation(t) && 
+					!char.IsNumber(t) &&
+					!char.IsSymbol(t))
+				.ToArray())
+				.Trim();
 		}
 
 		public async Task HandleEmotes(IMessage msg, SocketMessage rpl, MessageReference refe)

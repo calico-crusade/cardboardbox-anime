@@ -212,20 +212,11 @@
         }
 
         &.pin {
-            flex-flow: row-reverse;
             .fade { display: none; }
 
             aside {
                 position: relative;
                 right: 0;
-
-                a,button {
-                    border-left: none;
-                    border-right: 2px solid var(--bg-card);
-                    &.active {
-                        border-right: 2px solid var(--color-vrv);
-                    }
-                }
 
                 .float {
                     transform: rotate(90deg);
