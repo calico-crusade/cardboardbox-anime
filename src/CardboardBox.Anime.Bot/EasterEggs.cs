@@ -279,7 +279,7 @@ namespace CardboardBox.Anime.Bot
 
 			foreach (var m in manga)
 			{
-				var mt = m.Title.ToLower();
+				var mt = PurgeCharacters(m.Title);
 				if (mt == title)
 				{
 					yield return (1.2, true, m);
@@ -290,7 +290,7 @@ namespace CardboardBox.Anime.Bot
 
 				foreach (var t in m.AltTitles)
 				{
-					var mtt = t.ToLower();
+					var mtt = PurgeCharacters(t);
 					if (mtt == title)
 					{
 						yield return (1.1, false, m);
@@ -338,13 +338,15 @@ namespace CardboardBox.Anime.Bot
 					foreach(var regex in replacers)
 						title = title.Replace(regex, "").Trim();
 
-			return new string(title
-				.Where(t => 
-					!char.IsPunctuation(t) && 
+			title = new string(title
+				.Select(t => !char.IsPunctuation(t) &&
 					!char.IsNumber(t) &&
-					!char.IsSymbol(t))
-				.ToArray())
-				.Trim();
+					!char.IsSymbol(t) ? t : ' ').ToArray());
+
+			while (title.Contains("  "))
+				title = title.Replace("  ", " ").Trim();
+
+			return title;
 		}
 
 		public async Task HandleEmotes(IMessage msg, SocketMessage rpl, MessageReference refe)

@@ -7,6 +7,8 @@ using CardboardBox.Discord;
 using CardboardBox.Manga;
 using Microsoft.Extensions.DependencyInjection;
 
+var isLocal = Environment.GetCommandLineArgs().Any(t => t.ToLower().Contains("local"));
+
 var bot = DiscordBotBuilder.Start()
 	.WithServices(c =>
 	{
@@ -34,8 +36,10 @@ var bot = DiscordBotBuilder.Start()
 
 await bot.Login();
 
-bot.Background<MangaUpdater>(t => t.Update(), out _, 60 * 5)
-   .Background<MangaUpdater>(t => t.Channels(), out _, 60)
-   .Background<EasterEggs>(t => t.Setup(), out _);
+if (!isLocal)
+	bot.Background<MangaUpdater>(t => t.Update(), out _, 60 * 5)
+	   .Background<MangaUpdater>(t => t.Channels(), out _, 60);
+	   
+bot.Background<EasterEggs>(t => t.Setup(), out _);
 
 await Task.Delay(-1);
