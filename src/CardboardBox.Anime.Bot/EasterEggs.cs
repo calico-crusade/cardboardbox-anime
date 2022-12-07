@@ -312,9 +312,12 @@ namespace CardboardBox.Anime.Bot
 			var purgers = new[]
 			{
 				("chapter", new[] { "chapter" }),
+				("chap", new[] { "chap" }),
 				("read", new[] { "read" }),
 				("online", new[] { "online" }),
-				("manga", new[] { "manga" })
+				("manga", new[] { "manga" }),
+				("season", new[] { "season" }),
+				("facebook", new[] { "facebook" })
 			};
 
 			title = title.ToLower();
