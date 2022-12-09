@@ -14,6 +14,7 @@ export interface Manga {
     altTitles: string[];
     description: string;
     nsfw: boolean;
+    referer?: string;
 
     attributes: {
         name: string;

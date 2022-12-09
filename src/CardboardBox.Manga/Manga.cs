@@ -34,6 +34,9 @@
 
 		[JsonPropertyName("attributes"), BsonElement("attributes")]
 		public List<MangaAttribute> Attributes { get; set; } = new();
+
+		[JsonPropertyName("referer"), BsonElement("referer")]
+		public string? Referer { get; set; }
 	}
 
 	public class MangaAttribute

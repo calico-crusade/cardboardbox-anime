@@ -11,4 +11,9 @@
 
 		Task<MangaChapterPages?> ChapterPages(string mangaId, string chapterId);
 	}
+
+	public interface IMangaUrlSource : IMangaSource
+	{
+		Task<MangaChapterPages?> ChapterPages(string url);
+	}
 }

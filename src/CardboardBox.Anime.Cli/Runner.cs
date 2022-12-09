@@ -15,6 +15,7 @@ namespace CardboardBox.Anime.Cli
 	using LightNovel.Core.Sources;
 	using LightNovel.Core.Sources.Utilities;
 
+	using Manga;
 	using Manga.MangaDex;
 	using Manga.Providers;
 
@@ -46,6 +47,7 @@ namespace CardboardBox.Anime.Cli
 		private readonly IMangaDexService _mangaDex;
 		private readonly IMangaClashSource _mangaClash;
 		private readonly INhentaiSource _nhentai;
+		private readonly IMangaService _manga;
 
 		public Runner(
 			IVrvApiService vrv, 
@@ -65,7 +67,8 @@ namespace CardboardBox.Anime.Cli
 			IReLibSourceService reL,
 			IMangaDexService mangaDex,
 			IMangaClashSource mangaClash,
-			INhentaiSource nhentai)
+			INhentaiSource nhentai,
+			IMangaService manga)
 		{
 			_vrv = vrv;
 			_logger = logger;
@@ -85,6 +88,7 @@ namespace CardboardBox.Anime.Cli
 			_mangaDex = mangaDex;
 			_mangaClash = mangaClash;
 			_nhentai = nhentai;
+			_manga = manga;
 		}
 
 		public async Task<int> Run(string[] args)
@@ -116,6 +120,7 @@ namespace CardboardBox.Anime.Cli
 					case "lnmigr": await DoJm(); break;
 					case "mangadex": await TestMangaDex(); break;
 					case "clash": await TestMangaClash(); break;
+					case "manga": await TestManga(); break;
 					default: _logger.LogInformation("Invalid command: " + command); break;
 				}
 
@@ -696,6 +701,29 @@ namespace CardboardBox.Anime.Cli
 			var chap = await _nhentai.ChapterPages(id, chapId);
 
 			Console.WriteLine("Manga Source: " + manga?.Title);
+		}
+
+		public async Task TestManga()
+		{
+			const string URL = "https://mangakakalot.com/read-rm5iu158524511364";
+
+			var manga = await _manga.Manga(URL, null, true);
+			if (manga == null)
+			{
+				_logger.LogWarning("Error occurred while fetching manga");
+				return;
+			}
+
+			var chap = manga.Chapters.First();
+			var chapter = await _manga.MangaPages(chap, true);
+
+			if (chapter.Length == 0)
+			{
+				_logger.LogWarning("Error occurred while fetching pages");
+				return;
+			}
+
+			_logger.LogInformation("Fetched all of the manga");
 		}
 	}
 }

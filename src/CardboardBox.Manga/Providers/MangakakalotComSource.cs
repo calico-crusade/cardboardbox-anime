@@ -1,74 +1,64 @@
 ﻿namespace CardboardBox.Manga.Providers
 {
-	public interface IMangakakalotSource : IMangaSource { }
+	public interface IMangakakalotComSource : IMangaUrlSource { }
 
-	public class MangakakalotSource : IMangakakalotSource
+	public class MangakakalotComSource : IMangakakalotComSource
 	{
-		private readonly Dictionary<string, CacheItem<Manga?>> _mangaCache = new();
-		private readonly Dictionary<string, CacheItem<MangaChapterPages?>> _chapterCache = new();
-
-		public string HomeUrl => "https://ww4.mangakakalot.tv/";
+		public string HomeUrl => "https://mangakakalot.com/";
 
 		public string ChapterBaseUri => $"{HomeUrl}chapter/";
 
-		public string MangaBaseUri => $"{HomeUrl}manga/";
+		public string MangaBaseUri => $"{HomeUrl}read-";
 
-		public string Provider => "mangakakalot";
+		public string Provider => "mangakakalot-com";
 
 		private readonly IApiService _api;
 
-		public MangakakalotSource(IApiService api)
+		public MangakakalotComSource(IApiService api)
 		{
 			_api = api;
 		}
 
 		public Task<MangaChapterPages?> ChapterPages(string mangaId, string chapterId)
 		{
-			var id = $"{mangaId}/{chapterId}";
-			if (!_chapterCache.ContainsKey(id))
-				_chapterCache.Add(id, new CacheItem<MangaChapterPages?>(() => RawChapterPages(mangaId, chapterId)));
-
-			return _chapterCache[id].Get();
+			throw new NotImplementedException();
 		}
 
-		public async Task<MangaChapterPages?> RawChapterPages(string mangaId, string chapterId)
+		public async Task<MangaChapterPages?> ChapterPages(string url)
 		{
-			var url = $"{ChapterBaseUri}{mangaId}/{chapterId}";
 			var doc = await _api.GetHtml(url);
 			if (doc == null) return null;
+
+			var chapterId = url.Split('/', StringSplitOptions.RemoveEmptyEntries).Last();
+
+			var title = doc
+				.DocumentNode
+				.SelectSingleNode("//div[@class='breadcrumb breadcrumbs bred_doc']/p")
+				.ChildNodes
+				.Where(t => t.Name == "span")
+				.Last()
+				.SelectSingleNode("./a/span")
+				.InnerText.Trim();
+
+			var pages = doc
+				.DocumentNode
+				.SelectNodes("//div[@class='container-chapter-reader']/img")
+				.Select(t => t.GetAttributeValue("src", ""))
+				.ToArray();
 
 			var chapter = new MangaChapterPages
 			{
 				Id = chapterId,
 				Url = url,
-				Number = double.TryParse(url.Split('-').Last(), out var n) ? n : 0,
-				Title = doc
-					.DocumentNode
-					.SelectSingleNode("//div[@class=\"rdfa-breadcrumb\"]/div/p")
-					.ChildNodes
-					.Where(t => t.Name == "span")
-					.Last()
-					.SelectSingleNode("./a/span")
-					.InnerText.Trim(),
-				Pages = doc
-					.DocumentNode
-					.SelectNodes("//div[@class=\"vung-doc\"]/img[@class=\"img-loading\"]")
-					.Select(t => t.GetAttributeValue("data-src", ""))
-					.ToArray()
+				Number = double.TryParse(url.Split('_', '-').Last(), out var n) ? n : 0,
+				Title = title,
+				Pages = pages
 			};
 
 			return chapter;
 		}
 
-		public Task<Manga?> Manga(string id)
-		{
-			if (!_mangaCache.ContainsKey(id))
-				_mangaCache.Add(id, new CacheItem<Manga?>(() => RawManga(id)));
-
-			return _mangaCache[id].Get();
-		}
-
-		public async Task<Manga?> RawManga(string id)
+		public async Task<Manga?> Manga(string id)
 		{
 			var url = id.ToLower().StartsWith("http") ? id : $"{MangaBaseUri}{id}";
 			var doc = await _api.GetHtml(url);
@@ -80,8 +70,17 @@
 				Id = id,
 				Provider = Provider,
 				HomePage = url,
-				Cover = HomeUrl + doc.DocumentNode.SelectSingleNode("//div[@class=\"manga-info-pic\"]/img").GetAttributeValue("src", "").TrimStart('/')
+				Cover = doc.DocumentNode.SelectSingleNode("//div[@class=\"manga-info-pic\"]/img").GetAttributeValue("src", ""),
+				Referer = HomeUrl
 			};
+
+			var desc = doc.DocumentNode.SelectSingleNode("//div[@id='noidungm']");
+			foreach(var item in desc.ChildNodes.ToArray())
+			{
+				if (item.Name == "h2") item.Remove();
+			}
+
+			manga.Description = desc.InnerHtml;
 
 			var textEntries = doc.DocumentNode.SelectNodes("//ul[@class=\"manga-info-text\"]/li");
 
@@ -96,16 +95,16 @@
 
 			var chapterEntries = doc.DocumentNode.SelectNodes("//div[@class=\"chapter-list\"]/div[@class=\"row\"]");
 
+			int num = chapterEntries.Count;
 			foreach (var chapter in chapterEntries)
 			{
 				var a = chapter.SelectSingleNode("./span/a");
 				var href = HomeUrl + a.GetAttributeValue("href", "").TrimStart('/');
-				var num = double.TryParse(href.Split('-').Last(), out var n) ? n : 0;
 				var c = new MangaChapter
 				{
 					Title = a.InnerText.Trim(),
 					Url = href,
-					Number = num,
+					Number = num--,
 					Id = href.Split('/').Last()
 				};
 
@@ -126,9 +125,7 @@
 			if (parts.Length == 0) return (false, null);
 
 			var domain = parts.First();
-			if (domain.ToLower() == "manga" && parts.Length == 2) return (true, parts.Last());
-
-			if (domain.ToLower() == "chapter" && parts.Length > 1) return (true, parts.Skip(1).First());
+			if (parts.Length == 1 && domain.StartsWith("read")) return (true, domain.Remove(0, 5));
 
 			return (false, null);
 		}

@@ -24,7 +24,8 @@
 
 		public MangaService(
 			IMangaDbService db,
-			IMangakakalotSource mangakakalot, 
+			IMangakakalotTvSource mangakakalot, 
+			IMangakakalotComSource mangakakalot2,
 			IMangaDexSource mangaDex,
 			IMangaClashSource mangaClash,
 			INhentaiSource nhentai)
@@ -35,7 +36,8 @@
 				mangaDex,
 				mangakakalot,
 				mangaClash,
-				nhentai
+				nhentai,
+				mangakakalot2
 			};
 		}
 
@@ -69,7 +71,9 @@
 			var (src, id) = DetermineSource(manga.Url);
 			if (src == null || id == null) return Array.Empty<string>();
 
-			var pages = await src.ChapterPages(manga.SourceId, chapter.SourceId);
+			var pages = src is IMangaUrlSource url ? 
+				await url.ChapterPages(chapter.Url) : 
+				await src.ChapterPages(manga.SourceId, chapter.SourceId);
 			if (pages == null) return Array.Empty<string>();
 
 			await _db.SetPages(chapter.Id, pages.Pages);
@@ -122,6 +126,7 @@
 				Description = manga.Description,
 				AltTitles = manga.AltTitles,
 				Nsfw = manga.Nsfw,
+				Referer = manga.Referer,
 				Attributes = manga.Attributes
 					.Select(t => new DbMangaAttribute(t.Name, t.Value))
 					.ToArray()

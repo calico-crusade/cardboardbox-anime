@@ -56,16 +56,16 @@
                     <cba-icon>skip_previous</cba-icon>
                 </button>
 
-                <img *ngFor="let page of chapter?.pages" [proxy]="page" group="manga-page" [ngStyle]="{ 'filter': imageFilter() }" />
+                <img *ngFor="let page of chapter?.pages" [proxy]="page" [referer]="manga?.referer" group="manga-page" [ngStyle]="{ 'filter': imageFilter() }" />
 
                 <button class="scroll-button" (click)="nextChap()" [disabled]="!hasNextChapter" cba-tooltip="Next Chapter" direction="down">
                     <cba-icon>skip_next</cba-icon>
                 </button>
             </ng-container>
             <ng-container *ngIf="!mangaScroll">
-                <img [proxy]="pageImage" group="manga-page" [ngStyle]="{ 'filter': imageFilter() }" />
-                <div class="page" [style.background-image]="'url('+ proxy(pageImage) +')'" [ngStyle]="{ 'filter': imageFilter() }"></div>
-                <div class="next" [style.background-image]="'url(' + proxy(nextPageImage) + ')'"></div>
+                <img [proxy]="pageImage" group="manga-page" [referer]="manga?.referer" [ngStyle]="{ 'filter': imageFilter() }" />
+                <div class="page" [style.background-image]="'url('+ proxy(pageImage, manga?.referer) +')'" [ngStyle]="{ 'filter': imageFilter() }"></div>
+                <div class="next" [style.background-image]="'url(' + proxy(nextPageImage, manga?.referer) + ')'"></div>
             </ng-container>
         </main>
         <ng-container *ngIf="!mangaScroll && mangaProgressBar">

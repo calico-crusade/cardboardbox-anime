@@ -34,5 +34,8 @@
 
 		[JsonPropertyName("attributes")]
 		public DbMangaAttribute[] Attributes { get; set; } = Array.Empty<DbMangaAttribute>();
+
+		[JsonPropertyName("referer")]
+		public string? Referer { get; set; }
 	}
 }

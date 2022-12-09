@@ -10,9 +10,11 @@ export class ImageProxyDirective {
 
     @Input() group: string = 'anime';
 
+    @Input() referer?: string;
+
     @Input() 
     set proxy(value: string) {
-        this.src = this.api.corsFallback(value, this.group);
+        this.src = this.api.corsFallback(value, this.group, this.referer);
     }
 
     constructor(

@@ -9,7 +9,8 @@
 			return services
 				.AddTransient<IMangaService, MangaService>()
 
-				.AddTransient<IMangakakalotSource, MangakakalotSource>()
+				.AddTransient<IMangakakalotTvSource, MangakakalotTvSource>()
+				.AddTransient<IMangakakalotComSource, MangakakalotComSource>()
 				.AddTransient<IMangaDexSource, MangaDexSource>()
 				.AddTransient<IMangaClashSource, MangaClashSource>()
 				.AddTransient<INhentaiSource, NhentaiSource>()

@@ -36,9 +36,13 @@ export class LightNovelService extends ConfigObject {
         return this.http.get<PagesResult>(`novels/${seriesId}/pages`, { params: { page, size }});
     }
 
-    corsFallback(url: string, group: string = 'anime') {
+    corsFallback(url: string, group: string = 'anime', referer?: string) {
         var path = encodeURIComponent(url);
-        return `https://cba-proxy.index-0.com/proxy?path=${path}&group=${group}`;
+        let uri = `https://cba-proxy.index-0.com/proxy?path=${path}&group=${group}`;
+
+        if (referer) uri += `&referer=${encodeURIComponent(referer)}`;
+
+        return uri;
     }
 
     downloadUrl(series: NovelSeries): string;
