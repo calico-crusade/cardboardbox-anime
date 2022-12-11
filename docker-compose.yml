@@ -27,11 +27,13 @@ services:
       - Discord:AppId=${DISCORD_APPID}
       - Discord:Token=${DISCORD_TOKEN}
       - Match:Url=${MATCH_URL}
+      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
     ports:
       - 8891:80
     depends_on:
       - cba-postgres
     volumes:
+      - ./creds.json:/app/creds.json
       - ./image-cache:/app/wwwroot/image-cache
   cba-bot:
     image: ghcr.io/calico-crusade/cardboardbox-anime/bot:latest
