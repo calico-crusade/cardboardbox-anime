@@ -280,7 +280,7 @@ namespace CardboardBox.Manga
 		{
 			var item = new DbMangaChapter
 			{
-				Title = (string.IsNullOrEmpty(chapter.Attributes.Title) ? chapter.Attributes.Chapter : chapter.Attributes.Title) ?? "No Title",
+				Title = chapter.Attributes.Title ?? chapter.Attributes.Chapter ?? "No Title",
 				Url = $"https://mangadex.org/chapter/{chapter.Id}",
 				SourceId = chapter.Id,
 				MangaId = mangaId,
