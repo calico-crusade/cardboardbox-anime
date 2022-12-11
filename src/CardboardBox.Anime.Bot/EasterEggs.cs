@@ -7,6 +7,8 @@ namespace CardboardBox.Anime.Bot
 	using Manga.Providers;
 	using Services;
 
+	using Match = System.Text.RegularExpressions.Match;
+
 	public class EasterEggs
 	{
 		private readonly DiscordSocketClient _client;
