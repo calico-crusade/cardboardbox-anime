@@ -4,7 +4,13 @@
 
 	public interface IMangaDexService
 	{
+		Task<MangaDexCollection<MangaDexManga>?> AllManga(params string[] ids);
+
 		Task<MangaDexRoot<MangaDexManga>?> Manga(string id, string[]? includes = null);
+
+		Task<MangaDexCollection<MangaDexManga>?> Search(MangaFilter filter);
+
+		Task<MangaDexCollection<MangaDexManga>?> Search(string title);
 
 		Task<MangaDexCollection<MangaDexChapter>?> Chapters(ChaptersFilter? filter = null);
 
@@ -17,10 +23,6 @@
 		Task<MangaDexCollection<MangaDexChapter>?> ChaptersLatest(ChaptersFilter? filter = null);
 
 		Task<MangaDexPages?> Pages(string id);
-
-		Task<MangaDexCollection<MangaDexManga>?> Search(MangaFilter filter);
-
-		Task<MangaDexCollection<MangaDexManga>?> Search(string title);
 	}
 
 	public class MangaDexService : IMangaDexService
@@ -42,6 +44,12 @@
 		{
 			var url = $"https://api.mangadex.org/manga?{filter.BuildQuery()}";
 			return _api.Get<MangaDexCollection<MangaDexManga>>(url);
+		}
+
+		public Task<MangaDexCollection<MangaDexManga>?> AllManga(params string[] ids)
+		{
+			var filter = new MangaFilter { Ids = ids };
+			return Search(filter);
 		}
 
 		public Task<MangaDexRoot<MangaDexManga>?> Manga(string id, string[]? includes = null)

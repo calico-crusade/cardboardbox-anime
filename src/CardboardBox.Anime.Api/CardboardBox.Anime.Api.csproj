@@ -16,6 +16,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Update="creds.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Update="vrv-formatted.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

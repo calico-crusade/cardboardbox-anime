@@ -14,7 +14,8 @@
 		{
 			ContentRatingType.safe,
 			ContentRatingType.erotica,
-			ContentRatingType.suggestive
+			ContentRatingType.suggestive,
+			ContentRatingType.pornographic
 		};
 
 		public IncludesType[] Includes { get; set; } = new[] { IncludesType.cover_art };

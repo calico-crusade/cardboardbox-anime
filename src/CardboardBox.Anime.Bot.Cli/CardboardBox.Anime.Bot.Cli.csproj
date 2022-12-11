@@ -10,7 +10,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CardboardBox.Anime.Bot\CardboardBox.Anime.Bot.csproj" />
   </ItemGroup>
-
+	
   <ItemGroup>
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

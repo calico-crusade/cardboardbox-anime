@@ -22,6 +22,9 @@
 				.AddTransient<IMatchApiService, MatchApiService>()
 				.AddTransient<IMangaMatchService, MangaMatchService>()
 
+				.AddTransient<IGoogleVisionService, GoogleVisionService>()
+				.AddTransient<IMangaSearchService, MangaSearchService>()
+
 				.AddMangadex();
 		}
 

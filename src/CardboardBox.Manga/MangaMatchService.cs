@@ -109,6 +109,8 @@ namespace CardboardBox.Manga
 				return;
 			}
 
+			await PolyfillCoverArt(latest);
+
 			var chapIds = latest.Data.Select(t => t.Id).ToArray();
 			var existings = (await _db.DetermineExisting(chapIds)).ToDictionary(t => t.chapter.SourceId);
 
@@ -176,6 +178,36 @@ namespace CardboardBox.Manga
 			}
 		}
 
+		public async Task PolyfillCoverArt(MangaDexCollection<MangaDexChapter> data)
+		{
+			var ids = new List<string>();
+			foreach(var chapter in data.Data)
+			{
+				var m = GetMangaRel(chapter);
+				if (m == null) continue;
+
+				ids.Add(m.Id);
+			}
+
+			var manga = await _md.AllManga(ids.ToArray());
+			if (manga == null || manga.Data.Count == 0)
+				return;
+
+			foreach(var chapter in data.Data)
+			{
+				foreach(var rel in chapter.Relationships)
+				{
+					if (rel is not RelatedDataRelationship mr) continue;
+
+					var existing = manga.Data.FirstOrDefault(t => t.Id == mr.Id);
+					if (existing == null) continue;
+
+					mr.Attributes = existing.Attributes;
+					mr.Relationships = existing.Relationships;
+				}
+			}
+		}
+
 		public MangaDexManga? GetMangaRel(MangaDexChapter chapter)
 		{
 			var m = chapter.Relationships.FirstOrDefault(t => t is MangaDexManga);
@@ -200,6 +232,10 @@ namespace CardboardBox.Manga
 		{
 			var nsfwRatings = new[] { "erotica", "suggestive", "pornographic" };
 			var title = manga.Attributes.Title.PreferedOrFirst(t => t.Key == DEFAULT_LANG).Value;
+
+			var coverFile = (manga.Relationships.FirstOrDefault(t => t is CoverArtRelationship) as CoverArtRelationship)?.Attributes?.FileName;
+			var coverUrl = $"https://mangadex.org/covers/{manga.Id}/{coverFile}";
+
 			var item = new DbManga
 			{
 				HashId = _manga.GenerateHashId(title),
@@ -210,6 +246,7 @@ namespace CardboardBox.Manga
 				AltTitles = manga.Attributes.AltTitles.SelectMany(t => t.Values).ToArray(),
 				Description = manga.Attributes.Description.PreferedOrFirst(t => t.Key == DEFAULT_LANG).Value ?? "No Description Provided",
 				Nsfw = nsfwRatings.Contains(manga.Attributes.ContentRating),
+				Cover = coverUrl,
 
 				Attributes = new[]
 					{

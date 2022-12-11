@@ -16,17 +16,20 @@ namespace CardboardBox.Anime.Api.Controllers
 		private readonly IDbService _db;
 		private readonly IMangaEpubService _epub;
 		private readonly IMangaImageService _image;
+		private readonly IMangaSearchService _search;
 
 		public MangaController(
 			IMangaService manga,
 			IDbService db,
 			IMangaEpubService epub,
-			IMangaImageService image)
+			IMangaImageService image,
+			IMangaSearchService search)
 		{
 			_manga = manga;
 			_db = db;
 			_epub = epub;
 			_image = image;
+			_search = search;
 		}
 
 		[HttpGet, Route("manga")]
@@ -216,6 +219,14 @@ namespace CardboardBox.Anime.Api.Controllers
 
 			await _db.Manga.DeleteProgress(profile.Id, manga.Manga.Id);
 			return Ok();
+		}
+
+		[HttpGet, Route("manga/search")]
+		[ProducesDefaultResponseType(typeof(ImageSearchResults))]
+		public async Task<IActionResult> Search([FromQuery] string path)
+		{
+			var lookup = await _search.Search(path);
+			return Ok(lookup);
 		}
 	}
 }

@@ -1,7 +1,7 @@
 ﻿using Google.Cloud.Vision.V1;
 using Image = Google.Cloud.Vision.V1.Image;
 
-namespace CardboardBox.Anime.Bot.Services
+namespace CardboardBox.Manga
 {
 	public interface IGoogleVisionService
 	{
@@ -29,11 +29,18 @@ namespace CardboardBox.Anime.Bot.Services
 					detection.PagesWithMatchingImages.Count == 0)
 					return null;
 
-				var entities = detection.WebEntities.OrderByDescending(t => t.Score).First();
+				var entities = detection
+					.WebEntities
+					.OrderByDescending(t => t.Score)
+					.First();
 				var guess = entities.Description;
 				var score = entities.Score;
 
-				var pages = detection.PagesWithMatchingImages.OrderByDescending(t => t.PageTitle.Length).Select(t => (t.Url, t.PageTitle)).ToArray();
+				var pages = detection
+					.PagesWithMatchingImages
+					.OrderByDescending(t => t.PageTitle.Length)
+					.Select(t => (t.Url, t.PageTitle))
+					.ToArray();
 
 				return new(guess, score, pages);
 			}

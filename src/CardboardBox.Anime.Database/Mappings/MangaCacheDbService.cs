@@ -10,6 +10,8 @@
 		Task<long> Upsert(DbMangaChapter chapter);
 
 		Task<MangaCache[]> DetermineExisting(string[] chapterIds);
+
+		Task<DbManga[]> ByIds(string[] mangaIds);
 	}
 
 	public class MangaCacheDbService : OrmMapExtended<DbManga>, IMangaCacheDbService
@@ -41,6 +43,16 @@
 				(v) => v.With(t => t.MangaId).With(t => t.SourceId).With(t => t.Language),
 				(v) => v.With(t => t.Id),
 				v => v.With(t => t.Id).With(t => t.CreatedAt));
+		}
+
+		public Task<DbManga[]> ByIds(string[] mangaIds)
+		{
+			const string QUERY = @"SELECT
+	DISTINCT
+	*
+FROM manga_cache
+WHERE source_id = ANY(:mangaIds)";
+			return _sql.Get<DbManga>(QUERY, new { mangaIds });
 		}
 
 		public async Task<MangaCache[]> DetermineExisting(string[] chapterIds)

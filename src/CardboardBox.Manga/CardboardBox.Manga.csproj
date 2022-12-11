@@ -11,6 +11,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <PackageReference Include="F23.StringSimilarity" Version="5.0.0" />
+	  <PackageReference Include="Google.Cloud.Vision.V1" Version="3.2.0" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <ProjectReference Include="..\CardboardBox.Anime.Database\CardboardBox.Anime.Database.csproj" />
 	  <ProjectReference Include="..\CardboardBox.Epub\CardboardBox.Epub.csproj" />
 	  <ProjectReference Include="..\CardboardBox.Manga.MangaDex\CardboardBox.Manga.MangaDex.csproj" />
