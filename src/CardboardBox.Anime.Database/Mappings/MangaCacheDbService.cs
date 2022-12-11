@@ -5,6 +5,8 @@
 
 	public interface IMangaCacheDbService
 	{
+		Task<DbManga[]> All();
+
 		Task<long> Upsert(DbManga manga);
 
 		Task<long> Upsert(DbMangaChapter chapter);

@@ -17,6 +17,7 @@ namespace CardboardBox.Anime.Bot.Services
 		Task<PaginatedResult<MangaProgress>?> Search(MangaFilter? filter = null);
 		Task<MangaWorked[]?> Update(int count);
 		Task<PaginatedResult<MangaProgress>?> Since(DateTime date, int page = 1, int size = 100);
+		Task<ImageSearchResults?> Search(string url);
 	}
 
 	public class MangaApiService : IMangaApiService
@@ -88,6 +89,11 @@ namespace CardboardBox.Anime.Bot.Services
 		public Task<PaginatedResult<MangaProgress>?> Since(DateTime date, int page = 1, int size = 100)
 		{
 			return _api.Get<PaginatedResult<MangaProgress>>($"{ApiUrl}/manga/since/{date:yyyy-MM-ddTHH:mm:ssZ}?page={page}&size={size}");
+		}
+
+		public Task<ImageSearchResults?> Search(string url)
+		{
+			return _api.Get<ImageSearchResults>($"{ApiUrl}/manga/search?path={WebUtility.UrlEncode(url)}");
 		}
 	}
 }

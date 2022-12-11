@@ -17,6 +17,7 @@ namespace CardboardBox.Anime.Cli
 
 	using Manga;
 	using Manga.MangaDex;
+	using Manga.MangaDex.Models;
 	using Manga.Providers;
 
 	public interface IRunner
@@ -49,6 +50,7 @@ namespace CardboardBox.Anime.Cli
 		private readonly INhentaiSource _nhentai;
 		private readonly IMangaService _manga;
 		private readonly IMangaMatchService _match;
+		private readonly IMangaCacheDbService _cacheDb;
 
 		public Runner(
 			IVrvApiService vrv, 
@@ -70,7 +72,8 @@ namespace CardboardBox.Anime.Cli
 			IMangaClashSource mangaClash,
 			INhentaiSource nhentai,
 			IMangaService manga,
-			IMangaMatchService match)
+			IMangaMatchService match,
+			IMangaCacheDbService cacheDb)
 		{
 			_vrv = vrv;
 			_logger = logger;
@@ -92,6 +95,7 @@ namespace CardboardBox.Anime.Cli
 			_nhentai = nhentai;
 			_manga = manga;
 			_match = match;
+			_cacheDb = cacheDb;
 		}
 
 		public async Task<int> Run(string[] args)
@@ -125,6 +129,7 @@ namespace CardboardBox.Anime.Cli
 					case "clash": await TestMangaClash(); break;
 					case "manga": await TestManga(); break;
 					case "index": await Index(); break;
+					case "fix-cache": await FixCache(); break;
 					default: _logger.LogInformation("Invalid command: " + command); break;
 				}
 
@@ -803,6 +808,37 @@ namespace CardboardBox.Anime.Cli
 			//var rnd = new Random();
 			//await Parallel.ForEachAsync(chunks, (t, _) => ProcessChunk(t, rnd.Next(0, 500)));
 			_logger.LogInformation("Finished!");
+		}
+
+		public async Task FixCache()
+		{
+			var manga = await _cacheDb.All();
+			var ids = manga.Select(t => t.SourceId).ToArray();
+
+			var md = await _mangaDex.AllManga(ids);
+			if (md == null || md.Data.Count == 0)
+			{
+				_logger.LogError("No results from mangadex");
+				return;
+			}
+
+			foreach(var m in manga)
+			{
+				var om = md.Data.FirstOrDefault(t => t.Id == m.SourceId);
+				if (om == null)
+				{
+					_logger.LogWarning($"Could not find MD manga for: {m.Title}");
+					continue;
+				}
+
+				var coverFile = (om.Relationships.FirstOrDefault(t => t is CoverArtRelationship) as CoverArtRelationship)?.Attributes?.FileName;
+				var coverUrl = $"https://mangadex.org/covers/{m.SourceId}/{coverFile}";
+
+				m.Cover = coverUrl;
+				await _cacheDb.Upsert(m);
+			}
+
+			_logger.LogInformation("Cover art has been fixed");
 		}
 	}
 }
