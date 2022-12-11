@@ -9,12 +9,14 @@ CREATE TABLE manga (
     title text not null,
     source_id text not null,
     provider text not null,
+    hash_id text not null,
     url text not null,
     cover text not null,
     tags text[] not null default '{}',
     alt_titles text[] not null default '{}',
     description text not null,
     nsfw boolean not null default False,
+    referer text,
 
     attributes manga_attribute[] not null default '{}',
 

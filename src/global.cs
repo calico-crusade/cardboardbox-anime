@@ -1,3 +1,4 @@
+global using CardboardBox;
 global using CardboardBox.Database;
 global using CardboardBox.Http;
 

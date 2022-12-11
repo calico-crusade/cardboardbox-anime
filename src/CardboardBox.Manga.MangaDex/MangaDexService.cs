@@ -6,11 +6,15 @@
 	{
 		Task<MangaDexRoot<MangaDexManga>?> Manga(string id, string[]? includes = null);
 
-		Task<MangaDexCollection<MangaDexChapter>?> Chapters(string id, ChaptersFilter? filter);
+		Task<MangaDexCollection<MangaDexChapter>?> Chapters(ChaptersFilter? filter = null);
+
+		Task<MangaDexCollection<MangaDexChapter>?> Chapters(string id, ChaptersFilter? filter = null);
 
 		Task<MangaDexCollection<MangaDexChapter>?> Chapters(string id, int limit = 500, int offset = 0);
 
 		Task<MangaDexRoot<MangaDexChapter>?> Chapter(string id, string[]? includes = null);
+
+		Task<MangaDexCollection<MangaDexChapter>?> ChaptersLatest(ChaptersFilter? filter = null);
 
 		Task<MangaDexPages?> Pages(string id);
 
@@ -52,7 +56,14 @@
 			return _api.Get<MangaDexRoot<MangaDexManga>>(url);
 		}
 
-		public Task<MangaDexCollection<MangaDexChapter>?> Chapters(string id, ChaptersFilter? filter)
+		public Task<MangaDexCollection<MangaDexChapter>?> Chapters(ChaptersFilter? filter = null)
+		{
+			filter ??= new ChaptersFilter();
+			var url = $"https://api.mangadex.org/chapter?{filter.BuildQuery()}";
+			return _api.Get<MangaDexCollection<MangaDexChapter>>(url);
+		}
+
+		public Task<MangaDexCollection<MangaDexChapter>?> Chapters(string id, ChaptersFilter? filter = null)
 		{
 			var url = $"https://api.mangadex.org/manga/{id}/feed?{(filter ?? new()).BuildQuery()}";
 			return _api.Get<MangaDexCollection<MangaDexChapter>>(url);
@@ -74,6 +85,17 @@
 			};
 
 			return Chapters(id, filter);
+		}
+
+		public Task<MangaDexCollection<MangaDexChapter>?> ChaptersLatest(ChaptersFilter? filter = null)
+		{
+			filter ??= new ChaptersFilter();
+			filter.ContentRating = ChaptersFilter.ContentRatingsAll;
+			filter.Limit = 100;
+			filter.Order = new() { [ChaptersFilter.OrderKey.updatedAt] = ChaptersFilter.OrderValue.desc };
+			filter.Includes = new[] { "manga" };
+			filter.TranslatedLanguage = new[] { "en" };
+			return Chapters(filter);
 		}
 
 		public Task<MangaDexRoot<MangaDexChapter>?> Chapter(string id, string[]? includes = null)

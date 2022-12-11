@@ -7,12 +7,12 @@
 		public const string CONTENT_RATING_EROTICA = "erotica";
 		public const string CONTENT_RATING_PORNOGRAPHIC = "pornographic";
 
-		public static string[] ContentRatingsAll => new[] 
-		{ 
-			CONTENT_RATING_SAFE, 
-			CONTENT_RATING_EROTICA, 
-			CONTENT_RATING_PORNOGRAPHIC, 
-			CONTENT_RATING_SUGGESTIVE 
+		public static ContentRatingType[] ContentRatingsAll => new[] 
+		{
+			ContentRatingType.safe,
+			ContentRatingType.erotica,
+			ContentRatingType.suggestive,
+			ContentRatingType.pornographic
 		};
 
 		public int Limit { get; set; } = 500;
@@ -25,7 +25,12 @@
 
 		public string[] ExcludedOriginalLanguage { get; set; } = Array.Empty<string>();
 
-		public string[] ContentRating { get; set; } = Array.Empty<string>();
+		public ContentRatingType[] ContentRating { get; set; } = new[]
+		{
+			ContentRatingType.safe,
+			ContentRatingType.erotica,
+			ContentRatingType.suggestive
+		};
 
 		public string[] ExcludedGroups { get; set; } = Array.Empty<string>();
 
@@ -86,6 +91,14 @@
 		{
 			asc,
 			desc
+		}
+
+		public enum ContentRatingType
+		{
+			safe,
+			suggestive,
+			erotica,
+			pornographic
 		}
 	}
 }

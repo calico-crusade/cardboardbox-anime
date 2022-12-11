@@ -58,7 +58,7 @@
 				.ToListAsync() : new List<MangaChapter>();
 
 			var title = DetermineTitle(manga);
-			var nsfwRatings = new[] { "erotica", "suggestive" };
+			var nsfwRatings = new[] { "erotica", "suggestive", "pornographic" };
 
 			return new Manga
 			{

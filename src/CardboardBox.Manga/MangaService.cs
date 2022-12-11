@@ -1,6 +1,11 @@
-﻿namespace CardboardBox.Manga
+﻿using System.Net;
+
+namespace CardboardBox.Manga
 {
+	using Anime.Core.Models;
 	using Anime.Database;
+	using MangaDex;
+	using Match;
 	using Providers;
 
 	public interface IMangaService
@@ -13,17 +18,27 @@
 		Task<MangaWithChapters?> Manga(long id, string? platformId);
 		Task<string[]> MangaPages(long chapterId, bool refetch);
 		Task<string[]> MangaPages(DbMangaChapter? chapter, bool refetch);
+		Task<string[]> MangaPages(DbMangaChapter chapter, DbManga manga, bool refetch);
 		Task<MangaWorked[]> Updated(int count, string? platformId);
 		Task<long?> ResolveId(string id);
+		Task<(bool worked, bool indexed)> IndexChapter(DbManga manga, DbMangaChapter chapter);
+		Task<PaginatedResult<MangaProgress>> All();
+
+		string GenerateHashId(string title);
 	}
 
 	public class MangaService : IMangaService
 	{
 		private readonly IMangaSource[] _sources;
 		private readonly IMangaDbService _db;
+		private readonly IMatchApiService _match;
+
+		private readonly IMangaDexService _md;
 
 		public MangaService(
 			IMangaDbService db,
+			IMatchApiService match,
+			IMangaDexService md,
 			IMangakakalotTvSource mangakakalot, 
 			IMangakakalotComSource mangakakalot2,
 			IMangaDexSource mangaDex,
@@ -31,6 +46,8 @@
 			INhentaiSource nhentai)
 		{
 			_db = db;
+			_match = match;
+			_md = md;
 			_sources = new IMangaSource[]
 			{
 				mangaDex,
@@ -54,6 +71,17 @@
 			return (null, null);
 		}
 
+		public async Task<PaginatedResult<MangaProgress>> All()
+		{
+			var filter = new MangaFilter
+			{
+				Size = 9999999,
+				Nsfw = NsfwCheck.DontCare
+			};
+			var db = await _db.Search(filter, null);
+			return db ?? new();
+		}
+
 		public async Task<string[]> MangaPages(long chapterId, bool refetch)
 		{
 			var chapter = await _db.GetChapter(chapterId);
@@ -68,11 +96,18 @@
 			var manga = await _db.Get(chapter.MangaId);
 			if (manga == null) return Array.Empty<string>();
 
+			return await MangaPages(chapter, manga, refetch);
+		}
+
+		public async Task<string[]> MangaPages(DbMangaChapter chapter, DbManga manga, bool refetch)
+		{
+			if (chapter.Pages.Length > 0 && !refetch) return chapter.Pages;
+
 			var (src, id) = DetermineSource(manga.Url);
 			if (src == null || id == null) return Array.Empty<string>();
 
-			var pages = src is IMangaUrlSource url ? 
-				await url.ChapterPages(chapter.Url) : 
+			var pages = src is IMangaUrlSource url ?
+				await url.ChapterPages(chapter.Url) :
 				await src.ChapterPages(manga.SourceId, chapter.SourceId);
 			if (pages == null) return Array.Empty<string>();
 
@@ -181,6 +216,49 @@
 				return mid;
 
 			return (await _db.GetByHashId(id))?.Id;
+		}
+
+		public string IndexId(DbManga manga, DbMangaChapter chapter, int i)
+		{
+			return $"manga-page:{manga.Id}-{chapter.Id}-{i}";
+		}
+
+		public async Task<(bool worked, bool indexed)> IndexChapter(DbManga manga, DbMangaChapter chapter)
+		{
+			bool indexed = false;
+			if (chapter.Pages.Length == 0)
+			{
+				chapter.Pages = (await _md.Pages(chapter.SourceId))?.Images ?? Array.Empty<string>();
+				indexed = true;
+
+				if (chapter.Pages.Length == 0) return (false, indexed);
+				await _db.SetPages(chapter.Id, chapter.Pages);
+			}
+
+			return (true, indexed);
+
+			//var urlResolver = (string url) => ProxyUrl(url, referer: manga.Referer);
+
+			//var results = await chapter.Pages.Select(async (t, i) =>
+			//{
+			//	var url = urlResolver(t);
+			//	var id = IndexId(manga, chapter, i);
+			//	var res = await _match.Add(url, id);
+
+			//	return res != null && res.Success;
+			//}).WhenAll();
+
+			//return (results.All(t => t), indexed);
+		}
+
+		public string ProxyUrl(string url, string group = "manga-page", string? referer = null)
+		{
+			var path = WebUtility.UrlEncode(url);
+			var uri = $"https://cba-proxy.index-0.com/proxy?path={path}&group={group}";
+			if (!string.IsNullOrEmpty(referer))
+				uri += $"&referer={WebUtility.UrlEncode(referer)}";
+
+			return uri;
 		}
 	}
 

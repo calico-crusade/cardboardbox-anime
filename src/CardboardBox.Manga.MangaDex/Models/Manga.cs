@@ -1,7 +1,5 @@
 ﻿namespace CardboardBox.Manga.MangaDex.Models
 {
-	using Localize = Dictionary<string, string>;
-
 	public class MangaDexManga : MangaDexModel<MangaDexManga.AttributesModel>
 	{
 		[JsonPropertyName("relationships")]
@@ -10,19 +8,19 @@
 		public class AttributesModel
 		{
 			[JsonPropertyName("title")]
-			public Localize Title { get; set; } = new();
+			public Localization Title { get; set; } = new();
 
 			[JsonPropertyName("altTitles")]
-			public Localize[] AltTitles { get; set; } = Array.Empty<Localize>();
+			public Localization[] AltTitles { get; set; } = Array.Empty<Localization>();
 
 			[JsonPropertyName("description")]
-			public Localize Description { get; set; } = new();
+			public Localization Description { get; set; } = new();
 
 			[JsonPropertyName("isLocked")]
 			public bool IsLocked { get; set; }
 
 			[JsonPropertyName("links")]
-			public Localize Links { get; set; } = new();
+			public Localization Links { get; set; } = new();
 
 			[JsonPropertyName("originalLanguage")]
 			public string OriginalLanguage { get; set; } = string.Empty;
@@ -75,10 +73,10 @@
 			public class AttributesModel
 			{
 				[JsonPropertyName("name")]
-				public Localize Name { get; set; } = new();
+				public Localization Name { get; set; } = new();
 
 				[JsonPropertyName("description")]
-				public Localize Description { get; set; } = new();
+				public Localization Description { get; set; } = new();
 
 				[JsonPropertyName("group")]
 				public string Group { get; set; } = string.Empty;

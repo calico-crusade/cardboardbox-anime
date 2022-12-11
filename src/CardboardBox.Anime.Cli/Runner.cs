@@ -48,6 +48,7 @@ namespace CardboardBox.Anime.Cli
 		private readonly IMangaClashSource _mangaClash;
 		private readonly INhentaiSource _nhentai;
 		private readonly IMangaService _manga;
+		private readonly IMangaMatchService _match;
 
 		public Runner(
 			IVrvApiService vrv, 
@@ -68,7 +69,8 @@ namespace CardboardBox.Anime.Cli
 			IMangaDexService mangaDex,
 			IMangaClashSource mangaClash,
 			INhentaiSource nhentai,
-			IMangaService manga)
+			IMangaService manga,
+			IMangaMatchService match)
 		{
 			_vrv = vrv;
 			_logger = logger;
@@ -89,6 +91,7 @@ namespace CardboardBox.Anime.Cli
 			_mangaClash = mangaClash;
 			_nhentai = nhentai;
 			_manga = manga;
+			_match = match;
 		}
 
 		public async Task<int> Run(string[] args)
@@ -121,6 +124,7 @@ namespace CardboardBox.Anime.Cli
 					case "mangadex": await TestMangaDex(); break;
 					case "clash": await TestMangaClash(); break;
 					case "manga": await TestManga(); break;
+					case "index": await Index(); break;
 					default: _logger.LogInformation("Invalid command: " + command); break;
 				}
 
@@ -724,6 +728,81 @@ namespace CardboardBox.Anime.Cli
 			}
 
 			_logger.LogInformation("Fetched all of the manga");
+		}
+
+		public async Task Index()
+		{
+			await _match.IndexLatest();
+		}
+
+		public async Task PolyfillChapters()
+		{
+			var chunkMethod = async (MangaProgress[] data, int tid) =>
+			{
+				_logger.LogInformation($"[{tid}] >> Started indexing chunk of: {data.Length}");
+
+				int count = 0;
+				int reportAt = data.Length / 100;
+				int beforeTimeout = 0;
+				int timeoutAfter = 39;
+				foreach (var m in data)
+				{
+					if (m.Manga.Provider != "mangadex") continue;
+
+					count++;
+					var mwc = await _manga.Manga(m.Manga.Id, null);
+					if (mwc == null)
+					{
+						_logger.LogWarning($"[{tid}] >> Couldn't find manga chapters... This shouldn't happen and is a bail out :: {m.Manga.Id}");
+						continue;
+					}
+
+					var chapters = mwc.Chapters;
+					foreach (var chapter in chapters)
+					{
+						var (worked, requiresTimeout) = await _manga.IndexChapter(mwc.Manga, chapter);
+
+						if (!worked)
+							_logger.LogWarning($"[{tid}] >> Failed to index entire chapter for: {mwc.Manga.Id} >> {chapter.Id}");
+
+						if (!requiresTimeout) continue;
+
+						beforeTimeout++;
+						if (beforeTimeout < timeoutAfter) continue;
+
+						_logger.LogInformation($"[{tid}] >> taking a break.");
+						await Task.Delay(1000 * 60);
+						_logger.LogInformation($"[{tid}] >> break finished.");
+						beforeTimeout = 0;
+					}
+
+					_logger.LogInformation($"[{tid}] >> Finished indexing: {m.Manga.Title}");
+
+					if (count % reportAt == 0)
+						_logger.LogInformation($"[{tid}] >> Progress: {count / (decimal)data.Length * 100:0.00}%");
+				}
+
+				_logger.LogInformation($"[{tid}] >> Finished processing all manga!");
+			};
+
+			var all = await _manga.All();
+
+			if (all.Results.Length == 0)
+			{
+				_logger.LogWarning("Couldn't find any manga? Did you fuck up again?");
+				return;
+			}
+
+			_logger.LogInformation($"Starting Manga Indexing: {all.Results.Length}");
+
+			//var chunks = all.Results
+			//	.Split(3)
+			//	.ToArray();
+
+			await chunkMethod(all.Results, 0);
+			//var rnd = new Random();
+			//await Parallel.ForEachAsync(chunks, (t, _) => ProcessChunk(t, rnd.Next(0, 500)));
+			_logger.LogInformation("Finished!");
 		}
 	}
 }

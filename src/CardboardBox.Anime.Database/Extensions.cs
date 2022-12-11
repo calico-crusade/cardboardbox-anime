@@ -102,6 +102,7 @@ namespace CardboardBox.Anime.Database
 				.AddTransient<IListMapDbService, ListMapDbService>()
 				.AddTransient<IChapterDbService, ChapterDbService>()
 				.AddTransient<IMangaDbService, MangaDbService>()
+				.AddTransient<IMangaCacheDbService, MangaCacheDbService>()
 				.AddTransient<IDiscordGuildDbService, DiscordGuildDbService>()
 
 				.AddTransient<IAiRequestDbService, AiRequestDbService>()

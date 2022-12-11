@@ -10,7 +10,12 @@
 
 		public string AuthorOrArtist { get; set; } = string.Empty;
 
-		public ContentRatingType[] ContentRating { get; set; } = Array.Empty<ContentRatingType>();
+		public ContentRatingType[] ContentRating { get; set; } = new[]
+		{
+			ContentRatingType.safe,
+			ContentRatingType.erotica,
+			ContentRatingType.suggestive
+		};
 
 		public IncludesType[] Includes { get; set; } = new[] { IncludesType.cover_art };
 

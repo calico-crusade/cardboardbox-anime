@@ -39,6 +39,9 @@
 
 			[JsonPropertyName("version")]
 			public int Version { get; set; }
+
+			[JsonPropertyName("uploader")]
+			public string? Uploader { get; set; }
 		}
 	}
 }

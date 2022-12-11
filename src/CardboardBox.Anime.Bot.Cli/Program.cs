@@ -37,8 +37,7 @@ var bot = DiscordBotBuilder.Start()
 await bot.Login();
 
 if (!isLocal)
-	bot.Background<MangaUpdater>(t => t.Update(), out _, 60 * 5)
-	   .Background<MangaUpdater>(t => t.Channels(), out _, 60);
+	bot.Background<MangaUpdater>(t => t.Channels(), out _, 60);
 	   
 bot.Background<EasterEggs>(t => t.Setup(), out _);
 

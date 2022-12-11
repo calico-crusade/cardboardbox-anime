@@ -26,6 +26,7 @@ services:
       - Discord:PublicKey=${DISCORD_KEY}
       - Discord:AppId=${DISCORD_APPID}
       - Discord:Token=${DISCORD_TOKEN}
+      - Match:Url=${MATCH_URL}
     ports:
       - 8891:80
     depends_on:
@@ -41,6 +42,7 @@ services:
       - Discord:Token=${DISCORD_TOKEN}
       - Ai:Url=${DISCORD_AI_URL}
       - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
+      - Match:Url=${MATCH_URL}
     depends_on:
       - cba-api
     volumes:
@@ -67,7 +69,25 @@ services:
       - OAuth:Secret=${OAUTH_SECRET}
       - OAuth:Key=${OAUTH_KEY}
       - Ai:Url=${DISCORD_AI_URL}
+      - Match:Url=${MATCH_URL}
     ports:
       - 8897:80
+    depends_on:
+      - cba-api
+  cba-background:
+    image: ghcr.io/calico-crusade/cardboardbox-anime/background:latest
+    restart: always
+    environment:
+      - Mongo:ConnectionString=${MONGO_CON_URL}
+      - Postgres:ConnectionString=User ID=${POSTGRES_USER};Password=${POSTGRES_PASS};Host=cba-postgres;Database=${POSTGRES_HOST};
+      - OAuth:AppId=${OAUTH_APP_ID}
+      - OAuth:Secret=${OAUTH_SECRET}
+      - OAuth:Key=${OAUTH_KEY}
+      - Ai:Url=${DISCORD_AI_URL}
+      - Match:Url=${MATCH_URL}
+      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
+    volumes:
+      - ./creds.json:/app/creds.json
+      - ./persist:/app/persist
     depends_on:
       - cba-api

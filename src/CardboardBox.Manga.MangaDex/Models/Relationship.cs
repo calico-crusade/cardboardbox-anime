@@ -93,10 +93,11 @@
 		}
 	}
 
-	public class RelatedDataRelationship : MangaDexModel, IRelationship
+	public class RelatedDataRelationship : MangaDexManga, IRelationship
 	{
 		[JsonPropertyName("related")]
 		public string Related { get; set; } = string.Empty;
+
 	}
 
 	public class ScanlationGroupRelationship : MangaDexModel<ScanlationGroupRelationship.AttributesModel>, IRelationship
