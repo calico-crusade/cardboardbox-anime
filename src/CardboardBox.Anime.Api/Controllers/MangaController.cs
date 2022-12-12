@@ -221,11 +221,23 @@ namespace CardboardBox.Anime.Api.Controllers
 			return Ok();
 		}
 
-		[HttpGet, Route("manga/search")]
+		[HttpGet, Route("manga/search"), Route("manga/image-search")]
 		[ProducesDefaultResponseType(typeof(ImageSearchResults))]
 		public async Task<IActionResult> Search([FromQuery] string path)
 		{
 			var lookup = await _search.Search(path);
+			return Ok(lookup);
+		}
+
+		[HttpPost, Route("manga/image-search")]
+		[ProducesDefaultResponseType(typeof(ImageSearchResults))]
+		public async Task<IActionResult> Search(IFormFile file)
+		{
+			using var ms = new MemoryStream();
+			await file.CopyToAsync(ms);
+			ms.Position = 0;
+
+			var lookup = await _search.Search(ms, file.FileName);
 			return Ok(lookup);
 		}
 	}

@@ -1,5 +1,6 @@
 ﻿using CardboardBox.Http;
 using Microsoft.Extensions.Configuration;
+using System.Net.Http.Headers;
 using System.Text.Json;
 
 namespace CardboardBox.Match
@@ -15,6 +16,10 @@ namespace CardboardBox.Match
 		Task<MatchSearchResults?> Search(string url, bool allOris = false);
 
 		Task<MatchSearchResults<T>?> Search<T>(string url, bool allOris = false);
+
+		Task<MatchSearchResults<T>?> Search<T>(Stream io, string filename, bool allOris = false);
+
+		Task<MatchSearchResults<T>?> Search<T>(MemoryStream io, string filename, bool allOris = false);
 
 		Task<MatchCompareResults?> Compare(string url1, string url2);
 
@@ -72,6 +77,29 @@ namespace CardboardBox.Match
 		public Task<MatchSearchResults?> Search(string url, bool allOris = false) => Request<MatchSearchResults>("search", "POST", ("url", url), ("all_orientations", allOris ? "true" : "false"));
 
 		public Task<MatchSearchResults<T>?> Search<T>(string url, bool allOris = false) => Request<MatchSearchResults<T>>("search", "POST", ("url", url), ("all_orientations", allOris ? "true" : "false"));
+
+		public async Task<MatchSearchResults<T>?> Search<T>(Stream io, string filename, bool allOris = false)
+		{
+			using var ms = new MemoryStream();
+			await io.CopyToAsync(ms);
+
+			return await Search<T>(ms, filename, allOris);
+		}
+
+		public async Task<MatchSearchResults<T>?> Search<T>(MemoryStream io, string filename, bool allOris = false)
+		{
+			var req = _api.Create($"{MatchUrl}search", "POST");
+
+			using var content = new MultipartFormDataContent
+			{
+				{ new StringContent(allOris ? "true" : "false"), "all_orientations" },
+				{ new ByteArrayContent(io.ToArray()), "image", filename }
+			};
+
+			req.BodyContent(content);
+
+			return await req.Result<MatchSearchResults<T>>();
+		}
 
 		public Task<MatchCompareResults?> Compare(string url1, string url2) => Request<MatchCompareResults>("compare", "POST", ("url1", url1), ("url2", url2));
 

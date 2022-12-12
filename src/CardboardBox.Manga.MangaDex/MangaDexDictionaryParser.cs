@@ -12,7 +12,7 @@
 				return new Localization();
 			}
 
-			var dic = JsonSerializer.Deserialize<Dictionary<string, string>>(ref reader, options);
+			var dic = JsonSerializer.Deserialize<Dictionary<string, string>>(ref reader, options) ?? new();
 
 			var lcl = new Localization();
 			foreach (var item in dic)

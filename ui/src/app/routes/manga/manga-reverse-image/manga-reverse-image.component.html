@@ -1,0 +1,105 @@
+<cba-container [loading]="loading" flex-flow="column" [handle-scroll]="true">
+    <header>
+        <input type="file" class="file-input" accept="image/*" (change)="selected($event)" #fileInput />
+
+        <input type="url" placeholder="Image URL" [(ngModel)]="url" />
+        <button (click)="fileInput.click()">
+            <cba-icon>upload</cba-icon>
+        </button>
+        <button (click)="search()">
+            <cba-icon>search</cba-icon>
+        </button>
+    </header>
+    <main *ngIf="results && !results.bestGuess" class="center">
+        <p>Unfortunately, I couldn't find anything that matches the given image.</p>
+    </main>
+    <main *ngIf="results && results.bestGuess">
+        <h3>Best Guess:</h3>
+        <div class="best-guess">
+            <div class="result-container">
+                <a class="manga" [href]="results.bestGuess.url" target="_blank">
+                    <div class="image" [style.background-image]="'url(' + proxy(results.bestGuess.cover) + ')'"></div>
+                    <div class="details masked-overflow">
+                        <div class="title">
+                            <span>{{ results.bestGuess.title }}</span>
+                        </div>
+                        <div class="source">
+                            <b>Source:</b>&nbsp;{{ results.bestGuess.source }}
+                        </div>
+                        <div class="tags">
+                            <div class="header">Tags: </div>
+                            <div class="tag nsfw" *ngIf="results.bestGuess.nsfw">NSFW</div>
+                            <div class="tag" *ngFor="let tag of results.bestGuess.tags">{{ tag }}</div>
+                        </div>
+                        <div class="description" [markdown]="results.bestGuess.description"></div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <h3>More Results: </h3>
+        <div class="result-container" *ngFor="let res of results.match">
+            <a class="manga" [href]="res.manga.url" target="_blank">
+                <div class="image" [style.background-image]="'url(' + proxy(res.manga.cover) + ')'"></div>
+                <div class="details masked-overflow">
+                    <div class="title">
+                        <span>{{ res.manga.title }}</span>
+                    </div>
+                    <div class="source">
+                        <b>Source:</b>&nbsp;{{ res.manga.source }}
+                    </div>
+                    <div class="source">
+                        <b>Found Via:</b>&nbsp; 
+                        CBA Reverse Search (
+                            <span cba-tooltip="Confidence Compute Score" direction="down">CS: {{ res.score | number:'0.0' }}%</span>, 
+                            <span cba-tooltip="Exact Match" direction="down">EM: {{ res.exactMatch }}</span>
+                        )
+                    </div>
+                    <div class="source">
+                        <b>Link:</b>&nbsp;
+                        <a [href]="'https://mangadex.org/chapter/' + res.metadata.chapterId + '/' + res.metadata.page" target="_blank">
+                            {{ res.manga.source }}: Page #{{ res.metadata.page }}
+                        </a>
+                    </div>
+                    <div class="tags">
+                        <div class="header">Tags: </div>
+                        <div class="tag nsfw" *ngIf="res.manga.nsfw">NSFW</div>
+                        <div class="tag" *ngFor="let tag of res.manga.tags">{{ tag }}</div>
+                    </div>
+                    <div class="description" [markdown]="res.manga.description"></div>
+                </div>
+            </a>
+        </div>
+        
+        <div class="result-container" *ngFor="let res of results.vision">
+            <a class="manga" [href]="res.manga.url" target="_blank">
+                <div class="image" [style.background-image]="'url(' + proxy(res.manga.cover) + ')'"></div>
+                <div class="details masked-overflow">
+                    <div class="title">
+                        <span>{{ res.manga.title }}</span>
+                    </div>
+                    <div class="source">
+                        <b>Source:</b>&nbsp;{{ res.manga.source }}
+                    </div>
+                    <div class="source">
+                        <b>Found Via:</b>&nbsp;
+                        Google Vision (
+                            <span cba-tooltip="Confidence Compute Score" direction="down">CS: {{ res.score * 100 | number:'0.0' }}%</span>,
+                            <span cba-tooltip="Exact Match" direction="down">EM: {{ res.exactMatch }}</span>
+                        )
+                    </div>
+                    <div class="source">
+                        <b>Found On:</b>&nbsp;
+                        <a [href]="res.url" target="_blank">{{ domain(res.url) }}</a>
+                    </div>
+                    <div class="tags">
+                        <div class="header">Tags: </div>
+                        <div class="tag nsfw" *ngIf="res.manga.nsfw">NSFW</div>
+                        <div class="tag" *ngFor="let tag of res.manga.tags">{{ tag }}</div>
+                    </div>
+                    <div class="description" [markdown]="res.manga.description"></div>
+                </div>
+            </a>
+        </div>
+    </main>
+</cba-container>

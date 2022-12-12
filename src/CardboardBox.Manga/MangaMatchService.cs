@@ -1,6 +1,4 @@
-﻿using System.Net;
-
-namespace CardboardBox.Manga
+﻿namespace CardboardBox.Manga
 {
 	using Anime.Database;
 	using MangaDex;
@@ -10,8 +8,12 @@ namespace CardboardBox.Manga
 	public interface IMangaMatchService
 	{
 		Task<MatchMeta<MangaMetadata>[]> Search(string image);
+		Task<MatchMeta<MangaMetadata>[]> Search(Stream stream, string filename);
+		Task<MatchMeta<MangaMetadata>[]> Search(MemoryStream stream, string filename);
 
 		Task IndexLatest();
+
+		Task<bool> IndexPage(string image, MangaMetadata metadata, string? referer);
 	}
 
 	public class MangaMatchService : IMangaMatchService
@@ -80,24 +82,41 @@ namespace CardboardBox.Manga
 			return true;
 		}
 
-		public async Task<MatchMeta<MangaMetadata>[]> Search(string image)
+		public async Task<MatchMeta<MangaMetadata>[]> Search(Task<MatchSearchResults<MangaMetadata>?> task, string name)
 		{
-			var url = ProxyUrl(image, "external");
-			var result = await _api.Search<MangaMetadata>(url);
-
+			var result = await task;
 			if (result == null)
 			{
-				_logger.LogError($"Error occurred while searching for image: {image}");
+				_logger.LogError($"Error occurred while searching for image: {name}");
 				return Array.Empty<MatchMeta<MangaMetadata>>();
 			}
 
 			if (!result.Success)
 			{
-				_logger.LogError($"Error occurred while searching for image, {string.Join(", ", result.Error)}: {image}");
+				_logger.LogError($"Error occurred while searching for image, {string.Join(", ", result.Error)}: {name}");
 				return Array.Empty<MatchMeta<MangaMetadata>>();
 			}
 
 			return result.Result;
+		}
+
+		public async Task<MatchMeta<MangaMetadata>[]> Search(Stream stream, string filename)
+		{
+			var result = _api.Search<MangaMetadata>(stream, filename);
+			return await Search(result, filename);
+		}
+
+		public async Task<MatchMeta<MangaMetadata>[]> Search(MemoryStream stream, string filename)
+		{
+			var result = _api.Search<MangaMetadata>(stream, filename);
+			return await Search(result, filename);
+		}
+
+		public async Task<MatchMeta<MangaMetadata>[]> Search(string image)
+		{
+			var url = ProxyUrl(image, "external");
+			var result = _api.Search<MangaMetadata>(url);
+			return await Search(result, image);
 		}
 
 		public async Task IndexLatest()
@@ -168,7 +187,6 @@ namespace CardboardBox.Manga
 						MangaId = manga.Id,
 						ChapterId = chapter.Id,
 						Page = i + 1,
-						
 					};
 
 					await IndexPage(url, meta, dbManga.Referer);

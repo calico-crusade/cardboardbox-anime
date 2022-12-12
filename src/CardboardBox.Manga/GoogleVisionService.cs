@@ -6,6 +6,7 @@ namespace CardboardBox.Manga
 	public interface IGoogleVisionService
 	{
 		Task<VisionResults?> ExecuteVisionRequest(string imageUrl);
+		Task<VisionResults?> ExecuteVisionRequest(Stream stream, string name);
 	}
 
 	public class GoogleVisionService : IGoogleVisionService
@@ -19,9 +20,20 @@ namespace CardboardBox.Manga
 
 		public async Task<VisionResults?> ExecuteVisionRequest(string imageUrl)
 		{
+			var image = Image.FromUri(imageUrl);
+			return await ExecuteVisionRequest(image, imageUrl);
+		}
+
+		public async Task<VisionResults?> ExecuteVisionRequest(Stream stream, string name)
+		{
+			var image = await Image.FromStreamAsync(stream);
+			return await ExecuteVisionRequest(image, name);
+		}
+
+		public async Task<VisionResults?> ExecuteVisionRequest(Image image, string name)
+		{
 			try
 			{
-				var image = Image.FromUri(imageUrl);
 				var client = await ImageAnnotatorClient.CreateAsync();
 				var detection = await client.DetectWebInformationAsync(image);
 
@@ -46,7 +58,7 @@ namespace CardboardBox.Manga
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error occurred during Google Image Vision Request: " + imageUrl);
+				_logger.LogError(ex, "Error occurred during Google Image Vision Request: " + name);
 				return null;
 			}
 		}

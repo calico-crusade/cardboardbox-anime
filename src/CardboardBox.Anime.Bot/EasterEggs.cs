@@ -1,10 +1,5 @@
-﻿using F23.StringSimilarity;
-using System.Net;
-
-namespace CardboardBox.Anime.Bot
+﻿namespace CardboardBox.Anime.Bot
 {
-	using Manga;
-	using Manga.Providers;
 	using Services;
 
 	using Match = System.Text.RegularExpressions.Match;
@@ -124,7 +119,7 @@ namespace CardboardBox.Anime.Bot
 					.WithCurrentTimestamp();
 
 				foreach(var res in search.Vision)
-					header.AddField(res.Title, $"Google Result: [{res.FilteredTitle}]({res.Url}) - (CF: {res.Score}, EM: {res.ExactMatch})");
+					header.AddField(res.Title, $"Google Result: [{res.FilteredTitle}]({res.Url}) - (CF: {res.Score:0.00}, EM: {res.ExactMatch})");
 
 				int count = 0;
 				foreach(var res in search.Match)
@@ -133,7 +128,7 @@ namespace CardboardBox.Anime.Bot
 
 					if (res.Manga == null || res.Metadata == null || res.Score < 70) continue;
 
-					header.AddField(res.Manga.Title, $"CBA Fallback: [Mangadex]({res.Manga.Url}) - (CF: {res.Score}, EM: {res.ExactMatch})");
+					header.AddField(res.Manga.Title, $"CBA Fallback: [Mangadex]({res.Manga.Url}) - (CF: {res.Score:0.00}, EM: {res.ExactMatch})");
 					count++;
 				}
 

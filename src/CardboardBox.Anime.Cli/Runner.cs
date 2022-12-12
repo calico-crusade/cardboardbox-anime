@@ -51,6 +51,7 @@ namespace CardboardBox.Anime.Cli
 		private readonly IMangaService _manga;
 		private readonly IMangaMatchService _match;
 		private readonly IMangaCacheDbService _cacheDb;
+		private readonly IMangaDbService _mangaDb;
 
 		public Runner(
 			IVrvApiService vrv, 
@@ -73,7 +74,8 @@ namespace CardboardBox.Anime.Cli
 			INhentaiSource nhentai,
 			IMangaService manga,
 			IMangaMatchService match,
-			IMangaCacheDbService cacheDb)
+			IMangaCacheDbService cacheDb,
+			IMangaDbService mangaDb)
 		{
 			_vrv = vrv;
 			_logger = logger;
@@ -96,6 +98,7 @@ namespace CardboardBox.Anime.Cli
 			_manga = manga;
 			_match = match;
 			_cacheDb = cacheDb;
+			_mangaDb = mangaDb;
 		}
 
 		public async Task<int> Run(string[] args)
@@ -130,6 +133,7 @@ namespace CardboardBox.Anime.Cli
 					case "manga": await TestManga(); break;
 					case "index": await Index(); break;
 					case "fix-cache": await FixCache(); break;
+					case "index-db": await IndexDbImages(); break;
 					default: _logger.LogInformation("Invalid command: " + command); break;
 				}
 
@@ -839,6 +843,57 @@ namespace CardboardBox.Anime.Cli
 			}
 
 			_logger.LogInformation("Cover art has been fixed");
+		}
+
+		public async Task IndexDbImages()
+		{
+			var manga = await _mangaDb.All();
+			var chapters = await _mangaDb.AllChapters();
+
+			int count = 0;
+			foreach(var m in manga)
+			{
+				if (count >= 10)
+				{
+					count = 0;
+					_logger.LogInformation("Delaying for 5 seconds to mitigate rate-limits");
+					await Task.Delay(5 * 1000);
+				}
+
+				_logger.LogInformation($"Indexing pages for: {m.Title} ({m.Id})");
+				var chaps = chapters.Where(t => t.MangaId == m.Id);
+				var cmi = await _cacheDb.Upsert(m);
+				foreach(var chapter in chaps)
+				{
+					chapter.MangaId = cmi;
+					await _cacheDb.Upsert(chapter);
+
+					var chunk = chapter.Pages.Select((t, i) => (t, i)).Split(5);
+					await Parallel.ForEachAsync(chunk, async (t, c) =>
+					{
+						foreach(var (url, index) in t)
+						{
+							var meta = new MangaMetadata
+							{
+								Id = url.MD5Hash(),
+								Source = m.Provider,
+								Url = url,
+								Type = MangaMetadataType.Page,
+								MangaId = m.SourceId,
+								ChapterId = chapter.SourceId,
+								Page = index + 1,
+							};
+
+							await _match.IndexPage(url, meta, m.Referer);
+						}
+					});
+				}
+
+				_logger.LogInformation($"Finished indexing pages for: {m.Title} ({cmi}).");
+				count++;
+			}
+
+			_logger.LogInformation("Finished");
 		}
 	}
 }

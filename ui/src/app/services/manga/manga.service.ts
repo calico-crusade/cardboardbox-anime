@@ -5,7 +5,7 @@ import { Filters } from "../anime/anime.model";
 import { ConfigObject } from "../config.base";
 import { HttpService, RxjsHttpResp } from "../http.service";
 import { StorageVar } from "../storage-var";
-import { Manga, MangaChapter, MangaFilter, MangaProgress, MangaProgressUpdate, MangaStripReq, MangaWithChapters, PaginatedManga, PaginatedMangaProgress } from "./manga.model";
+import { ImageSearch, Manga, MangaChapter, MangaFilter, MangaProgress, MangaProgressUpdate, MangaStripReq, MangaWithChapters, PaginatedManga, PaginatedMangaProgress } from "./manga.model";
 import { DateTime } from 'luxon';
 import { AuthService } from "../auth/auth.service";
 
@@ -162,4 +162,16 @@ export class MangaService extends ConfigObject {
     }
 
     clone<T>(item: T): T { return JSON.parse(JSON.stringify(item)); }
+
+    imageSearch(url: string): RxjsHttpResp<ImageSearch>;
+    imageSearch(file: File): RxjsHttpResp<ImageSearch>;
+    imageSearch(item: string | File) {
+        if (typeof item === 'string') {
+            return this.http.get<ImageSearch>(`manga/image-search`, { params: { path: item } });
+        }
+
+        const data = new FormData();
+        data.append('file', item);
+        return this.http.post<ImageSearch>(`manga/image-search`, data);
+    }
 }

@@ -3,10 +3,12 @@
 namespace CardboardBox.Manga
 {
 	using Anime.Database;
+	using Match;
 	using Providers;
 
 	public interface IMangaSearchService
 	{
+		Task<ImageSearchResults> Search(MemoryStream stream, string filename);
 		Task<ImageSearchResults> Search(string image);
 	}
 
@@ -30,6 +32,25 @@ namespace CardboardBox.Manga
 			_md = md;
 			_logger = logger;
 			_db = db;
+		}
+
+		public async Task<ImageSearchResults> Search(MemoryStream stream, string filename)
+		{
+			var results = new ImageSearchResults();
+
+			using var second = new MemoryStream();
+			await stream.CopyToAsync(second);
+
+			stream.Position = 0;
+			second.Position = 0;
+
+			await Task.WhenAll(
+				HandleFallback(stream, filename, results),
+				HandleVision(second, filename, results));
+
+			DetermineBestGuess(results);
+
+			return results;
 		}
 
 		public async Task<ImageSearchResults> Search(string image)
@@ -84,9 +105,19 @@ namespace CardboardBox.Manga
 		}
 
 		#region Fallback
-		public async Task HandleFallback(string image, ImageSearchResults output)
+		public Task HandleFallback(MemoryStream stream, string filename, ImageSearchResults output)
 		{
-			var results = await _match.Search(image);
+			return HandleFallback(_match.Search(stream, filename), output);
+		}
+
+		public Task HandleFallback(string image, ImageSearchResults output)
+		{
+			return HandleFallback(_match.Search(image), output);
+		}
+
+		public async Task HandleFallback(Task<MatchMeta<MangaMetadata>[]> task, ImageSearchResults output)
+		{
+			var results = await task;
 			if (results.Length == 0) return;
 
 			var ids = results
@@ -96,7 +127,7 @@ namespace CardboardBox.Manga
 
 			var manga = await _db.ByIds(ids);
 
-			foreach(var res in results)
+			foreach (var res in results)
 			{
 				var m = manga.FirstOrDefault(t => t.SourceId == res.Metadata?.MangaId);
 				var trimmed = m == null ? null : (TrimmedManga)m;
@@ -115,12 +146,22 @@ namespace CardboardBox.Manga
 		#endregion
 
 		#region Vision
-		public async Task HandleVision(string image, ImageSearchResults output)
+		public Task HandleVision(string image, ImageSearchResults output)
 		{
-			var vision = await _vision.ExecuteVisionRequest(image);
+			return HandleVision(_vision.ExecuteVisionRequest(image), output);
+		}
+
+		public Task HandleVision(MemoryStream stream, string filename, ImageSearchResults output)
+		{
+			return HandleVision(_vision.ExecuteVisionRequest(stream, filename), output);
+		}
+
+		public async Task HandleVision(Task<VisionResults?> task, ImageSearchResults output)
+		{
+			var vision = await task;
 			if (vision == null) return;
 
-			for(var i = 0; i < vision.WebPages.Length && i < 3; i++)
+			for (var i = 0; i < vision.WebPages.Length && i < 3; i++)
 			{
 				var (url, title) = vision.WebPages[i];
 				var filtered = PurgeVisionTitle(title);
@@ -130,8 +171,13 @@ namespace CardboardBox.Manga
 				var results = await SearchMangaDex(filtered, url, title).ToArrayAsync();
 
 				output.Vision.AddRange(results);
-				if (results.Any(t => t.ExactMatch)) return;
+				if (results.Any(t => t.ExactMatch)) break;
 			}
+
+			output.Vision = output.Vision
+				.OrderByDescending(t => t.Score)
+				.DistinctBy(t => t.Url)
+				.ToList();
 		}
 
 		public async IAsyncEnumerable<VisionResult> SearchMangaDex(string title, string url, string originalTitle)

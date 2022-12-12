@@ -8,6 +8,10 @@ namespace CardboardBox.Anime.Database
 
 	public interface IMangaDbService
 	{
+		Task<DbManga[]> All();
+
+		Task<DbMangaChapter[]> AllChapters();
+
 		Task<long> Upsert(DbManga manga);
 
 		Task<long> Upsert(DbMangaChapter chapter);
@@ -83,6 +87,11 @@ namespace CardboardBox.Anime.Database
 			IProfileDbService prof) : base(query, sql) 
 		{ 
 			_prof = prof;
+		}
+
+		public Task<DbMangaChapter[]> AllChapters()
+		{
+			return _sql.Get<DbMangaChapter>("SELECT * FROM " + TABLE_NAME_MANGA_CHAPTER);
 		}
 
 		public MangaSortField[] SortFields()

@@ -130,3 +130,42 @@ export interface MangaStripReq {
     mangaId: number;
     pages: MangaStrip[];
 }
+
+export interface ImageSearchManga {
+    title: string;
+    id: string;
+    url: string;
+    description: string;
+    source: string;
+    nsfw: boolean;
+    cover: string;
+    tags: string[];
+}
+
+export interface ImageSearch {
+    vision: {
+        url: string;
+        title: string;
+        filteredTitle: string;
+        score: number;
+        exactMatch: boolean;
+        manga: ImageSearchManga;
+    }[];
+
+    match: {
+        metadata: {
+            id: string;
+            url: string;
+            source: string;
+            type: number;
+            mangaId: string;
+            chapterId?: string;
+            page?: number;
+        };
+        score: number;
+        exactMatch: boolean;
+        manga: ImageSearchManga;
+    }[];
+
+    bestGuess?: ImageSearchManga;
+}

@@ -7,6 +7,8 @@
 	{
 		Task<DbManga[]> All();
 
+		Task<DbMangaChapter[]> AllChapters();
+
 		Task<long> Upsert(DbManga manga);
 
 		Task<long> Upsert(DbMangaChapter chapter);
@@ -29,6 +31,12 @@
 		public MangaCacheDbService(
 			IDbQueryBuilderService query,
 			ISqlService sql) : base(query, sql) { }
+
+		public Task<DbMangaChapter[]> AllChapters()
+		{
+			const string QUERY = "SELECT * FROM " + TABLE_NAME_MANGA_CHAPTER;
+			return _sql.Get<DbMangaChapter>(QUERY);
+		}
 
 		public Task<long> Upsert(DbManga manga)
 		{
