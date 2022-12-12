@@ -1,13 +1,12 @@
 <cba-container [loading]="loading" flex-flow="column" [handle-scroll]="true">
     <header>
         <input type="file" class="file-input" accept="image/*" (change)="selected($event)" #fileInput />
-
         <input type="url" placeholder="Image URL" [(ngModel)]="url" />
-        <button (click)="fileInput.click()">
-            <cba-icon>upload</cba-icon>
-        </button>
-        <button (click)="search()">
+        <button (click)="search()" cba-tooltip="Search by File URL" direction="down">
             <cba-icon>search</cba-icon>
+        </button>
+        <button (click)="fileInput.click()" cba-tooltip="Search by Uploaded File" direction="down">
+            <cba-icon>upload</cba-icon>
         </button>
     </header>
     <main *ngIf="results && !results.bestGuess" class="center">
