@@ -16,6 +16,8 @@
 		Task<MangaCache[]> DetermineExisting(string[] chapterIds);
 
 		Task<DbManga[]> ByIds(string[] mangaIds);
+
+		Task MergeUpdates();
 	}
 
 	public class MangaCacheDbService : OrmMapExtended<DbManga>, IMangaCacheDbService
@@ -93,6 +95,43 @@ WHERE
 				var chaChapter = t.item4.Title == null ? null : t.item4;
 				return new MangaCache(manga, chapter, cbamanga, chaChapter);
 			}).ToArray();
+		}
+
+		public Task MergeUpdates()
+		{
+			const string QUERY = @"INSERT INTO manga_chapter
+(
+    manga_id,
+    title,
+    url,
+    source_id,
+    ordinal,
+    volume,
+    language,
+    pages,
+    external_url,
+    created_at,
+    updated_at
+)
+SELECT
+    om.id as manga_id,
+    mcc.title,
+    mcc.url,
+    mcc.source_id,
+    mcc.ordinal,
+    mcc.volume,
+    mcc.language,
+    mcc.pages,
+    mcc.external_url,
+    CURRENT_TIMESTAMP as created_at,
+    CURRENT_TIMESTAMP as updated_at
+FROM manga_chapter_cache mcc
+JOIN manga_cache mc ON mc.id = mcc.manga_id
+JOIN manga om ON om.source_id = mc.source_id AND om.provider = mc.provider
+LEFT JOIN manga_chapter omc ON omc.source_id = mcc.source_id AND om.id = omc.manga_id
+WHERE
+    omc.id IS NULL;";
+			return _sql.Execute(QUERY);
 		}
 	}
 
