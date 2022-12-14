@@ -134,6 +134,7 @@ namespace CardboardBox.Anime.Cli
 					case "index": await Index(); break;
 					case "fix-cache": await FixCache(); break;
 					case "index-db": await IndexDbImages(); break;
+					case "index-covers": await IndexCovers(); break;
 					default: _logger.LogInformation("Invalid command: " + command); break;
 				}
 
@@ -893,6 +894,24 @@ namespace CardboardBox.Anime.Cli
 				count++;
 			}
 
+			_logger.LogInformation("Finished");
+		}
+
+		public async Task IndexCovers()
+		{
+			var manga = await _cacheDb.All();
+			var images = manga.Select(t => (t.Referer, new MangaMetadata
+			{
+				Id = t.Cover.MD5Hash(),
+				Source = t.Provider,
+				Url = t.Cover,
+				Type = MangaMetadataType.Cover,
+				MangaId = t.SourceId,
+			}));
+
+			_logger.LogInformation("Starting cover indexing for: " + manga.Length);
+			foreach (var (referer, data) in images)
+				await _match.IndexPage(data.Url, data, referer);
 			_logger.LogInformation("Finished");
 		}
 	}

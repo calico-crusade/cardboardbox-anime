@@ -147,7 +147,6 @@
 
 				if (existing != null)
 				{
-					await ProcessUpdates(chapter, manga, existing);
 					continue;
 				}
 
@@ -174,6 +173,15 @@
 				}
 
 				var (dbChap, dbManga) = await Convert(chapter, manga, pages.Images);
+
+				await IndexPage(dbManga.Cover, new MangaMetadata
+				{
+					Id = dbManga.Cover.MD5Hash(),
+					Source = "mangadex",
+					Url = dbManga.Cover,
+					Type = MangaMetadataType.Cover,
+					MangaId = manga.Id,
+				}, dbManga.Referer);
 
 				for(var i = 0; i < dbChap.Pages.Length; i++)
 				{
@@ -232,11 +240,6 @@
 			if (m == null) return null;
 
 			return (MangaDexManga)m;
-		}
-
-		public async Task ProcessUpdates(MangaDexChapter chapter, MangaDexManga manga, MangaCache cache)
-		{
-
 		}
 
 		public async Task<(DbMangaChapter chapter, DbManga manga)> Convert(MangaDexChapter chapter, MangaDexManga manga, string[] pages)
