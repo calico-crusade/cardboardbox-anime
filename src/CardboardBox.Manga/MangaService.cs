@@ -43,7 +43,8 @@ namespace CardboardBox.Manga
 			IMangakakalotComSource mangakakalot2,
 			IMangaDexSource mangaDex,
 			IMangaClashSource mangaClash,
-			INhentaiSource nhentai)
+			INhentaiSource nhentai,
+			IBattwoSource battwo)
 		{
 			_db = db;
 			_match = match;

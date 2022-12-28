@@ -15,6 +15,7 @@
 				.AddTransient<IMangaDexSource, MangaDexSource>()
 				.AddTransient<IMangaClashSource, MangaClashSource>()
 				.AddTransient<INhentaiSource, NhentaiSource>()
+				.AddTransient<IBattwoSource, BattwoSource>()
 
 				.AddTransient<IMangaEpubService, MangaEpubService>()
 				.AddTransient<IMangaImageService, MangaImageService>()

@@ -52,6 +52,7 @@ namespace CardboardBox.Anime.Cli
 		private readonly IMangaMatchService _match;
 		private readonly IMangaCacheDbService _cacheDb;
 		private readonly IMangaDbService _mangaDb;
+		private readonly IBattwoSource _battwo;
 
 		public Runner(
 			IVrvApiService vrv, 
@@ -75,7 +76,8 @@ namespace CardboardBox.Anime.Cli
 			IMangaService manga,
 			IMangaMatchService match,
 			IMangaCacheDbService cacheDb,
-			IMangaDbService mangaDb)
+			IMangaDbService mangaDb,
+			IBattwoSource battwo)
 		{
 			_vrv = vrv;
 			_logger = logger;
@@ -99,6 +101,7 @@ namespace CardboardBox.Anime.Cli
 			_match = match;
 			_cacheDb = cacheDb;
 			_mangaDb = mangaDb;
+			_battwo = battwo;
 		}
 
 		public async Task<int> Run(string[] args)
@@ -135,6 +138,7 @@ namespace CardboardBox.Anime.Cli
 					case "fix-cache": await FixCache(); break;
 					case "index-db": await IndexDbImages(); break;
 					case "index-covers": await IndexCovers(); break;
+					case "battwo": await TestBattow(); break;
 					default: _logger.LogInformation("Invalid command: " + command); break;
 				}
 
@@ -913,6 +917,13 @@ namespace CardboardBox.Anime.Cli
 			foreach (var (referer, data) in images)
 				await _match.IndexPage(data.Url, data, referer);
 			_logger.LogInformation("Finished");
+		}
+
+		public async Task TestBattow()
+		{
+			var manga = await _battwo.Manga("113585");
+
+			Console.WriteLine("Found");
 		}
 	}
 }

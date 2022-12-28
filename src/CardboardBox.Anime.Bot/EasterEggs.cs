@@ -45,7 +45,8 @@
 
 			var msg = await arg.Channel.GetMessageAsync(arg.Reference.MessageId.Value);
 
-			if (arg.Content.ToLower().Contains("lookup"))
+			var words = new[] { "lookup", "yo", "wat dis" };
+			if (words.Any(t => arg.Content.ToLower().Contains(t)))
 			{
 				await HandleMangaLookup(msg, arg, reference);
 				return;
