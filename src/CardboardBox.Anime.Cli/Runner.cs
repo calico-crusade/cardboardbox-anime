@@ -723,25 +723,32 @@ namespace CardboardBox.Anime.Cli
 
 		public async Task TestManga()
 		{
-			const string URL = "https://mangakakalot.com/read-rm5iu158524511364";
-
-			var manga = await _manga.Manga(URL, null, true);
-			if (manga == null)
+			var urls = new[]
 			{
-				_logger.LogWarning("Error occurred while fetching manga");
-				return;
-			}
+				"https://mangakakalot.com/read-rm5iu158524511364",
+				"https://mangakakalot.com/manga/sekai_saikyou_no_shinjuu_tsukai"
+			};
 
-			var chap = manga.Chapters.First();
-			var chapter = await _manga.MangaPages(chap, true);
-
-			if (chapter.Length == 0)
+			foreach (var url in urls)
 			{
-				_logger.LogWarning("Error occurred while fetching pages");
-				return;
-			}
+				var manga = await _manga.Manga(url, null, true);
+				if (manga == null)
+				{
+					_logger.LogWarning("Error occurred while fetching manga");
+					return;
+				}
 
-			_logger.LogInformation("Fetched all of the manga");
+				var chap = manga.Chapters.First();
+				var chapter = await _manga.MangaPages(chap, true);
+
+				if (chapter.Length == 0)
+				{
+					_logger.LogWarning("Error occurred while fetching pages");
+					continue;
+				}
+
+				_logger.LogInformation("Fetched all of the manga");
+			}
 		}
 
 		public async Task Index()

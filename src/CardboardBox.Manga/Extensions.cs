@@ -12,6 +12,7 @@
 
 				.AddTransient<IMangakakalotTvSource, MangakakalotTvSource>()
 				.AddTransient<IMangakakalotComSource, MangakakalotComSource>()
+				.AddTransient<IMangakakalotComAltSource, MangakakalotComAltSource>()
 				.AddTransient<IMangaDexSource, MangaDexSource>()
 				.AddTransient<IMangaClashSource, MangaClashSource>()
 				.AddTransient<INhentaiSource, NhentaiSource>()

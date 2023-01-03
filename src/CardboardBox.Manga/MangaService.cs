@@ -41,6 +41,7 @@ namespace CardboardBox.Manga
 			IMangaDexService md,
 			IMangakakalotTvSource mangakakalot, 
 			IMangakakalotComSource mangakakalot2,
+			IMangakakalotComAltSource mangakakalot3,
 			IMangaDexSource mangaDex,
 			IMangaClashSource mangaClash,
 			INhentaiSource nhentai,
@@ -55,7 +56,8 @@ namespace CardboardBox.Manga
 				mangakakalot,
 				mangaClash,
 				nhentai,
-				mangakakalot2
+				mangakakalot2,
+				mangakakalot3
 			};
 		}
 
