@@ -72,10 +72,10 @@ namespace CardboardBox.Anime.Database
 		private string? _getChapterQuery;
 		private string? _getMangaQuery;
 
-		private List<string> _upsertChapters = new();
-		private List<string> _upsertManga = new();
-		private List<string> _upsertProgress = new();
-		private List<string> _upsertBookmark = new();
+		private readonly List<string> _upsertChapters = new();
+		private readonly List<string> _upsertManga = new();
+		private readonly List<string> _upsertProgress = new();
+		private readonly List<string> _upsertBookmark = new();
 
 		public override string TableName => TABLE_NAME_MANGA;
 

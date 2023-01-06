@@ -1,5 +1,9 @@
 ﻿namespace CardboardBox.Anime.Bot
 {
+	using Database.Mapping;
+	using Database.Generation;
+	using Services;
+
 	public static class Extensions
 	{
 		public static TData? Case<TKey, TData>(this TKey? item, params (TKey, TData?)[] pars)
@@ -65,6 +69,26 @@
 			action ??= (t) => { };
 
 			return handler.RemoveComponents(action);
+		}
+
+		public static IServiceCollection AddDatabase(this IServiceCollection services)
+		{
+			MapConfig.AddMap(c =>
+			{
+				c.ForEntity<LookupRequest>();
+			});
+
+			MapConfig.StartMap();
+
+			SqlMapper.RemoveTypeMap(typeof(DateTime));
+			SqlMapper.RemoveTypeMap(typeof(DateTime?));
+			SqlMapper.AddTypeHandler(new DateTimeHandler());
+			SqlMapper.AddTypeHandler(new NullableDateTimeHandler());
+
+			return services
+				.AddSingleton<ISqlService, SqliteService>()
+				.AddTransient<IDbQueryBuilderService, SqliteDbQueryBuilderService>()
+				.AddTransient<IDbService, DbService>();
 		}
 	}
 }

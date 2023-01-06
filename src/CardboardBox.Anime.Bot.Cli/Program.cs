@@ -20,6 +20,8 @@ var bot = DiscordBotBuilder.Start()
 		 .AddTransient<IGoogleVisionService, GoogleVisionService>()
 		 .AddSingleton<IDiscordApiService, DiscordApiService>()
 		 .AddTransient<IPersistenceService, PersistenceService>()
+		 .AddTransient<IMangaLookupService, MangaLookupService>()
+		 .AddDatabase()
 		 .AddTransient<MangaUpdater>()
 		 .AddTransient<EasterEggs>()
 		 .AddManga();

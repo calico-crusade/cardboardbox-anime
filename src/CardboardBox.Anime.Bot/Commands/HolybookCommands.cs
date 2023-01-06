@@ -2,10 +2,11 @@
 using CardboardBox.Anime.Holybooks;
 using Maturity = CardboardBox.Anime.Core.Models.AnimeFilter.MatureType;
 using DiscordClient = Discord.WebSocket.DiscordSocketClient;
-using IAnimeApiService = CardboardBox.Anime.Bot.Services.IAnimeApiService;
 
 namespace CardboardBox.Anime.Bot.Commands
 {
+	using Services;
+
 	public class HolybookCommands
 	{
 		public const long DEFAULT_STEPS = 20, DEFAULT_SIZE = 512;
@@ -18,6 +19,7 @@ namespace CardboardBox.Anime.Bot.Commands
 		private readonly IAnimeApiService _anime;
 		private readonly ILogger _logger;
 		private readonly IAiAnimeService _ai;
+		private readonly IDbService _db;
 		private readonly DiscordClient _client;
 		private readonly Random _rnd = new();
 
@@ -27,6 +29,7 @@ namespace CardboardBox.Anime.Bot.Commands
 			IAnimeApiService anime,
 			IAiAnimeService ai,
 			IApiService api,
+			IDbService db,
 			DiscordClient client)
 		{
 			_holybooks = holybooks;
@@ -35,6 +38,7 @@ namespace CardboardBox.Anime.Bot.Commands
 			_ai = ai;
 			_api = api;
 			_client = client;
+			_db = db;
 		}
 
 		[Command("ping", "Checks to see if the bot is still alive.")]

@@ -44,7 +44,7 @@ namespace CardboardBox.Anime.Database.Generation
 	public class DbQueryBuilderService : IDbQueryBuilderService
 	{
 		#region Helper Methods
-		public Dictionary<string, string> PropertyMask => new()
+		public virtual Dictionary<string, string> PropertyMask => new()
 		{
 			["updated_at"] = "CURRENT_TIMESTAMP",
 			["created_at"] = "CURRENT_TIMESTAMP"
@@ -243,7 +243,7 @@ WHERE
 			throw new ArgumentException($"{type.Name} is not supported.");
 		}
 
-		public string Select<T>(string tableName, Action<PropertyExpressionBuilder<T>> columns)
+		public virtual string Select<T>(string tableName, Action<PropertyExpressionBuilder<T>> columns)
 		{
 			var propNames = GetPropertyNames(columns);
 			var map = GetPropertyMap(propNames, Array.Empty<string>(), false, true);
@@ -283,6 +283,22 @@ OFFSET :{offsetName};
 
 SELECT COUNT(*) FROM {tableName} {where};";
 
+		}
+	}
+
+	public class SqliteDbQueryBuilderService : DbQueryBuilderService
+	{
+		public override Dictionary<string, string> PropertyMask => new ()
+		{
+			["updated_at"] = "datetime('now')",
+			["created_at"] = "datetime('now')"
+		};
+
+		public override string Select<T>(string tableName, Action<PropertyExpressionBuilder<T>> columns)
+		{
+			var propNames = GetPropertyNames(columns);
+			var map = GetPropertyMap(propNames, Array.Empty<string>(), false, false);
+			return Select(tableName, map);
 		}
 	}
 

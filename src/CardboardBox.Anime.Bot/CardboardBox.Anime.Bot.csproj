@@ -10,6 +10,7 @@
     <PackageReference Include="CardboardBox.Discord" Version="1.0.10" />
     <PackageReference Include="F23.StringSimilarity" Version="5.0.0" />
     <PackageReference Include="Google.Cloud.Vision.V1" Version="3.2.0" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="7.0.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -21,6 +22,12 @@
 
 	<ItemGroup>
 		<Compile Include="./../global.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="Scripts\0-table-1-lookup-requests.sql">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 
 </Project>
