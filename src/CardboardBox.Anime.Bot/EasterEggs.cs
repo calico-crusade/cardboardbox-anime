@@ -8,24 +8,15 @@
 	{
 		private readonly DiscordSocketClient _client;
 		private readonly IDiscordApiService _api;
-		private readonly ILogger _logger;
-		private readonly IMangaApiService _manga;
-		private readonly IDbService _db;
 		private readonly IMangaLookupService _lookup;
 
 		public EasterEggs(
 			DiscordSocketClient client,
 			IDiscordApiService api,
-			ILogger<EasterEggs> logger,
-			IMangaApiService manga,
-			IDbService db,
 			IMangaLookupService lookup)
 		{
 			_client = client;
 			_api = api;
-			_logger = logger;
-			_manga = manga;
-			_db = db;
 			_lookup = lookup;
 		}
 

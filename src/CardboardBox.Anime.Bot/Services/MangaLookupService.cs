@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CardboardBox.Anime.Bot.Services
+﻿namespace CardboardBox.Anime.Bot.Services
 {
 	public interface IMangaLookupService
 	{

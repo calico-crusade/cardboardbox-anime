@@ -22,11 +22,18 @@
 
 		public async Task Run()
 		{
-			_logger.LogInformation("Starting indexing...");
-			await _match.IndexLatest();
-			_logger.LogInformation("Finished indexing. Starting update merger...");
-			await _db.MergeUpdates();
-			_logger.LogInformation("Finished update merger.");
+			try
+			{
+				_logger.LogInformation("Starting indexing...");
+				await _match.IndexLatest();
+				_logger.LogInformation("Finished indexing. Starting update merger...");
+				await _db.MergeUpdates();
+				_logger.LogInformation("Finished update merger.");
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error occurred while processing reverse image search");
+			}
 		}
 	}
 }
