@@ -25,12 +25,7 @@
 
 		public string[] ExcludedOriginalLanguage { get; set; } = Array.Empty<string>();
 
-		public ContentRatingType[] ContentRating { get; set; } = new[]
-		{
-			ContentRatingType.safe,
-			ContentRatingType.erotica,
-			ContentRatingType.suggestive
-		};
+		public ContentRatingType[] ContentRating { get; set; } = ContentRatingsAll;
 
 		public string[] ExcludedGroups { get; set; } = Array.Empty<string>();
 
