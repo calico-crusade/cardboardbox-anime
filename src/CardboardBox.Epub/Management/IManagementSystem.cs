@@ -1,9 +1,8 @@
-﻿namespace CardboardBox.Epub.Management
+﻿namespace CardboardBox.Epub.Management;
+
+public interface IManagementSystem
 {
-	public interface IManagementSystem
-	{
-		void Initialize();
-		Task Finish();
-		Task Add(string filename, Stream content);
-	}
+	void Initialize();
+	Task Finish();
+	Task Add(string filename, Stream content);
 }

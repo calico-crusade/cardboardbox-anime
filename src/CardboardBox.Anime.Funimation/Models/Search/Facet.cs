@@ -1,13 +1,12 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace CardboardBox.Anime.Funimation
-{
-    public class Facet
-    {
-        [JsonPropertyName("term")]
-        public string Term { get; set; } = "";
+namespace CardboardBox.Anime.Funimation;
 
-        [JsonPropertyName("count")]
-        public int Count { get; set; }       
-    }
+public class Facet
+{
+    [JsonPropertyName("term")]
+    public string Term { get; set; } = "";
+
+    [JsonPropertyName("count")]
+    public int Count { get; set; }       
 }

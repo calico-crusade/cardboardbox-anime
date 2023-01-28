@@ -1,9 +1,8 @@
-﻿namespace CardboardBox.Anime.Core
-{
-	using Models;
+﻿namespace CardboardBox.Anime.Core;
 
-	public interface IAnimeApiService
-	{
-		IAsyncEnumerable<Anime> All();
-	}
+using Models;
+
+public interface IAnimeApiService
+{
+	IAsyncEnumerable<Anime> All();
 }

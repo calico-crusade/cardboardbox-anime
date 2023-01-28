@@ -1,24 +1,23 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace CardboardBox.Anime.Api.Controllers
+namespace CardboardBox.Anime.Api.Controllers;
+
+using Anime.Core;
+
+[ApiController]
+public class MiscController : ControllerBase
 {
-	using Anime.Core;
+	private readonly IFileCacheService _cache;
 
-	[ApiController]
-	public class MiscController : ControllerBase
+	public MiscController(IFileCacheService cache)
 	{
-		private readonly IFileCacheService _cache;
+		_cache = cache;
+	}
 
-		public MiscController(IFileCacheService cache)
-		{
-			_cache = cache;
-		}
-
-		[HttpGet, Route("misc/file")]
-		public async Task<IActionResult> GetFile([FromQuery] string path)
-		{
-			var (io, name, mime) = await _cache.GetFile(path);
-			return File(io, mime, name);
-		}
+	[HttpGet, Route("misc/file")]
+	public async Task<IActionResult> GetFile([FromQuery] string path)
+	{
+		var (io, name, mime) = await _cache.GetFile(path);
+		return File(io, mime, name);
 	}
 }

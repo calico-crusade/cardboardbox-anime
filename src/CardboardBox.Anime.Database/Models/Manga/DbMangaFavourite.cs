@@ -1,11 +1,10 @@
-﻿namespace CardboardBox.Anime.Database
-{
-	public class DbMangaFavourite : DbObject
-	{
-		[JsonPropertyName("profileId")]
-		public long ProfileId { get; set; }
+﻿namespace CardboardBox.Anime.Database;
 
-		[JsonPropertyName("mangaId")]
-		public long MangaId { get; set; }
-	}
+public class DbMangaFavourite : DbObject
+{
+	[JsonPropertyName("profileId")]
+	public long ProfileId { get; set; }
+
+	[JsonPropertyName("mangaId")]
+	public long MangaId { get; set; }
 }

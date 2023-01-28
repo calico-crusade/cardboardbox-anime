@@ -1,22 +1,21 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace CardboardBox.Anime.AI
+namespace CardboardBox.Anime.AI;
+
+public class AiResponse
 {
-	public class AiResponse
-	{
-		[JsonPropertyName("html")]
-		public string Html { get; set; } = string.Empty;
+	[JsonPropertyName("html")]
+	public string Html { get; set; } = string.Empty;
 
-		[JsonPropertyName("images")]
-		public string[] Images { get; set; } = Array.Empty<string>();
+	[JsonPropertyName("images")]
+	public string[] Images { get; set; } = Array.Empty<string>();
 
-		[JsonPropertyName("info")]
-		public string Info { get; set; } = string.Empty;
-	}
+	[JsonPropertyName("info")]
+	public string Info { get; set; } = string.Empty;
+}
 
-	public class EmbeddingsResponse
-	{
-		[JsonPropertyName("embeddings")]
-		public string[] Embeddings { get; set; } = Array.Empty<string>();
-	}
+public class EmbeddingsResponse
+{
+	[JsonPropertyName("embeddings")]
+	public string[] Embeddings { get; set; } = Array.Empty<string>();
 }

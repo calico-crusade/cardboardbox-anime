@@ -1,10 +1,9 @@
-﻿namespace CardboardBox.Anime.Funimation
+﻿namespace CardboardBox.Anime.Funimation;
+
+public enum Sort
 {
-	public enum Sort
-	{
-		DateDesc,
-		DateAsc,
-		NameDesc,
-		NameAsc
-	}
+	DateDesc,
+	DateAsc,
+	NameDesc,
+	NameAsc
 }

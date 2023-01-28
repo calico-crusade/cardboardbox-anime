@@ -1,8 +1,7 @@
-﻿namespace CardboardBox.LightNovel.Core
+﻿namespace CardboardBox.LightNovel.Core;
+
+public class Chapter : BookBase
 {
-	public class Chapter : BookBase
-	{
-		[JsonPropertyName("bookId")]
-		public long BookId { get; set; }
-	}
+	[JsonPropertyName("bookId")]
+	public long BookId { get; set; }
 }

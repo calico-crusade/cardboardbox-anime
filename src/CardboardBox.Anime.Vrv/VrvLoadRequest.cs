@@ -1,26 +1,25 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace CardboardBox.Anime.Vrv
+namespace CardboardBox.Anime.Vrv;
+
+public class VrvLoadRequest
 {
-	public class VrvLoadRequest
+	[JsonPropertyName("policy")]
+	public string Policy { get; set; } = "";
+
+	[JsonPropertyName("signature")]
+	public string Signature { get; set; } = "";
+
+	[JsonPropertyName("keyPairId")]
+	public string KeyPairId { get; set; } = "";
+
+	public Dictionary<string, string> ToDictionary()
 	{
-		[JsonPropertyName("policy")]
-		public string Policy { get; set; } = "";
-
-		[JsonPropertyName("signature")]
-		public string Signature { get; set; } = "";
-
-		[JsonPropertyName("keyPairId")]
-		public string KeyPairId { get; set; } = "";
-
-		public Dictionary<string, string> ToDictionary()
+		return new()
 		{
-			return new()
-			{
-				["Policy"] = Policy,
-				["Signature"] = Signature,
-				["Key-Pair-Id"] = KeyPairId
-			};
-		}
+			["Policy"] = Policy,
+			["Signature"] = Signature,
+			["Key-Pair-Id"] = KeyPairId
+		};
 	}
 }

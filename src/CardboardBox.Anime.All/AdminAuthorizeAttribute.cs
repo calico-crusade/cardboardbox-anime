@@ -1,12 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 
-namespace CardboardBox.Anime
+namespace CardboardBox.Anime;
+
+public class AdminAuthorizeAttribute : AuthorizeAttribute
 {
-	public class AdminAuthorizeAttribute : AuthorizeAttribute
+	public AdminAuthorizeAttribute()
 	{
-		public AdminAuthorizeAttribute()
-		{
-			Roles = "Admin";
-		}
+		Roles = "Admin";
 	}
 }

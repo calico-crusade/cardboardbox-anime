@@ -1,49 +1,45 @@
-﻿//using iText.Html2pdf;
+﻿namespace CardboardBox.LightNovel.Core;
 
-namespace CardboardBox.LightNovel.Core
+using Anime.Database;
+
+public interface IPdfService
 {
-	using Anime.Database;
-	using Epub;
+	Task ToPdf(string bookId, int chunks = 100);
+}
 
-	public interface IPdfService
+public class PdfService : IPdfService
+{
+	private readonly IChapterDbService _db;
+	private readonly ILogger _logger;
+
+	public PdfService(
+		IChapterDbService db,
+		ILogger<PdfService> logger)
 	{
-		Task ToPdf(string bookId, int chunks = 100);
+		_db = db;
+		_logger = logger;
 	}
 
-	public class PdfService : IPdfService
+	public Task ToPdf(string bookId, int chunks = 100)
 	{
-		private readonly IChapterDbService _db;
-		private readonly ILogger _logger;
+		throw new NotImplementedException();
 
-		public PdfService(
-			IChapterDbService db,
-			ILogger<PdfService> logger)
-		{
-			_db = db;
-			_logger = logger;
-		}
+		//var chapToHtml = (DbChapter chap) => $"<h2 style=\"page-break-before: always\">{chap.Chapter}</h2><hr />{chap.Content}";
 
-		public Task ToPdf(string bookId, int chunks = 100)
-		{
-			throw new NotImplementedException();
+		//int page = 1;
+		//while (true)
+		//{
+		//	var (_, chaps) = await _db.Chapters(bookId, page, chunks);
 
-			//var chapToHtml = (DbChapter chap) => $"<h2 style=\"page-break-before: always\">{chap.Chapter}</h2><hr />{chap.Content}";
+		//	if (chaps.Length == 0) break;
+		//	var fc = chaps.First();
+		//	var filename = $"{fc.Book}-Vol-{page}.pdf".PurgePathChars();
 
-			//int page = 1;
-			//while (true)
-			//{
-			//	var (_, chaps) = await _db.Chapters(bookId, page, chunks);
+		//	var html = $"<h1>{fc.Book}</h1><hr />{string.Join("<br />", chaps.Select(chapToHtml))}";
 
-			//	if (chaps.Length == 0) break;
-			//	var fc = chaps.First();
-			//	var filename = $"{fc.Book}-Vol-{page}.pdf".PurgePathChars();
-
-			//	var html = $"<h1>{fc.Book}</h1><hr />{string.Join("<br />", chaps.Select(chapToHtml))}";
-
-			//	using var io = File.Create(filename);
-			//	HtmlConverter.ConvertToPdf(html, io);
-			//	page++;
-			//}
-		}
+		//	using var io = File.Create(filename);
+		//	HtmlConverter.ConvertToPdf(html, io);
+		//	page++;
+		//}
 	}
 }

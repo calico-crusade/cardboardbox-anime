@@ -1,16 +1,15 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace CardboardBox.Anime.Funimation
+namespace CardboardBox.Anime.Funimation;
+
+public class GenreData
 {
-    public class GenreData
-    {
-        [JsonPropertyName("slug")]
-        public string? Slug { get; set; }
+    [JsonPropertyName("slug")]
+    public string? Slug { get; set; }
 
-        [JsonPropertyName("name")]
-        public Dictionary<string, string> Name { get; set; } = new();
+    [JsonPropertyName("name")]
+    public Dictionary<string, string> Name { get; set; } = new();
 
-        [JsonPropertyName("id")]
-        public int Id { get; set; }
-    }
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
 }

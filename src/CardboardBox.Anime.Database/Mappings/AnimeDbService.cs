@@ -1,47 +1,47 @@
 ﻿using Dapper;
 
-namespace CardboardBox.Anime.Database
+namespace CardboardBox.Anime.Database;
+
+using Core;
+using Core.Models;
+using Generation;
+
+public interface IAnimeDbService
 {
-	using Core;
-	using Core.Models;
-	using Generation;
+	Task<long> Upsert(DbAnime anime);
+	Task<(int total, DbAnime[] results)> Search(AnimeFilter search, string? platformId = null);
+	Task<DbAnime[]> Random(AnimeFilter search, string? platformId = null);
+	Task<DbAnime[]> All();
+	Task<Filter[]> Filters();
+}
 
-	public interface IAnimeDbService
+public class AnimeDbService : OrmMapExtended<DbAnime>, IAnimeDbService
+{
+	private string? _upsertQuery;
+
+	public override string TableName => "anime";
+
+	public AnimeDbService(IDbQueryBuilderService query, ISqlService sql) : base(query, sql) { }
+
+	public Task<long> Upsert(DbAnime anime)
 	{
-		Task<long> Upsert(DbAnime anime);
-		Task<(int total, DbAnime[] results)> Search(AnimeFilter search, string? platformId = null);
-		Task<DbAnime[]> Random(AnimeFilter search, string? platformId = null);
-		Task<DbAnime[]> All();
-		Task<Filter[]> Filters();
-	}
-
-	public class AnimeDbService : OrmMapExtended<DbAnime>, IAnimeDbService
-	{
-		private string? _upsertQuery;
-
-		public override string TableName => "anime";
-
-		public AnimeDbService(IDbQueryBuilderService query, ISqlService sql) : base(query, sql) { }
-
-		public Task<long> Upsert(DbAnime anime)
-		{
-			_upsertQuery ??= _query.Upsert<DbAnime, long>(TableName,
-				(v) => v.With(t => t.HashId),
-				(v) => v.With(t => t.Id).With(t => t.OtherPlatforms),
-				(v) => v.With(t => t.Id).With(t => t.CreatedAt).With(t => t.OtherPlatforms),
-				(v) => v.Id);
+		_upsertQuery ??= _query.Upsert<DbAnime, long>(TableName,
+			(v) => v.With(t => t.HashId),
+			(v) => v.With(t => t.Id).With(t => t.OtherPlatforms),
+			(v) => v.With(t => t.Id).With(t => t.CreatedAt).With(t => t.OtherPlatforms),
+			(v) => v.Id);
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-			anime.OtherPlatforms = null;
+		anime.OtherPlatforms = null;
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
-			return _sql.ExecuteScalar<long>(_upsertQuery, anime);
-		}
+		return _sql.ExecuteScalar<long>(_upsertQuery, anime);
+	}
 
-		public async Task<(int total, DbAnime[] results)> Search(AnimeFilter search, string? platformId = null)
-		{
-			int offset = (search.Page - 1) * search.Size;
-			var query = $@"CREATE TEMP TABLE titles AS
+	public async Task<(int total, DbAnime[] results)> Search(AnimeFilter search, string? platformId = null)
+	{
+		int offset = (search.Page - 1) * search.Size;
+		var query = $@"CREATE TEMP TABLE titles AS
 SELECT 
 	DISTINCT LOWER(a.title) as title
 FROM anime a
@@ -61,85 +61,85 @@ ORDER BY a.title {(search.Ascending ? "ASC" : "DESC")}, a.platform_id ASC;
 SELECT COUNT(DISTINCT LOWER(a.title)) FROM anime a {{1}} WHERE {{0}};
 
 DROP TABLE titles;";
-			var sub = "";
+		var sub = "";
 
-			var parts = new List<string>();
-			var pars = new DynamicParameters();
+		var parts = new List<string>();
+		var pars = new DynamicParameters();
 
-			if (!string.IsNullOrEmpty(search.Search))
-			{
-				parts.Add("a.fts @@ phraseto_tsquery('english', :search)");
-				pars.Add("search", search.Search);
-			}
-
-			if (search.Mature != AnimeFilter.MatureType.Both)
-			{
-				parts.Add("a.mature = :mature");
-				pars.Add("mature", search.Mature == AnimeFilter.MatureType.Mature);
-			}
-
-			if (search.ListId != null)
-			{
-				sub = @"JOIN list_map lm on a.id = lm.anime_id
-JOIN lists l on lm.list_id = l.id
-JOIN profiles p ON p.id = l.profile_id";
-				parts.Add("l.id = :listId");
-				parts.Add("l.deleted_at IS NULL");
-				parts.Add("p.deleted_at IS NULL");
-				parts.Add("lm.deleted_at IS NULL");
-				parts.Add(@"(p.platform_id = :pPlatformId OR l.is_public = true)");
-				pars.Add("listId", search.ListId);
-				pars.Add("pPlatformId", platformId);
-			}
-
-			var queries = search.Queryables;
-			var qs = new Dictionary<string, string[]?>
-			{
-				["languages"] = queries.Languages,
-				["language_types"] = queries.Types,
-				["tags"] = queries.Tags
-			};
-
-			var ss = new Dictionary<string, string[]?>
-			{
-				["platform_id"] = queries.Platforms,
-				["type"] = queries.VideoTypes
-			};
-
-			var any = (string[]? ar) => ar?.Any() ?? false;
-			foreach(var (key, vals) in qs)
-			{
-				if (!any(vals)) continue;
-
-				parts.Add($"a.{key} && :{key}");
-				pars.Add(key, vals);
-			}
-
-			foreach(var (key, vals) in ss)
-			{
-				if (!any(vals)) continue;
-				parts.Add($"a.{key} = ANY( :{key} )");
-				pars.Add(key, vals);
-			}
-
-			parts.Add("a.deleted_at IS NULL");
-
-			var where = string.Join(" AND ", parts);
-			var fullQuery = string.Format(query, where, sub);
-
-			using var con = _sql.CreateConnection();
-
-			using var reader = await con.QueryMultipleAsync(fullQuery, pars);
-
-			var results = (await reader.ReadAsync<DbAnime>()).ToArray();
-			var total = await reader.ReadSingleAsync<int>();
-
-			return (total, GroupPlatforms(results).ToArray());
+		if (!string.IsNullOrEmpty(search.Search))
+		{
+			parts.Add("a.fts @@ phraseto_tsquery('english', :search)");
+			pars.Add("search", search.Search);
 		}
 
-		public async Task<DbAnime[]> Random(AnimeFilter search, string? platformId = null)
+		if (search.Mature != AnimeFilter.MatureType.Both)
 		{
-			var query = $@"CREATE TEMP TABLE titles AS
+			parts.Add("a.mature = :mature");
+			pars.Add("mature", search.Mature == AnimeFilter.MatureType.Mature);
+		}
+
+		if (search.ListId != null)
+		{
+			sub = @"JOIN list_map lm on a.id = lm.anime_id
+JOIN lists l on lm.list_id = l.id
+JOIN profiles p ON p.id = l.profile_id";
+			parts.Add("l.id = :listId");
+			parts.Add("l.deleted_at IS NULL");
+			parts.Add("p.deleted_at IS NULL");
+			parts.Add("lm.deleted_at IS NULL");
+			parts.Add(@"(p.platform_id = :pPlatformId OR l.is_public = true)");
+			pars.Add("listId", search.ListId);
+			pars.Add("pPlatformId", platformId);
+		}
+
+		var queries = search.Queryables;
+		var qs = new Dictionary<string, string[]?>
+		{
+			["languages"] = queries.Languages,
+			["language_types"] = queries.Types,
+			["tags"] = queries.Tags
+		};
+
+		var ss = new Dictionary<string, string[]?>
+		{
+			["platform_id"] = queries.Platforms,
+			["type"] = queries.VideoTypes
+		};
+
+		var any = (string[]? ar) => ar?.Any() ?? false;
+		foreach(var (key, vals) in qs)
+		{
+			if (!any(vals)) continue;
+
+			parts.Add($"a.{key} && :{key}");
+			pars.Add(key, vals);
+		}
+
+		foreach(var (key, vals) in ss)
+		{
+			if (!any(vals)) continue;
+			parts.Add($"a.{key} = ANY( :{key} )");
+			pars.Add(key, vals);
+		}
+
+		parts.Add("a.deleted_at IS NULL");
+
+		var where = string.Join(" AND ", parts);
+		var fullQuery = string.Format(query, where, sub);
+
+		using var con = _sql.CreateConnection();
+
+		using var reader = await con.QueryMultipleAsync(fullQuery, pars);
+
+		var results = (await reader.ReadAsync<DbAnime>()).ToArray();
+		var total = await reader.ReadSingleAsync<int>();
+
+		return (total, GroupPlatforms(results).ToArray());
+	}
+
+	public async Task<DbAnime[]> Random(AnimeFilter search, string? platformId = null)
+	{
+		var query = $@"CREATE TEMP TABLE titles AS
 SELECT
 	*
 FROM (
@@ -160,104 +160,104 @@ JOIN titles t ON LOWER(t.title) = LOWER(a.title)
 ORDER BY a.title {(search.Ascending ? "ASC" : "DESC")}, a.platform_id ASC;;
 
 DROP TABLE titles;";
-			var sub = "";
+		var sub = "";
 
-			var parts = new List<string>();
-			var pars = new DynamicParameters();
+		var parts = new List<string>();
+		var pars = new DynamicParameters();
 
-			if (!string.IsNullOrEmpty(search.Search))
-			{
-				parts.Add("a.fts @@ phraseto_tsquery('english', :search)");
-				pars.Add("search", search.Search);
-			}
+		if (!string.IsNullOrEmpty(search.Search))
+		{
+			parts.Add("a.fts @@ phraseto_tsquery('english', :search)");
+			pars.Add("search", search.Search);
+		}
 
-			if (search.Mature != AnimeFilter.MatureType.Both)
-			{
-				parts.Add("a.mature = :mature");
-				pars.Add("mature", search.Mature == AnimeFilter.MatureType.Mature);
-			}
+		if (search.Mature != AnimeFilter.MatureType.Both)
+		{
+			parts.Add("a.mature = :mature");
+			pars.Add("mature", search.Mature == AnimeFilter.MatureType.Mature);
+		}
 
-			if (search.ListId != null)
-			{
-				sub = @"JOIN list_map lm on a.id = lm.anime_id
+		if (search.ListId != null)
+		{
+			sub = @"JOIN list_map lm on a.id = lm.anime_id
 JOIN lists l on lm.list_id = l.id
 JOIN profiles p ON p.id = l.profile_id";
-				parts.Add("l.id = :listId");
-				parts.Add("l.deleted_at IS NULL");
-				parts.Add("p.deleted_at IS NULL");
-				parts.Add("lm.deleted_at IS NULL");
-				parts.Add(@"(p.platform_id = :pPlatformId OR l.is_public = true)");
-				pars.Add("listId", search.ListId);
-				pars.Add("pPlatformId", platformId);
-			}
-
-			var queries = search.Queryables;
-			var qs = new Dictionary<string, string[]?>
-			{
-				["languages"] = queries.Languages,
-				["language_types"] = queries.Types,
-				["tags"] = queries.Tags
-			};
-
-			var ss = new Dictionary<string, string[]?>
-			{
-				["platform_id"] = queries.Platforms,
-				["type"] = queries.VideoTypes
-			};
-
-			var any = (string[]? ar) => ar?.Any() ?? false;
-			foreach (var (key, vals) in qs)
-			{
-				if (!any(vals)) continue;
-
-				parts.Add($"a.{key} && :{key}");
-				pars.Add(key, vals);
-			}
-
-			foreach (var (key, vals) in ss)
-			{
-				if (!any(vals)) continue;
-				parts.Add($"a.{key} = ANY( :{key} )");
-				pars.Add(key, vals);
-			}
-
-			parts.Add("a.deleted_at IS NULL");
-
-			var where = string.Join(" AND ", parts);
-			var fullQuery = string.Format(query, where, sub);
-
-			var results = await _sql.Get<DbAnime>(fullQuery, pars);
-
-			return GroupPlatforms(results).ToArray();
+			parts.Add("l.id = :listId");
+			parts.Add("l.deleted_at IS NULL");
+			parts.Add("p.deleted_at IS NULL");
+			parts.Add("lm.deleted_at IS NULL");
+			parts.Add(@"(p.platform_id = :pPlatformId OR l.is_public = true)");
+			pars.Add("listId", search.ListId);
+			pars.Add("pPlatformId", platformId);
 		}
 
-		public IEnumerable<DbAnime> GroupPlatforms(IEnumerable<DbAnime> anime)
+		var queries = search.Queryables;
+		var qs = new Dictionary<string, string[]?>
 		{
-			DbAnime? previous = null;
-			foreach(var item in anime)
-			{
-				if (previous == null)
-				{
-					previous = item;
-					continue;
-				}
+			["languages"] = queries.Languages,
+			["language_types"] = queries.Types,
+			["tags"] = queries.Tags
+		};
 
-				if (previous.Title.ToLower() != item.Title.ToLower())
-				{
-					yield return previous;
-					previous = item;
-					continue;
-				}
+		var ss = new Dictionary<string, string[]?>
+		{
+			["platform_id"] = queries.Platforms,
+			["type"] = queries.VideoTypes
+		};
 
-				previous.OtherPlatforms.Add(item);
-			}
+		var any = (string[]? ar) => ar?.Any() ?? false;
+		foreach (var (key, vals) in qs)
+		{
+			if (!any(vals)) continue;
 
-			if (previous != null) yield return previous;
+			parts.Add($"a.{key} && :{key}");
+			pars.Add(key, vals);
 		}
 
-		public async Task<Filter[]> Filters()
+		foreach (var (key, vals) in ss)
 		{
-			const string QUERY = @"SELECT
+			if (!any(vals)) continue;
+			parts.Add($"a.{key} = ANY( :{key} )");
+			pars.Add(key, vals);
+		}
+
+		parts.Add("a.deleted_at IS NULL");
+
+		var where = string.Join(" AND ", parts);
+		var fullQuery = string.Format(query, where, sub);
+
+		var results = await _sql.Get<DbAnime>(fullQuery, pars);
+
+		return GroupPlatforms(results).ToArray();
+	}
+
+	public IEnumerable<DbAnime> GroupPlatforms(IEnumerable<DbAnime> anime)
+	{
+		DbAnime? previous = null;
+		foreach(var item in anime)
+		{
+			if (previous == null)
+			{
+				previous = item;
+				continue;
+			}
+
+			if (previous.Title.ToLower() != item.Title.ToLower())
+			{
+				yield return previous;
+				previous = item;
+				continue;
+			}
+
+			previous.OtherPlatforms.Add(item);
+		}
+
+		if (previous != null) yield return previous;
+	}
+
+	public async Task<Filter[]> Filters()
+	{
+		const string QUERY = @"SELECT
     *
 FROM (
     SELECT DISTINCT 'languages' as key, unnest(languages) as value FROM anime
@@ -272,11 +272,10 @@ FROM (
 ) x
 ORDER BY key, value";
 
-			var filters = await _sql.Get<DbFilter>(QUERY);
-			return filters
-				.GroupBy(t => t.Key, t => t.Value)
-				.Select(t => new Filter(t.Key, t.ToArray()))
-				.ToArray();
-		}
+		var filters = await _sql.Get<DbFilter>(QUERY);
+		return filters
+			.GroupBy(t => t.Key, t => t.Value)
+			.Select(t => new Filter(t.Key, t.ToArray()))
+			.ToArray();
 	}
 }

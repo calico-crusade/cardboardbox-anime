@@ -1,129 +1,128 @@
-﻿namespace CardboardBox.Epub
+﻿namespace CardboardBox.Epub;
+
+public static class Extensions
 {
-	public static class Extensions
+	//
+	public static XElement AddAttribute(this XElement el, XName name, object? value)
 	{
-		//
-		public static XElement AddAttribute(this XElement el, XName name, object? value)
+		el.SetAttributeValue(name, value);
+		return el;
+	}
+	//
+	public static XElement AddAttributes(this XElement el, params (XName Attribute, object? Value)[] attributes)
+	{
+		foreach (var (atr, val) in attributes)
+			el.AddAttribute(atr, val);
+		return el;
+	}
+	//
+	public static XElement AddElements(this XElement parent, params object?[] children)
+	{
+		parent.Add(children);
+		return parent;
+	}
+	//
+	public static XElement AddElement(this XElement parent, XName tag, object? value, params (XName Attribute, object? Value)[] attributes)
+	{
+		var el = new XElement(tag)
+			.AddAttributes(attributes);
+
+		if (value != null)
+			el.AddElements(value);
+
+		parent.AddElements(el);
+		return parent;
+	}
+	//
+	public static XElement AddOptElement(this XElement parent, XName tag, object? value, params (XName Attribute, object? Value)[] attributes)
+	{
+		if (value == null) return parent;
+
+		return parent.AddElement(tag, value, attributes);
+	}
+
+	public static string Serialize(this IXmlItem item)
+	{
+		var doc = new XDocument
 		{
-			el.SetAttributeValue(name, value);
-			return el;
-		}
-		//
-		public static XElement AddAttributes(this XElement el, params (XName Attribute, object? Value)[] attributes)
-		{
-			foreach (var (atr, val) in attributes)
-				el.AddAttribute(atr, val);
-			return el;
-		}
-		//
-		public static XElement AddElements(this XElement parent, params object?[] children)
-		{
-			parent.Add(children);
-			return parent;
-		}
-		//
-		public static XElement AddElement(this XElement parent, XName tag, object? value, params (XName Attribute, object? Value)[] attributes)
-		{
-			var el = new XElement(tag)
-				.AddAttributes(attributes);
+			Declaration = new XDeclaration("1.0", "utf-8", null)
+		};
+		var el = item.ToElement();
+		doc.Add(el);
 
-			if (value != null)
-				el.AddElements(value);
+		using var writer = new Utf8StringWriter();
+		doc.Save(writer);
 
-			parent.AddElements(el);
-			return parent;
-		}
-		//
-		public static XElement AddOptElement(this XElement parent, XName tag, object? value, params (XName Attribute, object? Value)[] attributes)
-		{
-			if (value == null) return parent;
+		return writer.ToString();
+	}
 
-			return parent.AddElement(tag, value, attributes);
-		}
+	//
+	public static Stream ToStream(this string content)
+	{
+		var bytes = Encoding.UTF8.GetBytes(content);
+		return ToStream(bytes);
+	}
+	//
+	public static Stream ToStream(this byte[] content)
+	{
+		return new MemoryStream(content);
+	}
 
-		public static string Serialize(this IXmlItem item)
-		{
-			var doc = new XDocument
-			{
-				Declaration = new XDeclaration("1.0", "utf-8", null)
-			};
-			var el = item.ToElement();
-			doc.Add(el);
+	//
+	public static IEnumerable<T> SkipLast<T>(this IEnumerable<T> collection, int count = 1)
+	{
+		var ar = collection.ToArray();
+		var ac = ar.Length - count;
+		if (ac <= 0) yield break;
 
-			using var writer = new Utf8StringWriter();
-			doc.Save(writer);
+		for(var i = 0; i < ac; i++)
+			yield return ar[i];
+	}
 
-			return writer.ToString();
-		}
+	//
+	public static string PurgePathChars(this string text)
+	{
+		var chars = Path.GetInvalidFileNameChars()
+			.Union(Path.GetInvalidPathChars())
+			.ToArray();
 
-		//
-		public static Stream ToStream(this string content)
-		{
-			var bytes = Encoding.UTF8.GetBytes(content);
-			return ToStream(bytes);
-		}
-		//
-		public static Stream ToStream(this byte[] content)
-		{
-			return new MemoryStream(content);
-		}
+		foreach (var c in chars)
+			text = text.Replace(c.ToString(), "");
 
-		//
-		public static IEnumerable<T> SkipLast<T>(this IEnumerable<T> collection, int count = 1)
-		{
-			var ar = collection.ToArray();
-			var ac = ar.Length - count;
-			if (ac <= 0) yield break;
+		return text;
+	}
 
-			for(var i = 0; i < ac; i++)
-				yield return ar[i];
-		}
+	public static string SnakeName(this string text)
+	{
+		var ar = text
+			.PurgePathChars()
+			.ToLower()
+			.ToCharArray()
+			.Where(c => char.IsLetterOrDigit(c) || char.IsWhiteSpace(c) || c == '-')
+			.ToArray();
+		var cur = new string(ar).Replace(" ", "-").ToLower();
 
-		//
-		public static string PurgePathChars(this string text)
-		{
-			var chars = Path.GetInvalidFileNameChars()
-				.Union(Path.GetInvalidPathChars())
-				.ToArray();
+		while (cur.Contains("--"))
+			cur = cur.Replace("--", "-");
 
-			foreach (var c in chars)
-				text = text.Replace(c.ToString(), "");
+		return cur;
+	}
 
-			return text;
-		}
+	public static string FixFileName(this string text)
+	{
+		var ext = Path.GetExtension(text).TrimStart('.');
+		var name = Path.GetFileNameWithoutExtension(text).TrimEnd('.').SnakeName();
 
-		public static string SnakeName(this string text)
-		{
-			var ar = text
-				.PurgePathChars()
-				.ToLower()
-				.ToCharArray()
-				.Where(c => char.IsLetterOrDigit(c) || char.IsWhiteSpace(c) || c == '-')
-				.ToArray();
-			var cur = new string(ar).Replace(" ", "-").ToLower();
+		return $"{name.Replace("-", "")}.{ext}";
+	}
 
-			while (cur.Contains("--"))
-				cur = cur.Replace("--", "-");
+	public static string CleanId(this string text)
+	{
+		if (text.Length == 0) return text;
 
-			return cur;
-		}
+		if (char.IsDigit(text[0]))
+			return "a" + text;
 
-		public static string FixFileName(this string text)
-		{
-			var ext = Path.GetExtension(text).TrimStart('.');
-			var name = Path.GetFileNameWithoutExtension(text).TrimEnd('.').SnakeName();
-
-			return $"{name.Replace("-", "")}.{ext}";
-		}
-
-		public static string CleanId(this string text)
-		{
-			if (text.Length == 0) return text;
-
-			if (char.IsDigit(text[0]))
-				return "a" + text;
-
-			return text;
-		}
+		return text;
 	}
 }

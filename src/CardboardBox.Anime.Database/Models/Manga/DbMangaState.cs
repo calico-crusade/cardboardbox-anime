@@ -1,29 +1,28 @@
-﻿namespace CardboardBox.Anime.Database
+﻿namespace CardboardBox.Anime.Database;
+
+public class DbMangaState : DbObject
 {
-	public class DbMangaState : DbObject
-	{
-		[JsonPropertyName("messageId")]
-		public ulong MessageId { get; set; }
+	[JsonPropertyName("messageId")]
+	public ulong MessageId { get; set; }
 
-		[JsonPropertyName("userId")]
-		public ulong UserId { get; set; }
+	[JsonPropertyName("userId")]
+	public ulong UserId { get; set; }
 
-		[JsonPropertyName("guildId")]
-		public ulong? GuildId { get; set; }
+	[JsonPropertyName("guildId")]
+	public ulong? GuildId { get; set; }
 
-		[JsonPropertyName("channelId")]
-		public ulong? ChannelId { get; set; }
+	[JsonPropertyName("channelId")]
+	public ulong? ChannelId { get; set; }
 
-		[JsonPropertyName("source")]
-		public string Source { get; set; } = string.Empty;
+	[JsonPropertyName("source")]
+	public string Source { get; set; } = string.Empty;
 
-		[JsonPropertyName("mangaId")]
-		public long MangaId { get; set; }
+	[JsonPropertyName("mangaId")]
+	public long MangaId { get; set; }
 
-		[JsonPropertyName("chapterId")]
-		public long? ChapterId { get; set; }
+	[JsonPropertyName("chapterId")]
+	public long? ChapterId { get; set; }
 
-		[JsonPropertyName("pageIndex")]
-		public int? PageIndex { get; set; }
-	}
+	[JsonPropertyName("pageIndex")]
+	public int? PageIndex { get; set; }
 }

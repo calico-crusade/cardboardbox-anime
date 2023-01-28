@@ -1,7 +1,6 @@
-﻿namespace CardboardBox.Epub
+﻿namespace CardboardBox.Epub;
+
+public interface IXmlItem
 {
-	public interface IXmlItem
-	{
-		XElement ToElement();
-	}
+	XElement ToElement();
 }

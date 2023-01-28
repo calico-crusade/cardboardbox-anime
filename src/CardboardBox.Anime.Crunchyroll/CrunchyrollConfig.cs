@@ -1,15 +1,14 @@
-﻿namespace CardboardBox.Anime.Crunchyroll
+﻿namespace CardboardBox.Anime.Crunchyroll;
+
+public interface ICrunchyrollConfig
 {
-	public interface ICrunchyrollConfig
-	{
-		string ResourceList { get; set; }
-		Dictionary<string, string> Query { get; set; }
-	}
+	string ResourceList { get; set; }
+	Dictionary<string, string> Query { get; set; }
+}
 
-	public class CrunchyrollConfig : ICrunchyrollConfig
-	{
-		public string ResourceList { get; set; } = string.Empty;
+public class CrunchyrollConfig : ICrunchyrollConfig
+{
+	public string ResourceList { get; set; } = string.Empty;
 
-		public Dictionary<string, string> Query { get; set; } = new();
-	}
+	public Dictionary<string, string> Query { get; set; } = new();
 }

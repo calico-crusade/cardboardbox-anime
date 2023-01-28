@@ -1,49 +1,48 @@
-﻿namespace CardboardBox.LightNovel.Core.Sources.Utilities
+﻿namespace CardboardBox.LightNovel.Core.Sources.Utilities;
+
+public interface INovelUpdatesService
 {
-	public interface INovelUpdatesService
+	Task<TempSeriesInfo?> Series(string url);
+}
+
+public class NovelUpdatesService : INovelUpdatesService
+{
+	private readonly IApiService _api;
+
+	public NovelUpdatesService(IApiService api)
 	{
-		Task<TempSeriesInfo?> Series(string url);
+		_api = api;
 	}
 
-	public class NovelUpdatesService : INovelUpdatesService
+	public async Task<TempSeriesInfo?> Series(string url)
 	{
-		private readonly IApiService _api;
+		var doc = await _api.GetHtml(url);
+		if (doc == null) return null;
 
-		public NovelUpdatesService(IApiService api)
-		{
-			_api = api;
-		}
+		string? title = doc.InnerText("//div[@class='seriestitlenu']"),
+				description = doc.InnerHtml("//div[@id='editdescription']"),
+				image = doc.Attribute("//div[@class='seriesimg']/img", "src");
 
-		public async Task<TempSeriesInfo?> Series(string url)
-		{
-			var doc = await _api.GetHtml(url);
-			if (doc == null) return null;
+		if (string.IsNullOrWhiteSpace(title)) return null;
 
-			string? title = doc.InnerText("//div[@class='seriestitlenu']"),
-					description = doc.InnerHtml("//div[@id='editdescription']"),
-					image = doc.Attribute("//div[@class='seriesimg']/img", "src");
+		var authors = doc
+			.DocumentNode
+			.SelectNodes("//div[@id='showauthors']/a")?
+			.Select(t => t.InnerText.HTMLDecode())
+			.ToArray() ?? Array.Empty<string>();
 
-			if (string.IsNullOrWhiteSpace(title)) return null;
+		var tags = doc
+			.DocumentNode
+			.SelectNodes("//div[@id='showtags']/a[@id='etagme']")?
+			.Select(t => t.InnerText.HTMLDecode())
+			.ToArray() ?? Array.Empty<string>();
 
-			var authors = doc
-				.DocumentNode
-				.SelectNodes("//div[@id='showauthors']/a")?
-				.Select(t => t.InnerText.HTMLDecode())
-				.ToArray() ?? Array.Empty<string>();
+		var genres = doc
+			.DocumentNode
+			.SelectNodes("//div[@id='seriesgenre']/a[@class='genre']")?
+			.Select(t => t.InnerText.HTMLDecode())
+			.ToArray() ?? Array.Empty<string>();
 
-			var tags = doc
-				.DocumentNode
-				.SelectNodes("//div[@id='showtags']/a[@id='etagme']")?
-				.Select(t => t.InnerText.HTMLDecode())
-				.ToArray() ?? Array.Empty<string>();
-
-			var genres = doc
-				.DocumentNode
-				.SelectNodes("//div[@id='seriesgenre']/a[@class='genre']")?
-				.Select(t => t.InnerText.HTMLDecode())
-				.ToArray() ?? Array.Empty<string>();
-
-			return new TempSeriesInfo(title, description, authors, image, null, genres, tags);
-		}
+		return new TempSeriesInfo(title, description, authors, image, null, genres, tags);
 	}
 }

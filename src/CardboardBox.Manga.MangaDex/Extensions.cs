@@ -1,12 +1,11 @@
-﻿namespace CardboardBox
-{
-	using Manga.MangaDex;
+﻿namespace CardboardBox;
 
-	public static class Extensions
+using Manga.MangaDex;
+
+public static class Extensions
+{
+	public static IServiceCollection AddMangadex(this IServiceCollection services)
 	{
-		public static IServiceCollection AddMangadex(this IServiceCollection services)
-		{
-			return services.AddTransient<IMangaDexService, MangaDexService>();
-		}
+		return services.AddTransient<IMangaDexService, MangaDexService>();
 	}
 }

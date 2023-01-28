@@ -1,34 +1,34 @@
 ﻿using System.Linq.Expressions;
 
-namespace CardboardBox.LightNovel.Core.Database
-{
-	using Anime.Database.Generation;
+namespace CardboardBox.LightNovel.Core.Database;
 
-	public interface IDbChapterService : ILnOrmMap<Chapter>
+using Anime.Database.Generation;
+
+public interface IDbChapterService : ILnOrmMap<Chapter>
+{
+	Task<Chapter[]> ByBook(long bookId);
+	Task<(Book book, Chapter chap, ChapterPage page)> LastChapter(long seriesId);
+}
+
+public class DbChapterService : LnOrmMap<Chapter>, IDbChapterService
+{
+	private string? _byBookQuery;
+
+	public override string TableName => "ln_chapters";
+
+	public override Expression<Func<Chapter, long>> FkId => t => t.BookId;
+
+	public DbChapterService(IDbQueryBuilderService query, ISqlService sql) : base(query, sql) { }
+
+	public Task<Chapter[]> ByBook(long bookId)
 	{
-		Task<Chapter[]> ByBook(long bookId);
-		Task<(Book book, Chapter chap, ChapterPage page)> LastChapter(long seriesId);
+		_byBookQuery ??= _query.Select<Chapter>(TableName, (v) => v.With(t => t.BookId));
+		return _sql.Get<Chapter>(_byBookQuery, new { bookId });
 	}
 
-	public class DbChapterService : LnOrmMap<Chapter>, IDbChapterService
+	public async Task<(Book book, Chapter chap, ChapterPage page)> LastChapter(long seriesId)
 	{
-		private string? _byBookQuery;
-
-		public override string TableName => "ln_chapters";
-
-		public override Expression<Func<Chapter, long>> FkId => t => t.BookId;
-
-		public DbChapterService(IDbQueryBuilderService query, ISqlService sql) : base(query, sql) { }
-
-		public Task<Chapter[]> ByBook(long bookId)
-		{
-			_byBookQuery ??= _query.Select<Chapter>(TableName, (v) => v.With(t => t.BookId));
-			return _sql.Get<Chapter>(_byBookQuery, new { bookId });
-		}
-
-		public async Task<(Book book, Chapter chap, ChapterPage page)> LastChapter(long seriesId)
-		{
-			const string QUERY = @"SELECT
+		const string QUERY = @"SELECT
 	lb.*,
 	'' as split,
     c.*,
@@ -42,7 +42,6 @@ WHERE
     lb.series_id = :seriesId
 ORDER BY lb.ordinal DESC, c.ordinal DESC, lcp.ordinal DESC
 LIMIT 1";
-			return (await _sql.QueryAsync<Book, Chapter, ChapterPage>(QUERY, new { seriesId })).FirstOrDefault();
-		}
+		return (await _sql.QueryAsync<Book, Chapter, ChapterPage>(QUERY, new { seriesId })).FirstOrDefault();
 	}
 }

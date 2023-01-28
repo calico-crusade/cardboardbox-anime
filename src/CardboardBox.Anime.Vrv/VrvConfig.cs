@@ -1,15 +1,14 @@
-﻿namespace CardboardBox.Anime.Vrv
+﻿namespace CardboardBox.Anime.Vrv;
+
+public interface IVrvConfig
 {
-	public interface IVrvConfig
-	{
-		string ResourceList { get; }
-		Dictionary<string, string> Query { get; }
-	}
+	string ResourceList { get; }
+	Dictionary<string, string> Query { get; }
+}
 
-	public class VrvConfig : IVrvConfig
-	{
-		public string ResourceList { get; set; } = "";
+public class VrvConfig : IVrvConfig
+{
+	public string ResourceList { get; set; } = "";
 
-		public Dictionary<string, string> Query { get; set; } = new();
-	}
+	public Dictionary<string, string> Query { get; set; } = new();
 }

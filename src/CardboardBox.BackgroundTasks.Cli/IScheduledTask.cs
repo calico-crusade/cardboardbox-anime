@@ -1,9 +1,8 @@
-﻿namespace CardboardBox
-{
-	public interface IScheduledTask
-	{
-		int DelayMs { get; }
+﻿namespace CardboardBox;
 
-		Task Run();
-	}
+public interface IScheduledTask
+{
+	int DelayMs { get; }
+
+	Task Run();
 }

@@ -1,9 +1,8 @@
-﻿namespace CardboardBox.Anime.Database
-{
-	public class DbFilter
-	{
-		public string Key { get; set; } = "";
+﻿namespace CardboardBox.Anime.Database;
 
-		public string Value { get; set; } = "";
-	}
+public class DbFilter
+{
+	public string Key { get; set; } = "";
+
+	public string Value { get; set; } = "";
 }
