@@ -4,6 +4,7 @@ import { BehaviorSubject, lastValueFrom, Observable } from 'rxjs';
 import { AnimeService } from '../anime/anime.service';
 import { AuthCodeResponse, AuthUser } from './auth.model';
 import { ConfigObject } from '../config.base';
+import { Location, PlatformLocation } from '@angular/common';
 
 const SKIP_URIS: string[] = [];
 const STORAGE_REROUTE = 'reroute-source';
@@ -43,7 +44,9 @@ export class AuthService extends ConfigObject {
 
     constructor(
         private http: HttpClient,
-        private api: AnimeService
+        private api: AnimeService,
+        private location: Location,
+        private loc: PlatformLocation
     ) { super(); }
 
     async bump() {
@@ -70,6 +73,19 @@ export class AuthService extends ConfigObject {
         let code = await this.doLoginPopup();
         if (!code) return { error: 'Invalid Login Code' };
 
+        return await this.handleCode(code);
+    }
+
+    loginSame(redirect: string) {
+        const redirectUrl = this.pathCombine(
+            window.location.origin, 
+            this.loc.getBaseHrefFromDOM(), 
+            '/callback?redirect=' + encodeURI(redirect))
+        const url = `${this.authUrl}/Home/Auth/${this.appId}?redirect=${encodeURI(redirectUrl)}`;
+        window.location.href = url;
+    }
+
+    async handleCode(code: string): Promise<AuthCodeResponse> {
         let auth = await lastValueFrom(this.resolve(code));
         if (!auth || auth.error || !auth.token) {
             this.token = null;
@@ -94,11 +110,11 @@ export class AuthService extends ConfigObject {
         var promise = new Promise<{ code: string }>((res, rej) => {
 
             window.addEventListener('message', (event) => {
-                if (event.origin !== 'https://auth.index-0.com') return;
+                if (event.origin !== this.authUrl) return;
                 res(event.data);
             });
 
-            instance = window.open("https://auth.index-0.com/Home/Auth/" + this.appId,
+            instance = window.open(`${this.authUrl}/Home/Auth/${this.appId}`,
                 "cardboard_oauth_login_window",
                 `toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=750,height=500`);
 
@@ -125,6 +141,15 @@ export class AuthService extends ConfigObject {
     private resolve(code: string) { return this.http.get<AuthCodeResponse>(`${this.apiUrl}/auth/${code}`); }
 
     private me() { return this.http.get<AuthUser>(`${this.apiUrl}/auth`); }
+
+    pathCombine(...parts: string[]) {
+        return parts.map(t => {
+            if (t.startsWith('/')) t = t.substring(1);
+            if (t.endsWith('/')) t = t.substring(0, t.length - 2);
+
+            return t;
+        }).filter(t => t).join('/');
+    }
 }
 
 @Injectable()

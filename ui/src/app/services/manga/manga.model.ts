@@ -88,25 +88,27 @@ export interface PaginatedMangaProgress {
     results: MangaProgressData[];
 }
 
+export interface MangaProgressStats {
+    maxChapterNum: number;
+    chapterNum: number;
+    pageCount: number;
+    chapterProgress: number;
+    pageProgress: number;
+    favourite: boolean;
+    bookmarks: number[];
+    hasBookmarks: boolean;
+    latestChapter?: Date;
+    completed: boolean;
+    firstChapterId: number;
+    progressChapterId?: number;
+    progressId?: number;
+}
+
 export interface MangaProgressData {
     manga: Manga;
     progress?: MangaProgress;
     chapter: MangaChapter;
-    stats: {
-        maxChapterNum: number;
-        chapterNum: number;
-        pageCount: number;
-        chapterProgress: number;
-        pageProgress: number;
-        favourite: boolean;
-        bookmarks: number[];
-        hasBookmarks: boolean;
-        latestChapter?: Date;
-        completed: boolean;
-        firstChapterId: number;
-        progressChapterId?: number;
-        progressId?: number;
-    }
+    stats: MangaProgressStats;
 }
 
 export interface MangaFilter {
@@ -142,30 +144,34 @@ export interface ImageSearchManga {
     tags: string[];
 }
 
-export interface ImageSearch {
-    vision: {
-        url: string;
-        title: string;
-        filteredTitle: string;
-        score: number;
-        exactMatch: boolean;
-        manga: ImageSearchManga;
-    }[];
+export interface BaseResult {
+    score: number;
+    exactMatch: boolean;
+    manga: ImageSearchManga;
+}
 
-    match: {
-        metadata: {
-            id: string;
-            url: string;
-            source: string;
-            type: number;
-            mangaId: string;
-            chapterId?: string;
-            page?: number;
-        };
-        score: number;
-        exactMatch: boolean;
-        manga: ImageSearchManga;
-    }[];
+export interface VisionResult extends BaseResult {
+    url: string;
+    title: string;
+    filteredTitle: string;
+}
+
+export interface MatchResult extends BaseResult {
+    metadata: {
+        id: string;
+        url: string;
+        source: string;
+        type: number;
+        mangaId: string;
+        chapterId?: string;
+        page?: number;
+    };
+}
+
+export interface ImageSearch {
+    vision: VisionResult[];
+    match: MatchResult[];
+    textual: BaseResult[];
 
     bestGuess?: ImageSearchManga;
 }

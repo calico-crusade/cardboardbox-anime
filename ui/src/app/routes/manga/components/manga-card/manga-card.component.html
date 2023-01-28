@@ -1,28 +1,59 @@
-<a *ngIf="manga" class="manga" [routerLink]="['/manga', manga.hashId || manga.id ]">
-    <div class="image" [style.background-image]="'url(' + proxy(manga.cover) + ')'"></div>
+<a *ngIf="cardInfo && cardInfo.manga" class="manga" [routerLink]="['/manga', cardInfo.manga.hashId || cardInfo.manga.id ]">
+    <div class="image" [style.background-image]="'url(' + proxy(cardInfo.manga.cover) + ')'"></div>
     <div class="details masked-overflow">
         <div class="title">
-            <span>{{ manga.title }}</span>
-            <div class="fav" *ngIf="icon">
-                <cba-icon [fill]="!!icon.fill">{{ icon.text }}</cba-icon>
+            <span>{{ cardInfo.manga.title }}</span>
+            <div class="fav" *ngIf="cardInfo.icon">
+                <cba-icon [fill]="!!cardInfo.icon.fill">{{ cardInfo.icon.text }}</cba-icon>
             </div>
         </div>
-        <ng-container *ngIf="stats">
-            <div class="source" *ngIf="progress">
-                <span><b>Progress: </b>&nbsp; {{ stats.chapterProgress }}% - {{ progress.updatedAt | date:'yyyy-MM-dd' }}</span>
+        <ng-container *ngIf="cardInfo.stats">
+            <div class="source" *ngIf="cardInfo.progress">
+                <span><b>Progress: </b>&nbsp; {{ cardInfo.stats.chapterProgress }}% - {{ cardInfo.progress.updatedAt | date:'yyyy-MM-dd' }}</span>
             </div>
             <div class="source">
-                <span><b>Latest Chapter: </b>&nbsp; {{ stats.latestChapter | date:'yyyy-MM-dd HH:mm' }}</span>
+                <span><b>Latest Chapter: </b>&nbsp; {{ cardInfo.stats.latestChapter | date:'yyyy-MM-dd HH:mm' }}</span>
             </div>
         </ng-container>
         <div class="source">
-            <b>Source:</b>&nbsp;{{ manga.provider }}
+            <b>Source:</b>&nbsp;{{ cardInfo.manga.provider }}
         </div>
         <div class="tags">
             <div class="header">Tags: </div>
-            <div class="tag nsfw" *ngIf="manga.nsfw">NSFW</div>
-            <div class="tag" *ngFor="let tag of manga.tags">{{ tag }}</div>
+            <div class="tag nsfw" *ngIf="cardInfo.manga.nsfw">NSFW</div>
+            <div class="tag" *ngFor="let tag of cardInfo.manga.tags">{{ tag }}</div>
         </div>
-        <div class="description" [markdown]="manga.description"></div>
+        <div class="description" [markdown]="cardInfo.manga.description"></div>
+    </div>
+</a>
+
+<a *ngIf="searchInfo && searchInfo.manga" class="manga" routerLink="/manga/add" [queryParams]="{ url: searchInfo.manga.url }" target="_blank">
+    <div class="image" [style.background-image]="'url(' + proxy(searchInfo.manga.cover) + ')'"></div>
+    <div class="details masked-overflow">
+        <div class="title">
+            <span>{{ searchInfo.manga.title }}</span>
+        </div>
+        <div class="source">
+            <b>Source:</b>&nbsp;{{ searchInfo.manga.source }}
+        </div>
+        <div class="source" *ngIf="searchInfo.foundVia">
+            <b>Found Via:</b>&nbsp; 
+            {{ searchInfo.foundVia.text }} (
+                <span cba-tooltip="Confidence Compute Score" direction="down">CS: {{ searchInfo.foundVia.compute | number:'0.0' }}%</span>, 
+                <span cba-tooltip="Exact Match" direction="down">EM: {{ searchInfo.foundVia.exactMatch }}</span>
+            )
+        </div>
+        <div class="source" *ngIf="searchInfo.link">
+            <b>Link:</b>&nbsp;
+            <a [href]="searchInfo.link.url" target="_blank">
+                {{ searchInfo.link.text }}
+            </a>
+        </div>
+        <div class="tags">
+            <div class="header">Tags: </div>
+            <div class="tag nsfw" *ngIf="searchInfo.manga.nsfw">NSFW</div>
+            <div class="tag" *ngFor="let tag of searchInfo.manga.tags">{{ tag }}</div>
+        </div>
+        <div class="description" [markdown]="searchInfo.manga.description"></div>
     </div>
 </a>

@@ -1,11 +1,14 @@
-import { Component } from '@angular/core';
-import { ImageSearch, LightNovelService, MangaService } from 'src/app/services';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ImageSearch, MangaService, SubscriptionHandler } from './../../../services';
 
 @Component({
     templateUrl: './manga-reverse-image.component.html',
     styleUrls: ['./manga-reverse-image.component.scss']
 })
-export class MangaReverseImageComponent {
+export class MangaReverseImageComponent implements OnInit, OnDestroy {
+
+    private _subs = new SubscriptionHandler();
 
     loading: boolean = false;
     url: string = '';
@@ -13,12 +16,38 @@ export class MangaReverseImageComponent {
     results?: ImageSearch;
     error?: any;
 
+    get combined() {
+        if (!this.results) return [];
+
+        return [
+            ...this.results.match,
+            ...this.results.vision,
+            ...this.results.textual
+        ];
+    }
+
+    get best() {
+        return this.combined.find(t => t.manga.id === this.results?.bestGuess?.id) || this.results?.bestGuess;
+    }
+
     constructor(
         private api: MangaService,
-        private ln: LightNovelService
+        private route: ActivatedRoute,
+        private router: Router
     ) { }
 
+    ngOnInit(): void {
+        this._subs
+            .subscribe(this.route.queryParams, (t) => {
+                this.url = t['search'] || '';
+                this.textSearch();
+            });
+    }
+
+    ngOnDestroy() { this._subs.unsubscribe(); }
+
     selected(event: Event) {
+        this.url = '';
         if (!event || !event.target) return;
         const files: File[] = (<any>event.target).files;
         if (!files || files.length <= 0) return;
@@ -30,7 +59,7 @@ export class MangaReverseImageComponent {
             .imageSearch(file)
             .error(t => {
                 this.error = t;
-            }, { vision: [], match: [] })
+            }, { vision: [], match: [], textual: [] })
             .subscribe(t => {
                 this.results = t;
                 this.loading = false;
@@ -38,6 +67,10 @@ export class MangaReverseImageComponent {
     }
 
     search() {
+        this.router.navigate(['/manga', 'search'], { queryParams: { search: this.url } });
+    }
+
+    private textSearch() {
         if (!this.url) return;
 
         this.loading = true;
@@ -45,14 +78,10 @@ export class MangaReverseImageComponent {
             .imageSearch(this.url)
             .error(t => {
                 this.error = t;
-            }, { vision: [], match: [] })
+            }, { vision: [], match: [], textual: [] })
             .subscribe(t => {
                 this.results = t;
                 this.loading = false;
             });
     }
-
-    proxy(url: string) { return this.ln.corsFallback(url, 'image-fallback'); }
-
-    domain(url: string) { return new URL(url).hostname; }
 }

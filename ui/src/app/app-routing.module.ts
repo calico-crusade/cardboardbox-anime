@@ -5,6 +5,7 @@ import { AdminComponent } from './routes/admin/admin.component';
 import { RerouteComponent } from './routes/reroute/reroute.component';
 import { TestComponent } from './routes/test/test.component';
 import { InstallInstructionsComponent } from './routes/install-instructions/install-instructions.component';
+import { CallbackComponent } from './routes/callback/callback.component';
 
 const routes: Routes = [
     {
@@ -35,6 +36,9 @@ const routes: Routes = [
     }, {
         path: 'install/:type',
         component: InstallInstructionsComponent
+    }, {
+       path: 'callback',
+       component: CallbackComponent 
     }, {
         path: '',
         pathMatch: 'full',

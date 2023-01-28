@@ -8,6 +8,8 @@
 		Task<Manga[]> Search(string title);
 
 		Task<Manga[]> Search(MangaFilter filter);
+
+		Task<Manga> Convert(MangaDexManga manga, bool getChaps = true);
 	}
 
 	public class MangaDexSource : IMangaDexSource

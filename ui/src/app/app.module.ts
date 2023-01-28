@@ -16,6 +16,7 @@ import { RerouteComponent } from './routes/reroute/reroute.component';
 import { TestComponent } from './routes/test/test.component';
 import { MagicCircleModule } from './components/magic-circle';
 import { InstallInstructionsComponent } from './routes/install-instructions/install-instructions.component';
+import { CallbackComponent } from './routes/callback/callback.component';
 
 @NgModule({
     declarations: [
@@ -25,6 +26,7 @@ import { InstallInstructionsComponent } from './routes/install-instructions/inst
         RerouteComponent,
         TestComponent,
         InstallInstructionsComponent,
+        CallbackComponent,
     ],
     imports: [
         ComponentsModule,

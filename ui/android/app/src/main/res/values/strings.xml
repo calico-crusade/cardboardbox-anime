@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Cardboard Box</string>
+    <string name="title_activity_main">Cardboard Box</string>
+    <string name="package_name">com.cardboardbox.anime</string>
+    <string name="custom_url_scheme">com.cardboardbox.anime</string>
+</resources>

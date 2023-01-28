@@ -1,8 +1,9 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { NavigationEnd, Router } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { LightNovelService, MangaProgressData, MangaService, SubscriptionHandler } from '../services';
 import { AuthUser } from '../services/auth/auth.model';
 import { AuthService } from '../services/auth/auth.service';
+import { Capacitor } from '@capacitor/core';
 
 @Component({
     selector: 'cba-root',
@@ -53,6 +54,11 @@ export class AppComponent implements OnInit, OnDestroy {
     ngOnDestroy(): void { this._subs.unsubscribe(); }
 
     async login() {
+        if (this.auth.platform !== 'web') {
+            this.auth.loginSame(this.router.url);
+            return;
+        }
+
         await this.auth.login();
         this.menuOpen = false;
     }

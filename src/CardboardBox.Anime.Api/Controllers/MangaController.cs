@@ -7,6 +7,7 @@ namespace CardboardBox.Anime.Api.Controllers
 	using Core;
 	using Core.Models;
 	using Manga;
+	using Manga.Providers;
 	using Database;
 
 	[ApiController]
@@ -17,19 +18,22 @@ namespace CardboardBox.Anime.Api.Controllers
 		private readonly IMangaEpubService _epub;
 		private readonly IMangaImageService _image;
 		private readonly IMangaSearchService _search;
+		private readonly IMangaDexSource _mangadex;
 
 		public MangaController(
 			IMangaService manga,
 			IDbService db,
 			IMangaEpubService epub,
 			IMangaImageService image,
-			IMangaSearchService search)
+			IMangaSearchService search,
+			IMangaDexSource mangadex)
 		{
 			_manga = manga;
 			_db = db;
 			_epub = epub;
 			_image = image;
 			_search = search;
+			_mangadex = mangadex;
 		}
 
 		[HttpGet, Route("manga")]

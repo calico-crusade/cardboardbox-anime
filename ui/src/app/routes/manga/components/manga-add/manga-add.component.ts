@@ -1,13 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { MangaService } from 'src/app/services';
+import { MangaService } from './../../../../services';
 
 @Component({
     selector: 'cba-manga-add',
     templateUrl: './manga-add.component.html',
     styleUrls: ['./manga-add.component.scss']
 })
-export class MangaAddComponent implements OnInit {
+export class MangaAddComponent {
 
     url: string = '';
     loading: boolean = false;
@@ -17,9 +17,6 @@ export class MangaAddComponent implements OnInit {
         private api: MangaService,
         private router: Router,
     ) { }
-
-    ngOnInit(): void {
-    }
 
     load() {
         this.loading = true;

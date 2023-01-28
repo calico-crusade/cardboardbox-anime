@@ -5,7 +5,8 @@
 export const environment = {
     production: false,
     apiUrl: 'https://localhost:7240', //'https://cba-api.index-0.com'
-    appId: 'fd9ea511-ad01-4ba4-ad3d-bc4dee7f53f6'
+    appId: 'fd9ea511-ad01-4ba4-ad3d-bc4dee7f53f6',
+    authUrl: 'https://auth.index-0.com' //'https://localhost:44390'
 };
 
 /*

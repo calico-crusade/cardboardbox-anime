@@ -3,6 +3,7 @@
 namespace CardboardBox.Manga
 {
 	using Anime.Database;
+	using MangaDex;
 	using Match;
 	using Providers;
 
@@ -17,6 +18,7 @@ namespace CardboardBox.Manga
 		private readonly IGoogleVisionService _vision;
 		private readonly IMangaMatchService _match;
 		private readonly IMangaDexSource _md;
+		private readonly IMangaDexService _mangadex;
 		private readonly ILogger _logger;
 		private readonly IMangaCacheDbService _db;
 
@@ -25,13 +27,15 @@ namespace CardboardBox.Manga
 			IMangaMatchService match,
 			IMangaDexSource md,
 			ILogger<MangaSearchService> logger,
-			IMangaCacheDbService db)
+			IMangaCacheDbService db,
+			IMangaDexService mangadex)
 		{
 			_vision = vision;
 			_match = match;
 			_md = md;
 			_logger = logger;
 			_db = db;
+			_mangadex = mangadex;
 		}
 
 		public async Task<ImageSearchResults> Search(MemoryStream stream, string filename)
@@ -55,15 +59,42 @@ namespace CardboardBox.Manga
 
 		public async Task<ImageSearchResults> Search(string image)
 		{
-			var results = new ImageSearchResults();
+			if (Uri.IsWellFormedUriString(image, UriKind.Absolute))
+			{
+				var results = new ImageSearchResults();
 
-			await Task.WhenAll(
-				HandleFallback(image, results), 
-				HandleVision(image, results));
+				await Task.WhenAll(
+					HandleFallback(image, results),
+					HandleVision(image, results));
 
-			DetermineBestGuess(results);
+				DetermineBestGuess(results);
 
-			return results;
+				return results;
+			}
+
+			var raw = await _mangadex.Search(image);
+			if (raw == null || raw.Data == null || raw.Data.Count == 0) 
+				return new ImageSearchResults();
+
+			var data = await raw.Data
+				.Select(async t => await _md.Convert(t, false))
+				.WhenAll();
+
+			var rank = Rank(image, data)
+				.OrderByDescending(t => t.Compute)
+				.DistinctBy(t => t.Manga.Id)
+				.Select(t => new BaseResult
+				{
+					Manga = t.Manga,
+					ExactMatch = t.Compute > 1,
+					Score = t.Compute
+				}).ToList();
+
+			return new ImageSearchResults()
+			{
+				Textual = rank,
+				BestGuess = rank.FirstOrDefault()?.Manga
+			};
 		}
 
 		public void DetermineBestGuess(ImageSearchResults results)
@@ -306,6 +337,9 @@ namespace CardboardBox.Manga
 		[JsonPropertyName("match")]
 		public List<FallbackResult> Match { get; set; } = new();
 
+		[JsonPropertyName("textual")]
+		public List<BaseResult> Textual { get; set; } = new();
+
 		[JsonPropertyName("bestGuess")]
 		public TrimmedManga? BestGuess { get; set; }
 
@@ -370,7 +404,7 @@ namespace CardboardBox.Manga
 		}
 	}
 
-	public abstract class BaseResult
+	public class BaseResult
 	{
 		[JsonPropertyName("score")]
 		public double Score { get; set; }
