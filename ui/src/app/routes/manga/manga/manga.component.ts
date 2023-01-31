@@ -1,8 +1,11 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
-import { PopupComponent, PopupService } from 'src/app/components';
-import { AuthService, LightNovelService, MangaProgress, MangaService, MangaWithChapters, SubscriptionHandler } from 'src/app/services';
+import { PopupComponent, PopupService } from './../../../components';
+import { 
+    AuthService, LightNovelService, MangaProgress, 
+    MangaProgressData, MangaService, SubscriptionHandler
+} from './../../../services';
 import { MangaPartial } from '../manga-data.partial';
 
 @Component({
@@ -18,11 +21,17 @@ export class MangaComponent extends MangaPartial implements OnInit, OnDestroy {
     loading: boolean = false;
     error?: string;
     id!: string;
-    progress?: MangaProgress;
+
+    stats?: MangaProgressData;
     isRandom: boolean = false;
+    detailsOpen: boolean = false;
 
     get currentChapter() {
         return this.chapters.find(t => t.id === this.progress?.mangaChapterId);
+    }
+
+    get progress() {
+        return this.stats?.progress;
     }
 
     constructor(
@@ -74,7 +83,7 @@ export class MangaComponent extends MangaPartial implements OnInit, OnDestroy {
         }
 
         try {
-            this.progress = await this.api.progress(this.data.manga.id).promise;
+            this.stats = await this.api.mangaExtended(this.data.manga.id).promise;
         } catch (error) {
             console.error('Error occurred while fetching manga progress', {
                 error,
@@ -96,17 +105,21 @@ export class MangaComponent extends MangaPartial implements OnInit, OnDestroy {
 
     nextRandom() { this.process(); }
 
-    update() {
+    async update() {
         if (!this.manga) return;
 
-        this.loading = true;
-        this.api
-            .reload(this.manga)
-            .error(err => this.error = 'An error occurred while refreshing the manga!')
-            .subscribe(t => {
-                this.data = t;
-                this.loading = false;
-            })
+        try {
+            this.loading = true;
+            const data = await this.api.reload(this.manga).promise;
+            if (!data) return;
+            this.data = data;
+            this.stats = await this.api.mangaExtended(this.manga.id).promise;
+        }
+        catch (err) {
+            console.error('Error occurred with update', { err, manga: this.manga });
+        }
+
+        this.loading = false;
     }
 
     toggleFavourite() {
@@ -126,11 +139,10 @@ export class MangaComponent extends MangaPartial implements OnInit, OnDestroy {
 
     showBookmarks() { this.pop.show(this.bookmarkPop); }
 
-    resetProgress() {
+    async resetProgress() {
         if (!this.manga) return;
 
-        this.api
-            .resetProgress(this.manga?.id)
-            .subscribe(t => this.progress = undefined);
+        await this.api.resetProgress(this.manga?.id).promise;
+        this.stats = await this.api.mangaExtended(this.manga.id).promise;
     }
 }

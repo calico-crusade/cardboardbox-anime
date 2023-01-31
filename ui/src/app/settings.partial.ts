@@ -16,6 +16,10 @@ export abstract class SettingsPartial {
     private _mangaBrightness = new StorageVar<number>(100, 'manga-brightness', (v) => this.setRootVar('--image-bightness', '100%', v ? v + '%' : '100%'));
     private _mangaShowNsfw = new StorageVar<boolean>(false, 'manga-show-nsfw');
 
+    private _lnFontSize = new StorageVar<number>(16, 'ln-font-size');
+    private _lnPageSize = new StorageVar<number>(600, 'ln-page-size');
+    private _lnDisableDic = new StorageVar<boolean>(false, 'ln-disable-dic');
+
     get mangaInvertControls(): boolean { return this._mangaInvertControls.value; }
     set mangaInvertControls(value: boolean | undefined) { this._mangaInvertControls.value = value; }
     
@@ -54,6 +58,15 @@ export abstract class SettingsPartial {
 
     get mangaShowNsfw(): boolean { return this._mangaShowNsfw.value; }
     set mangaShowNsfw(value: boolean | undefined) { this._mangaShowNsfw.value = value; }
+
+    get lnFontSize(): number { return this._lnFontSize.value; }
+    set lnFontSize(value: number) { this._lnFontSize.value = value; }
+
+    get lnPageSize(): number { return this._lnPageSize.value; }
+    set lnPageSize(value: number) { this._lnPageSize.value = value; }
+
+    get lnEnableDic(): boolean { return !this._lnDisableDic.value; }
+    set lnEnableDic(value: boolean) { this._lnDisableDic.value = !value; }
 
     get loggedIn() { return !!this._auth.currentUser; }
     get fitToWidth() { return this.mangaImgSize === 'Fit to Width'; }

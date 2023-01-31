@@ -47,7 +47,12 @@ public interface IMangaDbService
 	Task<bool> IsFavourite(string? platformId, long mangaId);
 
 	Task<MangaWithChapters?> GetManga(long id, string? platformId);
+
 	Task<MangaWithChapters?> GetManga(string id, string? platformId);
+
+	Task<MangaProgress?> GetMangaExtended(long id, string? platformId);
+
+	Task<MangaProgress?> GetMangaExtended(string id, string? platformId);
 
 	Task Bookmark(long id, long chapterId, int[] pages, string platformId);
 
@@ -563,6 +568,41 @@ DROP TABLE touched_manga;";
 		var total = await rdr.ReadSingleAsync<int>();
 		var pages = (long)Math.Ceiling((double)total / size);
 		return new PaginatedResult<MangaProgress>(pages, total, results.ToArray());
+	}
+
+	public Task<MangaProgress?> GetMangaExtended(long id, string? platformId)
+	{
+		return GetMangaExtended(null, id, platformId);
+	}
+
+	public Task<MangaProgress?> GetMangaExtended(string id, string? platformId)
+	{
+		return GetMangaExtended(id, null, platformId);
+	}
+
+	public async Task<MangaProgress?> GetMangaExtended(string? hashId, long? id, string? platformId)
+	{
+		const string QUERY = @"SELECT
+    m.*,
+    '' as split,
+    mp.*,
+    '' as split,
+    mc.*,
+    '' as split,
+    t.*
+FROM get_manga( :platformId , 99) t
+JOIN manga m ON m.id = t.manga_id
+JOIN manga_chapter mc ON mc.id = t.manga_chapter_id
+LEFT JOIN manga_progress mp ON mp.id = t.progress_id
+WHERE
+    m.id = :id OR
+    m.hash_id = :hashId";
+
+		using var con = _sql.CreateConnection();
+		var records = await con.QueryAsync<DbManga, DbMangaProgress, DbMangaChapter, MangaStats, MangaProgress>(
+			QUERY, (m, p, c, s) => new MangaProgress(m, p, c, s), 
+			param: new { hashId, id, platformId }, splitOn: "split");
+		return records.FirstOrDefault();
 	}
 }
 

@@ -5,17 +5,20 @@ import { lastValueFrom } from 'rxjs';
 import { PopupComponent, PopupInstance, PopupService } from 'src/app/components';
 import { DictionaryDefinitionService } from 'src/app/components/dictionary-definition/dictionary-definition.service';
 import { AuthService, ChapterPages, LightNovelService, NovelBook, NovelChapter, Scaffold, SubscriptionHandler } from 'src/app/services';
+import { SettingsPartial } from 'src/app/settings.partial';
 
 @Component({
   templateUrl: './chapter.component.html',
   styleUrls: ['./chapter.component.scss']
 })
-export class ChapterComponent implements OnInit, OnDestroy {
+export class ChapterComponent extends SettingsPartial implements OnInit, OnDestroy {
 
     private _subs = new SubscriptionHandler();
 
     private _popIn?: PopupInstance;
+    private _settingsIn?: PopupInstance;
     @ViewChild('popup') popup!: PopupComponent;
+    @ViewChild('settingsPop') settingsPop!: PopupComponent;
 
     loading: boolean = false;
     error?: string;
@@ -48,7 +51,7 @@ export class ChapterComponent implements OnInit, OnDestroy {
         private auth: AuthService,
         private title: Title,
         private dic: DictionaryDefinitionService
-    ) { }
+    ) { super(auth); }
 
     ngOnInit(): void {
         this._subs.subscribe(this.route.params, t => {
@@ -73,7 +76,8 @@ export class ChapterComponent implements OnInit, OnDestroy {
         const words = text.split(' ');
         if (words.length > 4) return;
 
-        this.dic.definition(text);
+        if (this.lnEnableDic)
+            this.dic.definition(text);
     }
 
     private async process() {
@@ -147,5 +151,12 @@ export class ChapterComponent implements OnInit, OnDestroy {
     closeChapters() {
         this._popIn?.ok();
         this._popIn = undefined;
+    }
+
+    settings() {
+        this._settingsIn = this.pop.show(this.settingsPop);
+        this._settingsIn.result.subscribe(t => {
+            this._settingsIn = undefined;
+        });
     }
 }

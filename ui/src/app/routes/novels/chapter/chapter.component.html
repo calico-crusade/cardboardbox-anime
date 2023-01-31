@@ -3,11 +3,11 @@
         <button [disabled]="!bookPrev" (click)="move(bookPrev)"><cba-icon>skip_previous</cba-icon></button>
         <button [disabled]="!chapterPrev" (click)="move(chapterPrev)"><cba-icon>navigate_before</cba-icon></button>
         <button (click)="showChapters()"><cba-icon>menu_book</cba-icon></button>
-        <button (click)="move(book)"><cba-icon>book</cba-icon></button>
+        <a [routerLink]="['/series', seriesId, 'book', bookId]"><cba-icon>book</cba-icon></a>
 
         <div class="title">{{ chapter?.title }}</div>
 
-        <button><cba-icon>settings</cba-icon></button>
+        <button (click)="settings()"><cba-icon>settings</cba-icon></button>
         <button [disabled]="!chapterNext" (click)="move(chapterNext)"><cba-icon>navigate_next</cba-icon></button>
         <button [disabled]="!bookNext" (click)="move(bookNext)"><cba-icon>skip_next</cba-icon></button>
     </header>
@@ -15,7 +15,9 @@
         <button [disabled]="!chapterPrev" (click)="move(chapterPrev)">
             <cba-icon>navigate_before</cba-icon>
         </button>
-        <div class="page" *ngFor="let p of pages" [ngSwitch]="p.page.mimetype">
+        <div class="page" *ngFor="let p of pages" [ngSwitch]="p.page.mimetype" 
+            [style.max-width]="lnPageSize + 'px'"
+            [style.font-size]="lnFontSize + 'px'">
             <div class="page-content" *ngSwitchDefault [innerHTML]="p.page.content"></div>
             <div class="page-image" *ngSwitchCase="'image/png'">
                 <img [src]="p.page.content" />
@@ -39,3 +41,27 @@
 </cba-popup>
 
 <cba-dictionary-definition></cba-dictionary-definition>
+
+<cba-popup #settingsPop color="var(--color-funimation)">
+    <h2>Settings</h2>
+    <div class="settings">
+        <section>
+            <label>
+                <input type="checkbox" [(ngModel)]="lnEnableDic" />
+                Dictionary Lookups
+            </label>
+        </section>
+        <section><label>Text Max Width:</label></section>
+        <section>
+            <div class="select-list fill">
+                <input type="number" class="fill" step="50" min="300" [(ngModel)]="lnPageSize" />
+            </div>
+        </section>
+        <section><label>Font Size:</label></section>
+        <section>
+            <div class="select-list fill">
+                <input type="number" class="fill" step="2" min="10" [(ngModel)]="lnFontSize" />
+            </div>
+        </section>
+    </div>
+</cba-popup>

@@ -1,5 +1,9 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { BaseResult, LightNovelService, Manga, MangaProgressData, MatchResult, VisionResult, ImageSearchManga, MangaProgress, MangaProgressStats, MangaChapter } from 'src/app/services';
+import { 
+    BaseResult, LightNovelService, 
+    Manga, MangaProgressData, MangaProgress, MangaProgressStats, MangaChapter, 
+    MatchResult, VisionResult, ImageSearchManga 
+} from 'src/app/services';
 
 export type SearchData = {
     manga: ImageSearchManga;

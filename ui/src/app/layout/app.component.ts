@@ -1,4 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Location } from '@angular/common';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { LightNovelService, MangaProgressData, MangaService, SubscriptionHandler } from '../services';
 import { AuthUser } from '../services/auth/auth.model';
@@ -33,7 +34,8 @@ export class AppComponent implements OnInit, OnDestroy {
         private auth: AuthService,
         private router: Router,
         private manga: MangaService,
-        private ln: LightNovelService
+        private ln: LightNovelService,
+        private loc: Location
     ) { }
 
     async ngOnInit() {
@@ -81,4 +83,6 @@ export class AppComponent implements OnInit, OnDestroy {
         if (results.length === 0) return;
         this.updated = results;
     }
+
+    back() { return this.loc.back(); }
 }

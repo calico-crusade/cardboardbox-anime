@@ -58,8 +58,13 @@
             <h1>Books: </h1>
             <button (click)="download()" [disabled]="downloading">
                 <cba-icon *ngIf="!downloading">download</cba-icon>
-                <cba-icon *ngIf="downloading">sync</cba-icon>
+                <cba-icon [spin]="true" *ngIf="downloading">sync</cba-icon>
                 <span>Download Epubs</span>
+            </button>
+            <button (click)="refresh()" [disabled]="refreshing">
+                <cba-icon *ngIf="!refreshing">update</cba-icon>
+                <cba-icon [spin]="true" *ngIf="refreshing">sync</cba-icon>
+                <span>Check for Updates</span>
             </button>
         </div>
         <article>

@@ -109,7 +109,7 @@ public class MangaLookupService : IMangaLookupService
 			.OrderByDescending(t => t.Score)
 			.FirstOrDefault();
 		if (fallback != null && fallback.Manga != null && 
-			(fallback.Score > 95 || fallback.ExactMatch))
+			(fallback.Score > 90 || fallback.ExactMatch))
 		{
 			await PrintFallback(msg, fallback);
 			return;
@@ -126,7 +126,7 @@ public class MangaLookupService : IMangaLookupService
 			.WithTitle(result.Manga.Title)
 			.WithUrl(result.Manga.Url)
 			.WithThumbnailUrl(result.Manga.Cover)
-			.WithDescription(result.Manga.Description)
+			.WithDescription($"{result.Manga.Description}. [CBA+](https://cba.index-0.com/manga/add?url={result.Manga.Url})")
 			.AddField("Tags", string.Join(", ", result.Manga.Tags))
 			.AddField("Score", $"{result.Score:0.00}. (EM: {result.ExactMatch})", true);
 
@@ -182,7 +182,7 @@ public class MangaLookupService : IMangaLookupService
 			embeds.Add(new EmbedBuilder()
 				.WithTitle(search.BestGuess.Title)
 				.WithUrl(search.BestGuess.Url)
-				.WithDescription(search.BestGuess.Description)
+				.WithDescription($"{search.BestGuess.Description}. [CBA+](https://cba.index-0.com/manga/add?url={search.BestGuess.Url})")
 				.WithThumbnailUrl(search.BestGuess.Cover)
 				.AddField("Tags", string.Join(", ", search.BestGuess.Tags))
 				.AddField("Source", $"[{search.BestGuess.Source}]({search.BestGuess.Url})", true)

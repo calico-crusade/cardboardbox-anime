@@ -74,7 +74,7 @@ public class NovelsController : ControllerBase
 		return Ok(data);
 	}
 
-	[HttpGet, Route("novels/load"), AdminAuthorize, ProducesDefaultResponseType(typeof(LoadResponse))]
+	[HttpGet, Route("novels/load"), ProducesDefaultResponseType(typeof(LoadResponse))]
 	[ProducesResponseType(typeof(ErrorResponse), 400), ProducesResponseType(typeof(ErrorResponse), 404), ProducesResponseType(401)]
 	public async Task<IActionResult> Load([FromQuery] string? url = null, [FromQuery] long? seriesId = null)
 	{

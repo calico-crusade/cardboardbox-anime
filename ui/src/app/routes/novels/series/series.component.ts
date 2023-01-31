@@ -18,6 +18,7 @@ export class SeriesComponent implements OnInit, OnDestroy {
     loading: boolean = true;
     error?: string;
     downloading: boolean = false;
+    refreshing: boolean = false;
 
     get source() { 
         if (!this.series) return '';
@@ -95,5 +96,16 @@ export class SeriesComponent implements OnInit, OnDestroy {
             .subscribe(t => {
                 this.downloading = false;
             });
+    }
+
+    refresh() {
+        if (!this.series) return;
+
+        this.refreshing = true;
+
+        this.api
+            .load(this.series.id)
+            .error((e) => console.error('Error occurred while refreshing books'))
+            .subscribe(t => this.refreshing = false);
     }
 }

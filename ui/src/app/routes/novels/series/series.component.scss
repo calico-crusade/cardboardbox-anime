@@ -80,9 +80,13 @@
         flex-flow: row;
         border-bottom: 1px solid var(--text-color);
 
+        h1 {
+            margin-right: auto;
+        }
+
         button {
             outline: none;
-            margin: auto 0 auto auto;
+            margin: auto 10px;
             color: var(--text-color);
             text-decoration: none;
             background-color: var(--color-funimation);

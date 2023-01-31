@@ -5,27 +5,64 @@
             <div class="title">
                 <a [href]="manga?.url" target="_blank">{{ manga?.title }}</a>
             </div>
-            <div class="tags">
-                <div class="header">Alt Titles: </div>
-                <div class="tag secondary" *ngFor="let tag of manga?.altTitles">{{ tag }}</div>
-            </div>
-            <div class="tags">
-                <div class="header">Tags: </div>
-                <div class="tag nsfw" *ngIf="manga?.nsfw">Nsfw</div>
-                <a class="tag" *ngFor="let tag of manga?.tags" routerLink="/manga/filter/all" [queryParams]="{include: tag}">{{ tag }}</a>
-            </div>
-            <div class="attribution">
-                <div class="value">
-                    <a [href]="manga?.url" target="_blank"><b>Source</b>: {{ manga?.provider }}</a>
-                    <span *ngFor="let atr of manga?.attributes"><b>{{ atr.name }}</b>: {{ atr.value }}</span>
+
+            <div class="details">
+                <div class="description" *ngIf="manga?.description">
+                    <div class="content" [markdown]="manga?.description"></div>
                 </div>
             </div>
-            <div class="description" *ngIf="manga?.description">
-                <b>Description:</b>
-                <div class="content" [markdown]="manga?.description"></div>
+
+            <div class="buttons">
+                <button (click)="update()" cba-tooltip="Refresh manga from source" direction="up">
+                    <cba-icon>update</cba-icon>
+                    <p>Refresh</p>
+                </button>
+                <button (click)="toggleFavourite()" *ngIf="loggedIn" cba-tooltip="Add to favourites" direction="up">
+                    <cba-icon [fill]="favourite">star</cba-icon>
+                    <p>Favourite</p>
+                </button>
+                <button (click)="showBookmarks()" *ngIf="hasBookmarks" cba-tooltip="See all bookmarks" direction="up">
+                    <cba-icon>bookmarks</cba-icon>
+                    <p>Bookmarks</p>
+                </button>
+                <button (click)="nextRandom()" *ngIf="isRandom" cba-tooltip="Next Random Manga" direction="up">
+                    <cba-icon>shuffle</cba-icon>
+                    <p>Random</p>
+                </button>
+                <button (click)="resetProgress()" *ngIf="progress" cba-tooltip="Reset Progress" direction="up">
+                    <cba-icon>delete</cba-icon>
+                    <p>Reset Progress</p>
+                </button>
             </div>
         </div>
     </header>
+    <section class="drawer" [ngClass]="{ 'open': detailsOpen }">
+        <div class="title" (click)="detailsOpen = !detailsOpen">
+            <div class="text">
+                <p>More Details</p>
+                <cba-icon *ngIf="detailsOpen">arrow_drop_up</cba-icon>
+                <cba-icon *ngIf="!detailsOpen">arrow_drop_down</cba-icon>
+            </div>
+        </div>
+        <div class="opener">
+            <div class="wrapper">
+                <div class="tags">
+                    <div class="header">Alternative Titles </div>
+                    <div class="tag secondary" *ngFor="let tag of manga?.altTitles">{{ tag }}</div>
+                </div>
+                <div class="tags">
+                    <div class="header">Tags </div>
+                    <div class="tag nsfw" *ngIf="manga?.nsfw">Nsfw</div>
+                    <a class="tag" *ngFor="let tag of manga?.tags" routerLink="/manga/filter/all" [queryParams]="{include: tag}">{{ tag }}</a>
+                </div>
+                <div class="tags">
+                    <div class="header">Details </div>
+                    <a class="tag md" [href]="manga?.url" target="_blank"><b>Source</b>: {{ manga?.provider }}</a>
+                    <div class="tag tertiary" *ngFor="let atr of manga?.attributes"><b>{{ atr.name }}</b>: {{ atr.value }}</div>
+                </div>
+            </div>
+        </div>
+    </section>
     <main>
         <a class="chapter resume" *ngIf="currentChapter" [routerLink]="[ '/manga', manga?.hashId, currentChapter.id, progress?.pageIndex ]">
             <div class="header">
@@ -67,23 +104,6 @@
             </div>
         </a>
     </main>
-    <div class="float-icons">
-        <button class="float-icon" (click)="update()" cba-tooltip="Refresh manga from source">
-            <cba-icon>update</cba-icon>
-        </button>
-        <button class="float-icon" (click)="toggleFavourite()" *ngIf="loggedIn" cba-tooltip="Add to favourites">
-            <cba-icon [fill]="favourite">star</cba-icon>
-        </button>
-        <button class="float-icon" (click)="showBookmarks()" *ngIf="hasBookmarks" cba-tooltip="See all bookmarks">
-            <cba-icon>bookmarks</cba-icon>
-        </button>
-        <button class="float-icon" (click)="nextRandom()" *ngIf="isRandom" cba-tooltip="Next Random Manga">
-            <cba-icon>shuffle</cba-icon>
-        </button>
-        <button class="float-icon" (click)="resetProgress()" *ngIf="progress" cba-tooltip="Reset Progress">
-            <cba-icon>delete</cba-icon>
-        </button>
-    </div>
 </cba-container>
 
 <cba-popup #bookmarkspopup>

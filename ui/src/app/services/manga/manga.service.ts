@@ -1,11 +1,16 @@
 import { Injectable } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
-import { BehaviorSubject, Observable, of } from "rxjs";
+import { BehaviorSubject, of } from "rxjs";
 import { Filters } from "../anime/anime.model";
 import { ConfigObject } from "../config.base";
 import { HttpService, RxjsHttpResp } from "../http.service";
 import { StorageVar } from "../storage-var";
-import { ImageSearch, Manga, MangaChapter, MangaFilter, MangaProgress, MangaProgressUpdate, MangaStripReq, MangaWithChapters, PaginatedManga, PaginatedMangaProgress } from "./manga.model";
+import { 
+    ImageSearch, Manga, MangaChapter, 
+    MangaFilter, MangaProgress, MangaProgressData, 
+    MangaProgressUpdate, MangaStripReq, MangaWithChapters, 
+    PaginatedManga, PaginatedMangaProgress 
+} from "./manga.model";
 import { DateTime } from 'luxon';
 import { AuthService } from "../auth/auth.service";
 
@@ -47,6 +52,12 @@ export class MangaService extends ConfigObject {
             return this.http.get<MangaWithChapters>(`manga/${idUrl}`);
         }
         return this.http.get<string[]>(`manga/${idUrl}/${chapter}/pages`);
+    }
+
+    mangaExtended(id: number): RxjsHttpResp<MangaProgressData>;
+    mangaExtended(id: string): RxjsHttpResp<MangaProgressData>;
+    mangaExtended(id: number | string) {
+        return this.http.get<MangaProgressData>(`manga/${id}/extended`);
     }
 
     reload(manga: Manga): RxjsHttpResp<MangaWithChapters>;

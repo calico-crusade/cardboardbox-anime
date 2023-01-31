@@ -1,3 +1,6 @@
+$progress-height: 4px;
+$select-list-padding: 10px;
+
 header {
     display: flex;
     flex-flow: row;
@@ -12,20 +15,28 @@ header {
         margin: auto;
     }
 
-    button {
-        margin: 5px 0;
-        border: none;
+    button, a {
+        margin: auto 0;
+        padding: 5px;
         outline: none;
+        border: none;
         background-color: transparent;
         color: var(--text-color);
         cursor: pointer;
-
-        &:first-child { margin-left: 10px; }
-        &:last-child { margin-right: 10px; }
+        text-decoration: none;
+        text-align: center;
 
         &:disabled {
             color: var(--text-color-muted);
             cursor: not-allowed;
+        }
+
+        &:first-child {
+            margin-left: 5px;
+        }
+
+        &:last-child {
+            margin-right: 5px;
         }
     }
 }
@@ -76,6 +87,102 @@ h2 {
 
         &.active {
             text-decoration: underline;
+        }
+    }
+}
+
+.select-list {
+    display: flex;
+    flex-flow: row;
+    margin: 5px auto;
+
+    select, input {
+        outline: none;
+        border: 1px solid var(--accent-2);
+        background-color: var(--bg-accent);
+        color: var(--text-color);
+        max-width: 240px;
+        padding: $select-list-padding;
+
+        option {
+            background-color: transparent;
+            color: var(--text-color);
+        }
+
+        &.fill {
+            flex: 1;
+            max-width: 100%;
+        }
+    }
+
+    select { height: 36px; }
+
+    button, a {
+        outline: none;
+        border: 1px solid var(--accent-2);
+        background: var(--bg-accent);
+        padding: calc(#{$select-list-padding} / 2);
+        margin: 0;
+        color: var(--text-color);
+        line-height: 100%;
+        cursor: pointer;
+        text-decoration: none;
+        text-align: center;
+
+        &:disabled {
+            color: var(--text-color-muted);
+            cursor: not-allowed;
+        }
+    }
+
+    .counts {
+        border: 1px solid var(--accent-2);
+        background-color: var(--bg-accent);
+        padding: $select-list-padding;
+    }
+
+    :first-child {
+        border-top-left-radius: 5px;
+        border-bottom-left-radius: 5px;
+    }
+
+    :not(:first-child) {
+        border-left: none;
+    }
+
+    :last-child {
+        border-top-right-radius: 5px;
+        border-bottom-right-radius: 5px;
+    }
+
+    :not(:first-child):not(:last-child) {
+        border-radius: 0;
+    }
+
+    select, input, button, .counts {
+        margin: 0;
+    }
+
+    &.fill {
+        width: 100%;
+    }
+
+    &.brightness {
+        input {
+            width: 100%;
+            margin: auto;
+        }
+    }
+}
+
+.settings {
+    section {
+        margin-top: 5px;
+        .select-list {
+            width: 100%;
+            select {
+                width: 100%;
+            }
         }
     }
 }

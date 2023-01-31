@@ -65,6 +65,19 @@ public class MangaController : ControllerBase
 		return Ok(manga);
 	}
 
+	[HttpGet, Route("manga/{id}/extended")]
+	[ProducesDefaultResponseType(typeof(MangaProgress)), ProducesResponseType(404)]
+	public async Task<IActionResult> GetExt([FromRoute] string id)
+	{
+		var pid = this.UserFromIdentity()?.Id;
+		var manga = long.TryParse(id, out long mid) ?
+			await _db.Manga.GetMangaExtended(mid, pid) :
+			await _db.Manga.GetMangaExtended(id, pid);
+
+		if (manga == null) return NotFound();
+		return Ok(manga);
+	}
+
 	[HttpGet, Route("manga/{id}/progress"), Authorize]
 	[ProducesDefaultResponseType(typeof(DbMangaProgress)), ProducesResponseType(404)]
 	public async Task<IActionResult> GetProgress([FromRoute] string id)

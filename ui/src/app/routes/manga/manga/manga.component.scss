@@ -10,18 +10,17 @@ header {
         background-size: contain;
         background-position: center;
         background-repeat: no-repeat;
-        margin: 5px;
+        margin: 0 5px;
     }
 
     .details {
         display: flex;
         flex-flow: column;
         flex: 1;
-        margin-right: 50px;
-        // max-height: 400px;
-        // overflow-y: auto;
 
         .title {
+            display: flex;
+
             a {
                 font-size: 2em;
                 text-decoration: none;
@@ -53,38 +52,31 @@ header {
             }
         }
 
-        .tags {
-            .header {
-                font-weight: bold;
-                display: inline-block;
-            }
+        .buttons {
+            margin-top: auto;
+            display: flex;
+            flex-flow: row;
 
-            .tag {
-                display: inline-block;
-                padding: 3px 5px;
-                margin: 3px;
-                background-color: var(--def-color);
-                border: 1px solid var(--brd-color-accent);
-                border-radius: 3px;
-                text-decoration: none;
+            button {
+                margin: 0 5px;
+                padding: 10px 15px;
+                display: flex;
+                flex-flow: row;
                 cursor: pointer;
-
-                &.secondary {
-                    background-color: var(--color-hidive-dark);
-                    border: 1px solid var(--color-hidive);
-                    cursor: default;
-                }
-
-                &.nsfw {
-                    background-color: var(--dgr-color);
-                    cursor: default;
-                }
+                background-color: var(--bg-card);
+                color: var(--text-color);
+                outline: none;
+                border: 1px solid var(--bg-card);
+                border-radius: 5px;
+                font-size: 16px;
+                p { margin: auto 3px; }
             }
         }
 
-        .buttons {
-            margin-top: auto;
-            margin-left: auto;
+        .description {
+            overflow: auto;
+            max-height: 300px;
+            padding: 0 5px;
         }
     }
 }
@@ -147,10 +139,107 @@ h2 {
     flex-flow: column;
 }
 
+.drawer {
+    margin: 5px 1.25%;
+    display: flex;
+    flex-flow: column;
+    background-color: var(--bg-card);
+
+    .title {
+        display: flex;
+        flex-flow: row;
+        padding: 5px;
+        cursor: pointer;
+
+        .text {
+            margin: auto;
+            display: flex;
+            flex-flow: row;
+
+            p {
+                margin: auto;
+                padding: 0;
+            }
+        }
+    }
+
+    .opener {
+        overflow: hidden;
+        max-height: 0;
+        display: flex;
+        flex-flow: column;
+        transition: max-height 250ms;
+        
+        .wrapper {
+            border-top: 1px solid var(--brd-color-accent);
+            padding: 10px;
+            display: flex;
+            flex-flow: column;
+        
+            .tags {
+                .header {
+                    font-weight: bold;
+                    display: inline-block;
+                    width: 100%;
+                    margin: 3px;
+                }
+    
+                .tag {
+                    display: inline-block;
+                    padding: 3px 5px;
+                    margin: 3px;
+                    background-color: var(--def-color);
+                    border: 1px solid var(--brd-color-accent);
+                    border-radius: 5px;
+                    text-decoration: none;
+                    cursor: pointer;
+    
+                    &.secondary {
+                        background-color: var(--color-hidive-dark);
+                        border: 1px solid var(--color-hidive);
+                        cursor: default;
+                    }
+    
+                    &.nsfw {
+                        background-color: var(--dgr-color);
+                        cursor: default;
+                    }
+    
+                    &.tertiary {
+                        background-color: var(--bg-card);
+                        border: 1px solid var(--bg-accent);
+                        cursor: default;
+                    }
+    
+                    &.md {
+                        color: #fff;
+                        background-color: #ff6740;
+                        border: 1px solid #e6613e;
+                    }
+                }
+            }
+        }
+    }
+
+    &.open {
+        .opener { 
+            max-height: 900px;
+        }
+    }
+}
+
+
+@media only screen and (max-width: 950px) {
+    header .details .buttons button p { display: none; }
+}
 
 @media only screen and (max-width: 700px) {
     header {
         flex-flow: column !important;
+
+        .title {
+            a { margin: 5px auto; }
+        }
 
         .image {
             margin: 0 auto !important;
@@ -161,6 +250,15 @@ h2 {
             margin-right: 0;
             max-height: unset;
             overflow-y: unset;
+
+            .buttons { margin: 0 auto; }
+
+            .description {
+                max-height: unset;
+                overflow: hidden;
+            }
         }
     }
+
+    .drawer { margin: 5px 0; }
 }
