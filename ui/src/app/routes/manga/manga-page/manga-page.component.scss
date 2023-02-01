@@ -259,7 +259,7 @@ h2 {
 
         &.fill {
             flex: 1;
-            max-width: 100%;
+            max-width: 100% !important;
         }
     }
 
@@ -286,7 +286,11 @@ h2 {
     .counts {
         border: 1px solid var(--accent-2);
         background-color: var(--bg-accent);
-        padding: $select-list-padding;
+        display: flex;
+
+        p {
+            margin: auto 5px;
+        }
     }
 
     :first-child {
@@ -313,6 +317,10 @@ h2 {
 
     &.fill {
         width: 100%;
+
+        select, input {
+            max-width: 100% !important;
+        }
     }
 
     &.brightness {
@@ -372,6 +380,87 @@ h2 {
     }
 }
 
+.settings-float {
+    min-width: 300px;
+    background-color: var(--bg-card);
+    overflow: hidden;
+    border-left: 1px solid var(--brd-color-accent);
+    transition: all 250ms;
+    display: flex;
+    flex-flow: column;
+
+    &.closed {
+        margin-right: -300px;
+    }
+
+    .wrapper {
+        flex: 1;
+        overflow: hidden;
+        position: relative;
+
+        .tab {
+            position: absolute;
+            top: 0;
+            left: 100%;
+            height: calc(100% - 20px);
+            width: calc(100% - 20px);
+            transition: left 250ms;
+            padding: 10px;
+            overflow-y: auto;
+            overflow-x: hidden;
+
+            &.active {
+                left: 0 !important;
+            }
+        }
+    }
+
+    .tray {
+        display: flex;
+        flex-flow: row;
+        border-top: 1px solid var(--brd-color-accent);
+
+        button {
+            flex: 1;
+            background-color: transparent;
+            outline: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 36px;
+            display: flex;
+            align-items: center;
+            flex-flow: column;
+            padding: 10px;
+            cursor: pointer;
+
+            &:not(:first-child) {
+                border-left: 1px solid var(--brd-color-accent);
+            }
+
+            &.active {
+                background-color: var(--accent-2);
+            }
+        }
+    }
+}
+
+.info {
+    display: flex;
+    flex-flow: column;
+
+    .cover {
+        width: 100%;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+
+    .progress-container {
+        p {
+            margin: 5px 0; padding: 0;
+        }
+    }
+}
+
 @media only screen and (max-width: 720px) {
     header {
         .select-list {
@@ -380,6 +469,17 @@ h2 {
 
         .mobile-bump {
             flex: 1;
+        }
+    }
+
+    .settings-float {
+        min-width: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        &.closed {
+            left: 100%;
         }
     }
 }

@@ -1,4 +1,4 @@
-import { AuthService, MangaChapter, MangaWithChapters } from "src/app/services";
+import { MangaChapter, MangaProgressData, MangaWithChapters } from "../../services";
 import { SettingsPartial } from "src/app/settings.partial";
 
 const DEFAULT_IMAGE = 'https://wallpaperaccess.com/full/1979093.jpg';

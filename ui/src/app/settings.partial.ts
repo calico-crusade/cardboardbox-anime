@@ -5,16 +5,17 @@ export abstract class SettingsPartial {
     private _mangaInvertControls = new StorageVar<boolean>(false, 'invert-controls');
     private _mangaImgSize = new StorageVar<string>('Fit to Height', 'img-size');
     private _mangaScroll = new StorageVar<boolean>(false, 'scroll-chapter');
-    private _mangaHideHeader = new StorageVar<boolean>(false, 'hide-header', (v) => this._auth.showHeader = !v);
+    private _mangaHideHeader = new StorageVar<boolean>(true, 'hide-header', (v) => this._auth.showHeader = !v);
     private _mangaInvert = new StorageVar<boolean>(false, 'invert-image');
     private _mangaScrollAmount = new StorageVar<number>(100, 'scroll-amount');
     private _mangaProgressBar = new StorageVar<string>('', 'progress-bar');
     private _mangaNoDirectionalButton = new StorageVar<boolean>(false, 'no-directional-buttons');
     private _mangaHideExtraButtons = new StorageVar<boolean>(false, 'hide-extra-buttons');
-    private _mangaFilter = new StorageVar<string>('', 'filter');
+    private _mangaFilter = new StorageVar<string>('blue-light', 'filter');
     private _mangaCustomFilter = new StorageVar<string>('sepia(40%) saturate(200%)', 'custom-filter', (v) => this.setRootVar('--custom-image-filter', '', v));
-    private _mangaBrightness = new StorageVar<number>(100, 'manga-brightness', (v) => this.setRootVar('--image-bightness', '100%', v ? v + '%' : '100%'));
+    private _mangaBrightness = new StorageVar<number>(70, 'manga-brightness', (v) => this.setRootVar('--image-bightness', '100%', v ? v + '%' : '100%'));
     private _mangaShowNsfw = new StorageVar<boolean>(false, 'manga-show-nsfw');
+    private _mangaTab = new StorageVar<string>('info', 'default-tab');
 
     private _lnFontSize = new StorageVar<number>(16, 'ln-font-size');
     private _lnPageSize = new StorageVar<number>(600, 'ln-page-size');
@@ -58,6 +59,9 @@ export abstract class SettingsPartial {
 
     get mangaShowNsfw(): boolean { return this._mangaShowNsfw.value; }
     set mangaShowNsfw(value: boolean | undefined) { this._mangaShowNsfw.value = value; }
+
+    get mangaTab(): string { return this._mangaTab.value; }
+    set mangaTab(value: string) { this._mangaTab.value = value; }
 
     get lnFontSize(): number { return this._lnFontSize.value; }
     set lnFontSize(value: number) { this._lnFontSize.value = value; }

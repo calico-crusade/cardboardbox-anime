@@ -27,6 +27,7 @@ export class MangaPageComponent extends MangaPagePartial implements OnInit, OnDe
     error?: string;
     downloading: boolean = false;
     isExternal: boolean = false;
+    settingsFloatOpen: boolean = false;
 
     id!: string;
     
@@ -326,6 +327,10 @@ export class MangaPageComponent extends MangaPagePartial implements OnInit, OnDe
     }
 
     async share() { await navigator.clipboard.writeText(window.location.href); }
+    async shareManga() { 
+        const url = this.auth.rootUrl + '/manga/' + this.id;
+        await navigator.clipboard.writeText(url);
+    }
 
     openLinks() { this.pop.show(this.linksPop); }
 
@@ -406,5 +411,10 @@ export class MangaPageComponent extends MangaPagePartial implements OnInit, OnDe
         return Object.keys(filters)
             .map(key => `${key}(${filters[key]})`)
             .join(' ');
+    }
+
+    setTab(index: string) {
+        console.log('Tab set', { index });
+        this.mangaTab = index;
     }
 }

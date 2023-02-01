@@ -5,13 +5,11 @@
             <div class="title">
                 <a [href]="manga?.url" target="_blank">{{ manga?.title }}</a>
             </div>
-
             <div class="details">
                 <div class="description" *ngIf="manga?.description">
                     <div class="content" [markdown]="manga?.description"></div>
                 </div>
             </div>
-
             <div class="buttons">
                 <button (click)="update()" cba-tooltip="Refresh manga from source" direction="up">
                     <cba-icon>update</cba-icon>

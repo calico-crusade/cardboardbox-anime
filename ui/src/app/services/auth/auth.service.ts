@@ -42,6 +42,13 @@ export class AuthService extends ConfigObject {
         localStorage.setItem(STORAGE_REROUTE, value);
     }
 
+
+    get rootUrl() {
+        return this.pathCombine(
+            window.location.origin,
+            this.loc.getBaseHrefFromDOM()); 
+    }
+
     constructor(
         private http: HttpClient,
         private api: AnimeService,
