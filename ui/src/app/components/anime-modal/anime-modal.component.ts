@@ -125,9 +125,8 @@ export class AnimeModalComponent implements OnInit, OnDestroy {
             //Trigger the toggle API request to add or remove from lists
             const ob = this.api.mapsToggle(this.anime, list);
             const { inList } = await lastValueFrom(ob);
-            console.log('In watch list', { inList, list, anime: this.anime });
         } catch (e) {
-            console.log('Watch lists closed', { e });
+            console.error('Watch lists closed', { e });
         }
     }
 }

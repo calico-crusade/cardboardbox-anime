@@ -414,7 +414,6 @@ export class MangaPageComponent extends MangaPagePartial implements OnInit, OnDe
     }
 
     setTab(index: string) {
-        console.log('Tab set', { index });
         this.mangaTab = index;
     }
 }

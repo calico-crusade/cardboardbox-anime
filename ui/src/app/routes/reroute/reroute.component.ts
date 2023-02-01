@@ -17,7 +17,6 @@ export class RerouteComponent implements OnInit {
         await CapacitorStorageVar.init();
 
         const route = this.auth.lastRoute;
-        console.log('Route', { route });
         if (!route) {
             this.router.navigate(['/anime', 'all' ]);
             return;

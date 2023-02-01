@@ -139,7 +139,6 @@ export class CapacitorStorageVar<T> implements IStorageVar<T> {
             }
 
             CapacitorStorageVar._values = JSON.parse(value);
-            console.log('Capacitor Storage loaded with', { value: CapacitorStorageVar._values });
         } catch (err) {
             console.error('Error occurred fetching capacitor local storage', { err });
             StorageVar.STORAGE_TARGET = 'local';
