@@ -163,7 +163,7 @@
                 </div>
             </div>
             <div class="tab info" [ngClass]="{ 'active': mangaTab === 'info' }">
-                <img class="cover" [src]="proxy(manga?.cover, 'manga-cover')" />
+                <img class="cover" [proxy]="manga?.cover" group="manga-covers" />
                 <h2>{{ manga?.title }}</h2>
                 <div class="progress-container">
                     <p><b>Manga Progress: </b> {{ ((chapterIndex + 1) / chapters.length) * 100 | number:'0.2-2' }}%</p>
@@ -267,6 +267,9 @@
             <cba-icon *ngIf="!settingsFloatOpen">settings</cba-icon>
             <cba-icon *ngIf="settingsFloatOpen">navigate_next</cba-icon>
         </button>
+        <a class="float-icon" [routerLink]="['/manga', id ]" cba-tooltip="Go to mangas home page">
+            <cba-icon>menu_book</cba-icon>
+        </a>
     </div>
     <section class="center" *ngIf="isExternal">
         <h2>External Manga Detected!</h2>

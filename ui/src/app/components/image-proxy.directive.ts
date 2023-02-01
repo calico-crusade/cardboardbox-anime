@@ -13,7 +13,9 @@ export class ImageProxyDirective {
     @Input() referer?: string;
 
     @Input() 
-    set proxy(value: string) {
+    set proxy(value: string | undefined | null) {
+        if (!value) return;
+
         this.src = this.api.corsFallback(value, this.group, this.referer);
     }
 

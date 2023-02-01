@@ -8,7 +8,7 @@ export abstract class SettingsPartial {
     private _mangaHideHeader = new StorageVar<boolean>(true, 'hide-header', (v) => this._auth.showHeader = !v);
     private _mangaInvert = new StorageVar<boolean>(false, 'invert-image');
     private _mangaScrollAmount = new StorageVar<number>(100, 'scroll-amount');
-    private _mangaProgressBar = new StorageVar<string>('', 'progress-bar');
+    private _mangaProgressBar = new StorageVar<string>('left', 'progress-bar');
     private _mangaNoDirectionalButton = new StorageVar<boolean>(false, 'no-directional-buttons');
     private _mangaHideExtraButtons = new StorageVar<boolean>(false, 'hide-extra-buttons');
     private _mangaFilter = new StorageVar<string>('blue-light', 'filter');
