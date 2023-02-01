@@ -166,7 +166,7 @@
                 </div>
             </div>
             <div class="tab info" [ngClass]="{ 'active': mangaTab === 'info' }">
-                <img class="cover" [src]="manga?.cover" />
+                <img class="cover" [src]="proxy(manga?.cover, 'manga-cover')" />
                 <h2>{{ manga?.title }}</h2>
                 <div class="progress-container">
                     <p><b>Manga Progress: </b> {{ ((chapterIndex + 1) / chapters.length) * 100 | number:'0.2-2' }}%</p>
