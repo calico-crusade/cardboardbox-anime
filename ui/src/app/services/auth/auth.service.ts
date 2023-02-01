@@ -4,7 +4,8 @@ import { BehaviorSubject, lastValueFrom, Observable } from 'rxjs';
 import { AnimeService } from '../anime/anime.service';
 import { AuthCodeResponse, AuthUser } from './auth.model';
 import { ConfigObject } from '../config.base';
-import { Location, PlatformLocation } from '@angular/common';
+import { PlatformLocation } from '@angular/common';
+import { StorageVar } from '../storage-var';
 
 const SKIP_URIS: string[] = [];
 const STORAGE_REROUTE = 'reroute-source';
@@ -18,6 +19,7 @@ export class AuthService extends ConfigObject {
     private _titleSub = new BehaviorSubject<string | undefined>(undefined);
     private _loggingInSub = new BehaviorSubject<boolean>(false);
     private _headerSub = new BehaviorSubject<boolean>(true);
+    private _lastRoute = new StorageVar<string | null>(null, STORAGE_REROUTE);
 
     get onLogin() { return this._loginSub.asObservable(); }
     get currentUser() { return this._loginSub.getValue(); }
@@ -36,10 +38,9 @@ export class AuthService extends ConfigObject {
     get showHeader() { return this._headerSub.getValue(); }
     set showHeader(value: boolean) { this._headerSub.next(value); }
 
-    get lastRoute(){ return localStorage.getItem(STORAGE_REROUTE); }
+    get lastRoute(){ return this._lastRoute.value; }
     set lastRoute(value: string | null) {
-        if (value === '/' || !value) return;
-        localStorage.setItem(STORAGE_REROUTE, value);
+        this._lastRoute.value = value;
     }
 
 
@@ -52,7 +53,6 @@ export class AuthService extends ConfigObject {
     constructor(
         private http: HttpClient,
         private api: AnimeService,
-        private location: Location,
         private loc: PlatformLocation
     ) { super(); }
 

@@ -23,6 +23,7 @@
     "@capacitor/android": "^4.6.2",
     "@capacitor/core": "^4.6.2",
     "@capacitor/ios": "^4.6.2",
+    "@capacitor/preferences": "^4.0.2",
     "@trademe/ng-defer-load": "^8.2.1",
     "fast-xml-parser": "^4.0.10",
     "file-saver": "^2.0.5",

@@ -1,10 +1,11 @@
 import { environment } from "src/environments/environment";
-import { Capacitor } from "@capacitor/core";
+import { checkPlatform, StorageVar } from "./storage-var";
 
 const STORE_TOKEN = 'AuthToken';
-const DEFAULT_PLATFORM = 'web';
 
 export abstract class ConfigObject {
+
+    private _token = new StorageVar<string | null>(null, STORE_TOKEN);
 
     get defaultTitle() { return 'CardboardBox | Anime'; }
     get apiUrl() { return environment.apiUrl; }
@@ -12,23 +13,10 @@ export abstract class ConfigObject {
     get authUrl() { return environment.authUrl; }
     get isProd() { return environment.production; }
 
-    get token() { return localStorage.getItem(STORE_TOKEN); }
-
+    get token() { return this._token.value; }
     set token(value: string | null) {
-        if (!value) {
-            localStorage.removeItem(STORE_TOKEN);
-            return;
-        }
-
-        localStorage.setItem(STORE_TOKEN, value); 
+        this._token.value = value;
     }
 
-    get platform() {
-        try {
-            return Capacitor?.getPlatform() || DEFAULT_PLATFORM;
-        } catch(err) {
-            console.error('Failure to fetch platform', { err });
-            return DEFAULT_PLATFORM;
-        }
-    }
+    get platform() { return checkPlatform(); }
 }

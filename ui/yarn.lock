@@ -1174,7 +1174,7 @@
     tslib "^2.4.0"
     xml2js "^0.4.23"
 
-"@capacitor/core@^4.6.0", "@capacitor/core@^4.6.2":
+"@capacitor/core@^4.0.0", "@capacitor/core@^4.6.0", "@capacitor/core@^4.6.2":
   version "4.6.2"
   resolved "https://registry.npmjs.org/@capacitor/core/-/core-4.6.2.tgz"
   integrity sha512-M/KpAg+peft/HTb7svLiKHxjbll67ybs1vEqhZuvjXlwro53NxNXR4YJS7+wNXZSiA4Kxjtf+a754xGgZcMarA==
@@ -1185,6 +1185,11 @@
   version "4.6.2"
   resolved "https://registry.npmjs.org/@capacitor/ios/-/ios-4.6.2.tgz"
   integrity sha512-3hQzbAOk+drCLyFjnytvkc20Mr077/9tQrv6iTghDXESDGR6EgcaYUXzKdVwuJscb0R459+5UQ2mYtkx6ES4TQ==
+
+"@capacitor/preferences@^4.0.2":
+  version "4.0.2"
+  resolved "https://registry.npmjs.org/@capacitor/preferences/-/preferences-4.0.2.tgz"
+  integrity sha512-HgcRkMdVHSIV3TeQLZFmCaCeMWQ25wLyZZ7dA2f8Rw81Q1Nroxsi7HxTEGNqrWKSN9PNKBJD8vChr6eB2GNtZg==
 
 "@colors/colors@1.5.0":
   version "1.5.0"

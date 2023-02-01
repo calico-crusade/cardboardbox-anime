@@ -12,7 +12,6 @@
                     <cba-icon>menu_book</cba-icon>
                 </a>
             </ng-container>
-            
             <div class="select-list">
                 <select [(ngModel)]="chapterId" (ngModelChange)="pageChange(0)">
                     <option *ngFor="let chapter of chapters" [value]="chapter.id">
@@ -28,9 +27,7 @@
                     <p>of {{ chapter?.pages?.length }}</p>
                 </div>
             </div>
-
             <div class="mobile-bump"></div>
-
             <button (click)="settingsFloatOpen = !settingsFloatOpen" cba-tooltip="Settings menu">
                 <cba-icon>settings</cba-icon>
             </button>
@@ -246,7 +243,6 @@
             <div class="tab bookmarks" [ngClass]="{ 'active': mangaTab === 'bookmarks' }">
                 <cba-manga-bookmarks *ngIf="data" [data]="data"></cba-manga-bookmarks>
             </div>
-            
         </div>
         <div class="tray">
             <button [ngClass]="{ 'active': mangaTab === 'settings' }" (click)="setTab('settings')">

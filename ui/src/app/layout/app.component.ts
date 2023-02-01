@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import { LightNovelService, MangaProgressData, MangaService, SubscriptionHandler } from '../services';
+import { CapacitorStorageVar, LightNovelService, MangaProgressData, MangaService, SubscriptionHandler } from '../services';
 import { AuthUser } from '../services/auth/auth.model';
 import { AuthService } from '../services/auth/auth.service';
 import { Capacitor } from '@capacitor/core';
@@ -39,6 +39,7 @@ export class AppComponent implements OnInit, OnDestroy {
     ) { }
 
     async ngOnInit() {
+        await CapacitorStorageVar.init();
         this._subs
             .subscribe(this.router.events, t => {
                 if (t instanceof NavigationEnd) {

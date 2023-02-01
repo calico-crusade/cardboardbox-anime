@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService } from 'src/app/services';
+import { AuthService, CapacitorStorageVar } from 'src/app/services';
 
 @Component({
     templateUrl: './reroute.component.html',
@@ -13,8 +13,11 @@ export class RerouteComponent implements OnInit {
         private auth: AuthService
     ) { }
 
-    ngOnInit(): void {
+    async ngOnInit() {
+        await CapacitorStorageVar.init();
+
         const route = this.auth.lastRoute;
+        console.log('Route', { route });
         if (!route) {
             this.router.navigate(['/anime', 'all' ]);
             return;
