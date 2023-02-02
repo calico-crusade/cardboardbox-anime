@@ -37,7 +37,21 @@ public class MangaDexSource : IMangaDexSource
 			Id = chapter.Data.Id ?? string.Empty,
 			Number = double.TryParse(chapter.Data.Attributes.Chapter, out var a) ? a : 0,
 			Volume = double.TryParse(chapter.Data.Attributes.Volume, out var b) ? b : null,
-			ExternalUrl = chapter.Data.Attributes.ExternalUrl
+			ExternalUrl = chapter.Data.Attributes.ExternalUrl,
+			Attributes = new[]
+				{
+					new MangaAttribute("Translated Language", chapter.Data.Attributes.TranslatedLanguage),
+					new("Uploader", chapter.Data.Attributes.Uploader ?? "")
+				}
+				.Concat(chapter.Data.Relationships.Select(t => t switch
+				{
+					PersonRelationship person => new MangaAttribute(person.Type == "author" ? "Author" : "Artist", person.Attributes.Name),
+					ScanlationGroupRelationship group => new MangaAttribute("Scanlation Group", group.Attributes.Name),
+					_ => new("", "")
+				})?
+				.Where(t => !string.IsNullOrEmpty(t.Name))?
+				.ToArray() ?? Array.Empty<MangaAttribute>())?
+				.ToList() ?? new()
 		};
 
 		if (chapter.Data.Attributes.Pages == 0) return chap;
@@ -164,6 +178,20 @@ public class MangaDexSource : IMangaDexSource
 						Number = double.TryParse(t?.Attributes.Chapter, out var a) ? a : 0,
 						Volume = double.TryParse(t?.Attributes.Volume, out var b) ? b : null,
 						ExternalUrl = t?.Attributes.ExternalUrl,
+						Attributes = new[]
+						{
+							new MangaAttribute("Translated Language", t?.Attributes?.TranslatedLanguage ?? ""),
+							new("Uploader", t?.Attributes?.Uploader ?? "")
+						}
+						.Concat(t?.Relationships?.Select(t => t switch
+						{
+							PersonRelationship person => new MangaAttribute(person.Type == "author" ? "Author" : "Artist", person.Attributes.Name),
+							ScanlationGroupRelationship group => new MangaAttribute("Scanlation Group", group.Attributes.Name),
+							_ => new("", "")
+						})?
+						.Where(t => !string.IsNullOrEmpty(t.Name))?
+						.ToArray() ?? Array.Empty<MangaAttribute>())?
+						.ToList() ?? new()
 					};
 				})
 				.OrderBy(t => t.Number);

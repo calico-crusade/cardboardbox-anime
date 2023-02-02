@@ -381,7 +381,7 @@ h2 {
 }
 
 .settings-float {
-    min-width: 300px;
+    min-width: 350px;
     background-color: var(--bg-card);
     overflow: hidden;
     border-left: 1px solid var(--brd-color-accent);
@@ -390,7 +390,7 @@ h2 {
     flex-flow: column;
 
     &.closed {
-        margin-right: -300px;
+        margin-right: -350px;
     }
 
     .wrapper {

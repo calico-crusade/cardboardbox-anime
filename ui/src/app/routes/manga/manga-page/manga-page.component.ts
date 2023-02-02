@@ -16,7 +16,7 @@ export class MangaPageComponent extends MangaPagePartial implements OnInit, OnDe
 
     progressBarOptions = ['', 'bottom', 'left', 'right'];
     sizeOptions = ['Fit to Height', 'Fit to Width', 'Natural Image Size'];
-    filters = ['', 'invert', 'blue-light', 'blue-print', 'custom'];
+    filters = ['none', 'invert', 'blue-light', 'blue-print', 'custom'];
 
     @ViewChild('popup') popup!: PopupComponent;
     @ViewChild('scrollcont') el!: ElementRef<any>;

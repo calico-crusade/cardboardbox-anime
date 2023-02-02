@@ -28,4 +28,7 @@ public class DbMangaChapter : DbObject
 
 	[JsonPropertyName("externalUrl")]
 	public string? ExternalUrl { get; set; }
+
+	[JsonPropertyName("attributes")]
+	public DbMangaAttribute[] Attributes { get; set; } = Array.Empty<DbMangaAttribute>();
 }

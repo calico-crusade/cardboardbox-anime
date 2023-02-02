@@ -34,6 +34,7 @@ CREATE TABLE manga_chapter_cache (
     language text not null,
     pages text[] not null default '{}',
     external_url text,
+    attributes manga_attribute[] not null default '{}',
 
     created_at timestamp not null default CURRENT_TIMESTAMP,
     updated_at timestamp not null default CURRENT_TIMESTAMP,

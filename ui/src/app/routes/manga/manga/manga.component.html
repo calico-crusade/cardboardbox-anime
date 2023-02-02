@@ -95,6 +95,10 @@
                     <cba-icon>language</cba-icon> 
                     <span>{{ chapter.language }}</span>
                 </div>
+                <div class="attr" *ngIf="getGroup(chapter)">
+                    <cba-icon>group</cba-icon>
+                    <span>{{ getGroup(chapter) }}</span>
+                </div>
                 <div class="timings">
                     <cba-icon>schedule</cba-icon> 
                     <span>{{ chapter.createdAt | date:'yyyy-MM-dd' }}</span>

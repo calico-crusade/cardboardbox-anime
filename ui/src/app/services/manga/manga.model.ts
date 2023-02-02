@@ -37,6 +37,11 @@ export interface MangaChapter {
     language: string;
     pages: string[];
     externalUrl?: string;
+
+    attributes: {
+        name: string;
+        value: string;
+    }[];
 }
 
 export interface MangaBookmark {

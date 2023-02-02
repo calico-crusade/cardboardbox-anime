@@ -311,7 +311,21 @@ public class MangaMatchService : IMangaMatchService
 			Language = chapter.Attributes.TranslatedLanguage,
 			CreatedAt = DateTime.UtcNow,
 			UpdatedAt = DateTime.UtcNow,
-			Pages = pages
+			Pages = pages,
+			Attributes = new[]
+				{
+					new DbMangaAttribute("Translated Language", chapter?.Attributes?.TranslatedLanguage ?? ""),
+					new("Uploader", chapter?.Attributes?.Uploader ?? "")
+				}
+				.Concat(chapter?.Relationships?.Select(t => t switch
+				{
+					PersonRelationship person => new DbMangaAttribute(person.Type == "author" ? "Author" : "Artist", person.Attributes.Name),
+					ScanlationGroupRelationship group => new DbMangaAttribute("Scanlation Group", group.Attributes.Name),
+					_ => new("", "")
+				})?
+				.Where(t => !string.IsNullOrEmpty(t.Name))?
+				.ToArray() ?? Array.Empty<DbMangaAttribute>())?
+				.ToArray() ?? Array.Empty<DbMangaAttribute>()
 		};
 
 		item.Id = await _db.Upsert(item);

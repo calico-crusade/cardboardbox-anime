@@ -189,7 +189,10 @@ public class MangaService : IMangaService
 				Ordinal = chapter.Number,
 				Volume = chapter.Volume,
 				Language = language,
-				ExternalUrl = chapter.ExternalUrl
+				ExternalUrl = chapter.ExternalUrl,
+				Attributes = chapter.Attributes
+					.Select(t => new DbMangaAttribute(t.Name, t.Value))
+					.ToArray()
 			};
 
 			chap.Id = await _db.Upsert(chap);

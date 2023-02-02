@@ -99,9 +99,9 @@ main {
             display: flex;
             flex-flow: row;
 
-            :last-child { margin-left: auto; }
+            :not(:first-child) { margin-left: auto; }
 
-            .number, .title, .lang, .timings {
+            .number, .title, .lang, .timings, .attr {
                 display: flex;
                 flex-flow: row;
 

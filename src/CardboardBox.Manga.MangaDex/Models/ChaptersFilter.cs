@@ -41,7 +41,7 @@ public class ChaptersFilter : IFilter
 
 	public Dictionary<OrderKey, OrderValue> Order { get; set; } = new();
 
-	public string[] Includes { get; set; } = Array.Empty<string>();
+	public string[] Includes { get; set; } = new[] { "scanlation_group", "user", "manga" };
 
 	public bool? IncludeEmptyPages { get; set; }
 

@@ -3,7 +3,7 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { PopupComponent, PopupService } from './../../../components';
 import { 
-    AuthService, LightNovelService, MangaProgress, 
+    AuthService, LightNovelService, MangaChapter, MangaProgress, 
     MangaProgressData, MangaService, SubscriptionHandler
 } from './../../../services';
 import { MangaPartial } from '../manga-data.partial';
@@ -144,5 +144,9 @@ export class MangaComponent extends MangaPartial implements OnInit, OnDestroy {
 
         await this.api.resetProgress(this.manga?.id).promise;
         this.stats = await this.api.mangaExtended(this.manga.id).promise;
+    }
+
+    getGroup(chapter: MangaChapter) {
+        return chapter.attributes.find(t => t.name === 'Scanlation Group')?.value;
     }
 }

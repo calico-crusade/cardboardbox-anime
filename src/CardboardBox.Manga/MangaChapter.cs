@@ -19,6 +19,9 @@ public class MangaChapter
 
 	[JsonPropertyName("externalUrl"), BsonElement("external_url")]
 	public string? ExternalUrl { get; set; }
+
+	[JsonPropertyName("attributes"), BsonElement("attributes")]
+	public List<MangaAttribute> Attributes { get; set; } = new();
 }
 
 public class MangaChapterPages : MangaChapter
