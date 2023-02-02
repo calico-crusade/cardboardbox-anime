@@ -3,10 +3,15 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { PopupComponent, PopupService } from './../../../components';
 import { 
-    AuthService, LightNovelService, MangaChapter, MangaProgress, 
+    AuthService, LightNovelService, MangaChapter, 
     MangaProgressData, MangaService, SubscriptionHandler
 } from './../../../services';
 import { MangaPartial } from '../manga-data.partial';
+
+type Volume = {
+    name?: number;
+    chapters: MangaChapter[];
+};
 
 @Component({
     templateUrl: './manga.component.html',
@@ -32,6 +37,27 @@ export class MangaComponent extends MangaPartial implements OnInit, OnDestroy {
 
     get progress() {
         return this.stats?.progress;
+    }
+
+    get volumeGroups(): Volume[] {
+        let groups: Volume[] = [];
+
+        for(let chap of this.chapters) {
+            if (groups.length === 0) {
+                groups.push({ name: chap.volume, chapters: [ chap ] });
+                continue;
+            }
+
+            let last = groups[groups.length - 1];
+            if (last.name === chap.volume) {
+                last.chapters.push(chap);
+                continue;
+            }
+
+            groups.push({ name: chap.volume, chapters: [ chap ]});
+        }
+
+        return groups;
     }
 
     constructor(

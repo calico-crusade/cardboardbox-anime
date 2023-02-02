@@ -1,3 +1,5 @@
+$section-width: 550px;
+
 header {
     display: flex;
     flex-flow: row;
@@ -57,7 +59,7 @@ header {
             display: flex;
             flex-flow: row;
 
-            button {
+            button, a {
                 margin: 0 5px;
                 padding: 10px 15px;
                 display: flex;
@@ -69,6 +71,7 @@ header {
                 border: 1px solid var(--bg-card);
                 border-radius: 5px;
                 font-size: 16px;
+                text-decoration: none;
                 p { margin: auto 3px; }
             }
         }
@@ -78,44 +81,6 @@ header {
             max-height: 300px;
             padding: 0 5px;
         }
-    }
-}
-
-main {
-    display: flex;
-    flex-flow: row wrap;
-
-    .chapter {
-        margin: 10px auto;
-        padding: 15px;
-        background-color: var(--bg-card);
-        text-decoration: none;
-        width: 550px;
-        max-width: 100%;
-        display: flex;
-        flex-flow: column;
-
-        .header, .footer {
-            display: flex;
-            flex-flow: row;
-
-            :not(:first-child) { margin-left: auto; }
-
-            .number, .title, .lang, .timings, .attr {
-                display: flex;
-                flex-flow: row;
-
-                span { margin: auto 5px; }
-            }
-        }
-        :not(:first-child) { margin-top: 5px; }
-
-        &.active {
-            background-color: var(--color-hidive-dark);
-            border: 1px solid var(--color-hidive);
-        }
-
-        &.resume { background-color: var(--accent-1); }
     }
 }
 
@@ -218,9 +183,164 @@ h2 {
     }
 }
 
+.content-wrapper {
+    display: flex;
+    flex-flow: row;
+
+    .draw-wrapper {
+        width: $section-width;
+        margin: 10px 5px;
+
+        .drawer {
+            margin: 0;
+        }
+    }
+
+    .volumes {
+        flex: 1;
+        display: flex;
+        flex-flow: column;
+        margin-left: 5px;
+        
+        .chapter-header {
+            margin: 10px 0;
+            width: 100%;
+            display: flex;
+            flex-flow: row;
+            background-color: var(--bg-card);
+
+            p {
+                margin: auto 5px;
+                padding: 7.5px 0;
+            }
+
+            button {
+                display: flex;
+                flex-flow: row;
+                background-color: var(--bg-card);
+                outline: none;
+                border: none;
+                color: var(--text-color);
+                cursor: pointer;
+                margin: 0 5px;
+                padding-left: 5px;
+
+                span {
+                    margin: auto 5px;
+                }
+
+                &.active {
+                    background-color: var(--accent-1);
+                }
+            }
+
+            :first-child {
+                margin-right: auto;
+            }
+        }
+
+        .volume {
+            display: flex;
+            flex-flow: column;
+            position: relative;
+            margin: 10px 0;
+
+            .name {
+                transform: rotate(-90deg) translateX(10px) translateY(-12.5px);
+                position: absolute;
+                top: 50%;
+                left: -15px;
+                background-color: var(--bg-accent);
+            }
+
+            .chapters {
+                margin-left: 5px;
+                display: flex;
+                flex-flow: column;
+                border-left: 3px solid var(--brd-color-accent);
+                border-top-left-radius: 10px;
+                border-bottom-left-radius: 10px;
+                padding: 10px;
+
+                .chapter {
+                    padding: 15px;
+                    background-color: var(--bg-card);
+                    text-decoration: none;
+                    display: flex;
+                    flex-flow: column;
+                    margin: 5px;
+
+                    .header, .footer {
+                        display: flex;
+                        flex-flow: row;
+            
+                        :not(:first-child) { margin-left: auto; }
+            
+                        .number, .title, .lang, .timings, .attr {
+                            display: flex;
+                            flex-flow: row;
+            
+                            span { margin: auto 5px; }
+                        }
+                    }
+                    :not(:first-child) { margin-top: 5px; }
+            
+                    &.active {
+                        background-color: var(--color-hidive-dark);
+                        border: 1px solid var(--color-hidive);
+                    }
+
+                    &.resume { background-color: var(--accent-1); }
+                }
+            }
+        }
+    }
+
+    main {
+        flex: 1;
+    }
+}
 
 @media only screen and (max-width: 950px) {
-    header .details .buttons button p { display: none; }
+    header .details .buttons {
+        button,a { p { display: none; } }
+    }
+
+    .content-wrapper {
+        flex-flow: column;
+
+        .draw-wrapper {
+            width: 100%;
+            margin: 5px 0;
+        }
+    }
+
+    .volumes {
+        margin-left: 0 !important;
+
+        .volume {
+            margin: 0 !important;
+            margin-top: 10px !important;
+            padding-top: 10px;
+            border-top: 3px solid var(--brd-color-accent);
+
+            .name {
+                top: -10px !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+            }
+
+            .chapters {
+                margin-left: 0 !important;
+                padding: 0 !important;
+                border-left: none !important;
+
+                .chapter {
+                    margin: 5px 0 !important;
+                }
+            }
+        }
+    }
 }
 
 @media only screen and (max-width: 700px) {

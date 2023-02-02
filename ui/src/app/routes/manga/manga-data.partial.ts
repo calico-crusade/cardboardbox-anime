@@ -1,4 +1,4 @@
-import { MangaChapter, MangaProgressData, MangaWithChapters } from "../../services";
+import { MangaChapter, MangaWithChapters } from "../../services";
 import { SettingsPartial } from "src/app/settings.partial";
 
 const DEFAULT_IMAGE = 'https://wallpaperaccess.com/full/1979093.jpg';
@@ -6,12 +6,28 @@ const DEFAULT_IMAGE = 'https://wallpaperaccess.com/full/1979093.jpg';
 export abstract class MangaPartial extends SettingsPartial {
 
     data?: MangaWithChapters;
+    sort: ('chap' | 'release') = 'chap';
 
     get manga() { return this.data?.manga; }
-    get chapters() { return this.data?.chapters || []; }
+    get chapters() { 
+        const res = this.data?.chapters || [];
+        
+        if (this.sort === 'chap') return this.doSort(res, t => t.ordinal);
+        return this.doSort(res, t => new Date(t.createdAt).getTime());
+    }
     get favourite() { return this.data?.favourite ?? false; }
     get allBookmarks() { return this.data?.bookmarks || []; }
     get hasBookmarks() { return this.allBookmarks.length > 0; }
+
+    doSort<TItem, TProp>(items: TItem[], prop: (a: TItem) => TProp) {
+        return items.sort((a, b) => {
+            const ap = prop(a),
+                  bp = prop(b);
+            if (ap < bp) return -1;
+            if (ap > bp) return 1;
+            return 0;
+        });
+    }
 }
 
 export abstract class MangaPagePartial extends MangaPartial {

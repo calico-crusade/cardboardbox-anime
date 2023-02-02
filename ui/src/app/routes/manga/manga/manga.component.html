@@ -27,6 +27,14 @@
                     <cba-icon>shuffle</cba-icon>
                     <p>Random</p>
                 </button>
+                <a *ngIf="currentChapter" [routerLink]="[ '/manga', manga?.hashId, currentChapter.id, progress?.pageIndex ]" cba-tooltip="Resume Reading" direction="up">
+                    <cba-icon>auto_stories</cba-icon>
+                    <p>
+                        Resume
+                        <span>Ch. {{ currentChapter.ordinal }}</span>&nbsp;
+                        <span>Page. {{ progress?.pageIndex }}</span>
+                    </p>
+                </a>
                 <button (click)="resetProgress()" *ngIf="progress" cba-tooltip="Reset Progress" direction="up">
                     <cba-icon>delete</cba-icon>
                     <p>Reset Progress</p>
@@ -34,78 +42,81 @@
             </div>
         </div>
     </header>
-    <section class="drawer" [ngClass]="{ 'open': detailsOpen }">
-        <div class="title" (click)="detailsOpen = !detailsOpen">
-            <div class="text">
-                <p>More Details</p>
-                <cba-icon *ngIf="detailsOpen">arrow_drop_up</cba-icon>
-                <cba-icon *ngIf="!detailsOpen">arrow_drop_down</cba-icon>
+    <div class="content-wrapper">
+        <div class="draw-wrapper">
+            <section class="drawer" [ngClass]="{ 'open': detailsOpen }">
+                <div class="title" (click)="detailsOpen = !detailsOpen">
+                    <div class="text">
+                        <p>More Details</p>
+                        <cba-icon *ngIf="detailsOpen">arrow_drop_up</cba-icon>
+                        <cba-icon *ngIf="!detailsOpen">arrow_drop_down</cba-icon>
+                    </div>
+                </div>
+                <div class="opener">
+                    <div class="wrapper">
+                        <div class="tags">
+                            <div class="header">Alternative Titles </div>
+                            <div class="tag secondary" *ngFor="let tag of manga?.altTitles">{{ tag }}</div>
+                        </div>
+                        <div class="tags">
+                            <div class="header">Tags </div>
+                            <div class="tag nsfw" *ngIf="manga?.nsfw">Nsfw</div>
+                            <a class="tag" *ngFor="let tag of manga?.tags" routerLink="/manga/filter/all" [queryParams]="{include: tag}">{{ tag }}</a>
+                        </div>
+                        <div class="tags">
+                            <div class="header">Details </div>
+                            <a class="tag md" [href]="manga?.url" target="_blank"><b>Source</b>: {{ manga?.provider }}</a>
+                            <div class="tag tertiary" *ngFor="let atr of manga?.attributes"><b>{{ atr.name }}</b>: {{ atr.value }}</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <div class="volumes">
+            <div class="chapter-header">
+                <p>Chapters</p>
+                <p>Sort by:</p>
+                <button [ngClass]="{ 'active': sort === 'chap' }" (click)="sort = 'chap'">
+                    <cba-icon>import_contacts</cba-icon>
+                    <span>Chapter</span>
+                </button>
+                <button [ngClass]="{ 'active': sort === 'release' }" (click)="sort = 'release'">
+                    <cba-icon>calendar_month</cba-icon>
+                    <span>Date</span>
+                </button>
+            </div>
+            <div class="volume" *ngFor="let vol of volumeGroups">
+                <div class="name">Volume {{ vol.name }}</div>
+                <div class="chapters">
+                    <a class="chapter" *ngFor="let chapter of vol.chapters" 
+                       [routerLink]="['/manga', manga?.hashId, chapter.id, 1]"
+                       [ngClass]="{ 'active': chapter.id === progress?.mangaChapterId }">
+                        <div class="header">
+                            <div class="number">
+                                <span *ngIf="chapter.volume">Vol. {{ chapter.volume }}</span>
+                                <span>Ch. {{ chapter.ordinal }}</span>
+                            </div>
+                            <div class="title">{{ chapter.title }}</div>
+                        </div>
+                        <div class="footer">
+                            <div class="lang">
+                                <cba-icon>language</cba-icon> 
+                                <span>{{ chapter.language }}</span>
+                            </div>
+                            <div class="attr" *ngIf="getGroup(chapter)">
+                                <cba-icon>group</cba-icon>
+                                <span>{{ getGroup(chapter) }}</span>
+                            </div>
+                            <div class="timings">
+                                <cba-icon>schedule</cba-icon> 
+                                <span>{{ chapter.createdAt | date:'yyyy-MM-dd' }}</span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
             </div>
         </div>
-        <div class="opener">
-            <div class="wrapper">
-                <div class="tags">
-                    <div class="header">Alternative Titles </div>
-                    <div class="tag secondary" *ngFor="let tag of manga?.altTitles">{{ tag }}</div>
-                </div>
-                <div class="tags">
-                    <div class="header">Tags </div>
-                    <div class="tag nsfw" *ngIf="manga?.nsfw">Nsfw</div>
-                    <a class="tag" *ngFor="let tag of manga?.tags" routerLink="/manga/filter/all" [queryParams]="{include: tag}">{{ tag }}</a>
-                </div>
-                <div class="tags">
-                    <div class="header">Details </div>
-                    <a class="tag md" [href]="manga?.url" target="_blank"><b>Source</b>: {{ manga?.provider }}</a>
-                    <div class="tag tertiary" *ngFor="let atr of manga?.attributes"><b>{{ atr.name }}</b>: {{ atr.value }}</div>
-                </div>
-            </div>
-        </div>
-    </section>
-    <main>
-        <a class="chapter resume" *ngIf="currentChapter" [routerLink]="[ '/manga', manga?.hashId, currentChapter.id, progress?.pageIndex ]">
-            <div class="header">
-                <div class="number">Resume Reading! </div>
-                <div class="title">{{ currentChapter.title }}</div>
-            </div>
-            <div class="footer">
-                <div class="lang">
-                    <cba-icon>auto_stories</cba-icon> 
-                    <span *ngIf="currentChapter.volume">Vol. {{ currentChapter.volume }}</span>
-                    <span>Ch. {{ currentChapter.ordinal }}</span>
-                    <span>Page. {{ progress?.pageIndex }}</span>
-                </div>
-                <div class="timings">
-                    <cba-icon>schedule</cba-icon> 
-                    <span>{{ progress?.updatedAt | date:'yyyy-MM-dd' }}</span>
-                </div>
-            </div>
-        </a>
-        <a class="chapter" *ngFor="let chapter of chapters" 
-           [routerLink]="['/manga', manga?.hashId, chapter.id, 1]"
-           [ngClass]="{ 'active': chapter.id === progress?.mangaChapterId }">
-            <div class="header">
-                <div class="number">
-                    <span *ngIf="chapter.volume">Vol. {{ chapter.volume }}</span>
-                    <span>Ch. {{ chapter.ordinal }}</span>
-                </div>
-                <div class="title">{{ chapter.title }}</div>
-            </div>
-            <div class="footer">
-                <div class="lang">
-                    <cba-icon>language</cba-icon> 
-                    <span>{{ chapter.language }}</span>
-                </div>
-                <div class="attr" *ngIf="getGroup(chapter)">
-                    <cba-icon>group</cba-icon>
-                    <span>{{ getGroup(chapter) }}</span>
-                </div>
-                <div class="timings">
-                    <cba-icon>schedule</cba-icon> 
-                    <span>{{ chapter.createdAt | date:'yyyy-MM-dd' }}</span>
-                </div>
-            </div>
-        </a>
-    </main>
+    </div>
 </cba-container>
 
 <cba-popup #bookmarkspopup>
