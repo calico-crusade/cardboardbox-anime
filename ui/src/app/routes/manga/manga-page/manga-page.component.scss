@@ -454,6 +454,14 @@ h2 {
         margin: 0 auto;
     }
 
+    h2 {
+        display: block;
+        overflow-x: hidden;
+        text-overflow: ellipsis;
+        white-space: pre;
+        min-height: 30px;
+    }
+
     .progress-container {
         p {
             margin: 5px 0; padding: 0;

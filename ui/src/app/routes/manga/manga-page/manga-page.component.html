@@ -168,10 +168,10 @@
                 <div class="progress-container">
                     <p><b>Manga Progress: </b> {{ ((chapterIndex + 1) / chapters.length) * 100 | number:'0.2-2' }}%</p>
                     <p><b>Chapter Progress: </b> {{ page / (chapter?.pages?.length || 1) * 100 | number:'0.2-2' }}%</p>
-                    <ng-container *ngFor="let attr of chapter?.attributes">
-                        <p *ngIf="attr.value">
-                            <b>{{ attr.name }}:</b> {{ attr.value }}
-                        </p>
+                    <ng-container *ngFor="let attr of chapter?.attributes" [ngSwitch]="attr.name">
+                        <p *ngSwitchCase="'Scanlation Discord'"><a [href]="'https://discord.gg/' + attr.value" target="_blank"><b>Scanlation Discord</b></a></p>
+                        <p *ngSwitchCase="'Scanlation Link'"><a [href]="attr.value" target="_blank"><b>Scanlation Website</b></a></p>
+                        <p *ngSwitchDefault><b>{{ attr.name }}:</b> {{ attr.value }}</p>
                     </ng-container>
                 </div>
                 <div class="settings">
