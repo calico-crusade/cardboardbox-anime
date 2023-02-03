@@ -246,10 +246,11 @@ h2 {
             margin: 10px 0;
 
             .name {
-                transform: rotate(-90deg) translateX(10px) translateY(-12.5px);
                 position: absolute;
                 top: 50%;
-                left: -15px;
+                left: 5px;
+                transform: rotate(-90deg) translateX(-40%);
+                transform-origin: left;
                 background-color: var(--bg-accent);
             }
 
@@ -273,6 +274,7 @@ h2 {
                     .header, .footer {
                         display: flex;
                         flex-flow: row;
+                        position: relative;
             
                         :not(:first-child) { margin-left: auto; }
             
@@ -281,6 +283,12 @@ h2 {
                             flex-flow: row;
             
                             span { margin: auto 5px; }
+                        }
+
+                        .attr {
+                            position: absolute;
+                            left: 50%;
+                            transform: translateX(-50%);
                         }
                     }
                     :not(:first-child) { margin-top: 5px; }

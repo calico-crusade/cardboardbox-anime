@@ -86,7 +86,7 @@
                 </button>
             </div>
             <div class="volume" *ngFor="let vol of volumeGroups">
-                <div class="name">Volume {{ vol.name }}</div>
+                <div class="name">Volume {{ vol.name || 'None' }}</div>
                 <div class="chapters">
                     <a class="chapter" *ngFor="let chapter of vol.chapters" 
                        [routerLink]="['/manga', manga?.hashId, chapter.id, 1]"

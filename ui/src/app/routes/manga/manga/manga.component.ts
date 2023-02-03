@@ -29,7 +29,7 @@ export class MangaComponent extends MangaPartial implements OnInit, OnDestroy {
 
     stats?: MangaProgressData;
     isRandom: boolean = false;
-    detailsOpen: boolean = false;
+    detailsOpen: boolean = true;
 
     get currentChapter() {
         return this.chapters.find(t => t.id === this.progress?.mangaChapterId);
