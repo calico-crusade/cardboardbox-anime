@@ -10,7 +10,8 @@ import { MangaPartial } from '../manga-data.partial';
 
 type Volume = {
     name?: number;
-    chapters: MangaChapter[];
+    collapse: boolean;
+    chapters: ({ read: boolean } & MangaChapter)[];
 };
 
 @Component({
@@ -22,6 +23,7 @@ export class MangaComponent extends MangaPartial implements OnInit, OnDestroy {
     private _subs = new SubscriptionHandler();
 
     @ViewChild('bookmarkspopup') bookmarkPop!: PopupComponent;
+    @ViewChild('moreoptions') moreOptionsPop!: PopupComponent;
 
     loading: boolean = false;
     error?: string;
@@ -30,6 +32,7 @@ export class MangaComponent extends MangaPartial implements OnInit, OnDestroy {
     stats?: MangaProgressData;
     isRandom: boolean = false;
     detailsOpen: boolean = true;
+    volumeGroups: Volume[] = [];
 
     get currentChapter() {
         return this.chapters.find(t => t.id === this.progress?.mangaChapterId);
@@ -39,25 +42,17 @@ export class MangaComponent extends MangaPartial implements OnInit, OnDestroy {
         return this.stats?.progress;
     }
 
-    get volumeGroups(): Volume[] {
-        let groups: Volume[] = [];
-
-        for(let chap of this.chapters) {
-            if (groups.length === 0) {
-                groups.push({ name: chap.volume, chapters: [ chap ] });
-                continue;
-            }
-
-            let last = groups[groups.length - 1];
-            if (last.name === chap.volume) {
-                last.chapters.push(chap);
-                continue;
-            }
-
-            groups.push({ name: chap.volume, chapters: [ chap ]});
+    get collapseAll() {
+        for(let vol of this.volumeGroups) {
+            if (!vol.collapse) return false;
         }
+        return true;
+    }
 
-        return groups;
+    set collapseAll(val: boolean) {
+        for(let vol of this.volumeGroups) {
+            vol.collapse = val;
+        }
     }
 
     constructor(
@@ -118,6 +113,8 @@ export class MangaComponent extends MangaPartial implements OnInit, OnDestroy {
             });
         }
 
+        this.volumeGroups = this.determineVolGroups();
+
         this.loading = false;
     }
 
@@ -127,6 +124,32 @@ export class MangaComponent extends MangaPartial implements OnInit, OnDestroy {
         }
 
         return this.api.manga(this.id).promise;
+    }
+
+    private determineVolGroups() {
+        let groups: Volume[] = [];
+        let read = true;
+
+        if (!this.progress?.mangaChapterId) read = false;
+
+        for(let chap of this.chapters) {
+            if (read && chap.id === this.progress?.mangaChapterId) read = false;
+
+            if (groups.length === 0) {
+                groups.push({ name: chap.volume, collapse: false, chapters: [ { read, ...chap } ] });
+                continue;
+            }
+
+            let last = groups[groups.length - 1];
+            if (last.name === chap.volume) {
+                last.chapters.push({ read, ...chap } );
+                continue;
+            }
+
+            groups.push({ name: chap.volume, collapse: false, chapters: [ { read, ...chap }  ]});
+        }
+
+        return groups;
     }
 
     nextRandom() { this.process(); }
@@ -166,7 +189,7 @@ export class MangaComponent extends MangaPartial implements OnInit, OnDestroy {
     showBookmarks() { this.pop.show(this.bookmarkPop); }
 
     async resetProgress() {
-        if (!this.manga) return;
+        if (!this.manga || !this.progress) return;
 
         await this.api.resetProgress(this.manga?.id).promise;
         this.stats = await this.api.mangaExtended(this.manga.id).promise;
@@ -175,4 +198,6 @@ export class MangaComponent extends MangaPartial implements OnInit, OnDestroy {
     getGroup(chapter: MangaChapter) {
         return chapter.attributes.find(t => t.name === 'Scanlation Group')?.value;
     }
+
+    moreOptions() { this.pop.show(this.moreOptionsPop); }
 }

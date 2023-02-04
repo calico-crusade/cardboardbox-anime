@@ -1,4 +1,5 @@
 $section-width: 550px;
+$select-list-padding: 10px;
 
 header {
     display: flex;
@@ -186,34 +187,26 @@ h2 {
 .content-wrapper {
     display: flex;
     flex-flow: row;
-
     .draw-wrapper {
         width: $section-width;
         margin: 10px 5px;
-
-        .drawer {
-            margin: 0;
-        }
+        .drawer { margin: 0; }
     }
-
     .volumes {
         flex: 1;
         display: flex;
         flex-flow: column;
         margin-left: 5px;
-        
         .chapter-header {
             margin: 10px 0;
             width: 100%;
             display: flex;
             flex-flow: row;
             background-color: var(--bg-card);
-
             p {
                 margin: auto 5px;
                 padding: 7.5px 0;
             }
-
             button {
                 display: flex;
                 flex-flow: row;
@@ -224,27 +217,29 @@ h2 {
                 cursor: pointer;
                 margin: 0 5px;
                 padding-left: 5px;
-
-                span {
-                    margin: auto 5px;
-                }
-
-                &.active {
-                    background-color: var(--accent-1);
-                }
+                span { margin: auto 5px; }
+                &.active { background-color: var(--accent-1); }
             }
-
-            :first-child {
-                margin-right: auto;
-            }
+            :first-child { margin-right: auto; }
         }
-
         .volume {
             display: flex;
             flex-flow: column;
             position: relative;
             margin: 10px 0;
-
+            .collapse-btn {
+                background-color: var(--bd-card-2);
+                color: var(--text-color);
+                outline: none;
+                border: none;
+                position: absolute;
+                top: 0;
+                right: 0;
+                transform: translateY(-50%);
+                padding: 0;
+                margin: 0;
+                cursor: pointer;
+            }
             .name {
                 position: absolute;
                 top: 50%;
@@ -253,7 +248,6 @@ h2 {
                 transform-origin: left;
                 background-color: var(--bg-accent);
             }
-
             .chapters {
                 margin-left: 5px;
                 display: flex;
@@ -262,7 +256,6 @@ h2 {
                 border-top-left-radius: 10px;
                 border-bottom-left-radius: 10px;
                 padding: 10px;
-
                 .chapter {
                     padding: 15px;
                     background-color: var(--bg-card);
@@ -270,21 +263,46 @@ h2 {
                     display: flex;
                     flex-flow: column;
                     margin: 5px;
+                    position: relative;
+                    &:first-child {
+                        display: none;
+                    }
+
+                    .progress {
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        height: 100%;
+                        background-color: var(--color-hidive-dark);
+                        border: 1px solid var(--color-hidive);
+
+                        .perc-container {
+                            position: absolute;
+                            top: 0;
+                            left: 100%;
+                            transform: translate(-50%, -50%);
+                            background-color: var(--accent-1);
+                            border-radius: 50%;
+                            width: 35px;
+                            height: 35px;
+                            display: flex;
+
+                            span {
+                                margin: auto;
+                            }
+                        }
+                    }
 
                     .header, .footer {
                         display: flex;
                         flex-flow: row;
                         position: relative;
-            
                         :not(:first-child) { margin-left: auto; }
-            
                         .number, .title, .lang, .timings, .attr {
                             display: flex;
                             flex-flow: row;
-            
                             span { margin: auto 5px; }
                         }
-
                         .attr {
                             position: absolute;
                             left: 50%;
@@ -292,60 +310,86 @@ h2 {
                         }
                     }
                     :not(:first-child) { margin-top: 5px; }
-            
                     &.active {
-                        background-color: var(--color-hidive-dark);
-                        border: 1px solid var(--color-hidive);
+                        //background-color: #164967;
+                        //border: 1px solid var(--color-hidive);
+                    }
+                    &.resume { background-color: var(--accent-1); }
+                }
+
+                &.collapse {
+                    .chapter:first-child {
+                        display: flex;
                     }
 
-                    &.resume { background-color: var(--accent-1); }
+                    .chapter:not(:first-child) {
+                        display: none;
+                    }
                 }
             }
         }
     }
+    main { flex: 1; }
+}
 
-    main {
-        flex: 1;
+.links {
+    display: flex;
+    flex-flow: column;
+
+    button, a {
+        display: flex;
+        flex-flow: row;
+        outline: none;
+        background-color: var(--bg-accent);
+        border: 1px solid var(--accent-2);
+        color: var(--text-color);
+        text-align: left;
+        font-size: 16px;
+        text-decoration: none;
+        padding: calc(#{$select-list-padding} / 2);
+        cursor: pointer;
+        margin: 0;
+        .icon { margin: auto 5px; }
+        .text { margin: auto 0; }
+        &:not(:first-child) { border-top: none; }
+
+        &:disabled {
+            cursor: not-allowed;
+            color: var(--text-color-muted);
+            background-color: var(--bg-card-2);
+            border-color: var(--accent-1);
+        }
     }
 }
 
 @media only screen and (max-width: 950px) {
     header .details .buttons {
-        button,a { p { display: none; } }
+        button,a { span { display: none; } }
     }
-
     .content-wrapper {
         flex-flow: column;
-
         .draw-wrapper {
             width: 100%;
             margin: 5px 0;
         }
     }
-
     .volumes {
         margin-left: 0 !important;
-
         .volume {
             margin: 0 !important;
             margin-top: 10px !important;
             padding-top: 10px;
             border-top: 3px solid var(--brd-color-accent);
-
             .name {
                 top: -10px !important;
                 left: 50% !important;
                 transform: translateX(-50%) !important;
             }
-
             .chapters {
                 margin-left: 0 !important;
                 padding: 0 !important;
                 border-left: none !important;
-
-                .chapter {
-                    margin: 5px 0 !important;
-                }
+                .chapter { margin: 5px 0 !important; }
             }
         }
     }
@@ -354,29 +398,26 @@ h2 {
 @media only screen and (max-width: 700px) {
     header {
         flex-flow: column !important;
-
         .title {
-            a { margin: 5px auto; }
+            a { 
+                margin: 5px auto;
+                text-align: center;
+            }
         }
-
         .image {
             margin: 0 auto !important;
             width: 100%;
         }
-
         .details {
             margin-right: 0;
             max-height: unset;
             overflow-y: unset;
-
             .buttons { margin: 0 auto; }
-
             .description {
                 max-height: unset;
                 overflow: hidden;
             }
         }
     }
-
     .drawer { margin: 5px 0; }
 }

@@ -11,33 +11,24 @@
                 </div>
             </div>
             <div class="buttons">
-                <button (click)="update()" cba-tooltip="Refresh manga from source" direction="up">
-                    <cba-icon>update</cba-icon>
-                    <p>Refresh</p>
-                </button>
-                <button (click)="toggleFavourite()" *ngIf="loggedIn" cba-tooltip="Add to favourites" direction="up">
-                    <cba-icon [fill]="favourite">star</cba-icon>
-                    <p>Favourite</p>
-                </button>
-                <button (click)="showBookmarks()" *ngIf="hasBookmarks" cba-tooltip="See all bookmarks" direction="up">
-                    <cba-icon>bookmarks</cba-icon>
-                    <p>Bookmarks</p>
-                </button>
-                <button (click)="nextRandom()" *ngIf="isRandom" cba-tooltip="Next Random Manga" direction="up">
-                    <cba-icon>shuffle</cba-icon>
-                    <p>Random</p>
-                </button>
-                <a *ngIf="currentChapter" [routerLink]="[ '/manga', manga?.hashId, currentChapter.id, progress?.pageIndex ]" cba-tooltip="Resume Reading" direction="up">
+                <a *ngIf="currentChapter" [routerLink]="[ '/manga', manga?.hashId, currentChapter.id, progress?.pageIndex ]">
                     <cba-icon>auto_stories</cba-icon>
                     <p>
                         Resume
-                        <span>Ch. {{ currentChapter.ordinal }}</span>&nbsp;
+                        <span>Ch. {{ currentChapter.ordinal }}&nbsp;</span>
                         <span>Page. {{ progress?.pageIndex }}</span>
                     </p>
                 </a>
-                <button (click)="resetProgress()" *ngIf="progress" cba-tooltip="Reset Progress" direction="up">
-                    <cba-icon>delete</cba-icon>
-                    <p>Reset Progress</p>
+                <button (click)="nextRandom()" *ngIf="isRandom" cba-tooltip="Next Random Manga" direction="up">
+                    <cba-icon>shuffle</cba-icon>
+                    <p>Next</p>
+                </button>
+                <button (click)="toggleFavourite()" *ngIf="loggedIn">
+                    <cba-icon [fill]="favourite">star</cba-icon>
+                </button>
+                
+                <button (click)="moreOptions()">
+                    <cba-icon>more_vert</cba-icon>
                 </button>
             </div>
         </div>
@@ -84,16 +75,56 @@
                     <cba-icon>calendar_month</cba-icon>
                     <span>Date</span>
                 </button>
+                <button (click)="collapseAll = !collapseAll">
+                    <cba-icon *ngIf="!collapseAll">expand_less</cba-icon>
+                    <span *ngIf="!collapseAll">Collapse</span>
+                    <cba-icon *ngIf="collapseAll">expand_more</cba-icon>
+                    <span *ngIf="collapseAll">Expand</span>
+                </button>
             </div>
             <div class="volume" *ngFor="let vol of volumeGroups">
                 <div class="name" *ngIf="vol.name">Volume {{ vol.name }}</div>
                 <div class="name" *ngIf="!vol.name">No Volume</div>
-                <div class="chapters">
+                <button class="collapse-btn" (click)="vol.collapse = !vol.collapse">
+                    <cba-icon *ngIf="vol.collapse">expand_more</cba-icon>
+                    <cba-icon *ngIf="!vol.collapse">expand_less</cba-icon>
+                </button>
+                <div class="chapters" [ngClass]="{ 'collapse': vol.collapse }">
+                    <a class="chapter" (click)="vol.collapse = !vol.collapse">
+                        <div class="header">
+                            <div class="number" *ngIf="vol.name">
+                                <span>Volume {{ vol.name }}</span>
+                            </div>
+                            <div class="number" *ngIf="!vol.name">
+                                <span>No Volume</span>
+                            </div>
+                            <div class="title">
+                                <cba-icon>expand_more</cba-icon>
+                                <span>Open</span>
+                            </div>
+                        </div>
+                        <div class="footer">
+                            <div class="lang">
+                                <cba-icon>layers</cba-icon>
+                                <span>{{ vol.chapters.length }} Chapters</span>
+                            </div>
+                        </div>
+                    </a>
+
                     <a class="chapter" *ngFor="let chapter of vol.chapters" 
                        [routerLink]="['/manga', manga?.hashId, chapter.id, 1]"
-                       [ngClass]="{ 'active': chapter.id === progress?.mangaChapterId }">
+                       [ngClass]="{ 'active': chapter.read }">
+                        <div class="progress" 
+                             *ngIf="chapter.id === progress?.mangaChapterId"
+                             [style.width]="stats?.stats?.pageProgress + '%'">
+                            <div class="perc-container">
+                                <span>{{ stats?.stats?.pageProgress | number:'1.0-0' }}%</span>   
+                            </div> 
+                        </div>
                         <div class="header">
                             <div class="number">
+                                <cba-icon *ngIf="chapter.read">done_all</cba-icon>
+                                <cba-icon *ngIf="chapter.id === progress?.mangaChapterId">auto_stories</cba-icon>
                                 <span *ngIf="chapter.volume">Vol. {{ chapter.volume }}</span>
                                 <span>Ch. {{ chapter.ordinal }}</span>
                             </div>
@@ -119,6 +150,24 @@
         </div>
     </div>
 </cba-container>
+
+<cba-popup #moreoptions>
+    <h2>More Options</h2>
+    <div class="links">
+        <button (click)="resetProgress()" [disabled]="!progress">
+            <div class="icon"><cba-icon>delete</cba-icon></div>
+            <div class="text">Reset Progress</div>
+        </button>
+        <button (click)="update()">
+            <div class="icon"><cba-icon>update</cba-icon></div>
+            <div class="text">Refresh</div>
+        </button>
+        <button (click)="showBookmarks()" [disabled]="!hasBookmarks">
+            <div class="icon"><cba-icon>bookmarks</cba-icon></div>
+            <div class="text">Bookmarks</div>
+        </button>
+    </div>
+</cba-popup>
 
 <cba-popup #bookmarkspopup>
     <cba-manga-bookmarks *ngIf="data" [data]="data"></cba-manga-bookmarks>
