@@ -27,7 +27,7 @@
     </div>
 </a>
 
-<a *ngIf="searchInfo && searchInfo.manga" class="manga" routerLink="/manga/add" [queryParams]="{ url: searchInfo.manga.url }" target="_blank">
+<a *ngIf="searchInfo && searchInfo.manga" class="manga" routerLink="/manga/add" [queryParams]="{ url: searchInfo.manga.url }">
     <div class="image" [style.background-image]="'url(' + proxy(searchInfo.manga.cover) + ')'"></div>
     <div class="details masked-overflow">
         <div class="title">
