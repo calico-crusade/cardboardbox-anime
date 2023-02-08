@@ -25,11 +25,13 @@ public class MangaCommand
 
 	[Command("manga", "Search for a manga available on https://cba.index-0.com/manga", LongRunning = true)]
 	public async Task Manga(SocketSlashCommand cmd,
-		[Option("Search Text", false)] string? search)
+		[Option("Search Text", false)] string? search,
+		[Option("Allow NSFW results", false)] bool? nsfw)
 	{
 		var filter = new MangaFilter
 		{
-			Search = search
+			Search = search,
+			Nsfw = (nsfw ?? false) ? NsfwCheck.DontCare : NsfwCheck.Sfw
 		};
 		var data = await _api.Search(filter);
 
