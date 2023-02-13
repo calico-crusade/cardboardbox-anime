@@ -257,7 +257,7 @@ h2 {
                 border-top-left-radius: 10px;
                 border-bottom-left-radius: 10px;
                 padding: 10px;
-                .chapter {
+                .chapter, .version-chapter {
                     padding: 15px;
                     background-color: var(--bg-card);
                     text-decoration: none;
@@ -294,6 +294,40 @@ h2 {
                         }
                     }
 
+                    .chapter-root {
+                        display: flex;
+                        flex-flow: column;
+                        position: relative;
+                        text-decoration: none;
+                        border-bottom: 1px solid var(--brd-color-accent);
+                        padding-bottom: 5px;
+                    }
+
+                    .version-draw {
+                        padding-top: 5px;
+                        .header {
+                            cursor: pointer;
+                        }
+
+                        .content {
+                            transition: max-height 250ms;
+                            max-height: 0;
+                            overflow: hidden;
+                            margin: 0;
+
+                            .version-item {
+                                text-decoration: none;
+                            }
+                        }
+
+                        &.open {
+                            .content {
+                                max-height: 100px;
+                                overflow-y: auto;
+                            }
+                        }
+                    }
+
                     .header, .footer {
                         display: flex;
                         flex-flow: row;
@@ -310,11 +344,7 @@ h2 {
                             transform: translateX(-50%);
                         }
                     }
-                    :not(:first-child) { margin-top: 5px; }
-                    &.active {
-                        //background-color: #164967;
-                        //border: 1px solid var(--color-hidive);
-                    }
+                    .footer { margin-top: 10px; }
                     &.resume { background-color: var(--accent-1); }
                 }
 
@@ -323,7 +353,8 @@ h2 {
                         display: flex;
                     }
 
-                    .chapter:not(:first-child) {
+                    .chapter:not(:first-child),
+                    .version-chapter:not(:first-child) {
                         display: none;
                     }
                 }

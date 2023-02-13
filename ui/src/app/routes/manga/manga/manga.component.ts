@@ -8,10 +8,16 @@ import {
 } from './../../../services';
 import { MangaPartial } from '../manga-data.partial';
 
+type VolumeChapter = {
+    read: boolean;
+    versions: MangaChapter[];
+    open: boolean;
+} & MangaChapter;
+
 type Volume = {
     name?: number;
     collapse: boolean;
-    chapters: ({ read: boolean } & MangaChapter)[];
+    chapters: VolumeChapter[];
 };
 
 @Component({
@@ -136,18 +142,26 @@ export class MangaComponent extends MangaPartial implements OnInit, OnDestroy {
         for(let chap of this.chapters) {
             if (read && chap.id === this.progress?.mangaChapterId) read = false;
 
+            let cur: VolumeChapter = { read, ...chap, versions: [], open: false };
+
             if (groups.length === 0) {
-                groups.push({ name: chap.volume, collapse: false, chapters: [ { read, ...chap } ] });
+                groups.push({ name: chap.volume, collapse: false, chapters: [ cur ] });
                 continue;
             }
 
             let last = groups[groups.length - 1];
-            if (last.name === chap.volume) {
-                last.chapters.push({ read, ...chap } );
+            if (last.name !== chap.volume) {
+                groups.push({ name: chap.volume, collapse: false, chapters: [ cur  ]});
                 continue;
             }
 
-            groups.push({ name: chap.volume, collapse: false, chapters: [ { read, ...chap }  ]});
+            let lastChap = last.chapters[last.chapters.length - 1];
+            if (lastChap.ordinal === chap.ordinal) {
+                lastChap.versions.push(chap);
+                continue;
+            }
+
+            last.chapters.push(cur);
         }
 
         this.volumeGroups = groups;

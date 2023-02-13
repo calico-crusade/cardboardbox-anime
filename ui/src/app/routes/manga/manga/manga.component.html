@@ -115,40 +115,107 @@
                         </div>
                     </a>
 
-                    <a class="chapter" *ngFor="let chapter of vol.chapters" 
-                       [routerLink]="['/manga', manga?.hashId, chapter.id, 1]"
-                       [ngClass]="{ 'active': chapter.read }">
-                        <div class="progress" 
-                             *ngIf="chapter.id === progress?.mangaChapterId"
-                             [style.width]="stats?.stats?.pageProgress + '%'">
-                            <div class="perc-container">
-                                <span>{{ stats?.stats?.pageProgress | number:'1.0-0' }}%</span>   
-                            </div> 
-                        </div>
-                        <div class="header">
-                            <div class="number">
-                                <cba-icon *ngIf="chapter.read">done_all</cba-icon>
-                                <cba-icon *ngIf="chapter.id === progress?.mangaChapterId">auto_stories</cba-icon>
-                                <span *ngIf="chapter.volume">Vol. {{ chapter.volume }}</span>
-                                <span>Ch. {{ chapter.ordinal }}</span>
+                    <ng-container  *ngFor="let chapter of vol.chapters">
+                        <ng-container *ngIf="chapter.versions.length === 0">
+                            <a class="chapter" 
+                                [routerLink]="['/manga', manga?.hashId, chapter.id, 1]"
+                                [ngClass]="{ 'active': chapter.read }">
+                                <div class="progress" 
+                                    *ngIf="chapter.id === progress?.mangaChapterId"
+                                    [style.width]="stats?.stats?.pageProgress + '%'">
+                                    <div class="perc-container">
+                                        <span>{{ stats?.stats?.pageProgress | number:'1.0-0' }}%</span>   
+                                    </div> 
+                                </div>
+                                <div class="header">
+                                    <div class="number">
+                                        <cba-icon *ngIf="chapter.read">done_all</cba-icon>
+                                        <cba-icon *ngIf="chapter.id === progress?.mangaChapterId">auto_stories</cba-icon>
+                                        <span *ngIf="chapter.volume">Vol. {{ chapter.volume }}</span>
+                                        <span>Ch. {{ chapter.ordinal }}</span>
+                                    </div>
+                                    <div class="title">{{ chapter.title }}</div>
+                                </div>
+                                <div class="footer">
+                                    <div class="lang">
+                                        <cba-icon>language</cba-icon> 
+                                        <span>{{ chapter.language }}</span>
+                                    </div>
+                                    <div class="attr" *ngIf="getGroup(chapter)">
+                                        <cba-icon>group</cba-icon>
+                                        <span>{{ getGroup(chapter) }}</span>
+                                    </div>
+                                    <div class="timings">
+                                        <cba-icon>schedule</cba-icon> 
+                                        <span>{{ chapter.createdAt | date:'yyyy-MM-dd' }}</span>
+                                    </div>
+                                </div>
+                            </a>
+                        </ng-container>
+                        
+                        <ng-container *ngIf="chapter.versions.length > 0">
+                            <div class="version-chapter">
+                                <div class="progress" 
+                                    *ngIf="chapter.id === progress?.mangaChapterId"
+                                    [style.width]="stats?.stats?.pageProgress + '%'">
+                                    <div class="perc-container">
+                                        <span>{{ stats?.stats?.pageProgress | number:'1.0-0' }}%</span>   
+                                    </div> 
+                                </div>
+                                <a class="chapter-root" [routerLink]="['/manga', manga?.hashId, chapter.id, 1]"
+                                    [ngClass]="{ 'active': chapter.read }">
+                                    <div class="header">
+                                        <div class="number">
+                                            <cba-icon *ngIf="chapter.read">done_all</cba-icon>
+                                            <cba-icon *ngIf="chapter.id === progress?.mangaChapterId">auto_stories</cba-icon>
+                                            <span *ngIf="chapter.volume">Vol. {{ chapter.volume }}</span>
+                                            <span>Ch. {{ chapter.ordinal }}</span>
+                                        </div>
+                                        <div class="title">{{ chapter.title }}</div>
+                                    </div>
+                                    <div class="footer">
+                                        <div class="lang">
+                                            <cba-icon>language</cba-icon> 
+                                            <span>{{ chapter.language }}</span>
+                                        </div>
+                                        <div class="timings">
+                                            <cba-icon>schedule</cba-icon> 
+                                            <span>{{ chapter.createdAt | date:'yyyy-MM-dd' }}</span>
+                                        </div>
+                                    </div>
+                                </a>
+                                <div class="version-draw" [ngClass]="{ 'open' : chapter.open }">
+                                    <div class="header" (click)="chapter.open = !chapter.open">
+                                        <div class="title"> 
+                                            <cba-icon>layers</cba-icon>&nbsp;
+                                            <span>Other Versions: ({{ chapter.versions.length }})</span>
+                                        </div>
+                                        <div class="icon">
+                                            <cba-icon *ngIf="!chapter.open">expand_more</cba-icon>
+                                            <cba-icon *ngIf="chapter.open">expand_less</cba-icon>
+                                        </div>
+                                    </div>
+                                    <div class="content">
+                                        <a class="version-item" *ngFor="let ver of chapter.versions" [routerLink]="['/manga', manga?.hashId, ver.id, 1]">
+                                            <div class="header">
+                                                <div class="number">
+                                                    <cba-icon *ngIf="chapter.read">done_all</cba-icon>
+                                                    <cba-icon *ngIf="chapter.id === progress?.mangaChapterId">auto_stories</cba-icon>
+                                                    <span *ngIf="chapter.volume">Vol. {{ chapter.volume }}</span>
+                                                    <span>Ch. {{ chapter.ordinal }}</span>
+                                                </div>
+                                                <div class="attr" *ngIf="getGroup(chapter)">
+                                                    <cba-icon>group</cba-icon>
+                                                    <span>{{ getGroup(chapter) }}</span>
+                                                </div>
+                                                <div class="title">{{ chapter.title }}</div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="title">{{ chapter.title }}</div>
-                        </div>
-                        <div class="footer">
-                            <div class="lang">
-                                <cba-icon>language</cba-icon> 
-                                <span>{{ chapter.language }}</span>
-                            </div>
-                            <div class="attr" *ngIf="getGroup(chapter)">
-                                <cba-icon>group</cba-icon>
-                                <span>{{ getGroup(chapter) }}</span>
-                            </div>
-                            <div class="timings">
-                                <cba-icon>schedule</cba-icon> 
-                                <span>{{ chapter.createdAt | date:'yyyy-MM-dd' }}</span>
-                            </div>
-                        </div>
-                    </a>
+                        </ng-container>
+                    </ng-container>
                 </div>
             </div>
         </div>
