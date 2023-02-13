@@ -12,6 +12,7 @@ type VolumeChapter = {
     read: boolean;
     versions: MangaChapter[];
     open: boolean;
+    progress?: number;
 } & MangaChapter;
 
 type Volume = {
@@ -144,6 +145,9 @@ export class MangaComponent extends MangaPartial implements OnInit, OnDestroy {
 
             let cur: VolumeChapter = { read, ...chap, versions: [], open: false };
 
+            if (chap.id === this.progress?.mangaChapterId)
+                cur.progress = this.stats?.stats?.pageProgress;
+
             if (groups.length === 0) {
                 groups.push({ name: chap.volume, collapse: false, chapters: [ cur ] });
                 continue;
@@ -158,6 +162,12 @@ export class MangaComponent extends MangaPartial implements OnInit, OnDestroy {
             let lastChap = last.chapters[last.chapters.length - 1];
             if (lastChap.ordinal === chap.ordinal) {
                 lastChap.versions.push(chap);
+
+                if (cur.read && !lastChap.read)
+                    lastChap.read = read;
+
+                if (cur.progress && !lastChap.progress)
+                    lastChap.progress = cur.progress;
                 continue;
             }
 

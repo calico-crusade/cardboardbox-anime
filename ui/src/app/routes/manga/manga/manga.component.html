@@ -121,10 +121,10 @@
                                 [routerLink]="['/manga', manga?.hashId, chapter.id, 1]"
                                 [ngClass]="{ 'active': chapter.read }">
                                 <div class="progress" 
-                                    *ngIf="chapter.id === progress?.mangaChapterId"
-                                    [style.width]="stats?.stats?.pageProgress + '%'">
+                                    *ngIf="chapter.progress"
+                                    [style.width]="chapter.progress + '%'">
                                     <div class="perc-container">
-                                        <span>{{ stats?.stats?.pageProgress | number:'1.0-0' }}%</span>   
+                                        <span>{{ chapter.progress | number:'1.0-0' }}%</span>   
                                     </div> 
                                 </div>
                                 <div class="header">
@@ -156,10 +156,10 @@
                         <ng-container *ngIf="chapter.versions.length > 0">
                             <div class="version-chapter">
                                 <div class="progress" 
-                                    *ngIf="chapter.id === progress?.mangaChapterId"
-                                    [style.width]="stats?.stats?.pageProgress + '%'">
+                                    *ngIf="chapter.progress"
+                                    [style.width]="chapter.progress + '%'">
                                     <div class="perc-container">
-                                        <span>{{ stats?.stats?.pageProgress | number:'1.0-0' }}%</span>   
+                                        <span>{{ chapter.progress | number:'1.0-0' }}%</span>   
                                     </div> 
                                 </div>
                                 <a class="chapter-root" [routerLink]="['/manga', manga?.hashId, chapter.id, 1]"
