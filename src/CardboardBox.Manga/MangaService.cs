@@ -163,6 +163,7 @@ public class MangaService : IMangaService
 			AltTitles = manga.AltTitles,
 			Nsfw = manga.Nsfw,
 			Referer = manga.Referer,
+			SourceCreated = manga.SourceCreated,
 			Attributes = manga.Attributes
 				.Select(t => new DbMangaAttribute(t.Name, t.Value))
 				.ToArray()

@@ -100,6 +100,7 @@ export class MangaComponent extends MangaPartial implements OnInit, OnDestroy {
             this.progress?.mangaId === this.manga?.id || 
             !this.auth.currentUser) {
             this.loading = false;
+            this.determineVolGroups();
             return;
         }
 
@@ -113,7 +114,7 @@ export class MangaComponent extends MangaPartial implements OnInit, OnDestroy {
             });
         }
 
-        this.volumeGroups = this.determineVolGroups();
+        this.determineVolGroups();
 
         this.loading = false;
     }
@@ -126,7 +127,7 @@ export class MangaComponent extends MangaPartial implements OnInit, OnDestroy {
         return this.api.manga(this.id).promise;
     }
 
-    private determineVolGroups() {
+    determineVolGroups() {
         let groups: Volume[] = [];
         let read = true;
 
@@ -149,7 +150,7 @@ export class MangaComponent extends MangaPartial implements OnInit, OnDestroy {
             groups.push({ name: chap.volume, collapse: false, chapters: [ { read, ...chap }  ]});
         }
 
-        return groups;
+        this.volumeGroups = groups;
     }
 
     nextRandom() { this.process(); }

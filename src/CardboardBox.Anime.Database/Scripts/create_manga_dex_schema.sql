@@ -12,6 +12,7 @@
     nsfw boolean not null default false,
     hash_id text not null,
     referer text,
+    source_created timestamp,
 
     attributes manga_attribute[] not null default '{}',
 

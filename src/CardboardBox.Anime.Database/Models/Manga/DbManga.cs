@@ -37,4 +37,7 @@ public class DbManga : DbObject
 
 	[JsonPropertyName("referer")]
 	public string? Referer { get; set; }
+
+	[JsonPropertyName("sourceCreated")]
+	public DateTime? SourceCreated { get; set; }
 }

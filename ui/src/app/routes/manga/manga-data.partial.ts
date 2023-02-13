@@ -5,8 +5,15 @@ const DEFAULT_IMAGE = 'https://wallpaperaccess.com/full/1979093.jpg';
 
 export abstract class MangaPartial extends SettingsPartial {
 
+    private _sort: ('chap' | 'release') = 'chap';
+
     data?: MangaWithChapters;
-    sort: ('chap' | 'release') = 'chap';
+    
+    get sort() { return this._sort; }
+    set sort(value: ('chap' | 'release')) {
+        this._sort = value;
+        this.determineVolGroups();
+    }
 
     get manga() { return this.data?.manga; }
     get chapters() { 
@@ -28,6 +35,8 @@ export abstract class MangaPartial extends SettingsPartial {
             return 0;
         });
     }
+
+    public abstract determineVolGroups(): void;
 }
 
 export abstract class MangaPagePartial extends MangaPartial {

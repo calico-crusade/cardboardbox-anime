@@ -17,6 +17,7 @@ CREATE TABLE manga (
     description text not null,
     nsfw boolean not null default False,
     referer text,
+    source_created timestamp,
 
     attributes manga_attribute[] not null default '{}',
 

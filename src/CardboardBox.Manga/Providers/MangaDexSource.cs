@@ -82,7 +82,8 @@ public class MangaDexSource : IMangaDexSource
 					 .Value).ToArray(),
 			Chapters = chapters,
 			Nsfw = nsfwRatings.Contains(manga.Attributes.ContentRating),
-			Attributes = GetMangaAttributes(manga).ToList()
+			Attributes = GetMangaAttributes(manga).ToList(),
+			SourceCreated = manga.Attributes.CreatedAt
 		};
 	}
 

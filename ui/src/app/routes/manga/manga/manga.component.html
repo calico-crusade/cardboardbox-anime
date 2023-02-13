@@ -19,6 +19,10 @@
                         <span>Page. {{ progress?.pageIndex }}</span>
                     </p>
                 </a>
+                <a *ngIf="!currentChapter && volumeGroups.length > 0 && volumeGroups[0].chapters.length > 0" [routerLink]="[ '/manga', manga?.hashId, volumeGroups[0].chapters[0].id, 1]">
+                    <cba-icon>auto_stories</cba-icon>
+                    <p>Start Reading</p>
+                </a>
                 <button (click)="nextRandom()" *ngIf="isRandom" cba-tooltip="Next Random Manga" direction="up">
                     <cba-icon>shuffle</cba-icon>
                     <p>Next</p>
@@ -83,8 +87,8 @@
                 </button>
             </div>
             <div class="volume" *ngFor="let vol of volumeGroups">
-                <div class="name" *ngIf="vol.name">Volume {{ vol.name }}</div>
-                <div class="name" *ngIf="!vol.name">No Volume</div>
+                <div class="name" *ngIf="vol.name" (click)="vol.collapse = !vol.collapse">Volume {{ vol.name }}</div>
+                <div class="name" *ngIf="!vol.name" (click)="vol.collapse = !vol.collapse">No Volume</div>
                 <button class="collapse-btn" (click)="vol.collapse = !vol.collapse">
                     <cba-icon *ngIf="vol.collapse">expand_more</cba-icon>
                     <cba-icon *ngIf="!vol.collapse">expand_less</cba-icon>

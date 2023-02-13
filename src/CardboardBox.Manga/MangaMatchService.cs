@@ -40,12 +40,14 @@ public class MangaMatchService : IMangaMatchService
 		_manga = manga;
 	}
 
-	public string ProxyUrl(string url, string group = "manga-page", string? referer = null)
+	public string ProxyUrl(string url, string group = "manga-page", string? referer = null, bool noCache = false)
 	{
 		var path = WebUtility.UrlEncode(url);
 		var uri = $"https://cba-proxy.index-0.com/proxy?path={path}&group={group}";
 		if (!string.IsNullOrEmpty(referer))
 			uri += $"&referer={WebUtility.UrlEncode(referer)}";
+		if (noCache)
+			uri += $"&noCache=true";
 
 		return uri;
 	}

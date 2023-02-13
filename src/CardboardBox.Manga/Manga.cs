@@ -37,6 +37,9 @@ public class Manga
 
 	[JsonPropertyName("referer"), BsonElement("referer")]
 	public string? Referer { get; set; }
+
+	[JsonPropertyName("sourceCreated"), BsonElement("source_created")]
+	public DateTime? SourceCreated { get; set; }
 }
 
 public class MangaAttribute

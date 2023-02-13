@@ -42,6 +42,8 @@ export class MangaPageComponent extends MangaPagePartial implements OnInit, OnDe
         private util: UtilitiesService
     ) { super(auth); }
 
+    determineVolGroups() {}
+
     proxy(url?: string, referer?: string) {
         if (!url) return '';
         return this.lnApi.corsFallback(url, 'manga-page', referer);
