@@ -257,4 +257,15 @@ public class MangaController : ControllerBase
 		var lookup = await _search.Search(ms, file.FileName);
 		return Ok(lookup);
 	}
+
+	[HttpGet, Route("manga/graph")]
+	[ProducesDefaultResponseType(typeof(GraphOut[]))]
+	public async Task<IActionResult> Graph([FromQuery] string? state = null)
+	{
+		if (!Enum.TryParse<TouchedState>(state, true, out var touchedType))
+			touchedType = TouchedState.Completed;
+
+		var records = await _db.Manga.Graphic(this.UserFromIdentity()?.Id, touchedType);
+		return Ok(records);
+	}
 }

@@ -13,6 +13,7 @@ import { MangaBookmarksComponent } from './components/manga-bookmarks/manga-book
 import { MangaSearchFiltersComponent } from './components/manga-search-filters/manga-search-filters.component';
 import { MangaStripMakerComponent } from './manga-strip-maker/manga-strip-maker.component';
 import { MangaReverseImageComponent } from './manga-reverse-image/manga-reverse-image.component';
+import { MangaGraphComponent } from './manga-graph/manga-graph.component';
 
 const ROUTES: Routes = [
     {
@@ -32,6 +33,10 @@ const ROUTES: Routes = [
         pathMatch: 'full',
         redirectTo: 'filter/all'
     }, {
+       path: 'graph',
+       pathMatch: 'full',
+       redirectTo: 'graph/completed' 
+    }, {
         path: 'search',
         component: MangaReverseImageComponent
     }, {
@@ -40,6 +45,9 @@ const ROUTES: Routes = [
     }, {
         path: 'add',
         component: MangaAddRouteComponent
+    }, {
+        path: 'graph/:state',
+        component: MangaGraphComponent
     }, { 
         path: ':id',
         component: MangaComponent
@@ -73,6 +81,7 @@ const IMPORTS = [
         MangaSearchFiltersComponent,
         MangaStripMakerComponent,
         MangaReverseImageComponent,
+        MangaGraphComponent,
     ],
     imports: [ ...IMPORTS ]
 })

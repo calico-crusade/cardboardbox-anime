@@ -1,0 +1,21 @@
+<cba-container [loading]="loading" [error]="error" flex-flow="column">
+    <header>
+        <div class="select-list">
+            <div class="counts">
+                <p>Graph Manga States:</p>
+            </div>
+            <select [(ngModel)]="state" (ngModelChange)="trigger()">
+                <option *ngFor="let st of states" [value]="st">
+                    {{ st }}
+                </option>
+            </select>
+        </div>
+    </header>
+    <main>
+        <a class="item" *ngFor="let gr of graph; let i = index"
+            routerLink="/manga/filter/all" [queryParams]="{include: gr.key}">
+            <div class="title">#{{ i + 1 }} - {{ gr.key }}</div>
+            <div class="count">{{ gr.count }}</div>
+        </a>
+    </main>
+</cba-container>

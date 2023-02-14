@@ -7,7 +7,7 @@ import { HttpService, RxjsHttpResp } from "../http.service";
 import { StorageVar } from "../storage-var";
 import { 
     ImageSearch, Manga, MangaChapter, 
-    MangaFilter, MangaProgress, MangaProgressData, 
+    MangaFilter, MangaGraph, MangaProgress, MangaProgressData, 
     MangaProgressUpdate, MangaStripReq, MangaWithChapters, 
     PaginatedManga, PaginatedMangaProgress 
 } from "./manga.model";
@@ -56,9 +56,7 @@ export class MangaService extends ConfigObject {
 
     mangaExtended(id: number): RxjsHttpResp<MangaProgressData>;
     mangaExtended(id: string): RxjsHttpResp<MangaProgressData>;
-    mangaExtended(id: number | string) {
-        return this.http.get<MangaProgressData>(`manga/${id}/extended`);
-    }
+    mangaExtended(id: number | string) { return this.http.get<MangaProgressData>(`manga/${id}/extended`); }
 
     reload(manga: Manga): RxjsHttpResp<MangaWithChapters>;
     reload(url: string): RxjsHttpResp<MangaWithChapters>;
@@ -67,9 +65,7 @@ export class MangaService extends ConfigObject {
         return this.http.get<MangaWithChapters>('/manga/load', { params: { url: item, force: true }});
     }
 
-    allManga(page: number, size: number) {
-        return this.http.get<PaginatedManga>(`manga`, { params: { page, size }});
-    }
+    allManga(page: number, size: number) { return this.http.get<PaginatedManga>(`manga`, { params: { page, size }}); }
 
     progress(id: number): RxjsHttpResp<MangaProgress>;
     progress(progress: MangaProgressUpdate): RxjsHttpResp<any>;
@@ -78,9 +74,7 @@ export class MangaService extends ConfigObject {
         return this.http.post<any>(`manga`, item);
     }
 
-    filters() {
-        return this.http.get<Filters>(`manga/filters`);
-    }
+    filters() { return this.http.get<Filters>(`manga/filters`); }
 
     search(search: MangaFilter) {
         let filter = this.clone(search);
@@ -91,9 +85,7 @@ export class MangaService extends ConfigObject {
         return this.http.post<PaginatedMangaProgress>(`manga/search`, filter);
     }
 
-    favourite(id: number) {
-        return this.http.get<boolean>(`manga/${id}/favourite`);
-    }
+    favourite(id: number) { return this.http.get<boolean>(`manga/${id}/favourite`); }
 
     bookmark(chapter: MangaChapter, pages: number[]) {
         return this.http.post(`manga/${chapter.mangaId}/${chapter.id}/bookmark`, pages);
@@ -184,5 +176,9 @@ export class MangaService extends ConfigObject {
         const data = new FormData();
         data.append('file', item);
         return this.http.post<ImageSearch>(`manga/image-search`, data);
+    }
+
+    graph(state: 'favourite' | 'completed' | 'inprogress' | 'bookmarked' | 'else' | 'touched' | 'all' | number) {
+        return this.http.get<MangaGraph[]>('manga/graph', { params: { state } });
     }
 }

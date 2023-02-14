@@ -180,3 +180,9 @@ export interface ImageSearch {
 
     bestGuess?: ImageSearchManga;
 }
+
+export interface MangaGraph {
+    type: string;
+    key: string;
+    count: number;
+}

@@ -87,7 +87,8 @@ public static class Extensions
 			 .ForEntity<DbMangaBookmark>()
 			 .ForEntity<DbMangaFavourite>()
 			 .ForEntity<DbMangaAttribute>()
-			 .ForEntity<MangaStats>();
+			 .ForEntity<MangaStats>()
+			 .ForEntity<GraphOut>();
 		});
 
 		MapConfig.StartMap();

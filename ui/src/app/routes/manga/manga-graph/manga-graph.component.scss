@@ -1,0 +1,117 @@
+$progress-height: 4px;
+$select-list-padding: 10px;
+
+header {
+    margin: 5px auto;
+    .select-list {
+        display: flex;
+        flex-flow: row;
+        margin: 5px auto;
+    
+        select, input {
+            outline: none;
+            border: 1px solid var(--accent-2);
+            background-color: var(--bg-accent);
+            color: var(--text-color);
+            max-width: 240px;
+            padding: $select-list-padding;
+    
+            option {
+                background-color: transparent;
+                color: var(--text-color);
+            }
+    
+            &.fill {
+                flex: 1;
+                max-width: 100% !important;
+            }
+        }
+    
+        select { height: 36px; }
+    
+        button, a {
+            outline: none;
+            border: 1px solid var(--accent-2);
+            background: var(--bg-accent);
+            padding: calc(#{$select-list-padding} / 2);
+            margin: 0;
+            color: var(--text-color);
+            line-height: 100%;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+    
+            &:disabled {
+                color: var(--text-color-muted);
+                cursor: not-allowed;
+            }
+        }
+    
+        .counts {
+            border: 1px solid var(--accent-2);
+            background-color: var(--bg-accent);
+            display: flex;
+    
+            p {
+                margin: auto 5px;
+            }
+        }
+    
+        :first-child {
+            border-top-left-radius: 5px;
+            border-bottom-left-radius: 5px;
+        }
+    
+        :not(:first-child) {
+            border-left: none;
+        }
+    
+        :last-child {
+            border-top-right-radius: 5px;
+            border-bottom-right-radius: 5px;
+        }
+    
+        :not(:first-child):not(:last-child) {
+            border-radius: 0;
+        }
+    
+        select, input, button, .counts {
+            margin: 0;
+        }
+    
+        &.fill {
+            width: 100%;
+    
+            select, input {
+                max-width: 100% !important;
+            }
+        }
+    
+        &.brightness {
+            input {
+                width: 100%;
+                margin: auto;
+            }
+        }
+    }
+}
+
+main {
+    display: flex;
+    flex-flow: row wrap;
+
+    .item {
+        margin: 5px auto;
+        width: 200px;
+        display: flex;
+        flex-flow: row;
+        padding: 10px;
+        background-color: var(--bg-card);
+        text-decoration: none;
+        cursor: pointer;
+
+        .count {
+            margin-left: auto;
+        }
+    }
+}

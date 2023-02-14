@@ -65,6 +65,8 @@ public interface IMangaDbService
 	Task<PaginatedResult<MangaProgress>> Since(string? platform, DateTime since, int page, int size);
 
 	Task DeleteProgress(long profileId, long mangaId);
+
+	Task<GraphOut[]> Graphic(string? platformId, TouchedState state = TouchedState.Completed);
 }
 
 public class MangaDbService : OrmMapExtended<DbManga>, IMangaDbService
@@ -604,6 +606,38 @@ WHERE
 			param: new { hashId, id, platformId }, splitOn: "split");
 		return records.FirstOrDefault();
 	}
+
+	public Task<GraphOut[]> Graphic(string? platformId, TouchedState state = TouchedState.Completed)
+	{
+		const string QUERY = @"CREATE TEMP TABLE touched_manga AS
+SELECT DISTINCT manga_id
+FROM get_manga(:platformId, :state);
+
+SELECT
+    'tag' as type,
+    x.tag as key,
+    COUNT(*) as count
+FROM (
+    SELECT unnest(m.tags) as tag
+    FROM touched_manga t
+    JOIN manga m ON m.id = t.manga_id
+) x
+JOIN (
+    SELECT DISTINCT unnest(tags) as tag
+    FROM manga
+    WHERE nsfw = false
+) n ON n.tag = x.tag
+GROUP BY x.tag
+ORDER BY COUNT(*) DESC;";
+		return _sql.Get<GraphOut>(QUERY, new { platformId, state });
+	}
 }
 
 public record class MangaSortField(string Name, int Id, string SqlName);
+
+public class GraphOut
+{
+	public string Type { get; set; } = string.Empty;
+	public string Key { get; set; } = string.Empty;
+	public int Count { get; set; }
+}
