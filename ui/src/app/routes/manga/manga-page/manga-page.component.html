@@ -160,9 +160,17 @@
                         <div class="icon"><cba-icon>fullscreen</cba-icon></div>
                         <div class="text">Toggle Fullscreen</div>
                     </button>
+                    <button (click)="resetPages()">
+                        <div class="icon"><cba-icon>sync</cba-icon></div>
+                        <div class="text">Refresh Page Links</div>
+                    </button>
+                    <button (click)="showPages = !showPages">
+                        <div class="icon"><cba-icon>auto_stories</cba-icon></div>
+                        <div class="text">Show Pages</div>
+                    </button>
                 </div>
             </div>
-            <div class="tab info" [ngClass]="{ 'active': mangaTab === 'info' }">
+            <div class="tab info" [ngClass]="{ 'active': mangaTab === 'info' || (mangaTab == 'pages' && !showPages) }">
                 <img class="cover" [proxy]="manga?.cover" group="manga-covers" />
                 <h2>{{ manga?.title }}</h2>
                 <div class="progress-container">
@@ -248,16 +256,26 @@
             <div class="tab bookmarks" [ngClass]="{ 'active': mangaTab === 'bookmarks' }">
                 <cba-manga-bookmarks *ngIf="data" [data]="data"></cba-manga-bookmarks>
             </div>
+            <div class="tab pages" [ngClass]="{ 'active': mangaTab === 'pages' }" *ngIf="showPages">
+                <div class="page-list">
+                    <a *ngFor="let page of chapter?.pages" [href]="page" target="_blank">
+                        {{ page }}
+                    </a>
+                </div>
+            </div>
         </div>
         <div class="tray">
             <button [ngClass]="{ 'active': mangaTab === 'settings' }" (click)="setTab('settings')">
                 <cba-icon font-size="36px" [unsize]="true">settings</cba-icon>
             </button>
-            <button [ngClass]="{ 'active': mangaTab === 'info' }" (click)="setTab('info')">
+            <button [ngClass]="{ 'active': mangaTab === 'info' || (mangaTab == 'pages' && !showPages) }" (click)="setTab('info')">
                 <cba-icon font-size="36px" [unsize]="true">info</cba-icon>
             </button>
-            <button [ngClass]="{ 'active': mangaTab === 'bookmarks' }" (click)="setTab('bookmarks')">
+            <button [ngClass]="{ 'active': mangaTab === 'bookmarks'}" (click)="setTab('bookmarks')">
                 <cba-icon font-size="36px" [unsize]="true">bookmark</cba-icon>
+            </button>
+            <button [ngClass]="{ 'active': mangaTab === 'pages' }" (click)="setTab('pages')" *ngIf="showPages">
+                <cba-icon font-size="36px" [unsize]="true">auto_stories</cba-icon>
             </button>
         </div>
         <div class="float-icons" *ngIf="!mangaHideHeader && settingsFloatOpen">

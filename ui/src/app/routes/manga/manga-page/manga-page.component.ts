@@ -28,6 +28,7 @@ export class MangaPageComponent extends MangaPagePartial implements OnInit, OnDe
     downloading: boolean = false;
     isExternal: boolean = false;
     settingsFloatOpen: boolean = false;
+    showPages: boolean = false;
 
     id!: string;
     
@@ -417,5 +418,18 @@ export class MangaPageComponent extends MangaPagePartial implements OnInit, OnDe
 
     setTab(index: string) {
         this.mangaTab = index;
+    }
+
+    resetPages() {
+        this.loading = true;
+        this.api
+            .resetPages(this.id, this.chapterId)
+            .subscribe(t => {
+                if (!t.worked) {
+                    alert('Reset failed for some reason?');
+                }
+
+                this.process(true);
+            });
     }
 }

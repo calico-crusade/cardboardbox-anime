@@ -181,4 +181,8 @@ export class MangaService extends ConfigObject {
     graph(state: 'favourite' | 'completed' | 'inprogress' | 'bookmarked' | 'else' | 'touched' | 'all' | number) {
         return this.http.get<MangaGraph[]>('manga/graph', { params: { state } });
     }
+
+    resetPages(id: string, chapter: number) {
+        return this.http.get<{ worked: boolean }>(`manga/${id}/reset/${chapter}`);
+    }
 }

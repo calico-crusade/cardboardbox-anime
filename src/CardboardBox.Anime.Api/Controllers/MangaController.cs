@@ -268,4 +268,11 @@ public class MangaController : ControllerBase
 		var records = await _db.Manga.Graphic(this.UserFromIdentity()?.Id, touchedType);
 		return Ok(records);
 	}
+
+	[HttpGet, Route("manga/{id}/reset/{chapterId}")]
+	public async Task<IActionResult> ResetChapters([FromRoute] string id, [FromRoute]int chapterId)
+	{
+		var worked = await _manga.ResetChapterPages(id, chapterId, this.UserFromIdentity()?.Id);
+		return Ok(new { worked });
+	}
 }

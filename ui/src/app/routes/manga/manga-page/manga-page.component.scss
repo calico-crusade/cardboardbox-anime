@@ -348,6 +348,16 @@ h2 {
     flex-flow: column;
 }
 
+.page-list {
+    display: flex;
+    flex-flow: column;
+
+    a {
+        margin: 5px 10px;
+        border-bottom: 1px solid var(--brd-color-accent);
+    }
+}
+
 .links {
     display: flex;
     flex-flow: column;

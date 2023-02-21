@@ -22,6 +22,8 @@ public interface IMangaService
 	Task<(bool worked, bool indexed)> IndexChapter(DbManga manga, DbMangaChapter chapter);
 	Task<PaginatedResult<MangaProgress>> All();
 
+	Task<bool> ResetChapterPages(string mangaId, int chapterId, string? platformId);
+
 	string GenerateHashId(string title);
 }
 
@@ -264,6 +266,27 @@ public class MangaService : IMangaService
 			uri += $"&referer={WebUtility.UrlEncode(referer)}";
 
 		return uri;
+	}
+
+	public async Task<bool> ResetChapterPages(string mangaId, int chapterId, string? platformId)
+	{
+		var manga = await _db.GetManga(mangaId, platformId);
+		if (manga == null) return false;
+
+		var chapter = manga.Chapters.FirstOrDefault(t => t.Id == chapterId);
+		if (chapter == null) return false;
+
+		var (src, id) = DetermineSource(manga.Manga.Url);
+		if (src == null || id == null) return false;
+
+		var pages = src is IMangaUrlSource us ? 
+			await us.ChapterPages(chapter.Url) : 
+			await src.ChapterPages(manga.Manga.SourceId, chapter.SourceId);
+
+		if (pages == null || pages.Pages == null || pages.Pages.Length == 0) return false;
+
+		await _db.SetPages(chapterId, pages.Pages);
+		return true;
 	}
 }
 
