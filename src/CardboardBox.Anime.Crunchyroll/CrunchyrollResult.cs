@@ -7,7 +7,7 @@ public class CrunchyrollResult
     [JsonPropertyName("total")]
     public int Total { get; set; }
 
-    [JsonPropertyName("items")]
+    [JsonPropertyName("data")]
     public List<Item> Items { get; set; } = new();
 
     [JsonPropertyName("__class__")]

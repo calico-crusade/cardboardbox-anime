@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using System.Text.Json.Serialization;
 
 namespace CardboardBox.Anime.Api.Controllers;
 
@@ -111,12 +111,21 @@ public class AnimeController : ControllerBase
 	}
 
 	[HttpPost, Route("anime/load/crunchyroll/with-token")]
-	public async Task<IActionResult> LoadCrunchyroll([FromBody] string token)
+	public async Task<IActionResult> LoadCrunchyroll([FromBody] CrunchyRequest token)
 	{
-		var data = _crunchy.All(token);
+		var data = _crunchy.All(token.Token, token.Cookie);
 		await foreach (var item in data)
 			await _sql.Anime.Upsert(item.Clean());
 
 		return Ok();
+	}
+
+	public class CrunchyRequest
+	{
+		[JsonPropertyName("token")]
+		public string Token { get; set; } = string.Empty;
+
+		[JsonPropertyName("cookie")]
+		public string Cookie { get; set; } = string.Empty;
 	}
 }

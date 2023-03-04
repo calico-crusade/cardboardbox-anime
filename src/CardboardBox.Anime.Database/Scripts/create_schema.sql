@@ -86,23 +86,22 @@ CREATE TABLE lists (
 
 CREATE UNIQUE INDEX lists_uiq ON lists (title, profile_id);
 
--- CREATE list_map TABLE
+-- CREATE list_items TABLE
 
-CREATE TABLE list_map (
+CREATE TABLE list_items (
     id BIGSERIAL PRIMARY KEY,
-
     list_id bigint not null,
-    anime_id bigint not null,
+    item_id bigint not null,
+    type int not null,
 
     created_at timestamp,
     updated_at timestamp,
     deleted_at timestamp,
 
-    CONSTRAINT fk_list_map_list_id FOREIGN KEY(list_id) REFERENCES lists(id),
-    CONSTRAINT fk_list_map_anime_id FOREIGN KEY(anime_id) REFERENCES anime(id)
+    CONSTRAINT fk_list_items_lists FOREIGN KEY(list_id) REFERENCES lists(id)
 );
 
-CREATE UNIQUE INDEX list_map_uiq ON list_map (list_id, anime_id);
+CREATE UNIQUE INDEX list_items_uiq ON list_items (list_id, item_id, type);
 
 -- CREATE light_novels TABLE
 CREATE TABLE light_novels (

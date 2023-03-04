@@ -155,9 +155,10 @@ public class Runner : IRunner
 
 	public async Task Crunchy()
 	{
-		const string token = "";
+		const string token = "",
+					 cookie = "";
 
-		var data = await _crunchy.All(token).ToListAsync();
+		var data = await _crunchy.All(token, cookie).ToListAsync();
 		if (data == null)
 		{
 			_logger.LogError("Failed to fetch crunchy data");

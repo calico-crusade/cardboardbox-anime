@@ -26,35 +26,35 @@ public class ListsController : ControllerBase
 		return Ok(lists);
 	}
 
-	[HttpGet, Route("lists/{animeId}")]
-	public async Task<IActionResult> GetByAnime(long animeId)
-	{
-		var user = this.UserFromIdentity();
-		if (user == null) return Unauthorized();
+	//[HttpGet, Route("lists/{animeId}")]
+	//public async Task<IActionResult> GetByAnime(long animeId)
+	//{
+	//	var user = this.UserFromIdentity();
+	//	if (user == null) return Unauthorized();
 
-		var lists = await _db.Lists.ByProfile(user.Id, animeId);
-		return Ok(lists);
-	}
+	//	var lists = await _db.Lists.ByProfile(user.Id, animeId);
+	//	return Ok(lists);
+	//}
 
-	[HttpGet, Route("lists/public"), AllowAnonymous]
-	public async Task<IActionResult> GetPublicLists([FromQuery] long page = 1, [FromQuery] long size = 100)
-	{
-		var (results, total) = await _db.Lists.PublicLists(page, size);
-		return Ok(new
-		{
-			results,
-			total
-		});
-	}
+	//[HttpGet, Route("lists/public"), AllowAnonymous]
+	//public async Task<IActionResult> GetPublicLists([FromQuery] long page = 1, [FromQuery] long size = 100)
+	//{
+	//	var (results, total) = await _db.Lists.PublicLists(page, size);
+	//	return Ok(new
+	//	{
+	//		results,
+	//		total
+	//	});
+	//}
 
-	[HttpGet, Route("lists/public/{listId}"), AllowAnonymous]
-	public async Task<IActionResult> GetPublicList(long listId)
-	{
-		var user = this.UserFromIdentity();
-		var list = await _db.Lists.Get(user?.Id, listId);
-		if (list == null) return NotFound();
-		return Ok(list);
-	}
+	//[HttpGet, Route("lists/public/{listId}"), AllowAnonymous]
+	//public async Task<IActionResult> GetPublicList(long listId)
+	//{
+	//	var user = this.UserFromIdentity();
+	//	var list = await _db.Lists.Get(user?.Id, listId);
+	//	if (list == null) return NotFound();
+	//	return Ok(list);
+	//}
 
 	[HttpPost, Route("lists")]
 	public async Task<IActionResult> Post([FromBody] ListPost list)
@@ -77,45 +77,45 @@ public class ListsController : ControllerBase
 		return Ok(new { id });
 	}
 
-	[HttpPut, Route("lists")]
-	public async Task<IActionResult> Put([FromBody] ListPut list)
-	{
-		var user = this.UserFromIdentity();
-		if (user == null) return Unauthorized();
+	//[HttpPut, Route("lists")]
+	//public async Task<IActionResult> Put([FromBody] ListPut list)
+	//{
+	//	var user = this.UserFromIdentity();
+	//	if (user == null) return Unauthorized();
 
-		var profile = await _db.Profiles.Fetch(user.Id);
-		if (profile == null) return Unauthorized();
+	//	var profile = await _db.Profiles.Fetch(user.Id);
+	//	if (profile == null) return Unauthorized();
 
-		var current = await _db.Lists.Fetch(list.Id);
-		if (current == null) return NotFound();
-		if (current.ProfileId != profile.Id) return Unauthorized();
+	//	var current = await _db.Lists.Fetch(list.Id);
+	//	if (current == null) return NotFound();
+	//	if (current.ProfileId != profile.Id) return Unauthorized();
 
-		current.IsPublic = list.IsPublic;
-		current.Title = list.Title;
-		current.Description = list.Description;
-		current.UpdatedAt = DateTime.Now;
-		await _db.Lists.Update(current);
+	//	current.IsPublic = list.IsPublic;
+	//	current.Title = list.Title;
+	//	current.Description = list.Description;
+	//	current.UpdatedAt = DateTime.Now;
+	//	await _db.Lists.Update(current);
 
-		return Ok();
-	}
+	//	return Ok();
+	//}
 
-	[HttpDelete, Route("lists/{id}")]
-	public async Task<IActionResult> Delete(long id)
-	{
-		var user = this.UserFromIdentity();
-		if (user == null) return Unauthorized();
+	//[HttpDelete, Route("lists/{id}")]
+	//public async Task<IActionResult> Delete(long id)
+	//{
+	//	var user = this.UserFromIdentity();
+	//	if (user == null) return Unauthorized();
 
-		var profile = await _db.Profiles.Fetch(user.Id);
-		if (profile == null) return Unauthorized();
+	//	var profile = await _db.Profiles.Fetch(user.Id);
+	//	if (profile == null) return Unauthorized();
 
-		var current = await _db.Lists.Fetch(id);
-		if (current == null) return NotFound();
-		if (current.ProfileId != profile.Id) return Unauthorized();
+	//	var current = await _db.Lists.Fetch(id);
+	//	if (current == null) return NotFound();
+	//	if (current.ProfileId != profile.Id) return Unauthorized();
 
-		current.DeletedAt = DateTime.Now;
-		await _db.Lists.Update(current);
-		return Ok();
-	}
+	//	current.DeletedAt = DateTime.Now;
+	//	await _db.Lists.Update(current);
+	//	return Ok();
+	//}
 }
 
 public record class ListPost(string Title, string Description);

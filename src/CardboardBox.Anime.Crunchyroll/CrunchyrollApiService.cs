@@ -1,6 +1,7 @@
 ﻿using Flurl;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Net;
 
 namespace CardboardBox.Anime.Crunchyroll;
 
@@ -10,8 +11,8 @@ using Http;
 
 public interface ICrunchyrollApiService : IAnimeApiService
 {
-	Task<CrunchyrollResult?> Fetch(string authToken, int start = 0, int size = 50, string sort = "alphabetical", string locale = "en-US");
-	IAsyncEnumerable<Anime> All(string? token);
+	Task<CrunchyrollResult?> Fetch(string authToken, string cookie, int start = 0, int size = 50, string sort = "alphabetical", string locale = "en-US");
+	IAsyncEnumerable<Anime> All(string? token, string? cookie);
 }
 
 public class CrunchyrollApiService : ICrunchyrollApiService
@@ -32,7 +33,7 @@ public class CrunchyrollApiService : ICrunchyrollApiService
 		_config = config;
 	}
 
-	public Task<CrunchyrollResult?> Fetch(string authToken, int start = 0, int size = 50, string sort = "alphabetical", string locale = "en-US")
+	public Task<CrunchyrollResult?> Fetch(string authToken, string cookie, int start = 0, int size = 50, string sort = "alphabetical", string locale = "en-US")
 	{
 		var url = _crunchyConfig.ResourceList
 			.SetQueryParam("sort_by", sort)
@@ -46,22 +47,29 @@ public class CrunchyrollApiService : ICrunchyrollApiService
 		return _api.Get<CrunchyrollResult>(url, c =>
 		{
 			c.Headers.Add("Authorization", $"Bearer " + authToken);
+			c.Headers.Add("Cookie", cookie);
+			c.Headers.Add("Referer", "https://www.crunchyroll.com/videos/alphabetical");
+			c.Headers.Add("Host", "www.crunchyroll.com");
+			c.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/110.0");
 		});
 	}
 
-	public IAsyncEnumerable<Anime> All() => All(null);
+	public IAsyncEnumerable<Anime> All() => All(null, null);
 
-	public async IAsyncEnumerable<Anime> All(string? token)
+	public async IAsyncEnumerable<Anime> All(string? token, string? cookie)
 	{
 		if (string.IsNullOrEmpty(token))
 			throw new ArgumentNullException(nameof(token));
+
+		if (string.IsNullOrEmpty(cookie))
+			throw new ArgumentNullException(nameof(cookie));
 
 		_logger.LogInformation("Starting fetching all Crunchyroll data");
 		int start = 0,
 			size = 100;
 		while(true)
 		{
-			var items = await Fetch(token, start, size);
+			var items = await Fetch(token, cookie, start, size);
 			if (items == null)
 			{
 				_logger.LogWarning($"Resource not found for: {start} +{size}");
