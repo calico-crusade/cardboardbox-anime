@@ -2,6 +2,7 @@
 
 using Anime.Core.Models;
 using Anime.Database;
+using Ionic.Zip;
 using MangaDex;
 using Match;
 using Providers;
@@ -25,6 +26,8 @@ public interface IMangaService
 	Task<bool> ResetChapterPages(string mangaId, int chapterId, string? platformId);
 
 	string GenerateHashId(string title);
+
+	Task<(MemoryStream stream, string name)?> CreateZip(string mangaId, int chapterId, string? platformId);
 }
 
 public class MangaService : IMangaService
@@ -32,14 +35,16 @@ public class MangaService : IMangaService
 	private readonly IMangaSource[] _sources;
 	private readonly IMangaDbService _db;
 	private readonly IMatchApiService _match;
+	private readonly IApiService _api;
 
 	private readonly IMangaDexService _md;
 
 	public MangaService(
 		IMangaDbService db,
 		IMatchApiService match,
+		IApiService api,
 		IMangaDexService md,
-		IMangakakalotTvSource mangakakalot, 
+		IMangakakalotTvSource mangakakalot,
 		IMangakakalotComSource mangakakalot2,
 		IMangakakalotComAltSource mangakakalot3,
 		IMangaDexSource mangaDex,
@@ -49,6 +54,7 @@ public class MangaService : IMangaService
 	{
 		_db = db;
 		_match = match;
+		_api = api;
 		_md = md;
 		_sources = new IMangaSource[]
 		{
@@ -279,14 +285,41 @@ public class MangaService : IMangaService
 		var (src, id) = DetermineSource(manga.Manga.Url);
 		if (src == null || id == null) return false;
 
-		var pages = src is IMangaUrlSource us ? 
-			await us.ChapterPages(chapter.Url) : 
+		var pages = src is IMangaUrlSource us ?
+			await us.ChapterPages(chapter.Url) :
 			await src.ChapterPages(manga.Manga.SourceId, chapter.SourceId);
 
 		if (pages == null || pages.Pages == null || pages.Pages.Length == 0) return false;
 
 		await _db.SetPages(chapterId, pages.Pages);
 		return true;
+	}
+
+	public async Task<(MemoryStream stream, string name)?> CreateZip(string mangaId, int chapterId, string? platformId)
+	{
+		var manga = await _db.GetManga(mangaId, platformId);
+		if (manga == null) return null;
+
+		var chapter = manga.Chapters.FirstOrDefault(t => t.Id == chapterId);
+		if (chapter == null) return null;
+
+		var pages = await MangaPages(chapter, manga.Manga, false);
+		if (pages.Length == 0) return null;
+
+		using var zip = new ZipFile();
+
+		for (var i = 0; i < pages.Length; i++)
+		{
+			var proxy = ProxyUrl(pages[i], referer: manga.Manga.Referer);
+			var (stream, _, name, _) = await _api.GetData(proxy);
+			zip.AddEntry($"{i}-{name}", stream);
+		}
+
+		var ms = new MemoryStream();
+		zip.Save(ms);
+
+		ms.Position = 0;
+		return (ms, $"{manga.Manga.HashId}-{chapter.Ordinal}.zip");
 	}
 }
 

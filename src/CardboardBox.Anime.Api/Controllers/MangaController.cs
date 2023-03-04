@@ -275,4 +275,14 @@ public class MangaController : ControllerBase
 		var worked = await _manga.ResetChapterPages(id, chapterId, this.UserFromIdentity()?.Id);
 		return Ok(new { worked });
 	}
+
+	[HttpGet, Route("manga/{id}/{chapterId}/download")]
+	public async Task<IActionResult> DownloadChapter([FromRoute] string id, [FromRoute] int chapterId)
+	{
+		var result = await _manga.CreateZip(id, chapterId, this.UserFromIdentity()?.Id);
+		if (result == null) return NotFound();
+
+		var (stream, file) = result.Value;
+		return File(stream, "application/zip", file);
+	}
 }

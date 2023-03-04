@@ -392,6 +392,10 @@ export class MangaPageComponent extends MangaPagePartial implements OnInit, OnDe
             });
     }
 
+    downloadChapter() {
+        this.download(this.api.downloadChapterUrl(this.id, this.chapterId));
+    }
+
     imageFilter() {
         let filters: { [key: string]: string } = {
             'brightness': this.mangaBrightness + '%'

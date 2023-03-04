@@ -239,6 +239,11 @@
                         <div class="icon" *ngIf="downloading"><cba-icon [spin]="true">sync</cba-icon></div>
                         <div class="text">Download Page</div>
                     </button>
+                    <button (click)="downloadChapter()" [disabled]="downloading">
+                        <div class="icon" *ngIf="!downloading"><cba-icon>chrome_tote</cba-icon></div>
+                        <div class="icon" *ngIf="downloading"><cba-icon [spin]="true">sync</cba-icon></div>
+                        <div class="text">Download Chapter</div>
+                    </button>
                     <a [routerLink]="['/manga', 'strip', id, chapterId, page ]">
                         <div class="icon"><cba-icon>auto_fix</cba-icon></div>
                         <div class="text">Create Strip</div>

@@ -185,4 +185,8 @@ export class MangaService extends ConfigObject {
     resetPages(id: string, chapter: number) {
         return this.http.get<{ worked: boolean }>(`manga/${id}/reset/${chapter}`);
     }
+
+    downloadChapterUrl(id: string, chapter: number) {
+        return `${this.apiUrl}/manga/${id}/${chapter}/download`;
+    }
 }
