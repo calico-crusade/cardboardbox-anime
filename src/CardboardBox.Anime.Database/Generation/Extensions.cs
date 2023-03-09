@@ -4,8 +4,8 @@ using System.Text;
 
 namespace CardboardBox.Anime.Database.Generation;
 
-	public static class Extensions
-	{
+public static class Extensions
+{
     //
     public static string ToSnakeCase(this string text)
     {

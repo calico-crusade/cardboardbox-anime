@@ -67,6 +67,8 @@ public interface IMangaDbService
 	Task DeleteProgress(long profileId, long mangaId);
 
 	Task<GraphOut[]> Graphic(string? platformId, TouchedState state = TouchedState.Completed);
+
+	Task<DbManga[]> Random(int count);
 }
 
 public class MangaDbService : OrmMapExtended<DbManga>, IMangaDbService
@@ -495,6 +497,11 @@ WHERE p.platform_id = :platformId AND mf.manga_id = :id";
 		var favourite = (await rdr.ReadSingleOrDefaultAsync<bool?>()) ?? false;
 
 		return new(manga, chapters.ToArray(), bookmarks.ToArray(), favourite);
+	}
+
+	public Task<DbManga[]> Random(int count)
+	{
+		return _sql.Get<DbManga>("SELECT * FROM manga ORDER BY random() LIMIT :count", new { count });
 	}
 
 	public async Task<PaginatedResult<MangaProgress>> Touched(string? platformId, int page, int size, TouchedState state = TouchedState.All)

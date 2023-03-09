@@ -188,6 +188,14 @@ public class MangaController : ControllerBase
 		return Ok(data);
 	}
 
+	[HttpGet, Route("manga/random/{count}")]
+	[ProducesDefaultResponseType(typeof(DbManga[]))]
+	public async Task<IActionResult> Random([FromRoute] int count)
+	{
+		var data = await _db.Manga.Random(count);
+		return Ok(data);
+	}
+
 	[HttpGet, Route("manga/touched")]
 	[ProducesDefaultResponseType(typeof(PaginatedResult<MangaProgress>))]
 	public Task<IActionResult> Touched([FromQuery] int page = 1, [FromQuery] int size = 100, [FromQuery] string? type = null)
