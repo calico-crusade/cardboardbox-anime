@@ -46,6 +46,7 @@ services:
       - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
       - Match:Url=${MATCH_URL}
       - Sqlite:ConnectionString=Data Source=persist/database.db;
+      - ChatGPT:Token=${CHAT_GPT_TOKEN}
     depends_on:
       - cba-api
     volumes:

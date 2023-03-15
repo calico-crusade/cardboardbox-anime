@@ -20,6 +20,7 @@ var services = new ServiceCollection()
 
 	.AddSingleton<IScheduledTask, ReverseImageSearchIndexing>()
 	.AddSingleton<IScheduledTask, MangaUpdater>()
+	//.AddSingleton<IScheduledTask, HistoricalMangadexIndexing>()
 	.BuildServiceProvider();
 
 var tasks = services.GetServices<IScheduledTask>();

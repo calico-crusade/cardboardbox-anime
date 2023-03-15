@@ -1,5 +1,6 @@
 ﻿namespace CardboardBox.Anime.Bot;
 
+using ChatGPT;
 using Database.Mapping;
 using Database.Generation;
 using Services;
@@ -75,7 +76,8 @@ public static class Extensions
 	{
 		MapConfig.AddMap(c =>
 		{
-			c.ForEntity<LookupRequest>();
+			c.ForEntity<LookupRequest>()
+			 .ForEntity<GptAuthorized>();
 		});
 
 		MapConfig.StartMap();
@@ -88,6 +90,9 @@ public static class Extensions
 		return services
 			.AddSingleton<ISqlService, SqliteService>()
 			.AddTransient<IDbQueryBuilderService, SqliteDbQueryBuilderService>()
-			.AddTransient<IDbService, DbService>();
+			.AddTransient<IDbService, DbService>()
+			.AddTransient<ILookupDbService, LookupDbService>()
+			.AddTransient<IGptDbService, GptDbService>()
+			.AddTransient<IChatGptService, ChatGptService>();
 	}
 }

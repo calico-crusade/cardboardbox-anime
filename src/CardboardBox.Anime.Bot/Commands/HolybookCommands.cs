@@ -14,6 +14,7 @@ public class HolybookCommands
 	public const double DEFAULT_CFG = 7, DEFAULT_DENOISE = 0.7;
 	public const string DEFAULT_SEED = "-1";
 	public const ulong CARDBOARD_BOX_SERVER = 1009959054073933885;
+	public const ulong CARDBOARD_BOX_ROLE = 1067468243532533831;
 
 	private readonly IApiService _api;
 	private readonly IHolyBooksService _holybooks;

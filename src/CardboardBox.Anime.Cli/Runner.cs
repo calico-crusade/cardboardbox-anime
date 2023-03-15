@@ -897,7 +897,7 @@ public class Runner : IRunner
 							Page = index + 1,
 						};
 
-						await _match.IndexPage(url, meta, m.Referer);
+						await _match.IndexPageProxy(url, meta, m.Referer);
 					}
 				});
 			}
@@ -923,7 +923,7 @@ public class Runner : IRunner
 
 		_logger.LogInformation("Starting cover indexing for: " + manga.Length);
 		foreach (var (referer, data) in images)
-			await _match.IndexPage(data.Url, data, referer);
+			await _match.IndexPageProxy(data.Url, data, referer);
 		_logger.LogInformation("Finished");
 	}
 

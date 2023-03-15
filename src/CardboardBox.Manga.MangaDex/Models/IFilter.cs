@@ -37,7 +37,7 @@ public class FilterBuilder
 	{
 		if (date == null) return this;
 
-		Parameters.Add((key, date.Value.ToString("yyyy-MM-ddThh:mm:ss.fffZ")));
+		Parameters.Add((key, date.Value.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss")));
 		return this;
 	}
 

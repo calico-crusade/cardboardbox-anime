@@ -51,7 +51,7 @@ public class MangaLookupService : IMangaLookupService
 			   channelId = guild.Id.ToString(),
 			   authorId = rpl.Author.Id.ToString();
 
-		var existing = await _db.Fetch(messageId);
+		var existing = await _db.Lookup.Fetch(messageId);
 		if (existing != null && !string.IsNullOrEmpty(existing.Results))
 		{
 			await HandleIdiots(guild, msg, authorId, existing);
@@ -70,7 +70,7 @@ public class MangaLookupService : IMangaLookupService
 			Results = null,
 			ResponseId = mod.Id.ToString(),
 		};
-		existing.Id = await _db.Upsert(existing);
+		existing.Id = await _db.Lookup.Upsert(existing);
 
 		try
 		{
@@ -98,7 +98,7 @@ public class MangaLookupService : IMangaLookupService
 	{
 		var search = await _manga.Search(imgUrl) ?? new ImageSearchResults();
 		data.Results = Serialize(search);
-		await _db.Upsert(data);
+		await _db.Lookup.Upsert(data);
 		if (search == null || !search.Success)
 		{
 			await msg.ModifyAsync(t => t.Content = "I couldn't find any results that matched that image :(");

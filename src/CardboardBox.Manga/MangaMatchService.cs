@@ -13,7 +13,11 @@ public interface IMangaMatchService
 
 	Task IndexLatest();
 
-	Task<bool> IndexPage(string image, MangaMetadata metadata, string? referer);
+	Task<bool> IndexPageProxy(string image, MangaMetadata metadata, string? referer, bool noCache = false);
+
+	Task<bool> IndexPage(string url, MangaMetadata metadata);
+
+	Task<(DbMangaChapter chapter, DbManga manga)> Convert(MangaDexChapter chapter, MangaDexManga manga, string[] pages);
 }
 
 public class MangaMatchService : IMangaMatchService
@@ -62,13 +66,17 @@ public class MangaMatchService : IMangaMatchService
 		};
 	}
 
-	public async Task<bool> IndexPage(string image, MangaMetadata metadata, string? referer)
+	public Task<bool> IndexPageProxy(string image, MangaMetadata metadata, string? referer, bool noCache = false)
+	{
+		var imageUrl = ProxyUrl(image, metadata.Type == MangaMetadataType.Page ? "manga-page" : "manga-cover", referer, noCache);
+		return IndexPage(imageUrl, metadata);
+	}
+
+	public async Task<bool> IndexPage(string url, MangaMetadata metadata)
 	{
 		var filename = GenerateId(metadata);
-		var imageUrl = ProxyUrl(image, metadata.Type == MangaMetadataType.Page ? "manga-page" : "manga-cover", referer);
+		var result = await _api.Add(url, filename, metadata);
 
-		var result = await _api.Add(imageUrl, filename, metadata);
-		
 		if (result == null)
 		{
 			_logger.LogError($"Error occurred while indexing image, the result was null: {metadata.Id} >> {metadata.Source}");
@@ -147,10 +155,7 @@ public class MangaMatchService : IMangaMatchService
 				continue;
 			}
 
-			if (existing != null)
-			{
-				continue;
-			}
+			if (existing != null) continue;
 
 			if (pageRequests >= 35)
 			{
@@ -165,7 +170,6 @@ public class MangaMatchService : IMangaMatchService
 				continue;
 			}
 
-
 			var pages = await _md.Pages(chapter.Id);
 			pageRequests++;
 			if (pages == null || pages.Images.Length == 0)
@@ -176,7 +180,7 @@ public class MangaMatchService : IMangaMatchService
 
 			var (dbChap, dbManga) = await Convert(chapter, manga, pages.Images);
 
-			await IndexPage(dbManga.Cover, new MangaMetadata
+			await IndexPageProxy(dbManga.Cover, new MangaMetadata
 			{
 				Id = dbManga.Cover.MD5Hash(),
 				Source = "mangadex",
@@ -199,7 +203,7 @@ public class MangaMatchService : IMangaMatchService
 					Page = i + 1,
 				};
 
-				await IndexPage(url, meta, dbManga.Referer);
+				await IndexPageProxy(url, meta, dbManga.Referer);
 			}
 
 			_logger.LogDebug($"Manga match indexing: Indexed chapter >> {dbManga.Title} ({dbManga.SourceId}) >> {dbChap.Title} ({dbChap.SourceId})");

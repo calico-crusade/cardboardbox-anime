@@ -30,6 +30,7 @@ var bot = DiscordBotBuilder.Start()
 	{
 		c.With<HolybookCommands>()
 		 .With<MangaCommand>()
+		 .With<GptToggleCommands>()
 		 .WithComponent<MangaSearchComponent>()
 		 .WithComponent<MangaReadComponent>()
 		 .WithComponent<MangaSearchReadComponent>();
