@@ -140,8 +140,10 @@ public class EasterEggs
 		if (!_chats.ContainsKey(userId))
 			_chats.Add(userId, new());
 
+		var content = msg.Content.Replace($"<@{_client.CurrentUser.Id}>", "").Trim();
+
 		var chat = _chats[userId];
-		if (msg.Content.ToLower().Trim() == "clear")
+		if (content.ToLower() == "clear")
 		{
 			chat.Messages = new();
 			await msg.Channel.SendMessageAsync("Chat has been cleared.", messageReference: reference);
@@ -151,7 +153,6 @@ public class EasterEggs
 		if (chat.Messages.Count == 0)
 			chat.Messages.Add(GptMessage.System("You are talking to an idiot. Please speak very slowly and avoid big words."));
 
-		var content = msg.Content.Replace($"<@{_client.CurrentUser.Id}>", "");
 
 		chat.Messages.Add(GptMessage.User(content));
 
@@ -162,15 +163,17 @@ public class EasterEggs
 			return;
 		}
 
+		var res = await msg.Channel.SendMessageAsync("<a:loading:1048471999065903244> Processing your request...", messageReference: reference);
+
 		var resp = await _chat.Completions(chat);
 		if (resp == null || resp.Choices.Length == 0)
 		{
-			await msg.Channel.SendMessageAsync("Unfortunately, something went wrong... Please try again later, or you can type `clear` to restart the conversation.", messageReference: reference);
+			await res.ModifyAsync(t => t.Content = "Unfortunately, something went wrong... Please try again later, or you can type `clear` to restart the conversation.");
 			return;
 		}
 
 		var choice = resp.Choices.First();
-		await msg.Channel.SendMessageAsync(choice.Message.Content, messageReference: reference);
+		await res.ModifyAsync(t => t.Content = choice.Message.Content);
 		chat.Messages.Add(GptMessage.Assistant(choice.Message.Content));
 
 		_logger.LogInformation("[CHATGPT REPORT] Usage: Prompt {0} - Compeltion {1} - Total {2} >> {3} ({4}): \"{5}\"",

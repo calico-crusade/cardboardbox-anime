@@ -14,18 +14,15 @@ public class ChatGptService : IChatGptService
 {
 	private readonly IApiService _api;
 	private readonly IConfiguration _config;
-	private readonly ILogger _logger;
 
 	private string ApiToken => _config["ChatGPT:Token"];
 
 	public ChatGptService(
 		IApiService api, 
-		IConfiguration config, 
-		ILogger<ChatGptService> logger)
+		IConfiguration config)
 	{
 		_api = api;
 		_config = config;
-		_logger = logger;
 	}
 
 	public int CountTokens(GptChat chat)
@@ -33,19 +30,12 @@ public class ChatGptService : IChatGptService
 		int tokens = 2;
 
 		foreach(var msg in chat.Messages)
-		{
-			tokens += 4;
-			tokens += Tokenize(msg.Role).Count;
-			tokens += Tokenize(msg.Content).Count;
-		}
+			tokens += 4 + Tokenize(msg.Role).Count + Tokenize(msg.Content).Count;
 
 		return tokens;
 	}
 
-	public List<int> Tokenize(string message)
-	{
-		return GPT3Tokenizer.Encode(message);
-	}
+	public List<int> Tokenize(string message) =>  GPT3Tokenizer.Encode(message);
 
 	public Task<GptResponse?> Completions(GptChat chat)
 	{
