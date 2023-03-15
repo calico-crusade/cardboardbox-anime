@@ -28,6 +28,7 @@ services:
       - Discord:Token=${DISCORD_TOKEN}
       - Match:Url=${MATCH_URL}
       - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
+      - ChatGPT:Token=${CHAT_GPT_TOKEN}
     ports:
       - 8891:80
     depends_on:
