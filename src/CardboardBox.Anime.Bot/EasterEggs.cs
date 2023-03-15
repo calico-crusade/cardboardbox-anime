@@ -172,12 +172,24 @@ public class EasterEggs
 			return;
 		}
 
-		var choice = resp.Choices.First();
-		await res.ModifyAsync(t => t.Content = choice.Message.Content);
-		chat.Messages.Add(GptMessage.Assistant(choice.Message.Content));
-
 		_logger.LogInformation("[CHATGPT REPORT] Usage: Prompt {0} - Compeltion {1} - Total {2} >> {3} ({4}): \"{5}\"",
 			resp.Usage.PromptTokens, resp.Usage.CompletionTokens, resp.Usage.TotalTokens,
 			msg.Author.Username, msg.Author.Id, content);
+
+		var choice = resp.Choices.First();
+		var message = choice.Message.Content;
+		chat.Messages.Add(GptMessage.Assistant(choice.Message.Content));
+
+		if (message.Length <= 2000)
+		{
+			await res.ModifyAsync(t => t.Content = choice.Message.Content);
+			return;
+		}
+
+		var messages = StringExtensions.Split(message);
+		await res.ModifyAsync(t => t.Content = "My response is a bit long, so I'm going to post it below. Bare with me!");
+
+		foreach(var m in messages)
+			await msg.Channel.SendMessageAsync(m, messageReference: reference);
 	}
 }

@@ -9,7 +9,7 @@ public class SqliteService : SqlService
 	private readonly ILogger _logger;
 
 	public override int Timeout => 0;
-	public bool FirstRun { get; private set; } = true;
+	public static bool FirstRun { get; private set; } = true;
 
 	public SqliteService(
 		IConfiguration config,
