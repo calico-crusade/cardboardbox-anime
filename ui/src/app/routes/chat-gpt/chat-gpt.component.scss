@@ -1,0 +1,97 @@
+.chat-wrapper {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-flow: column;
+    max-width: 900px;
+    width: 100%;
+    margin: 0 auto;
+
+    header {
+        h2 { margin: 0; }
+    }
+
+    main {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+        display: flex;
+        flex-flow: column;
+        margin: 10px 0;
+
+        .messages {
+            display: flex;
+            flex-flow: row;
+            padding: 10px;
+            background-color: var(--bg-sidebar);
+            border-radius: 5px;
+            border: 1px solid var(--brd-color-accent);
+            margin-bottom: 10px;
+            max-width: 100%;
+            margin-right: 5px;
+
+            img {
+                width: 50px;
+                height: 50px;
+                margin-right: 10px;
+            }
+
+            .message {
+                flex: 1;
+                display: flex;
+                flex-flow: column;
+                margin: auto 0;
+
+                .username {
+                    font-weight: bold;
+                }
+
+                .content {
+                    max-width: min(800px, calc(100vw - 100px));
+                }
+            }
+
+            &.user {
+                background-color: var(--bd-card-2);
+
+                img {
+                    border-radius: 50%;
+                }
+            }
+        }
+
+        .thinking {
+            margin: 5px auto;
+            display: flex;
+            flex-flow: row;
+
+            img {
+                width: 50px;
+                height: 50px;
+                margin: 10px;
+            }
+
+            p {
+                margin: auto 0;
+            }
+        }
+    }
+
+    footer {
+        display: flex;
+        flex-flow: row;
+        margin-bottom: 10px;
+
+        textarea {
+            flex: 1;
+            height: 75px;
+            border: 1px solid var(--brd-color-accent);
+            padding: 10px;
+            background-color: transparent;
+            outline: none;
+            color: var(--text-color);
+            resize: none;
+            border-radius: 5px;
+        }
+    }
+}

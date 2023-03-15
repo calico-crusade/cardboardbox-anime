@@ -23,6 +23,9 @@ const routes: Routes = [
     }, { 
         path: 'discord', 
         loadChildren: () => import('./routes/discord').then(m => m.DiscordModule) 
+    }, { 
+        path: 'chat', 
+        loadChildren: () => import('./routes/chat-gpt/chat-gpt.module').then(m => m.ChatGptModule) 
     }, {
        path: 'admin',
        component: AdminComponent

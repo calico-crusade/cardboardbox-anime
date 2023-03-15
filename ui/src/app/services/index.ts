@@ -9,3 +9,4 @@ export * from './manga';
 export * from './storage-var';
 export * from './dictionary';
 export * from './http.service';
+export * from './chat';

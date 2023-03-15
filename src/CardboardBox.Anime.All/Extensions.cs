@@ -7,6 +7,7 @@ namespace CardboardBox.Anime;
 
 using AI;
 using Auth;
+using ChatGPT;
 using Crunchyroll;
 using Core;
 using Core.Models;
@@ -39,6 +40,7 @@ public static class Extensions
 			.AddTransient<IAnimeMongoService, AnimeMongoService>()
 			.AddTransient<IAiAnimeService, AiAnimeService>()
 			.AddTransient<IDiscordClient, DiscordClient>()
+			.AddTransient<IChatGptService, ChatGptService>()
 			.AddManga();
 	}
 }

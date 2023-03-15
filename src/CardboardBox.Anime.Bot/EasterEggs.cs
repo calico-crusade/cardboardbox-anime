@@ -150,10 +150,6 @@ public class EasterEggs
 			return;
 		}
 
-		if (chat.Messages.Count == 0)
-			chat.Messages.Add(GptMessage.System("You are talking to an idiot. Please speak very slowly and avoid big words."));
-
-
 		chat.Messages.Add(GptMessage.User(content));
 
 		var tokens = _chat.CountTokens(chat);
