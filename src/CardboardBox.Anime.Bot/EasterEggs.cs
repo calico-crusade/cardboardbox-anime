@@ -155,7 +155,7 @@ public class EasterEggs
 		var tokens = _chat.CountTokens(chat);
 		if (tokens > 4096)
 		{
-			await msg.Channel.SendMessageAsync("Unforuntately, I can no longer talk to you. You've exceeded my idiocy limits. (Type `clear` to restart the conversation)", messageReference: reference);
+			await msg.Channel.SendMessageAsync("Unfortunately, I can no longer talk to you. You've exceeded my idiocy limits. (You've reached the max number of words/tokens per conversation, as set by ChatGPT. Type `clear` to restart the conversation)", messageReference: reference);
 			return;
 		}
 
