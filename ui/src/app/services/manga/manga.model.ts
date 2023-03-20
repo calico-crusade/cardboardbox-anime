@@ -151,6 +151,7 @@ export interface ImageSearchManga {
 
 export interface BaseResult {
     score: number;
+    source: 'cba fallback' | 'google vision' | 'title lookup' | 'sauce nao'
     exactMatch: boolean;
     manga: ImageSearchManga;
 }

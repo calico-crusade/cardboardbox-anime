@@ -109,7 +109,7 @@ export class MangaCardComponent implements OnInit {
                 manga: this._search.manga,
                 foundVia: {
                     text: 'Google Vision',
-                    compute: this._search.score * 100,
+                    compute: this._search.score,
                     exactMatch: this._search.exactMatch
                 },
                 link: {
@@ -137,7 +137,7 @@ export class MangaCardComponent implements OnInit {
         return {
             manga: this._search.manga,
             foundVia: {
-                text: 'Mangadex Search',
+                text: this._search.source === 'title lookup' ? 'Mangadex Search' : 'Sauce Nao',
                 compute: this._search.score * 100,
                 exactMatch: this._search.exactMatch
             },

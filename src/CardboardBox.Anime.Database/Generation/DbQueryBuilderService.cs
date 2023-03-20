@@ -222,7 +222,6 @@ WHERE
 	public string SelectAllNonDeleted(string tableName)
 	{
 		return $"SELECT * FROM {tableName} WHERE deleted_at IS NULL";
-
 	}
 
 	public string SelectAll(string tableName)

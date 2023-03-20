@@ -22,6 +22,7 @@ public static class Extensions
 			.AddTransient<IMangaImageService, MangaImageService>()
 
 			.AddTransient<IMatchApiService, MatchApiService>()
+			.AddTransient<ISauceNaoApiService, SauceNaoApiService>()
 			.AddTransient<IMangaMatchService, MangaMatchService>()
 
 			.AddTransient<IGoogleVisionService, GoogleVisionService>()

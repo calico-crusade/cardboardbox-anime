@@ -1,11 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json.Serialization;
 
 namespace CardboardBox.Anime.Api.Controllers;
 
 using Auth;
 using Core;
 using Core.Models;
+using Match;
+using Match.SauceNao;
 using Manga;
 using Manga.Providers;
 using Database;
@@ -19,6 +22,7 @@ public class MangaController : ControllerBase
 	private readonly IMangaImageService _image;
 	private readonly IMangaSearchService _search;
 	private readonly IMangaDexSource _mangadex;
+	private readonly ISauceNaoApiService _sauce;
 
 	public MangaController(
 		IMangaService manga,
@@ -26,7 +30,8 @@ public class MangaController : ControllerBase
 		IMangaEpubService epub,
 		IMangaImageService image,
 		IMangaSearchService search,
-		IMangaDexSource mangadex)
+		IMangaDexSource mangadex,
+		ISauceNaoApiService sauce)
 	{
 		_manga = manga;
 		_db = db;
@@ -34,6 +39,7 @@ public class MangaController : ControllerBase
 		_image = image;
 		_search = search;
 		_mangadex = mangadex;
+		_sauce = sauce;
 	}
 
 	[HttpGet, Route("manga")]
@@ -293,4 +299,20 @@ public class MangaController : ControllerBase
 		var (stream, file) = result.Value;
 		return File(stream, "application/zip", file);
 	}
+
+	[HttpPost, Route("manga/saucenao")]
+	public async Task<IActionResult> Sauce([FromBody] SauceRequest request)
+	{
+		var res = await _sauce.Get(request.ImageUrl, request.Databases);
+		return Ok(res);
+	}
+}
+
+public class SauceRequest
+{
+	[JsonPropertyName("url")]
+	public string ImageUrl { get; set; } = string.Empty;
+
+	[JsonPropertyName("databases")]
+	public SauceNaoDatabase[] Databases { get; set; } = Array.Empty<SauceNaoDatabase>();
 }

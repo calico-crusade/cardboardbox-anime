@@ -21,6 +21,7 @@ public class MangaSearchService : IMangaSearchService
 	private readonly IMangaDexService _mangadex;
 	private readonly ILogger _logger;
 	private readonly IMangaCacheDbService _db;
+	private readonly ISauceNaoApiService _sauce;
 
 	public MangaSearchService(
 		IGoogleVisionService vision, 
@@ -28,7 +29,8 @@ public class MangaSearchService : IMangaSearchService
 		IMangaDexSource md,
 		ILogger<MangaSearchService> logger,
 		IMangaCacheDbService db,
-		IMangaDexService mangadex)
+		IMangaDexService mangadex,
+		ISauceNaoApiService sauce)
 	{
 		_vision = vision;
 		_match = match;
@@ -36,6 +38,7 @@ public class MangaSearchService : IMangaSearchService
 		_logger = logger;
 		_db = db;
 		_mangadex = mangadex;
+		_sauce = sauce;
 	}
 
 	public async Task<ImageSearchResults> Search(MemoryStream stream, string filename)
@@ -48,9 +51,9 @@ public class MangaSearchService : IMangaSearchService
 		stream.Position = 0;
 		second.Position = 0;
 
-		await Task.WhenAll(
-			HandleFallback(stream, filename, results),
-			HandleVision(second, filename, results));
+		await HandleFallback(stream, filename, results);
+		if (!AnyMatches(results))
+			await HandleVision(second, filename, results);
 
 		DetermineBestGuess(results);
 
@@ -63,9 +66,13 @@ public class MangaSearchService : IMangaSearchService
 		{
 			var results = new ImageSearchResults();
 
-			await Task.WhenAll(
-				HandleFallback(image, results),
-				HandleVision(image, results));
+			await HandleFallback(image, results);
+
+			if (!AnyMatches(results))
+				await HandleSauceNao(image, results);
+
+			if (!AnyMatches(results))
+				await HandleVision(image, results);
 
 			DetermineBestGuess(results);
 
@@ -87,7 +94,8 @@ public class MangaSearchService : IMangaSearchService
 			{
 				Manga = t.Manga,
 				ExactMatch = t.Compute > 1,
-				Score = t.Compute
+				Score = t.Compute,
+				Source = "title lookup"
 			}).ToList();
 
 		return new ImageSearchResults()
@@ -132,7 +140,18 @@ public class MangaSearchService : IMangaSearchService
 
 		if (bestFall == null || bestVisi == null) return;
 
-		results.BestGuess = bestVisi.Score * 100 > bestFall.Score ? bestVisi.Manga : bestFall.Manga;
+		results.BestGuess = bestVisi.Score > bestFall.Score ? bestVisi.Manga : bestFall.Manga;
+	}
+
+	public bool AnyMatches(ImageSearchResults results)
+	{
+		var all = results.All.ToArray();
+		if (all.Length == 0) return false;
+
+		var exact = all.Any(t => t.ExactMatch);
+		if (exact) return true;
+
+		return all.Any(t => t.Score > 80);
 	}
 
 	#region Fallback
@@ -239,7 +258,7 @@ public class MangaSearchService : IMangaSearchService
 				Url = url,
 				Title = originalTitle,
 				FilteredTitle = title,
-				Score = compute,
+				Score = compute * 100,
 				ExactMatch = compute > 1,
 				Manga = (TrimmedManga)manga
 			};
@@ -327,6 +346,48 @@ public class MangaSearchService : IMangaSearchService
 		return title;
 	}
 	#endregion
+
+	#region SauceNao
+	public async Task HandleSauceNao(string image, ImageSearchResults results)
+	{
+		var res = await _sauce.Get(image);
+		if (res == null || res.Results.Length == 0) return;
+
+		var mdRes = res
+			.Results
+			.Where(t => t.Data.ExternalUrls.Any(a => a.ToLower().Contains("mangadex")))
+			.Select(t => (t, double.TryParse(t.Header.Similarity, out var sim) ? sim : -1))
+			.Where(t => t.Item2 > 70)
+			.OrderByDescending(t => t.Item2 != -1)
+			.Select(t => t.t)
+			.FirstOrDefault();
+
+		if (mdRes == null || string.IsNullOrEmpty(mdRes.Data.Source)) return;
+
+		var title = mdRes.Data.Source;
+		var raw = await _mangadex.Search(title);
+		if (raw == null || raw.Data == null || raw.Data.Count == 0)
+			return;
+
+		var data = await raw.Data
+			.Select(async t => await _md.Convert(t, false))
+			.WhenAll();
+
+		var rank = Rank(image, data)
+			.OrderByDescending(t => t.Compute)
+			.DistinctBy(t => t.Manga.Id)
+			.Select(t => new BaseResult
+			{
+				Manga = t.Manga,
+				ExactMatch = t.Compute > 1,
+				Score = t.Compute,
+				Source = "sauce nao"
+			}).ToList();
+
+		results.Textual = rank;
+		results.BestGuess = rank.FirstOrDefault()?.Manga;
+	}
+	#endregion
 }
 
 public class ImageSearchResults
@@ -344,7 +405,10 @@ public class ImageSearchResults
 	public TrimmedManga? BestGuess { get; set; }
 
 	[JsonIgnore]
-	public bool Success => Vision.Count > 0 || Match.Count > 0;
+	public bool Success => Vision.Count > 0 || Match.Count > 0 || Textual.Count > 0;
+
+	[JsonIgnore]
+	public IEnumerable<BaseResult> All => Match.Concat<BaseResult>(Vision).Concat(Textual);
 }
 
 public class TrimmedManga
@@ -412,6 +476,9 @@ public class BaseResult
 	[JsonPropertyName("exactMatch")]
 	public bool ExactMatch { get; set; }
 
+	[JsonPropertyName("source")]
+	public virtual string Source { get; set; } = string.Empty;
+
 	[JsonPropertyName("manga")]
 	public TrimmedManga? Manga { get; set; }
 }
@@ -426,10 +493,14 @@ public class VisionResult : BaseResult
 
 	[JsonPropertyName("filteredTitle")]
 	public string FilteredTitle { get; set; } = string.Empty;
+
+	public override string Source { get; set; } = "google vision";
 }
 
 public class FallbackResult : BaseResult
 {
 	[JsonPropertyName("metadata")]
 	public MangaMetadata? Metadata { get; set; }
+
+	public override string Source { get; set; } = "cba fallback";
 }
