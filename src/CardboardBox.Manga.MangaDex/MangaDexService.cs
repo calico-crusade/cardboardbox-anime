@@ -1,93 +1,65 @@
-﻿namespace CardboardBox.Manga.MangaDex;
+﻿using MangaDexSharp;
 
-using Models;
+namespace CardboardBox.Manga.MangaDex;
+
+using MManga = MangaDexSharp.Manga;
 
 public interface IMangaDexService
 {
-	Task<MangaDexCollection<MangaDexManga>?> AllManga(params string[] ids);
+	Task<MangaList> AllManga(params string[] ids);
 
-	Task<MangaDexRoot<MangaDexManga>?> Manga(string id, string[]? includes = null);
+	Task<MangaDexRoot<MManga>> Manga(string id);
 
-	Task<MangaDexCollection<MangaDexManga>?> Search(MangaFilter filter);
+	Task<MangaList> Search(MangaFilter filter);
 
-	Task<MangaDexCollection<MangaDexManga>?> Search(string title);
+	Task<MangaList> Search(string title);
 
-	Task<MangaDexCollection<MangaDexChapter>?> Chapters(ChaptersFilter? filter = null);
+	Task<ChapterList> Chapters(ChaptersFilter? filter = null);
 
-	Task<MangaDexCollection<MangaDexChapter>?> Chapters(string id, ChaptersFilter? filter = null);
+	Task<ChapterList> Chapters(string id, MangaFeedFilter? filter = null);
 
-	Task<MangaDexCollection<MangaDexChapter>?> Chapters(string id, int limit = 500, int offset = 0);
+	Task<ChapterList> Chapters(string id, int limit = 500, int offset = 0);
 
-	Task<MangaDexRoot<MangaDexChapter>?> Chapter(string id, string[]? includes = null);
+	Task<MangaDexRoot<Chapter>> Chapter(string id, string[]? includes = null);
 
-	Task<MangaDexCollection<MangaDexChapter>?> ChaptersLatest(ChaptersFilter? filter = null);
+	Task<ChapterList> ChaptersLatest(ChaptersFilter? filter = null);
 
-	Task<MangaDexPages?> Pages(string id);
+	Task<Pages> Pages(string id);
 }
 
 public class MangaDexService : IMangaDexService
 {
-	private readonly IApiService _api;
+	private readonly IMangaDex _md;
 
-	public MangaDexService(IApiService api)
+	public MangaDexService(IMangaDex md)
 	{
-		_api = api;
+		_md = md;
 	}
 
-	public Task<MangaDexCollection<MangaDexManga>?> Search(string title)
+	public Task<MangaList> Search(string title) => Search(new MangaFilter() { Title = title });
+
+	public Task<MangaList> Search(MangaFilter filter) => _md.Manga.List(filter);
+
+	public Task<MangaList> AllManga(params string[] ids) => Search(new MangaFilter { Ids = ids });
+
+	public Task<MangaDexRoot<MManga>> Manga(string id)
 	{
-		var filter = new MangaFilter { Title = title };
-		return Search(filter);
+		return _md.Manga.Get(id, new[] { MangaIncludes.cover_art, MangaIncludes.author, MangaIncludes.artist, MangaIncludes.scanlation_group, MangaIncludes.tag, MangaIncludes.chapter});
 	}
 
-	public Task<MangaDexCollection<MangaDexManga>?> Search(MangaFilter filter)
-	{
-		var url = $"https://api.mangadex.org/manga?{filter.BuildQuery()}";
-		return _api.Get<MangaDexCollection<MangaDexManga>>(url);
-	}
+	public Task<ChapterList> Chapters(ChaptersFilter? filter = null) => _md.Chapter.List(filter);
 
-	public Task<MangaDexCollection<MangaDexManga>?> AllManga(params string[] ids)
-	{
-		var filter = new MangaFilter { Ids = ids };
-		return Search(filter);
-	}
+	public Task<ChapterList> Chapters(string id, MangaFeedFilter? filter = null) => _md.Manga.Feed(id, filter);
 
-	public Task<MangaDexRoot<MangaDexManga>?> Manga(string id, string[]? includes = null)
+	public Task<ChapterList> Chapters(string id, int limit = 500, int offset = 0)
 	{
-		includes ??= new[]
+		var filter = new MangaFeedFilter
 		{
-			"cover_art", "author", "artist",
-			"scanlation_group", "tag", "chapter"
-		};
-		var pars = string.Join("&", includes.Select(t => $"includes[]={t}"));
-		var url = $"https://api.mangadex.org/manga/{id}?{pars}";
-		return _api.Get<MangaDexRoot<MangaDexManga>>(url);
-	}
-
-	public Task<MangaDexCollection<MangaDexChapter>?> Chapters(ChaptersFilter? filter = null)
-	{
-		filter ??= new ChaptersFilter();
-		var url = $"https://api.mangadex.org/chapter?{filter.BuildQuery()}";
-		return _api.Get<MangaDexCollection<MangaDexChapter>>(url);
-	}
-
-	public Task<MangaDexCollection<MangaDexChapter>?> Chapters(string id, ChaptersFilter? filter = null)
-	{
-		var url = $"https://api.mangadex.org/manga/{id}/feed?{(filter ?? new()).BuildQuery()}";
-		return _api.Get<MangaDexCollection<MangaDexChapter>>(url);
-	}
-
-	public Task<MangaDexCollection<MangaDexChapter>?> Chapters(string id, int limit = 500, int offset = 0)
-	{
-		var filter = new ChaptersFilter
-		{
-			Includes = new[] { "scanlation_group", "user" },
 			Order = new()
 			{
-				[ChaptersFilter.OrderKey.volume] = ChaptersFilter.OrderValue.asc,
-				[ChaptersFilter.OrderKey.chapter] = ChaptersFilter.OrderValue.asc,
+				[MangaFeedFilter.OrderKey.volume] = OrderValue.asc,
+				[MangaFeedFilter.OrderKey.chapter] = OrderValue.asc,
 			},
-			ContentRating = ChaptersFilter.ContentRatingsAll,
 			Limit = limit,
 			Offset = offset
 		};
@@ -95,32 +67,20 @@ public class MangaDexService : IMangaDexService
 		return Chapters(id, filter);
 	}
 
-	public Task<MangaDexCollection<MangaDexChapter>?> ChaptersLatest(ChaptersFilter? filter = null)
+	public Task<ChapterList> ChaptersLatest(ChaptersFilter? filter = null)
 	{
 		filter ??= new ChaptersFilter();
-		filter.ContentRating = ChaptersFilter.ContentRatingsAll;
 		filter.Limit = 100;
-		filter.Order = new() { [ChaptersFilter.OrderKey.updatedAt] = ChaptersFilter.OrderValue.desc };
-		filter.Includes = new[] { "manga" };
+		filter.Order = new() { [ChaptersFilter.OrderKey.updatedAt] = OrderValue.desc };
+		filter.Includes = new[] { MangaIncludes.manga };
 		filter.TranslatedLanguage = new[] { "en" };
 		return Chapters(filter);
 	}
 
-	public Task<MangaDexRoot<MangaDexChapter>?> Chapter(string id, string[]? includes = null)
+	public Task<MangaDexRoot<Chapter>> Chapter(string id, string[]? includes = null)
 	{
-		//https://api.mangadex.org/chapter/b5c27796-f334-43b5-834f-6617f7458d0b
-		includes ??= new[]
-		{
-			"scanlation_group", "manga", "user"
-		};
-		var pars = string.Join("&", includes.Select(t => $"includes[]={t}"));
-		var url = $"https://api.mangadex.org/chapter/{id}?{pars}";
-		return _api.Get<MangaDexRoot<MangaDexChapter>>(url);
+		return _md.Chapter.Get(id, includes);
 	}
 
-	public Task<MangaDexPages?> Pages(string id)
-	{
-		var url = $"https://api.mangadex.org/at-home/server/{id}?forcePort443=false";
-		return _api.Get<MangaDexPages>(url);
-	}
+	public Task<Pages> Pages(string id) => _md.Pages.Pages(id);
 }

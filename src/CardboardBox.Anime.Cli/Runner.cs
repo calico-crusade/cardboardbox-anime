@@ -16,10 +16,10 @@ using LightNovel.Core.Sources.Utilities;
 
 using Manga;
 using Manga.MangaDex;
-using Manga.MangaDex.Models;
 using Manga.Providers;
 
 using AImage = Core.Models.Image;
+using MangaDexSharp;
 
 public interface IRunner
 {
@@ -687,7 +687,7 @@ public class Runner : IRunner
 			for(var p = 0; p < pageChunk.Length; p++)
 			{
 				var page = pageChunk[p];
-				var chapId = await _lnDb.Chapters.Upsert(new Chapter
+				var chapId = await _lnDb.Chapters.Upsert(new LightNovel.Core.Chapter
 				{
 					HashId = $"{page.Title}-{i}-{p}".MD5Hash(),
 					Title = page.Title,

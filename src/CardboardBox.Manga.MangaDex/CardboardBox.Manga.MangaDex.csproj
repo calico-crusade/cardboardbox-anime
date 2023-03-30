@@ -11,6 +11,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <PackageReference Include="MangaDexSharp" Version="1.0.9" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <ProjectReference Include="..\CardboardBox.Anime.Core\CardboardBox.Anime.Core.csproj" />
 	</ItemGroup>
 

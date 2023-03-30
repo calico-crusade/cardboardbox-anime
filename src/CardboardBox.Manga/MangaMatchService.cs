@@ -1,8 +1,11 @@
-﻿namespace CardboardBox.Manga;
+﻿
+using MangaDexSharp;
+using MManga = MangaDexSharp.Manga;
+
+namespace CardboardBox.Manga;
 
 using Anime.Database;
 using MangaDex;
-using MangaDex.Models;
 using Match;
 
 public interface IMangaMatchService
@@ -17,7 +20,7 @@ public interface IMangaMatchService
 
 	Task<bool> IndexPage(string url, MangaMetadata metadata);
 
-	Task<(DbMangaChapter chapter, DbManga manga)> Convert(MangaDexChapter chapter, MangaDexManga manga, string[] pages);
+	Task<(DbMangaChapter chapter, DbManga manga)> Convert(Chapter chapter, MManga manga, string[] pages);
 }
 
 public class MangaMatchService : IMangaMatchService
@@ -210,7 +213,7 @@ public class MangaMatchService : IMangaMatchService
 		}
 	}
 
-	public async Task PolyfillCoverArt(MangaDexCollection<MangaDexChapter> data)
+	public async Task PolyfillCoverArt(ChapterList data)
 	{
 		var ids = new List<string>();
 		foreach(var chapter in data.Data)
@@ -240,22 +243,22 @@ public class MangaMatchService : IMangaMatchService
 		}
 	}
 
-	public MangaDexManga? GetMangaRel(MangaDexChapter chapter)
+	public MManga? GetMangaRel(Chapter chapter)
 	{
-		var m = chapter.Relationships.FirstOrDefault(t => t is MangaDexManga);
+		var m = chapter.Relationships.FirstOrDefault(t => t is MManga);
 		if (m == null) return null;
 
-		return (MangaDexManga)m;
+		return (MManga)m;
 	}
 
-	public async Task<(DbMangaChapter chapter, DbManga manga)> Convert(MangaDexChapter chapter, MangaDexManga manga, string[] pages)
+	public async Task<(DbMangaChapter chapter, DbManga manga)> Convert(Chapter chapter, MManga manga, string[] pages)
 	{
 		var m = await Convert(manga);
 		var c = await Convert(chapter, m.Id, pages);
 		return (c, m);
 	}
 
-	public async Task<DbManga> Convert(MangaDexManga manga)
+	public async Task<DbManga> Convert(MManga manga)
 	{
 		var nsfwRatings = new[] { "erotica", "suggestive", "pornographic" };
 		var title = manga.Attributes.Title.PreferedOrFirst(t => t.Key == DEFAULT_LANG).Value;
@@ -272,20 +275,20 @@ public class MangaMatchService : IMangaMatchService
 			Url = $"https://mangadex.org/title/{manga.Id}",
 			AltTitles = manga.Attributes.AltTitles.SelectMany(t => t.Values).ToArray(),
 			Description = manga.Attributes.Description.PreferedOrFirst(t => t.Key == DEFAULT_LANG).Value ?? "No Description Provided",
-			Nsfw = nsfwRatings.Contains(manga.Attributes.ContentRating),
+			Nsfw = nsfwRatings.Contains(manga.Attributes.ContentRating?.ToString() ?? ""),
 			Cover = coverUrl,
 
 			Attributes = new[]
 				{
-					new DbMangaAttribute("Content Rating", manga.Attributes.ContentRating),
+					new DbMangaAttribute("Content Rating", manga.Attributes.ContentRating ?.ToString() ?? ""),
 					new("Original Language", manga.Attributes.OriginalLanguage),
-					new("Status", manga.Attributes.Status),
+					new("Status", manga.Attributes.Status ?.ToString() ?? ""),
 					new("Publication State", manga.Attributes.State)
 				}
 				.Concat(manga.Relationships.Select(t => t switch
 				{
 					PersonRelationship person => new DbMangaAttribute(person.Type == "author" ? "Author" : "Artist", person.Attributes.Name),
-					ScanlationGroupRelationship group => new DbMangaAttribute("Scanlation Group", group.Attributes.Name),
+					ScanlationGroup group => new DbMangaAttribute("Scanlation Group", group.Attributes.Name),
 					_ => new("", "")
 				})
 				.Where(t => !string.IsNullOrEmpty(t.Name)))
@@ -303,7 +306,7 @@ public class MangaMatchService : IMangaMatchService
 		return item;
 	}
 
-	public async Task<DbMangaChapter> Convert(MangaDexChapter chapter, long mangaId, string[] pages)
+	public async Task<DbMangaChapter> Convert(Chapter chapter, long mangaId, string[] pages)
 	{
 		var item = new DbMangaChapter
 		{
@@ -326,7 +329,7 @@ public class MangaMatchService : IMangaMatchService
 				.Concat(chapter?.Relationships?.Select(t => t switch
 				{
 					PersonRelationship person => new DbMangaAttribute(person.Type == "author" ? "Author" : "Artist", person.Attributes.Name),
-					ScanlationGroupRelationship group => new DbMangaAttribute("Scanlation Group", group.Attributes.Name),
+					ScanlationGroup group => new DbMangaAttribute("Scanlation Group", group.Attributes.Name),
 					_ => new("", "")
 				})?
 				.Where(t => !string.IsNullOrEmpty(t.Name))?

@@ -1,8 +1,10 @@
-﻿namespace CardboardBox.BackgroundTasks.Cli.Tasks;
+﻿using MangaDexSharp;
+using MManga = MangaDexSharp.Manga;
+
+namespace CardboardBox.BackgroundTasks.Cli.Tasks;
 
 using Anime.Database;
 using Manga.MangaDex;
-using Manga.MangaDex.Models;
 
 public class HistoricalMangadexIndexing : IScheduledTask
 {
@@ -91,22 +93,22 @@ public class HistoricalMangadexIndexing : IScheduledTask
 		File.WriteAllText(TRACKER_NAME, JsonSerializer.Serialize(value));
 	}
 
-	public Task<MangaDexCollection<MangaDexManga>?> GetManga(DateTime earliest)
+	public Task<MangaList> GetManga(DateTime earliest)
 	{
 		var filter = new MangaFilter
 		{
 			CreatedAtSince = earliest,
-			Order = new() { [MangaFilter.OrderKey.createdAt] = MangaFilter.OrderValue.asc },
+			Order = new() { [MangaFilter.OrderKey.createdAt] = OrderValue.asc },
 			AvailableTranslatedLanguage = new[] { "en" }
 		};
 		return _md.Search(filter);
 	}
 	
-	public async IAsyncEnumerable<MangaDexChapter> GetAllChapters(string id)
+	public async IAsyncEnumerable<Chapter> GetAllChapters(string id)
 	{
-		Task<MangaDexCollection<MangaDexChapter>?> GetChapter(int offset)
+		Task<ChapterList> GetChapter(int offset)
 		{
-			return _md.Chapters(id, new ChaptersFilter
+			return _md.Chapters(id, new MangaFeedFilter
 			{
 				Limit = 500,
 				Offset = offset,
@@ -136,7 +138,7 @@ public class HistoricalMangadexIndexing : IScheduledTask
 		}
 	}
 
-	public async Task HandleManga(MangaDexManga manga)
+	public async Task HandleManga(MManga manga)
 	{
 		var title = manga.Attributes.Title.PreferedOrFirst(t => t.Key == "en").Value;
 		_logger.LogDebug($"{LOGGER_NAME}: Processing Manga >> {title} ({manga.Id})");
