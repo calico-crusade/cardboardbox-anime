@@ -4,6 +4,8 @@ using Generation;
 
 public interface IAiRequestDbService
 {
+	Task<DbAiRequest> Fetch(long id);
+
 	Task<long> Insert(DbAiRequest request);
 
 	Task Update(DbAiRequest request);

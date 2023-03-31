@@ -4,7 +4,7 @@ import { ConfigObject } from "../config.base";
 import { HttpService } from "../http.service";
 import { AiDbRequest, AiRequest, AiRequestImg2Img, AiResults } from "./ai.models";
 
-export type UrlsResponse = { urls: string[] };
+export type IdResponse = { id: number };
 
 @Injectable({
     providedIn: 'root'
@@ -21,11 +21,11 @@ export class AiService extends ConfigObject {
     ) { super(); }
 
     text2Image(req: AiRequest) {
-        return this.http.post<UrlsResponse>(`ai`, req, { params: { download: false } });
+        return this.http.post<IdResponse>(`ai`, req, { params: { download: false } });
     }
 
     image2image(req: AiRequestImg2Img) {
-        return this.http.post<UrlsResponse>(`ai/img`, req, { params: { download: false } });
+        return this.http.post<IdResponse>(`ai/img`, req, { params: { download: false } });
     }
 
     embeddings() {
@@ -36,10 +36,14 @@ export class AiService extends ConfigObject {
         return this.http.get<string[]>(`ai/images`);
     }
 
+    request(id: number) {
+        return this.http.get<AiDbRequest>(`ai/${id}`);
+    }
+
     requests(id?: number, page: number = 1, size: number = 100) {
         let res: any = id ? {  id, page, size } : { page, size };
 
-        return this.http.get<AiResults>(`ai/requests`, {
+        return this.http.get<AiResults>(`ai`, {
             params: res
         })
     }

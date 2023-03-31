@@ -14,14 +14,13 @@ export interface AiRequest {
 
 export interface AiRequestImg2Img extends AiRequest {
     image: string;
-    denoiseStrength: number;
+    denoiseStrength?: number;
 }
 
-export interface AiDbRequest extends AiRequest, DbObject {
+export interface AiDbRequest extends AiRequestImg2Img, DbObject {
     profileId: number;
 
     imageUrl?: string;
-    denoiseStrength?: number;
 
     outputPaths: string[];
     generationStart: Date;

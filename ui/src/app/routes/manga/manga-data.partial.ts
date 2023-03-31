@@ -1,7 +1,7 @@
 import { MangaChapter, MangaWithChapters } from "../../services";
 import { SettingsPartial } from "src/app/settings.partial";
 
-const DEFAULT_IMAGE = 'https://wallpaperaccess.com/full/1979093.jpg';
+const DEFAULT_IMAGE = '/assets/broken.webp';
 
 export abstract class MangaPartial extends SettingsPartial {
 

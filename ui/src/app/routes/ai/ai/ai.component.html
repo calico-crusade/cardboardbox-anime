@@ -122,11 +122,12 @@
                 <a class="btn" [routerLink]="['/ai', 'requests']">History</a>
                 <button class="btn" (click)="post()">Generate</button>
             </div>
-
-            <div class="notes" *ngIf="embeddings.length > 0 && hints">
-                The following key words will force the generator to use specific embeddings that modify how the image is generated. <br />
-                {{ embeddings.join(', ') }}
-            </div>
+            <ng-container *ngIf="embeddings$ | async as embeddings">
+                <div class="notes" *ngIf="hints">
+                    The following key words will force the generator to use specific embeddings that modify how the image is generated. <br />
+                    {{ embeddings.join(', ') }}
+                </div>
+            </ng-container>
         </article>
         <article>
             <h1 class="image-issues" *ngIf="issues.length > 0">There were a few issues with your request:</h1>
@@ -135,7 +136,7 @@
             </div>
 
             <div class="image-result" *ngFor="let img of urls">
-                <img [src]="imageUrl(img)" />
+                <img [src]="imageUrl(img)" fallback="/assets/broken.webp" />
             </div>
         </article>
     </main>

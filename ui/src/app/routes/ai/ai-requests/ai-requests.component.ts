@@ -79,7 +79,7 @@ export class AiRequestsComponent implements OnInit, OnDestroy {
 
     bgimage(url: string) {
         const imgUrl = this.imageUrl(url);
-        return `background-image: url(${imgUrl})`;
+        return `background-image: url(${imgUrl}), url(/assets/broken.webp)`;
     }
 
     move(increment: number) {

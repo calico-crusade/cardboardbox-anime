@@ -18,6 +18,9 @@ const ROUTES: Routes = [
     }, {
         path: 'admin',
         component: AiAllImagesComponent
+    }, {
+        path: ':id',
+        component: AiComponent
     }
 ]
 

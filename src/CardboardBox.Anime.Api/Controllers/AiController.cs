@@ -35,6 +35,35 @@ public class AiController : ControllerBase
 		_db = db;
 	}
 
+	[HttpGet, Route("ai/{id}")]
+	[ProducesDefaultResponseType(typeof(DbAiRequest))]
+	public async Task<IActionResult> AiRequest([FromRoute] long id)
+	{
+		var item = await _db.AiRequests.Fetch(id);
+		if (item == null) return NotFound();
+
+		return Ok(item);
+	}
+
+	[HttpGet, Route("ai")]
+	[ProducesDefaultResponseType(typeof(PaginatedResult<DbAiRequest>))]
+	public async Task<IActionResult> Requests([FromQuery] long? id = null, [FromQuery] int size = 100, [FromQuery] int page = 1)
+	{
+		var isAdmin = User.IsInRole("Admin");
+
+		if (!isAdmin || id == -1)
+		{
+			var pid = this.UserFromIdentity()?.Id ?? "";
+			var profile = await _db.Profiles.Fetch(pid);
+			if (profile == null) return Unauthorized();
+
+			id = profile.Id;
+		}
+
+		var data = await _db.AiRequests.Paged(id, page, size);
+		return Ok(data);
+	}
+
 	[HttpPost, Route("ai")]
 	public async Task<IActionResult> Text2Img([FromBody] AiRequest request, [FromQuery] bool download = false)
 	{
@@ -78,7 +107,7 @@ public class AiController : ControllerBase
 
 		return Ok(new
 		{
-			urls
+			id = req.Id
 		});
 	}
 
@@ -143,7 +172,7 @@ public class AiController : ControllerBase
 
 		return Ok(new
 		{
-			urls
+			id = req.Id
 		});
 	}
 
@@ -166,25 +195,6 @@ public class AiController : ControllerBase
 			.GetFiles(ImageDir)
 			.Select(t => string.Join("/", t.Split('/', '\\').Skip(1)))
 			.ToArray());
-	}
-
-	[HttpGet, Route("ai/requests")]
-	[ProducesDefaultResponseType(typeof(PaginatedResult<DbAiRequest>))]
-	public async Task<IActionResult> Requests([FromQuery] long? id = null, [FromQuery] int size = 100, [FromQuery] int page = 1)
-	{
-		var isAdmin = User.IsInRole("Admin");
-
-		if (!isAdmin || id == -1)
-		{
-			var pid = this.UserFromIdentity()?.Id ?? "";
-			var profile = await _db.Profiles.Fetch(pid);
-			if (profile == null) return Unauthorized();
-
-			id = profile.Id;
-		}
-
-		var data = await _db.AiRequests.Paged(id, page, size);
-		return Ok(data);
 	}
 
 	private IActionResult? Validate(AiRequest request)
