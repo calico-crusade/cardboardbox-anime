@@ -17,13 +17,14 @@ import { SearchFiltersComponent } from "./search-filters/search-filters.componen
 import * as Hammer from 'hammerjs';
 import { AuthInterceptor } from "../services";
 import { ImageFallbackDirective } from "./image-fallback.directive";
-import { DeferLoadModule } from '@trademe/ng-defer-load';
 import { PopupComponent } from './popup/popup.component';
 import { ImageProxyDirective } from "./image-proxy.directive";
 import { MarkdownDirective } from "./markdown.directive";
 import { MagicCircleModule } from "./magic-circle";
 import { DictionaryDefinitionComponent } from './dictionary-definition/dictionary-definition.component';
 import { TooltipDirective } from "./tooltip.directive";
+import { HighlightDirective } from "./highlight.directive";
+import { ImageGenComponent } from './image-gen/image-gen.component';
 
 @Injectable()
 export class MyHammerConfig extends HammerGestureConfig {
@@ -33,6 +34,7 @@ export class MyHammerConfig extends HammerGestureConfig {
 }
 
 const EXPORTS = [
+    ImageGenComponent,
     SearchFiltersComponent,
     ListSelectComponent,
     IconComponent,
@@ -45,13 +47,13 @@ const EXPORTS = [
     PopupComponent,
     MarkdownDirective,
     DictionaryDefinitionComponent,
-    TooltipDirective
+    TooltipDirective,
+    HighlightDirective
 ];
 
 export const COMMON_IMPORTS = [
     LazyLoadImageModule,
-    InfiniteScrollModule,
-    DeferLoadModule
+    InfiniteScrollModule
 ]
 
 @NgModule({

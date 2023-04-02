@@ -9,6 +9,8 @@ public interface IDbService
 	IAiRequestDbService AiRequests { get; }
 	IMangaDbService Manga { get; }
 	IChapterDbService Novels { get; }
+
+	IChatDbService Chat { get; }
 }
 
 public class DbService : IDbService
@@ -20,6 +22,7 @@ public class DbService : IDbService
 	public IMangaDbService Manga { get; }
 	public IAiRequestDbService AiRequests { get; }
 	public IChapterDbService Novels { get; }
+	public IChatDbService Chat { get; }
 
 	public DbService(IAnimeDbService anime,
 		IListDbService lists, 
@@ -27,7 +30,8 @@ public class DbService : IDbService
 		IProfileDbService profiles,
 		IAiRequestDbService aiRequests,
 		IMangaDbService manga,
-		IChapterDbService novels)
+		IChapterDbService novels,
+		IChatDbService chat)
 	{
 		Anime = anime;
 		Lists = lists;
@@ -36,5 +40,6 @@ public class DbService : IDbService
 		AiRequests = aiRequests;
 		Manga = manga;
 		Novels = novels;
+		Chat = chat;
 	}
 }

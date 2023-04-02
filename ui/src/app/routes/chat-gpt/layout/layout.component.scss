@@ -1,0 +1,82 @@
+aside {
+    width: 300px;
+    background-color: var(--bg-card);
+    overflow: hidden;
+    display: flex;
+    flex-flow: column;
+
+    header {
+        display: flex;
+        flex-flow: row;
+        padding: 5px 0;
+
+        .title {
+            margin: auto 5px;
+            flex: 1;
+            font-size: 24px;
+        }
+
+        a {
+            margin: auto 5px;
+            text-decoration: none;
+            border-radius: 50%;
+
+            &.active {
+                background-color: var(--def-color);
+            }
+        }
+    }
+
+    .chats {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+        display: flex;
+        flex-flow: column;
+
+        a {
+            padding: 10px;
+            display: flex;
+            flex-flow: row;
+            text-decoration: none;
+            border: 1px solid transparent;
+
+            img {
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                margin: auto 0;
+            }
+
+            .content {
+                flex: 1;
+                display: flex;
+                flex-flow: column;
+                margin: auto 5px;
+                overflow: hidden;
+
+                .title {
+                    overflow-x: hidden;
+                    font-weight: bolder;
+                    text-overflow: ellipsis;
+                    white-space: pre;
+                }
+            }
+
+            &.active {
+                background-color: var(--def-color);
+            }
+
+            &:hover {
+                border-top-color: var(--brd-color-accent);
+                border-bottom-color: var(--brd-color-accent);
+            }
+        }
+    }
+}
+
+main {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}

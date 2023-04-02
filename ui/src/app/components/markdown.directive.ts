@@ -1,6 +1,14 @@
 import { Directive, ElementRef, Input } from "@angular/core";
 import { marked } from 'marked';
 
+import * as hljs from 'highlight.js';
+
+marked.setOptions({
+    highlight: (code, lang) => {
+        return hljs.default.highlight(lang, code).value;
+    }
+})
+
 @Directive({
     selector: '[markdown]'
 })

@@ -1,7 +1,5 @@
 <cba-container [requires-login]="true" [requires-admin]="true">
-    <div class="image-results" *ngFor="let image of images" (deferLoad)="image.show = true">
-        <ng-container *ngIf="image.show">
-            <img [src]="image.url" />
-        </ng-container>
+    <div class="image-results" *ngFor="let image of images">
+        <img [src]="image.url" />
     </div>
 </cba-container>

@@ -1,0 +1,75 @@
+<cba-container [loading]="loading" [error]="error" [requires-login]="true">
+    <div class="container" *ngIf="data$ | async as chat">
+        <header>
+            <h2>Conversation</h2>
+            <button class="btn icon">
+                <cba-icon>delete</cba-icon>
+            </button>
+        </header>
+        <main *ngIf="user" #scrollMe>
+            <div class="message grounder" *ngIf="chat.chat.grounder">
+                <img src="/assets/twirl.gif" />
+                <div class="content">
+                    <div class="title">
+                        <p class="username">System</p>
+                        <p class="tag">Grounder</p>
+                        <p class="date">{{ chat.chat.createdAt | date:'yyyy-MM-dd HH:mm' }}</p>
+                    </div>
+                    <div class="marked-container" [markdown]="chat.chat.grounder"></div>
+                </div>
+            </div>
+            <ng-container *ngFor="let msg of messages; let i = index" [ngSwitch]="msg.type">
+                <div class="message user" *ngSwitchCase="0" (text-highlighted)="textHighlighted($event, i)">
+                    <img [src]="user.avatar" />
+                    <div class="content">
+                        <div class="title">
+                            <p class="username">{{ user.nickname }}</p>
+                            <p class="tag">User</p>
+                            <p class="date">{{ msg.createdAt | date:'yyyy-MM-dd HH:mm' }}</p>
+                        </div>
+                        <div class="marked-container" [markdown]="msg.content"></div>
+                    </div>
+                </div>
+
+                <div class="message system" *ngSwitchCase="1" (text-highlighted)="textHighlighted($event, i)">
+                    <img src="/assets/loading.gif" />
+                    <div class="content">
+                        <div class="title">
+                            <p class="username">Bot</p>
+                            <p class="tag">ChatGPT</p>
+                            <p class="date">{{ msg.createdAt | date:'yyyy-MM-dd HH:mm' }}</p>
+                        </div>
+                        <div class="marked-container" [markdown]="msg.content"></div>
+                    </div>
+                </div>
+            </ng-container>
+
+            <div class="alert thinking" *ngIf="msgLoading">
+                <div class="content">
+                    <img src="/assets/loading.gif" />
+                    <p>One sec, I'm thinking!</p>
+                </div>
+            </div>
+            <div class="alert error" *ngIf="msgError">
+                <div class="content">
+                    <img src="/assets/error.gif" />
+                    <p class="marked-container" [markdown]="msgError"></p>
+                </div>
+            </div>
+        </main>
+        <footer>
+            <textarea placeholder="Type a message" [readOnly]="msgLoading" (keyup.enter)="send()" [(ngModel)]="content"></textarea>
+        </footer>
+    </div>
+    <div class="highlight-popup" *ngIf="select" [style.top]="(select.position.y) + 'px'" [style.left]="(select.position.x + (select.position.width / 2)) + 'px'">
+        <button cba-tooltip="Dictionary Lookup" direction="up" (click)="dicLookup()">
+            <cba-icon>menu_book</cba-icon>
+        </button>
+        <button cba-tooltip="Generate AI Image" direction="up" (click)="genImage()">
+            <cba-icon>add_photo_alternate</cba-icon>
+        </button>
+    </div>
+</cba-container>
+
+<cba-dictionary-definition></cba-dictionary-definition>
+<cba-image-gen></cba-image-gen>

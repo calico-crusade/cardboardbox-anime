@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Anime, List, ListMapItem } from './anime/anime.model';
 import { saveAs } from "file-saver";
 import { HttpClient, HttpResponse } from '@angular/common/http';
-import { catchError, Observable, of, Subscription, tap } from "rxjs";
+import { BehaviorSubject, catchError, Observable, of, Subscription, tap, mergeMap, shareReplay } from "rxjs";
 
 export class SubscriptionHandler {
     subscriptions: Subscription[] = [];
@@ -126,5 +126,23 @@ export class UtilitiesService {
                 if (t.body) saveAs(t.body, filename);
             })
         );
+    }
+}
+
+export class CachedObservable<T> {
+    private _subject = new BehaviorSubject<void>(undefined);
+    private _request = this._fn();
+
+    data = this._subject.pipe(
+        mergeMap(() => this._request),
+        shareReplay(1)
+    );
+
+    constructor(
+        private _fn: () => Observable<T>
+    ) { }
+
+    invalidate() {
+        this._subject.next();
     }
 }

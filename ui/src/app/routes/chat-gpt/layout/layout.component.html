@@ -1,0 +1,22 @@
+<cba-container [loading]="loading" [error]="error">
+    <aside *ngIf="chats$ | async as chats">
+        <header>
+            <div class="title">Conversations</div>
+            <a routerLink="/chat/new" routerLinkActive="active">
+                <cba-icon>add</cba-icon>
+            </a>
+        </header>
+        <div class="chats">
+            <a *ngFor="let chat of chats" [routerLink]="['/chat', chat.id ]" routerLinkActive="active">
+                <img [src]="user?.avatar" />
+                <div class="content">
+                    <div class="title">{{ chat.grounder }}</div>
+                    <div class="footer">{{ chat.createdAt | date:'yyyy-MM-dd HH:mm:sss' }}</div>
+                </div>
+            </a>
+        </div>
+    </aside>
+    <main>
+        <router-outlet></router-outlet>
+    </main>
+</cba-container>

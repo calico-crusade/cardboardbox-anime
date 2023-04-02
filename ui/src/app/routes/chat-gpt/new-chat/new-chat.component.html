@@ -1,0 +1,9 @@
+<cba-container [loading]="loading" [error]="error" [requires-login]="true">
+    <div class="center">
+        <h2>Start a New Conversation</h2>
+        <textarea placeholder="[Optional] Initial Prompt / Grounder" [(ngModel)]="content"></textarea>
+        <button class="btn" (click)="post()">
+            <cba-icon>navigate_next</cba-icon>
+        </button>
+    </div>
+</cba-container>

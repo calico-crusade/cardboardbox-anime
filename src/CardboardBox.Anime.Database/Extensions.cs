@@ -72,15 +72,15 @@ public static class Extensions
 			 .ForEntity<DbListMap>()
 			 .ForEntity<DbListMapStripped>()
 			 .ForEntity<DbDiscordGuildSettings>()
-			 
+
 			 .ForEntity<DbChapter>()
 			 .ForEntity<DbBook>()
 			 .ForEntity<DbChapterLimited>()
 
 			 .ForEntity<DbAiRequest>()
-			 
+
 			 .ForEntity<CompPublicList>()
-			 
+
 			 .ForEntity<DbManga>()
 			 .ForEntity<DbMangaChapter>()
 			 .ForEntity<DbMangaProgress>()
@@ -88,7 +88,10 @@ public static class Extensions
 			 .ForEntity<DbMangaFavourite>()
 			 .ForEntity<DbMangaAttribute>()
 			 .ForEntity<MangaStats>()
-			 .ForEntity<GraphOut>();
+			 .ForEntity<GraphOut>()
+
+			 .ForEntity<DbChat>()
+			 .ForEntity<DbChatMessage>();
 		});
 
 		MapConfig.StartMap();
@@ -105,6 +108,7 @@ public static class Extensions
 			.AddTransient<IMangaDbService, MangaDbService>()
 			.AddTransient<IMangaCacheDbService, MangaCacheDbService>()
 			.AddTransient<IDiscordGuildDbService, DiscordGuildDbService>()
+			.AddTransient<IChatDbService, ChatDbService>()
 
 			.AddTransient<IAiRequestDbService, AiRequestDbService>()
 			

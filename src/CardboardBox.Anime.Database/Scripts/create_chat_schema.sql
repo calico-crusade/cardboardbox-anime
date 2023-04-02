@@ -1,0 +1,26 @@
+﻿CREATE TABLE chat (
+	id BIGSERIAL PRIMARY KEY,
+	profile_id BIGINT NOT NULL REFERENCES profiles(id),
+
+	status INT NOT NULL,
+	grounder TEXT,
+
+	created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	deleted_at TIMESTAMP
+);
+
+CREATE TABLE chat_message (
+	id BIGSERIAL PRIMARY KEY,
+
+	chat_id BIGINT NOT NULL REFERENCES chat(id),
+	profile_id BIGINT REFERENCES profiles(id),
+
+	type INT NOT NULL,
+	content TEXT NOT NULL,
+	image_id BIGINT REFERENCES ai_requests(id),
+
+	created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	deleted_at TIMESTAMP
+);

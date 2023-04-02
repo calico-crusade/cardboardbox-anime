@@ -56,7 +56,8 @@
             "styles": [
               "src/styles/styles.scss",
               "src/styles/overlay.scss",
-              "src/assets/fonts/animeace.css"
+              "src/assets/fonts/animeace.css",
+              "node_modules/highlight.js/styles/vs2015.css"
             ],
             "scripts": [],
             "serviceWorker": true,

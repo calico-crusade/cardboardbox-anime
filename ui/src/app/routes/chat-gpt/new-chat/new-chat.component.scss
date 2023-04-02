@@ -1,0 +1,25 @@
+.center {
+    margin: auto;
+    background-color: var(--bg-card);
+    border-radius: 10px;
+    display: flex;
+    flex-flow: column;
+    padding: 10px;
+
+    textarea {
+        resize: none;
+        background-color: var(--bg-accent);
+        outline: none;
+        border: 1px solid var(--brd-color-accent);
+        height: 100px;
+        color: var(--text-color);
+        padding: 5px;
+        border-radius: 5px;
+        width: 400px;
+        max-width: 80vw;
+    }
+
+    button {
+        margin-left: auto;
+    }
+}
