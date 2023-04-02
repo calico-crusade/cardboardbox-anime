@@ -11,60 +11,29 @@ main {
         overflow-y: auto;
         overflow-x: hidden;
 
-        .property {
-            display: flex;
-            flex-flow: row;
-
-            .title {
-                min-width: 150px;
-                margin: auto 5px;
-            }
-
-            .value {
-                margin: 5px;
-                flex: 1;
-                display: flex;
-
-                input, textarea {
-                    flex: 1;
-                    padding: 5px 10px;
-                    border: 1px solid var(--def-color);
-                    outline: none;
-                    background-color: transparent;
-                    color: var(--text-color);
-                    border-radius: 5px;
-                }
-
-                textarea {
-                    height: 100px;
-                    resize: none;
+        .generator {
+            .grid {
+                .form-control {
+                    .note { display: none; }
+                    &.advanced { display: none; }
                 }
             }
-
-            .split {
-                flex: 1;
-                display: flex;
-                flex-flow: row;
-
-                .title {
-                    flex: 1;
-                }
-
-                .value {
-                    flex: unset;
+            
+            &.advanced {
+                .grid {
+                    .form-control { display: flex; }
                 }
             }
-
-            &.fit {
-                flex-flow: column;
+        
+            &.hints {
+                .grid {
+                    .form-control {
+                        .note {
+                            display: inline-block;
+                        }
+                    }
+                }
             }
-        }
-
-        .notes {
-            width: 100%;
-            font-size: 13px;
-            text-align: right;
-            color: var(--text-color-muted);
         }
 
         .submit {

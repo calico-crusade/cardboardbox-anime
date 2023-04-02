@@ -1,0 +1,51 @@
+.form-control {
+    display: flex;
+    flex-flow: column;
+    padding: 5px;
+
+    &:not(.checkbox) {
+        input {
+            outline: none;
+            border: 1px solid var(--brd-color-accent);
+            background-color: transparent;
+            padding: 5px;
+            border-radius: 5px;
+            color: var(--text-color);
+        }
+    }
+
+    textarea {
+        resize: none;
+        height: 125px;
+        width: calc(100% - 15px);
+        min-width: 350px;
+        outline: none;
+        border: 1px solid var(--brd-color-accent);
+        background-color: transparent;
+        padding: 5px;
+        border-radius: 5px;
+        color: var(--text-color);
+    }
+
+    .note {
+        color: var(--text-color-muted);
+        font-size: 12px;
+        margin: 0;
+    }
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .5rem;
+
+    &.by-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+    &.by-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    &.by-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+@media only screen and (max-width: 775px) {
+    .grid {
+        grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+    }
+}

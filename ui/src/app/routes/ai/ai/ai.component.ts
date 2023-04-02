@@ -19,6 +19,7 @@ export class AiComponent implements OnInit, OnDestroy {
 
     img: boolean = false;
     hints: boolean = false;
+    advanced: boolean = true;
 
     request: AiRequestImg2Img = this.clone(DEFAULT_REQUEST);
 
