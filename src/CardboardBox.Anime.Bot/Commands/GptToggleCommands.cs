@@ -1,14 +1,17 @@
 ﻿namespace CardboardBox.Anime.Bot.Commands;
 
+using Match;
 using Services;
 
 public class GptToggleCommands
 {
 	private readonly IDbService _db;
+	private readonly INsfwApiService _nsfw;
 	
-	public GptToggleCommands(IDbService db)
+	public GptToggleCommands(IDbService db, INsfwApiService nsfw)
 	{
 		_db = db;
+		_nsfw = nsfw;
 	}
 
 	[GuildCommand("gpt-check", "Checks whether or not a guild or user is authorized to use the ChatGPT api", 
@@ -135,4 +138,5 @@ public class GptToggleCommands
 		var validate = await _db.Gpt.ValidateUser(userId, guildId, Array.Empty<ulong>());
 		await cmd.Modify($"User is {(validate ? "" : "un")}authoried");
 	}
+
 }

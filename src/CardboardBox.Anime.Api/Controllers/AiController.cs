@@ -7,6 +7,7 @@ namespace CardboardBox.Anime.Api.Controllers;
 using AI;
 using Auth;
 using Database;
+using Match;
 using Http;
 
 [ApiController, Authorize]
@@ -17,22 +18,25 @@ public class AiController : ControllerBase
 	public const long MAX_STEPS = 64, MIN_STEPS = 1,
 					  MIN_SIZE = 64, MAX_SIZE = 1024;
 	public const double MAX_CFG = 32, MIN_CFG = 1, 
-					    MAX_DENOISE = 1.0, MIN_DENOISE = 0.1;		
+					    MAX_DENOISE = 1.0, MIN_DENOISE = 0.1;
 
 	private readonly IAiAnimeService _ai;
 	private readonly IApiService _api;
 	private readonly IDbService _db;
+	private readonly INsfwApiService _nsfw;
 
 	private static string ImageDir => Path.Combine("wwwroot", "image-cache");
 
 	public AiController(
 		IAiAnimeService ai, 
 		IApiService api,
-		IDbService db)
+		IDbService db,
+		INsfwApiService nsfw)
 	{
 		_ai = ai;
 		_api = api;
 		_db = db;
+		_nsfw = nsfw;
 	}
 
 	[HttpGet, Route("ai/{id}")]
@@ -195,6 +199,13 @@ public class AiController : ControllerBase
 			.GetFiles(ImageDir)
 			.Select(t => string.Join("/", t.Split('/', '\\').Skip(1)))
 			.ToArray());
+	}
+
+	[HttpGet, Route("ai/nsfw")]
+	public async Task<IActionResult> Nsfw([FromQuery]string url)
+	{
+		var classifiction = await _nsfw.Get(url);
+		return Ok(classifiction);
 	}
 
 	private IActionResult? Validate(AiRequest request)

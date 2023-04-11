@@ -96,3 +96,8 @@ services:
       - ./persist:/app/persist
     depends_on:
       - cba-api
+  cba-manga-web:
+    image: pull ghcr.io/calico-crusade/cardboardbox-anime-vue/nuxt:latest
+    restart: always
+    ports:
+      - 8894:3000

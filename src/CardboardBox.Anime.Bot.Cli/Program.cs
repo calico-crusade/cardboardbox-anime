@@ -1,6 +1,7 @@
 ﻿using CardboardBox.Anime.AI;
 using CardboardBox.Anime.Bot;
 using CardboardBox.Anime.Bot.Commands;
+using CardboardBox.Anime.Bot.Commands.Nsfw;
 using CardboardBox.Anime.Bot.Services;
 using CardboardBox.Anime.Holybooks;
 using CardboardBox.Discord;
@@ -30,6 +31,7 @@ var bot = DiscordBotBuilder.Start()
 	{
 		c.With<HolybookCommands>()
 		 .With<MangaCommand>()
+		 .With<NsfwCommands>()
 		 .With<GptToggleCommands>()
 		 .WithComponent<MangaSearchComponent>()
 		 .WithComponent<MangaReadComponent>()

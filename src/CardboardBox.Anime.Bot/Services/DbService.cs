@@ -5,6 +5,8 @@ public interface IDbService
 	ILookupDbService Lookup { get; }
 
 	IGptDbService Gpt { get; }
+
+	INsfwConfigDbService Nsfw { get; }
 }
 
 public class DbService : IDbService
@@ -13,9 +15,15 @@ public class DbService : IDbService
 
 	public IGptDbService Gpt { get; }
 
-	public DbService(ILookupDbService lookup, IGptDbService gpt)
+	public INsfwConfigDbService Nsfw { get; }
+
+	public DbService(
+		ILookupDbService lookup, 
+		IGptDbService gpt, 
+		INsfwConfigDbService nsfw)
 	{
 		Lookup = lookup;
 		Gpt = gpt;
+		Nsfw = nsfw;
 	}
 }

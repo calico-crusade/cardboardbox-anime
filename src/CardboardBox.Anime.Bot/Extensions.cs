@@ -1,6 +1,7 @@
 ﻿namespace CardboardBox.Anime.Bot;
 
 using ChatGPT;
+using Commands.Nsfw;
 using Database.Mapping;
 using Database.Generation;
 using Services;
@@ -77,15 +78,22 @@ public static class Extensions
 		MapConfig.AddMap(c =>
 		{
 			c.ForEntity<LookupRequest>()
-			 .ForEntity<GptAuthorized>();
+			 .ForEntity<GptAuthorized>()
+			 .ForEntity<NsfwConfig>();
 		});
 
 		MapConfig.StartMap();
 
 		SqlMapper.RemoveTypeMap(typeof(DateTime));
 		SqlMapper.RemoveTypeMap(typeof(DateTime?));
+		SqlMapper.RemoveTypeMap(typeof(string[]));
+		SqlMapper.RemoveTypeMap(typeof(bool));
+		SqlMapper.RemoveTypeMap(typeof(bool?));
 		SqlMapper.AddTypeHandler(new DateTimeHandler());
 		SqlMapper.AddTypeHandler(new NullableDateTimeHandler());
+		SqlMapper.AddTypeHandler(new DefaultJsonHandler<string[]>(() => Array.Empty<string>()));
+		SqlMapper.AddTypeHandler(new BooleanHandler());
+		SqlMapper.AddTypeHandler(new NullableBooleanHandler());
 
 		return services
 			.AddSingleton<ISqlService, SqliteService>()
@@ -93,6 +101,8 @@ public static class Extensions
 			.AddTransient<IDbService, DbService>()
 			.AddTransient<ILookupDbService, LookupDbService>()
 			.AddTransient<IGptDbService, GptDbService>()
-			.AddTransient<IChatGptService, ChatGptService>();
+			.AddTransient<INsfwConfigDbService, NsfwConfigDbService>()
+			.AddTransient<IChatGptService, ChatGptService>()
+			.AddTransient<INsfwService, NsfwService>();
 	}
 }
