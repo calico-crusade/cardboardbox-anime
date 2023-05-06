@@ -4,6 +4,8 @@ using ChatGPT;
 using Services;
 
 using Match = System.Text.RegularExpressions.Match;
+using CMsg = Cacheable<IUserMessage, ulong>;
+using CChn = Cacheable<IMessageChannel, ulong>;
 
 public class EasterEggs
 {
@@ -36,12 +38,31 @@ public class EasterEggs
 	public Task Setup()
 	{
 		_client.MessageReceived += _client_MessageReceived;
+		_client.ReactionAdded += _client_ReactionAdded;
 		return Task.CompletedTask;
+	}
+
+	private Task _client_ReactionAdded(CMsg message, CChn channel, SocketReaction reaction)
+	{
+		return Task.Run(() => HandOff(message, channel, reaction));
 	}
 
 	private Task _client_MessageReceived(SocketMessage arg)
 	{
 		return Task.Run(() => HandOff(arg));
+	}
+
+	public async void HandOff(CMsg message, CChn channel, SocketReaction reaction)
+	{
+		var emotes = new[] { "🍝", "🔍", "🔎" };
+		if (!reaction.User.IsSpecified || 
+			reaction.User.Value.IsBot || 
+			!emotes.Contains(reaction.Emote.Name)) return;
+
+		var msg = await message.GetOrDownloadAsync();
+		var chn = await channel.GetOrDownloadAsync();
+
+		await _lookup.HandleEmojiLookup(msg, chn, reaction);
 	}
 
 	public async void HandOff(SocketMessage arg)

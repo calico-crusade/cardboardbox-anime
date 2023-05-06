@@ -3,6 +3,8 @@
 public interface IMangaLookupService
 {
 	Task HandleLookup(IMessage msg, SocketMessage rpl, MessageReference refe);
+
+	Task HandleEmojiLookup(IMessage msg, IMessageChannel channel, SocketReaction reaction);
 }
 
 public class MangaLookupService : IMangaLookupService
@@ -22,6 +24,58 @@ public class MangaLookupService : IMangaLookupService
 		_logger = logger;
 		_manga = manga;
 		_db = db;
+	}
+
+	public async Task HandleEmojiLookup(IMessage msg, IMessageChannel channel, SocketReaction reaction)
+	{
+		var img = DetermineUrl(msg);
+		if (img == null) return;
+
+		if (reaction.Channel is not SocketGuildChannel guild) return;
+
+		var settings = await _api.Settings(guild.Guild.Id);
+		if (settings == null || !settings.EnableLookup) return;
+
+		string messageId = msg.Id.ToString(),
+			guildId = guild.Guild.Id.ToString(),
+			channelId = guild.Id.ToString(),
+			authorId = reaction.UserId.ToString();
+
+		var existing = await _db.Lookup.Fetch(messageId);
+		if (existing != null && !string.IsNullOrEmpty(existing.Results))
+		{
+			await HandleIdiots(guild, msg, authorId, existing);
+			return;
+		}
+
+		var mod = await msg.Channel.SendMessageAsync($"<@{authorId}> <a:loading:1048471999065903244> Processing your request...");
+
+		existing = new LookupRequest
+		{
+			MessageId = messageId,
+			GuildId = guildId,
+			ChannelId = channelId,
+			AuthorId = authorId,
+			ImageUrl = img,
+			Results = null,
+			ResponseId = mod.Id.ToString(),
+		};
+		existing.Id = await _db.Lookup.Upsert(existing);
+
+		try
+		{
+			await DoSearch(mod, img, existing);
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, $"Error occurred during manga lookup: {img}");
+			await mod.ModifyAsync(t =>
+			{
+				t.Content = "Something went wrong! " +
+					"Contact Cardboard for more assistance or try again later!\r\n" +
+					"Error Message: " + ex.Message;
+			});
+		}
 	}
 
 	public async Task HandleLookup(IMessage msg, SocketMessage rpl, MessageReference refe)
@@ -101,7 +155,7 @@ public class MangaLookupService : IMangaLookupService
 		await _db.Lookup.Upsert(data);
 		if (search == null || !search.Success)
 		{
-			await msg.ModifyAsync(t => t.Content = "I couldn't find any results that matched that image :(");
+			await msg.ModifyAsync(t => t.Content = $"<@{data.AuthorId}> I couldn't find any results that matched that image :(");
 			return;
 		}
 
@@ -111,14 +165,14 @@ public class MangaLookupService : IMangaLookupService
 		if (fallback != null && fallback.Manga != null && 
 			(fallback.Score > 90 || fallback.ExactMatch))
 		{
-			await PrintFallback(msg, fallback);
+			await PrintFallback(msg, fallback, data);
 			return;
 		}
 
-		await PrintOld(msg, imgUrl, search);
+		await PrintOld(msg, imgUrl, search, data);
 	}
 
-	public async Task PrintFallback(IUserMessage msg, FallbackResult result)
+	public async Task PrintFallback(IUserMessage msg, FallbackResult result, LookupRequest data)
 	{
 		if (result.Manga == null) return;
 
@@ -147,11 +201,11 @@ public class MangaLookupService : IMangaLookupService
 		await msg.ModifyAsync(t =>
 		{
 			t.Embed = embed.Build();
-			t.Content = "Here you go:";
+			t.Content = $"<@{data.AuthorId}>, Here you go:";
 		});
 	}
 
-	public async Task PrintOld(IUserMessage mod, string img, ImageSearchResults search)
+	public async Task PrintOld(IUserMessage mod, string img, ImageSearchResults search, LookupRequest data)
 	{
 		var embeds = new List<Embed>();
 
@@ -194,7 +248,7 @@ public class MangaLookupService : IMangaLookupService
 		await mod.ModifyAsync(t =>
 		{
 			t.Embeds = embeds.ToArray();
-			t.Content = "Here you go:";
+			t.Content = $"<@{data.AuthorId}>, Here you go:";
 		});
 	}
 
