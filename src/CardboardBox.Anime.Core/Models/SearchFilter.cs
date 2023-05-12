@@ -64,6 +64,9 @@ public class MangaFilter : SearchFilter
 	[JsonPropertyName("exclude")]
 	public string[] Exclude { get; set; } = Array.Empty<string>();
 
+	[JsonPropertyName("sources")]
+	public string[] Sources { get; set; } = Array.Empty<string>();
+
 	[JsonPropertyName("sort")]
 	public int? Sort { get; set; }
 
@@ -72,6 +75,9 @@ public class MangaFilter : SearchFilter
 
 	[JsonPropertyName("nsfw")]
 	public NsfwCheck Nsfw { get; set; } = NsfwCheck.Sfw;
+
+	[JsonPropertyName("attributes")]
+	public MangaAttributeFilter[] Attributes { get; set; } = Array.Empty<MangaAttributeFilter>();
 
 	public void Deconstruct(
 		out int page, out int size, out string? search,
@@ -87,6 +93,18 @@ public class MangaFilter : SearchFilter
 	}
 }
 
+public class MangaAttributeFilter
+{
+	[JsonPropertyName("type")]
+	public AttributeType Type { get; set; }
+
+	[JsonPropertyName("include")]
+	public bool Include { get; set; } = true;
+
+	[JsonPropertyName("values")]
+	public string[] Values { get; set; } = Array.Empty<string>();
+}
+
 public abstract class SearchFilter
 {
 	[JsonPropertyName("page")]
@@ -100,6 +118,13 @@ public abstract class SearchFilter
 
 	[JsonPropertyName("asc")]
 	public bool Ascending { get; set; } = true;
+}
+
+public enum AttributeType
+{
+	ContentRating = 1,
+	OriginalLanguage = 2,
+	Status = 3,
 }
 
 public enum NsfwCheck

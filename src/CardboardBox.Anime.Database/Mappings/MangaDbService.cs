@@ -232,13 +232,36 @@ WHERE
 		const string QUERY = @"SELECT
     *
 FROM (
-    SELECT 
-        DISTINCT 
+    SELECT
+        DISTINCT
         'tag' as key,
         unnest(tags) as value
     FROM manga
-	WHERE nsfw = False) x 
-ORDER BY key, value";
+	WHERE nsfw = False
+
+	UNION ALL
+
+	SELECT
+        DISTINCT
+        lower((attr).name) as key,
+        (attr).value as value
+    FROM (
+        SELECT
+            DISTINCT
+            unnest(attributes) as attr
+        FROM manga
+    ) z
+    WHERE (attr).name NOT IN ('Author', 'Artist')
+
+    UNION ALL
+
+    SELECT
+        DISTINCT
+        'source' as key,
+        provider as value
+    FROM manga
+) x
+ORDER BY key, value;";
 		var filters = await _sql.Get<DbFilter>(QUERY);
 		return filters
 			.GroupBy(t => t.Key, t => t.Value)
@@ -251,9 +274,11 @@ ORDER BY key, value";
 	{
 		const string QUERY = @"CREATE TEMP TABLE touched_manga AS
 SELECT
+	DISTINCT
     t.*
 FROM get_manga(:platformId, :state) t
 JOIN manga m ON m.id = t.manga_id
+LEFT JOIN manga_attributes a ON a.id = m.id
 WHERE
     {0};
 
@@ -284,6 +309,35 @@ DROP TABLE touched_manga;";
 		pars.Add("platformId", platformId);
 		pars.Add("state", (int)filter.State);
 
+		if (filter.Attributes != null && filter.Attributes.Length > 0)
+		{
+			for (var i = 0; i < filter.Attributes.Length; i++)
+			{
+				var attr = filter.Attributes[i];
+				var name = $"attr{i}";
+				var type = attr.Type switch
+				{
+					AttributeType.ContentRating => "content rating",
+					AttributeType.Status => "status",
+					AttributeType.OriginalLanguage => "original language",
+					_ => null
+				};
+
+				if (type == null || attr.Values == null || attr.Values.Length == 0) continue;
+
+				pars.Add(name + "val", attr.Values);
+				pars.Add(name + "type", type);
+
+				if (attr.Include)
+				{
+					parts.Add($"(LOWER(a.name) = :{name}type AND a.value = ANY( :{name}val ))");
+					continue;
+				}
+
+				parts.Add($"(LOWER(a.name) = :{name}type AND NOT (a.value = ANY( :{name}val )))");
+			}
+		}
+
 		if (!string.IsNullOrEmpty(filter.Search))
 		{
 			parts.Add("m.fts @@ phraseto_tsquery('english', :search)");
@@ -294,6 +348,12 @@ DROP TABLE touched_manga;";
 		{
 			parts.Add("m.tags @> :include");
 			pars.Add("include", filter.Include);
+		}
+
+		if (filter.Sources != null && filter.Sources.Length > 0)
+		{
+			parts.Add("m.provider = ANY( :source )");
+			pars.Add("source", filter.Sources);
 		}
 
 		if (filter.Exclude != null && filter.Exclude.Length > 0)
