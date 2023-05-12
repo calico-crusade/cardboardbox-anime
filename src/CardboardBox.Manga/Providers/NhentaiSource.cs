@@ -61,6 +61,7 @@ public class NhentaiSource : INhentaiSource
 		{
 			Title = doc.InnerText("//div[@id='info']/h1")?.Trim() ?? "",
 			Id = id,
+			Referer = HomeUrl,
 			Provider = Provider,
 			HomePage = url,
 			Cover = doc.Attribute("//div[@id='cover']/a/img", "src") ?? "",

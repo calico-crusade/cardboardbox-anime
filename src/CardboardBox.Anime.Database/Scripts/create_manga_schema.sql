@@ -102,7 +102,7 @@ CREATE TABLE manga_favourites (
     CONSTRAINT uiq_manga_favourites UNIQUE(profile_id, manga_id)
 );
 
-CREATE MATERIALIZED VIEW manga_attributes
+CREATE VIEW manga_attributes
 AS
     SELECT
         DISTINCT
@@ -111,15 +111,3 @@ AS
         (unnest(attributes)).name as name,
         (unnest(attributes)).value as value
     FROM manga;
-
-CREATE OR REPLACE FUNCTION refresh_manga_attributes()
-RETURNS trigger LANGUAGE plpgsql AS $$
-BEGIN
-    REFRESH MATERIALIZED VIEW CONCURRENTLY manga_attributes;
-    RETURN NULL;
-END;
-$$
-
-CREATE TRIGGER manga_attributes_trigger
-AFTER INSERT OR UPDATE OR DELETE ON manga
-FOR EACH STATEMENT EXECUTE PROCEDURE refresh_manga_attributes();
