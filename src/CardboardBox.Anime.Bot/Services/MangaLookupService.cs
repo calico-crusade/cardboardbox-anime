@@ -28,8 +28,6 @@ public class MangaLookupService : IMangaLookupService
 
 	public async Task HandleEmojiLookup(IMessage msg, IMessageChannel channel, SocketReaction reaction)
 	{
-		await Task.Delay(1000);
-
 		var img = DetermineUrl(msg);
 		if (img == null) return;
 
