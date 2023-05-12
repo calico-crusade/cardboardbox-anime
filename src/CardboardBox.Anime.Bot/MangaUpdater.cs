@@ -76,7 +76,14 @@ public class MangaUpdater
 
 		if (changes.Results.Length == 0) return;
 
-		foreach(var manga in changes.Results)
+		var filtered = changes
+			.Results
+			.Where(t => t.Manga.Provider != "nhentai" &&
+				!t.Manga.Attributes.Any(t =>
+					t.Name.ToLower() == "content rating" &&
+					t.Value.ToLower() == "pornographic"));
+
+		foreach(var manga in filtered)
 		foreach(var guild in guilds)
 		{
 			var embed = _util.GenerateShortEmbed(manga).Build();
@@ -95,7 +102,8 @@ public class MangaUpdater
 		//Verify that NSFW manga updates are turned on for this server
 		if (manga.Nsfw && !settings.MangaUpdatesNsfw) return;
 		//Verify that the manga is in the selected manga update ids
-		if (settings.MangaUpdatesIds.Length != 0 && !settings.MangaUpdatesIds.Contains(manga.Id.ToString())) return;
+		if (settings.MangaUpdatesIds.Length != 0 && 
+			!settings.MangaUpdatesIds.Contains(manga.Id.ToString())) return;
 		//Validate guild and channel ids
 		if (!ulong.TryParse(settings.GuildId, out var guildId) ||
 			!ulong.TryParse(settings.MangaUpdatesChannel, out var channelId))
