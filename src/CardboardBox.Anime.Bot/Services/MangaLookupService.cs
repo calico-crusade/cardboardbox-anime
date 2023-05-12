@@ -28,6 +28,8 @@ public class MangaLookupService : IMangaLookupService
 
 	public async Task HandleEmojiLookup(IMessage msg, IMessageChannel channel, SocketReaction reaction)
 	{
+		await Task.Delay(1000);
+
 		var img = DetermineUrl(msg);
 		if (img == null) return;
 
@@ -48,7 +50,15 @@ public class MangaLookupService : IMangaLookupService
 			return;
 		}
 
-		var mod = await msg.Channel.SendMessageAsync($"<@{authorId}> <a:loading:1048471999065903244> Processing your request...");
+		var men = AllowedMentions.None;
+		men.MentionRepliedUser = false;
+
+		var rpl = new MessageReference(msg.Id, channel.Id, guild.Guild.Id);
+
+		var mod = await msg.Channel.SendMessageAsync(
+			$"<@{authorId}> <a:loading:1048471999065903244> Processing your request...", 
+			allowedMentions: men,
+			messageReference: rpl);
 
 		existing = new LookupRequest
 		{
