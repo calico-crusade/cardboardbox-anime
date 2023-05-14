@@ -22,4 +22,7 @@ public class DbProfile : DbObject
 
 	[JsonPropertyName("providerId")]
 	public string ProviderId { get; set; } = string.Empty;
+
+	[JsonPropertyName("settingsBlob")]
+	public string SettingsBlob { get; set; } = string.Empty;
 }

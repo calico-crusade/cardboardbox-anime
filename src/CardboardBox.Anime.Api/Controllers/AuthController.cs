@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace CardboardBox.Anime.Api.Controllers;
 
@@ -25,6 +24,7 @@ public class AuthController : ControllerBase
 	}
 
 	[HttpGet, Route("auth/{code}")]
+	[ProducesDefaultResponseType(typeof(AuthUserResponse))]
 	public async Task<IActionResult> Auth(string code)
 	{
 		var res = await _auth.ResolveCode(code);
@@ -49,38 +49,40 @@ public class AuthController : ControllerBase
 
 		var roles = profile.Admin ? new[] { "Admin" } : Array.Empty<string>();
 		var token = _token.GenerateToken(res, roles);
-		
 
-		return Ok(new
+		var user = (AuthUserResponse.UserData)profile;
+
+		return Ok(new AuthUserResponse
 		{
-			user = new
-			{
-				roles,
-				nickname = res.User.Nickname,
-				avatar = res.User.Avatar,
-				id = res.User.Id,
-				email = res.User.Email
-			},
-			token,
-			id
+			User = user,
+			Id = profile.Id,
+			Token = token,
 		});
 	}
 
 	[HttpGet, Route("auth"), Authorize]
-	public IActionResult Me()
+	[ProducesDefaultResponseType(typeof(AuthUserResponse.UserData))]
+	public async Task<IActionResult> Me()
 	{
 		var user = this.UserFromIdentity();
 		if (user == null) return Unauthorized();
 
-		var roles = User.Claims.Where(t => t.Type == ClaimTypes.Role).Select(t => t.Value).ToArray();
+		var profile = await _db.Profiles.Fetch(user.Id);
+		if (profile == null) return NotFound();
 
-		return Ok(new
-		{
-			roles,
-			nickname = user.Nickname,
-			avatar = user.Avatar,
-			id = user.Id,
-			email = user.Email
-		});
+		var data = (AuthUserResponse.UserData)profile;
+		return Ok(data);
+	}
+
+	[HttpPost, Route("auth/settings"), Authorize]
+	public async Task<IActionResult> Settings([FromBody] SettingsRequest request)
+	{
+		var user = this.UserFromIdentity();
+		if (user == null) return Unauthorized();
+
+		if (string.IsNullOrEmpty(request.Settings)) request.Settings = "{}";
+
+		await _db.Profiles.UpdateSettings(user.Id, request.Settings);
+		return Ok();
 	}
 }

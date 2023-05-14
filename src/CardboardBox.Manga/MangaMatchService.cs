@@ -21,6 +21,10 @@ public interface IMangaMatchService
 	Task<bool> IndexPage(string url, MangaMetadata metadata);
 
 	Task<(DbMangaChapter chapter, DbManga manga)> Convert(Chapter chapter, MManga manga, string[] pages);
+
+	Task<bool> IndexManga(string id);
+
+	Task<int> FixCoverArt();
 }
 
 public class MangaMatchService : IMangaMatchService
@@ -132,22 +136,40 @@ public class MangaMatchService : IMangaMatchService
 		return await Search(result, image);
 	}
 
-	public async Task IndexLatest()
+	public async Task<bool> IndexManga(string id)
 	{
-		var latest = await _md.ChaptersLatest();
+		var latest = await _md.Chapters(new ChaptersFilter
+		{
+			Manga = id
+		});
+
 		if (latest == null || latest.Data.Count == 0)
 		{
 			_logger.LogWarning("Manga match indexing: No new chapters found.");
-			return;
+			return false;
+		}
+		try
+		{
+			await IndexChapterList(latest, true);
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "An error occurred while indexing manga: {id}", id);
+			return false;
 		}
 
+		return true;
+	}
+
+	public async Task IndexChapterList(ChapterList latest, bool reindex = false)
+	{
 		await PolyfillCoverArt(latest);
 
 		var chapIds = latest.Data.Select(t => t.Id).ToArray();
 		var existings = (await _db.DetermineExisting(chapIds)).ToDictionary(t => t.chapter.SourceId);
 
 		int pageRequests = 0;
-		foreach(var chapter in latest.Data)
+		foreach (var chapter in latest.Data)
 		{
 			var existing = existings.ContainsKey(chapter.Id) ? existings[chapter.Id] : null;
 			var manga = GetMangaRel(chapter);
@@ -158,7 +180,7 @@ public class MangaMatchService : IMangaMatchService
 				continue;
 			}
 
-			if (existing != null) continue;
+			if (existing != null && !reindex) continue;
 
 			if (pageRequests >= 35)
 			{
@@ -192,9 +214,9 @@ public class MangaMatchService : IMangaMatchService
 				MangaId = manga.Id,
 			}, dbManga.Referer);
 
-			for(var i = 0; i < dbChap.Pages.Length; i++)
+			for (var i = 0; i < dbChap.Pages.Length; i++)
 			{
-				var url = dbChap.Pages[i]; 
+				var url = dbChap.Pages[i];
 				var meta = new MangaMetadata
 				{
 					Id = url.MD5Hash(),
@@ -213,6 +235,18 @@ public class MangaMatchService : IMangaMatchService
 		}
 	}
 
+	public async Task IndexLatest()
+	{
+		var latest = await _md.ChaptersLatest();
+		if (latest == null || latest.Data.Count == 0)
+		{
+			_logger.LogWarning("Manga match indexing: No new chapters found.");
+			return;
+		}
+
+		await IndexChapterList(latest);
+	}
+
 	public async Task PolyfillCoverArt(ChapterList data)
 	{
 		var ids = new List<string>();
@@ -224,7 +258,7 @@ public class MangaMatchService : IMangaMatchService
 			ids.Add(m.Id);
 		}
 
-		var manga = await _md.AllManga(ids.ToArray());
+		var manga = await _md.AllManga(ids.Distinct().ToArray());
 		if (manga == null || manga.Data.Count == 0)
 			return;
 
@@ -339,6 +373,39 @@ public class MangaMatchService : IMangaMatchService
 
 		item.Id = await _db.Upsert(item);
 		return item;
+	}
+
+	public async Task<int> FixCoverArt()
+	{
+		var badCovers = await _db.BadCoverArt();
+		if (badCovers.Length == 0)
+		{
+			_logger.LogInformation("No bad covers found!");
+			return 0;
+		}
+
+		int count = 0;
+		var chunkCounts = (int)Math.Ceiling((double)badCovers.Length / 100);
+		var chunks = badCovers.Select(t => t.SourceId).Distinct().Split(chunkCounts).ToArray();
+		foreach (var chunk in chunks)
+		{
+			var manga = await _md.AllManga(chunk);
+
+			if (manga == null || manga.Data.Count == 0)
+			{
+				_logger.LogInformation("No bad cover relationships / manga found!");
+				continue;
+			}
+
+			foreach (var m in manga.Data)
+			{
+				await Convert(m);
+				count++;
+			}
+		}
+
+		_logger.LogInformation("Bad covers fixed (hopefully?) {count}", count);
+		return count;
 	}
 }
 

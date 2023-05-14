@@ -11,7 +11,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="MangaDexSharp" Version="1.0.9" />
+	  <PackageReference Include="MangaDexSharp" Version="1.0.14" />
 	</ItemGroup>
 
 	<ItemGroup>

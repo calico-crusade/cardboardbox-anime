@@ -58,6 +58,7 @@ CREATE TABLE profiles (
     email text not null,
     provider text null,
     provider_id text null,
+    settings_blob not null DEFAULT '{}',
 
     created_at timestamp,
     updated_at timestamp,

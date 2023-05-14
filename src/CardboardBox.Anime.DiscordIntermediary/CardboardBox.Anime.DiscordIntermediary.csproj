@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="12.0.0" />
-    <PackageReference Include="Discord.Net.Rest" Version="3.8.1" />
+    <PackageReference Include="AutoMapper" Version="12.0.1" />
+    <PackageReference Include="Discord.Net.Rest" Version="3.10.0" />
   </ItemGroup>
 
   <ItemGroup>

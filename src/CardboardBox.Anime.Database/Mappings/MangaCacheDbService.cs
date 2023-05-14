@@ -18,6 +18,8 @@ public interface IMangaCacheDbService
 	Task<DbManga[]> ByIds(string[] mangaIds);
 
 	Task MergeUpdates();
+
+	Task<DbManga[]> BadCoverArt();
 }
 
 public class MangaCacheDbService : OrmMapExtended<DbManga>, IMangaCacheDbService
@@ -132,6 +134,12 @@ LEFT JOIN manga_chapter omc ON omc.source_id = mcc.source_id AND om.id = omc.man
 WHERE
     omc.id IS NULL;";
 		return _sql.Execute(QUERY);
+	}
+
+	public Task<DbManga[]> BadCoverArt()
+	{
+		const string QUERY = "SELECT * FROM manga_cache WHERE cover LIKE '%/';";
+		return _sql.Get<DbManga>(QUERY);
 	}
 }
 

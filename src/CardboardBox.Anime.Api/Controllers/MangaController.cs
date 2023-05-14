@@ -21,7 +21,7 @@ public class MangaController : ControllerBase
 	private readonly IMangaEpubService _epub;
 	private readonly IMangaImageService _image;
 	private readonly IMangaSearchService _search;
-	private readonly IMangaDexSource _mangadex;
+	private readonly IMangaMatchService _match;
 	private readonly ISauceNaoApiService _sauce;
 
 	public MangaController(
@@ -30,16 +30,16 @@ public class MangaController : ControllerBase
 		IMangaEpubService epub,
 		IMangaImageService image,
 		IMangaSearchService search,
-		IMangaDexSource mangadex,
-		ISauceNaoApiService sauce)
+		ISauceNaoApiService sauce,
+		IMangaMatchService match)
 	{
 		_manga = manga;
 		_db = db;
 		_epub = epub;
 		_image = image;
 		_search = search;
-		_mangadex = mangadex;
 		_sauce = sauce;
+		_match = match;
 	}
 
 	[HttpGet, Route("manga")]
@@ -305,6 +305,26 @@ public class MangaController : ControllerBase
 	{
 		var res = await _sauce.Get(request.ImageUrl, request.Databases);
 		return Ok(res);
+	}
+
+	[HttpGet, Route("manga/{id}/index")]
+	public async Task<IActionResult> IndexPages([FromRoute] string id)
+	{
+		var res = await _match.IndexManga(id);
+		return Ok(new
+		{
+			worked = res
+		});
+	}
+
+	[HttpGet, Route("manga/fix-bad-covers")]
+	public async Task<IActionResult> FixBadCovers()
+	{
+		var res = await _match.FixCoverArt();
+		return Ok(new
+		{
+			count = res
+		});
 	}
 }
 
