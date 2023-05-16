@@ -17,6 +17,7 @@ public static class Extensions
 			.AddTransient<IMangaClashSource, MangaClashSource>()
 			.AddTransient<INhentaiSource, NhentaiSource>()
 			.AddTransient<IBattwoSource, BattwoSource>()
+			.AddTransient<IMangaKatanaSource, MangaKatanaSource>()
 
 			.AddTransient<IMangaEpubService, MangaEpubService>()
 			.AddTransient<IMangaImageService, MangaImageService>()

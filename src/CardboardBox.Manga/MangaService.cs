@@ -9,6 +9,8 @@ using Providers;
 
 public interface IMangaService
 {
+	MangaProvider[] Providers { get; }
+
 	IMangaSource[] Sources();
 	(IMangaSource? source, string? id) DetermineSource(string url);
 
@@ -39,6 +41,14 @@ public class MangaService : IMangaService
 
 	private readonly IMangaDexService _md;
 
+	public MangaProvider[] Providers => Sources()
+		.Select(t => new MangaProvider 
+		{ 
+			Name = t.Provider, 
+			Url = t.HomeUrl 
+		})
+		.ToArray();
+
 	public MangaService(
 		IMangaDbService db,
 		IMatchApiService match,
@@ -50,6 +60,7 @@ public class MangaService : IMangaService
 		IMangaDexSource mangaDex,
 		IMangaClashSource mangaClash,
 		INhentaiSource nhentai,
+		IMangaKatanaSource katana,
 		IBattwoSource battwo)
 	{
 		_db = db;
@@ -63,7 +74,8 @@ public class MangaService : IMangaService
 			mangaClash,
 			nhentai,
 			mangakakalot2,
-			mangakakalot3
+			mangakakalot3,
+			katana
 		};
 	}
 

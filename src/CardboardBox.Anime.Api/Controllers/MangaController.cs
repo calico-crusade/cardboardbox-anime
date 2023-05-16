@@ -326,6 +326,13 @@ public class MangaController : ControllerBase
 			count = res
 		});
 	}
+
+	[HttpGet, Route("manga/providers")]
+	[ProducesDefaultResponseType(typeof(MangaProvider[]))]
+	public IActionResult Providers()
+	{
+		return Ok(_manga.Providers);
+	}
 }
 
 public class SauceRequest
