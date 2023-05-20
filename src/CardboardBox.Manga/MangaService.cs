@@ -30,6 +30,8 @@ public interface IMangaService
 	string GenerateHashId(string title);
 
 	Task<(MemoryStream stream, string name)?> CreateZip(string mangaId, int chapterId, string? platformId);
+
+	Task<MangaData?> Volumed(string id, string? pid);
 }
 
 public class MangaService : IMangaService
@@ -332,6 +334,82 @@ public class MangaService : IMangaService
 
 		ms.Position = 0;
 		return (ms, $"{manga.Manga.HashId}-{chapter.Ordinal}.zip");
+	}
+
+	public async Task<MangaData?> Volumed(string id, string? pid)
+	{
+		long? mid = long.TryParse(id, out var amid) ? amid : null;
+
+		var manga = await (mid == null ? _db.GetManga(id, pid) : Manga(mid.Value, pid));
+		if (manga == null) return null;
+
+		var ext = await (mid == null ? _db.GetMangaExtended(id, pid) : _db.GetMangaExtended(mid.Value, pid));
+		if (ext == null) return null;
+
+		var output = manga.Clone<MangaWithChapters, MangaData>();
+		if (output == null) return null;
+
+		var progress = ext.Progress;
+		var stats = ext.Stats;
+
+		var read = true;
+		var groups = new List<Volume>();
+
+		if (progress == null) read = false;
+
+		foreach(var chap in manga.Chapters)
+		{
+			if (read && chap.Id == progress?.MangaChapterId) read = false;
+
+			var cur = chap.Clone<DbMangaChapter, VolumeChapter>();
+			if (cur == null) continue;
+			cur.Read = read;
+
+			if (chap.Id == progress?.MangaChapterId)
+				cur.Progress = stats?.PageProgress;
+
+			if (groups.Count == 0)
+			{
+				groups.Add(new Volume
+				{
+					Name = chap.Volume,
+					Collapse = false,
+					Chapters = new() { cur }
+				});
+				continue;
+			}
+
+			var last = groups.Last();
+			if (last.Name != chap.Volume)
+			{
+				groups.Add(new Volume
+				{
+					Name = chap.Volume,
+					Collapse = false,
+					Chapters = new() { cur }
+				});
+				continue;
+			}
+
+			var lastChap = last.Chapters.Last();
+			if (lastChap.Ordinal == chap.Ordinal)
+			{
+				lastChap.Versions.Add(chap);
+
+				if (cur.Read && !lastChap.Read) lastChap.Read = read;
+				if (cur.Progress != null && lastChap.Progress != null) lastChap.Progress = cur.Progress;
+				continue;
+			}
+
+			last.Chapters.Add(cur);
+		}
+
+		output.Volumes = groups.ToArray();
+		output.Chapter = ext.Chapter;
+		output.Progress = ext.Progress;
+		output.Stats = ext.Stats;
+
+		return output;
 	}
 }
 

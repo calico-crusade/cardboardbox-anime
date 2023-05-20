@@ -10,7 +10,6 @@ using Core.Models;
 using Match;
 using Match.SauceNao;
 using Manga;
-using Manga.Providers;
 using Database;
 
 [ApiController]
@@ -69,6 +68,17 @@ public class MangaController : ControllerBase
 
 		if (manga == null) return NotFound();
 		return Ok(manga);
+	}
+
+	[HttpGet, Route("manga/{id}/volumed")]
+	[ProducesDefaultResponseType(typeof(MangaData)), ProducesResponseType(404)]
+	public async Task<IActionResult> GetVolumed([FromRoute] string id)
+	{
+		var pid = this.UserFromIdentity()?.Id;
+		var vols = await _manga.Volumed(id, pid);
+		if (vols == null) return NotFound();
+
+		return Ok(vols);
 	}
 
 	[HttpGet, Route("manga/{id}/extended")]

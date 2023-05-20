@@ -61,4 +61,10 @@ public static class Extensions
 
 		if (current.Count > 0) yield return current.ToArray();
 	}
+
+	public static TOut? Clone<TIn, TOut>(this TIn data) where TOut: TIn
+	{
+		var ser = JsonSerializer.Serialize(data);
+		return JsonSerializer.Deserialize<TOut>(ser);
+	}
 }
