@@ -77,7 +77,7 @@ public class MangaClashSource : IMangaClashSource
 
 		manga.Description = doc.InnerHtml("//div[@class='summary__content show-more']") ?? "";
 
-		var chapters = doc.DocumentNode.SelectNodes("//li[@class='wp-manga-chapter  ']/a");
+		var chapters = doc.DocumentNode.SelectNodes("//li[contains(@class, 'wp-manga-chapter')]/a");
 		int i = chapters.Count;
 		foreach(var chap in chapters)
 		{
