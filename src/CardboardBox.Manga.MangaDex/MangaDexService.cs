@@ -74,6 +74,7 @@ public class MangaDexService : IMangaDexService
 		filter.Order = new() { [ChaptersFilter.OrderKey.updatedAt] = OrderValue.desc };
 		filter.Includes = new[] { MangaIncludes.manga };
 		filter.TranslatedLanguage = new[] { "en" };
+		filter.IncludeExternalUrl = false;
 		return Chapters(filter);
 	}
 
