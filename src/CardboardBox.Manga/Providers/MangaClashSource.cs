@@ -19,7 +19,7 @@ public class MangaClashSource : IMangaClashSource
 
 	public async Task<MangaChapterPages?> ChapterPages(string mangaId, string chapterId)
 	{
-		var url = $"{MangaBaseUri}{mangaId}/{chapterId}";
+		var url = $"{MangaBaseUri}{mangaId}/{chapterId}/";
 		var doc = await _api.GetHtml(url);
 		if (doc == null) return null;
 
@@ -31,7 +31,7 @@ public class MangaClashSource : IMangaClashSource
 			Title = doc.InnerText("//ol[@class='breadcrumb']/li[@class='active']")?.Trim() ?? "",
 			Pages = doc.DocumentNode
 				.SelectNodes("//div[@class='page-break no-gaps']/img")
-				.Select(t => t.GetAttributeValue("data-src", ""))
+				.Select(t => t.GetAttributeValue("data-src", "").Trim('\n', '\t', '\r'))
 				.ToArray()
 		};
 

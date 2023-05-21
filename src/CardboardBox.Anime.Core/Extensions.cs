@@ -202,11 +202,7 @@ public static class Extensions
 				c.Headers.Add("user-agent", USER_AGENT);
 				config?.Invoke(c);
 			})
-			.Result();
-
-		if (req == null)
-			throw new NullReferenceException($"Request returned null for: {url}");
-
+			.Result() ?? throw new NullReferenceException($"Request returned null for: {url}");
 		req.EnsureSuccessStatusCode();
 
 		using var io = await req.Content.ReadAsStreamAsync();
