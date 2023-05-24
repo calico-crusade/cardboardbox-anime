@@ -367,21 +367,21 @@ DROP TABLE touched_manga;";
 			pars.Add("search", filter.Search);
 		}
 
-		if (filter.Include != null && filter.Include.Length > 0)
-		{
-			parts.Add("m.tags @> :include");
-			pars.Add("include", filter.Include);
-		}
-
 		if (filter.Sources != null && filter.Sources.Length > 0)
 		{
 			parts.Add("m.provider = ANY( :source )");
 			pars.Add("source", filter.Sources);
 		}
 
+		if (filter.Include != null && filter.Include.Length > 0)
+		{
+			parts.Add("(LOWER(m.tags::text)::text[]) @> :include");
+			pars.Add("include", filter.Include);
+		}
+
 		if (filter.Exclude != null && filter.Exclude.Length > 0)
 		{
-			parts.Add("NOT (m.tags && :exclude )");
+			parts.Add("NOT ((LOWER(m.tags::text)::text[]) && :exclude )");
 			pars.Add("exclude", filter.Exclude);
 		}
 
