@@ -68,7 +68,6 @@ public class NhentaiSource : INhentaiSource
 			Nsfw = true,
 			Tags = doc.DocumentNode
 					  .SelectNodes("//span[@class='tags']/a[contains(@href, '/tag')]/span[@class='name']")
-					  //.Where(t => t.GetAttributeValue("href", "").StartsWith("/tag"))
 					  .Select(t => t.InnerText.Trim())
 					  .ToArray()
 		};

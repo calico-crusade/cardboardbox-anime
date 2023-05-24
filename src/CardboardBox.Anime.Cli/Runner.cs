@@ -20,6 +20,7 @@ using Manga.Providers;
 
 using AImage = Core.Models.Image;
 using MangaDexSharp;
+using CardboardBox.Epub;
 
 public interface IRunner
 {
@@ -140,6 +141,7 @@ public class Runner : IRunner
 				case "index-db": await IndexDbImages(); break;
 				case "index-covers": await IndexCovers(); break;
 				case "battwo": await TestBattow(); break;
+				case "tags": await FixTags(); break;
 				default: _logger.LogInformation("Invalid command: " + command); break;
 			}
 
@@ -932,5 +934,34 @@ public class Runner : IRunner
 		var manga = await _battwo.Manga("113585");
 
 		Console.WriteLine("Found");
+	}
+
+	public async Task FixTags()
+	{
+		var mangas = await _mangaDb.Search(new Core.Models.MangaFilter
+		{
+			Size = 10000,
+			Sources = new[] { "nhentai" },
+			Nsfw = NsfwCheck.DontCare,
+			Page = 1,
+			State = TouchedState.All
+		}, null);
+
+		if (mangas == null || mangas.Results.Length == 0)
+		{
+			_logger.LogError("No manga found for search");
+			return;
+		}
+
+		foreach(var manga in mangas.Results)
+		{
+			manga.Manga.Tags = manga.Manga.Tags.Select(t =>
+			{
+				return Regex.Replace(t, @"[\d-]", string.Empty).Replace("\r", "").Replace("\n", "").Trim();
+			}).Where(t => !string.IsNullOrEmpty(t)).ToArray();
+			await _mangaDb.Upsert(manga.Manga);
+		}
+
+		_logger.LogInformation("Tags fixed");
 	}
 }

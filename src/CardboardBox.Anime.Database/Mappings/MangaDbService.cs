@@ -229,19 +229,44 @@ WHERE
 
 	public async Task<Filter[]> Filters()
 	{
-		const string QUERY = @"SELECT
-    *
-FROM (
+		const string QUERY = @"WITH allTags as (
     SELECT
         DISTINCT
         'tag' as key,
-        unnest(tags) as value
+        unnest(tags) as value,
+        nsfw as nsfw
     FROM manga
+), sfwTags as (
+    SELECT
+        DISTINCT
+        key,
+        LOWER(value) as value
+    FROM allTags
 	WHERE nsfw = False
+), nsfwTags as (
+    SELECT
+        DISTINCT
+        'nsfw-tag' as key,
+        LOWER(value) as value
+    FROM allTags
+    WHERE value NOT IN (
+        SELECT
+            value
+        FROM sfwTags
+    )
+)
+SELECT
+    *
+FROM (
+    SELECT * FROM sfwTags
 
-	UNION ALL
+    UNION ALL
 
-	SELECT
+    SELECT * FROM nsfwTags
+
+    UNION ALL
+
+    SELECT
         DISTINCT
         lower((attr).name) as key,
         (attr).value as value
@@ -261,7 +286,7 @@ FROM (
         provider as value
     FROM manga
 ) x
-ORDER BY key, value;";
+ORDER BY key, value";
 		var filters = await _sql.Get<DbFilter>(QUERY);
 		return filters
 			.GroupBy(t => t.Key, t => t.Value)
