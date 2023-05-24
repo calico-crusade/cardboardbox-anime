@@ -249,23 +249,12 @@ WHERE
         'nsfw-tag' as key,
         LOWER(value) as value
     FROM allTags
-    WHERE value NOT IN (
+    WHERE LOWER(value) NOT IN (
         SELECT
-            value
+            LOWER(value)
         FROM sfwTags
     )
-)
-SELECT
-    *
-FROM (
-    SELECT * FROM sfwTags
-
-    UNION ALL
-
-    SELECT * FROM nsfwTags
-
-    UNION ALL
-
+), attributes AS (
     SELECT
         DISTINCT
         lower((attr).name) as key,
@@ -277,14 +266,23 @@ FROM (
         FROM manga
     ) z
     WHERE (attr).name NOT IN ('Author', 'Artist')
-
-    UNION ALL
-
+), sources AS (
     SELECT
         DISTINCT
         'source' as key,
         provider as value
     FROM manga
+)
+SELECT
+    *
+FROM (
+    SELECT * FROM sfwTags
+    UNION ALL
+    SELECT * FROM nsfwTags
+    UNION ALL
+    SELECT * FROM attributes
+    UNION ALL
+    SELECT * FROM sources
 ) x
 ORDER BY key, value";
 		var filters = await _sql.Get<DbFilter>(QUERY);
