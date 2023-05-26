@@ -407,22 +407,30 @@ public class MangaService : IMangaService
 		if (volume != null) yield return volume;
 	}
 
+	public async Task<MangaWithChapters?> GetData(string id, string? pid)
+	{
+		//Ensure a valid ID was passed
+		if (string.IsNullOrEmpty(id)) return null;
+
+		//Check if a random manga was requested
+		if (id.ToLower().Trim() == "random") return await _db.Random(pid);
+
+		//Determine if the ID was passed
+		if (long.TryParse(id, out var mid))
+			return await _db.GetManga(mid, pid);
+
+		//Or the hash
+		return await _db.GetManga(id, pid);
+	}
+
 	public async Task<MangaData?> Volumed(string id, string? pid, ChapterSortColumn sort, bool asc)
 	{
-		//determine if it's the manga ID or hash
-		long? mid = long.TryParse(id, out var amid) ? amid : null;
-
-		//Fetch the manga data and chapters
-		var manga = await (mid == null ? _db.GetManga(id, pid) : Manga(mid.Value, pid));
+		var manga = await GetData(id, pid);
 		if (manga == null) return null;
 
 		//Fetch progress, stats, and other authed stuff
 		//Skip fetching if the user isn't logged in
-		var ext = string.IsNullOrEmpty(pid) 
-			? null 
-			: await (mid == null 
-				? _db.GetMangaExtended(id, pid) 
-				: _db.GetMangaExtended(mid.Value, pid));
+		var ext = string.IsNullOrEmpty(pid) ? null : await _db.GetMangaExtended(manga.Manga.Id, pid);
 
 		//Create a clone of manga data with extra fields
 		var output = manga.Clone<MangaWithChapters, MangaData>();

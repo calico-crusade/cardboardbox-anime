@@ -70,14 +70,16 @@ public class MangaController : ControllerBase
 		return Ok(manga);
 	}
 
-	[HttpGet, Route("manga/{id}/volumed")]
+	[HttpGet, Route("manga/volumed/{id}"), Route("manga/{id}/volumed")]
 	[ProducesDefaultResponseType(typeof(MangaData)), ProducesResponseType(404)]
-	public async Task<IActionResult> GetVolumed([FromRoute] string id)
+	public async Task<IActionResult> GetVolumed([FromRoute] string id, [FromQuery] string? sort = null, [FromQuery] bool asc = true)
 	{
-		var sort = ChapterSortColumn.Ordinal;
-		var asc = true;
+		var actSort = ChapterSortColumn.Ordinal;
+		if (Enum.TryParse<ChapterSortColumn>(sort, true, out var res))
+			actSort = res;
+
 		var pid = this.UserFromIdentity()?.Id;
-		var vols = await _manga.Volumed(id, pid, sort, asc);
+		var vols = await _manga.Volumed(id, pid, actSort, asc);
 		if (vols == null) return NotFound();
 
 		return Ok(vols);
