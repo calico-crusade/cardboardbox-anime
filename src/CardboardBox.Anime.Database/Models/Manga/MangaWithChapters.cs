@@ -6,7 +6,7 @@ public class MangaWithChapters
 	public DbManga Manga { get; set; } = new();
 
 	[JsonPropertyName("chapters")]
-	public DbMangaChapter[] Chapters { get; set; } = Array.Empty<DbMangaChapter>();
+	public virtual DbMangaChapter[] Chapters { get; set; } = Array.Empty<DbMangaChapter>();
 
 	[JsonPropertyName("bookmarks")]
 	public DbMangaBookmark[] Bookmarks { get; set; } = Array.Empty<DbMangaBookmark>();

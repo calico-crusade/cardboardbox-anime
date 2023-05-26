@@ -2,6 +2,9 @@
 
 public class MangaData : MangaWithChapters
 {
+	[JsonIgnore]
+	public override DbMangaChapter[] Chapters { get; set; } = Array.Empty<DbMangaChapter>();
+
 	[JsonPropertyName("chapter")]
 	public DbMangaChapter Chapter { get; set; } = new();
 
@@ -13,6 +16,9 @@ public class MangaData : MangaWithChapters
 
 	[JsonPropertyName("stats")]
 	public MangaStats? Stats { get; set; }
+
+	[JsonPropertyName("volumeIndex")]
+	public int VolumeIndex { get; set; }
 }
 
 public class Volume
@@ -23,17 +29,29 @@ public class Volume
 	[JsonPropertyName("collapse")]
 	public bool Collapse { get; set; } = false;
 
+	[JsonPropertyName("read")]
+	public bool Read { get; set; } = false;
+
+	[JsonPropertyName("inProgress")]
+	public bool InProgress { get; set; } = false;
+
 	[JsonPropertyName("chapters")]
 	public List<VolumeChapter> Chapters { get; set; } = new();
 }
 
-public class VolumeChapter : DbMangaChapter
+public class VolumeChapter
 {
 	[JsonPropertyName("read")]
 	public bool Read { get; set; } = false;
 
+	[JsonPropertyName("readIndex")]
+	public int? ReadIndex { get; set; }
+
+	[JsonPropertyName("pageIndex")]
+	public int? PageIndex { get; set; }
+
 	[JsonPropertyName("versions")]
-	public List<DbMangaChapter> Versions { get; set; } = new();
+	public DbMangaChapter[] Versions { get; set; } = Array.Empty<DbMangaChapter>();
 
 	[JsonPropertyName("open")]
 	public bool Open { get; set; } = false;

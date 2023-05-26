@@ -74,8 +74,10 @@ public class MangaController : ControllerBase
 	[ProducesDefaultResponseType(typeof(MangaData)), ProducesResponseType(404)]
 	public async Task<IActionResult> GetVolumed([FromRoute] string id)
 	{
+		var sort = ChapterSortColumn.Ordinal;
+		var asc = true;
 		var pid = this.UserFromIdentity()?.Id;
-		var vols = await _manga.Volumed(id, pid);
+		var vols = await _manga.Volumed(id, pid, sort, asc);
 		if (vols == null) return NotFound();
 
 		return Ok(vols);

@@ -5,7 +5,9 @@ using Anime.Database;
 using Ionic.Zip;
 using MangaDex;
 using Match;
+using Microsoft.VisualBasic;
 using Providers;
+using System;
 
 public interface IMangaService
 {
@@ -31,7 +33,7 @@ public interface IMangaService
 
 	Task<(MemoryStream stream, string name)?> CreateZip(string mangaId, int chapterId, string? platformId);
 
-	Task<MangaData?> Volumed(string id, string? pid);
+	Task<MangaData?> Volumed(string id, string? pid, ChapterSortColumn sort, bool asc);
 }
 
 public class MangaService : IMangaService
@@ -336,78 +338,105 @@ public class MangaService : IMangaService
 		return (ms, $"{manga.Manga.HashId}-{chapter.Ordinal}.zip");
 	}
 
-	public async Task<MangaData?> Volumed(string id, string? pid)
+	public IEnumerable<DbMangaChapter> Ordered(IEnumerable<DbMangaChapter> chap, ChapterSortColumn sort, bool asc)
 	{
+		return sort switch
+		{
+			ChapterSortColumn.Date => asc ? chap.OrderBy(t => t.CreatedAt) : chap.OrderByDescending(t => t.CreatedAt),
+			ChapterSortColumn.Language => asc ? chap.OrderBy(t => t.Language) : chap.OrderByDescending(t => t.Language),
+			ChapterSortColumn.Title => asc ? chap.OrderBy(t => t.Title) : chap.OrderByDescending(t => t.Title),
+			_ => asc ? chap.OrderBy(t => t.Ordinal) : chap.OrderByDescending(t => t.Ordinal),
+		};
+	}
+
+	public IEnumerable<Volume> Volumize(IEnumerable<DbMangaChapter> chapters, DbMangaProgress? progress, MangaStats? stats)
+	{
+		var iterator = chapters.GetEnumerator();
+
+		//Setup tracking stuff
+		var read = progress != null;
+		DbMangaChapter? chapter = null;
+		Volume? volume = null;
+
+		while(true)
+		{
+			//Ensure its not the EoS
+			if (chapter == null && !iterator.MoveNext()) break;
+			//Get the current chapter
+			chapter = iterator.Current;
+			//Get all of the grouped versions
+			var (versions, last, index) = iterator.MoveUntil(chapter, t => t.Volume, t => t.Ordinal);
+
+			//Shouldn't happen unless something went very wrong.
+			if (versions.Length == 0) break;
+
+			var firstChap = versions.First();
+
+			//New volume started, create the wrapping object
+			volume ??= new Volume { Name = firstChap.Volume, Read = read };
+
+			//Check to see if the current chapter has been read
+			int? idx = !read ? null : versions.IndexOfNull(t => t.Id == progress?.MangaChapterId);
+			if (idx != null)
+			{
+				read = false;
+				volume.InProgress = true;
+			}
+
+			var chap = new VolumeChapter
+			{
+				Read = read,
+				ReadIndex = idx,
+				Progress = idx != null ? stats?.PageProgress : null,
+				PageIndex = idx != null ? progress?.PageIndex : null,
+				Versions = versions,
+			};
+
+			volume.Chapters.Add(chap);
+
+			//New volume started, return the old one
+			if (index == 0 && volume != null)
+			{
+				yield return volume;
+				volume = null;
+			}
+
+			chapter = last;
+		}
+
+		if (volume != null) yield return volume;
+	}
+
+	public async Task<MangaData?> Volumed(string id, string? pid, ChapterSortColumn sort, bool asc)
+	{
+		//determine if it's the manga ID or hash
 		long? mid = long.TryParse(id, out var amid) ? amid : null;
 
+		//Fetch the manga data and chapters
 		var manga = await (mid == null ? _db.GetManga(id, pid) : Manga(mid.Value, pid));
 		if (manga == null) return null;
 
-		var ext = await (mid == null ? _db.GetMangaExtended(id, pid) : _db.GetMangaExtended(mid.Value, pid));
-		if (ext == null) return null;
+		//Fetch progress, stats, and other authed stuff
+		//Skip fetching if the user isn't logged in
+		var ext = string.IsNullOrEmpty(pid) 
+			? null 
+			: await (mid == null 
+				? _db.GetMangaExtended(id, pid) 
+				: _db.GetMangaExtended(mid.Value, pid));
 
+		//Create a clone of manga data with extra fields
 		var output = manga.Clone<MangaWithChapters, MangaData>();
 		if (output == null) return null;
 
-		var progress = ext.Progress;
-		var stats = ext.Stats;
-
-		var read = true;
-		var groups = new List<Volume>();
-
-		if (progress == null) read = false;
-
-		foreach(var chap in manga.Chapters)
-		{
-			if (read && chap.Id == progress?.MangaChapterId) read = false;
-
-			var cur = chap.Clone<DbMangaChapter, VolumeChapter>();
-			if (cur == null) continue;
-			cur.Read = read;
-
-			if (chap.Id == progress?.MangaChapterId)
-				cur.Progress = stats?.PageProgress;
-
-			if (groups.Count == 0)
-			{
-				groups.Add(new Volume
-				{
-					Name = chap.Volume,
-					Collapse = false,
-					Chapters = new() { cur }
-				});
-				continue;
-			}
-
-			var last = groups.Last();
-			if (last.Name != chap.Volume)
-			{
-				groups.Add(new Volume
-				{
-					Name = chap.Volume,
-					Collapse = false,
-					Chapters = new() { cur }
-				});
-				continue;
-			}
-
-			var lastChap = last.Chapters.Last();
-			if (lastChap.Ordinal == chap.Ordinal)
-			{
-				lastChap.Versions.Add(chap);
-
-				if (cur.Read && !lastChap.Read) lastChap.Read = read;
-				if (cur.Progress != null && lastChap.Progress != null) lastChap.Progress = cur.Progress;
-				continue;
-			}
-
-			last.Chapters.Add(cur);
-		}
-
-		output.Volumes = groups.ToArray();
-		output.Chapter = ext.Chapter;
-		output.Progress = ext.Progress;
-		output.Stats = ext.Stats;
+		//Order the chapters by the given sorts
+		var chapters = Ordered(manga.Chapters, sort, asc);
+		//Sort the chapters into volume collections (impacted by sorts)
+		output.Volumes = Volumize(chapters, ext?.Progress, ext?.Stats).ToArray();
+		//Pass through progress stuff
+		output.Chapter = ext?.Chapter ?? manga.Chapters.FirstOrDefault() ?? new();
+		output.Progress = ext?.Progress;
+		output.Stats = ext?.Stats;
+		output.VolumeIndex = ext?.Chapter == null ? 0 : output.Volumes.IndexOfNull(t => t.InProgress) ?? 0;
 
 		return output;
 	}
@@ -428,4 +457,12 @@ public class MangaWorked
 		Manga = manga;
 		Worked = worked;
 	}
+}
+
+public enum ChapterSortColumn
+{
+	Ordinal = 0,
+	Date = 1,
+	Language = 2,
+	Title = 3
 }
