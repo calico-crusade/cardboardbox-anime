@@ -78,13 +78,15 @@ public class MangaDbService : OrmMapExtended<DbManga>, IMangaDbService
 	private const string TABLE_NAME_MANGA_PROGRESS = "manga_progress";
 	private const string TABLE_NAME_MANGA_BOOKMARKS = "manga_bookmarks";
 
-	private string? _getChapterQuery;
-	private string? _getMangaQuery;
+	private static string? _getChapterQuery;
+	private static string? _getMangaQuery;
+	private static string? _getProgress;
+	private static string? _insertProgress;
+	private static string? _updateProgress;
 
-	private readonly List<string> _upsertChapters = new();
-	private readonly List<string> _upsertManga = new();
-	private readonly List<string> _upsertProgress = new();
-	private readonly List<string> _upsertBookmark = new();
+	private static readonly List<string> _upsertChapters = new();
+	private static readonly List<string> _upsertManga = new();
+	private static readonly List<string> _upsertBookmark = new();
 
 	public override string TableName => TABLE_NAME_MANGA;
 
@@ -133,12 +135,41 @@ public class MangaDbService : OrmMapExtended<DbManga>, IMangaDbService
 			v => v.With(t => t.Id).With(t => t.CreatedAt).With(t => t.Pages));
 	}
 
-	public Task<long> Upsert(DbMangaProgress progress)
+	public async Task<long> Upsert(DbMangaProgress progress)
 	{
-		return FakeUpsert(progress, TABLE_NAME_MANGA_PROGRESS, _upsertProgress,
-			v => v.With(t => t.ProfileId).With(t => t.MangaId),
-			v => v.With(t => t.Id),
-			v => v.With(t => t.Id).With(t => t.CreatedAt));
+		_getProgress ??= _query.Select<DbMangaProgress>(TABLE_NAME_MANGA_PROGRESS, t => t.With(a => a.ProfileId).With(a => a.MangaId));
+		_insertProgress ??= _query.InsertReturn<DbMangaProgress, long>(TABLE_NAME_MANGA_PROGRESS, t => t.Id, t => t.With(a => a.Id));
+		_updateProgress ??= _query.Update<DbMangaProgress>(TABLE_NAME_MANGA_PROGRESS, t => t.With(a => a.Id).With(a => a.CreatedAt));
+
+		var exists = await _sql.Fetch<DbMangaProgress>(_getProgress, new { progress.ProfileId, progress.MangaId });
+		if (exists == null)
+		{
+			progress.Read = new[]
+			{
+				new DbMangaChapterProgress(progress.MangaChapterId, progress.PageIndex)
+			};
+			return await _sql.ExecuteScalar<long>(_insertProgress, progress);
+		}
+
+		var found = false;
+		var pages = exists.Read.Select(t =>
+		{
+			if (t.ChapterId != progress.MangaChapterId) return t;
+			found = true;
+
+			if (t.PageIndex > progress.PageIndex) return t;
+
+			return new DbMangaChapterProgress(progress.MangaChapterId, progress.PageIndex);
+		}).ToArray();
+
+		if (!found)
+			pages = pages.Append(new DbMangaChapterProgress(progress.MangaChapterId, progress.PageIndex)).ToArray();
+
+		progress.Id = exists.Id;
+		progress.Read = pages.OrderBy(t => t.ChapterId).ToArray();
+
+		var res = await _sql.Execute(_updateProgress, progress);
+		return exists.Id;
 	}
 
 	public Task SetPages(long id, string[] pages)

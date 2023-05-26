@@ -26,6 +26,7 @@ public class NpgsqlService : SqlService
 		con.TypeMapper.MapComposite<DbImage>("image");
 		con.TypeMapper.MapComposite<DbExtension>("ext");
 		con.TypeMapper.MapComposite<DbMangaAttribute>("manga_attribute");
+		con.TypeMapper.MapComposite<DbMangaChapterProgress>("manga_chapter_progress");
 
 		return con;
 	}

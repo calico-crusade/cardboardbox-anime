@@ -5,7 +5,6 @@ using Anime.Database;
 using Ionic.Zip;
 using MangaDex;
 using Match;
-using Microsoft.VisualBasic;
 using Providers;
 using System;
 

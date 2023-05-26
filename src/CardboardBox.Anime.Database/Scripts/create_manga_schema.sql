@@ -3,6 +3,11 @@
     value text
 );
 
+CREATE TYPE manga_chapter_progress AS (
+    chapter_id BIGINT,
+    page_index INT
+);
+
 CREATE TABLE manga (
     id BIGSERIAL PRIMARY KEY,
 
@@ -66,6 +71,7 @@ CREATE TABLE manga_progress (
     manga_id bigint not null references manga(id),
     manga_chapter_id bigint not null references manga_chapter(id),
     page_index int not null,
+    read manga_chapter_progress[] not null default '{}',
 
     created_at timestamp not null default CURRENT_TIMESTAMP,
     updated_at timestamp not null default CURRENT_TIMESTAMP,

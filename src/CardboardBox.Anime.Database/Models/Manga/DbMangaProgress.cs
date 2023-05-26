@@ -13,4 +13,7 @@ public class DbMangaProgress : DbObject
 
 	[JsonPropertyName("pageIndex")]
 	public int PageIndex { get; set; }
+
+	[JsonPropertyName("read")]
+	public DbMangaChapterProgress[] Read { get; set; } = Array.Empty<DbMangaChapterProgress>();
 }

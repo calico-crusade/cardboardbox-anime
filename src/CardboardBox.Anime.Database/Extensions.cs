@@ -87,6 +87,7 @@ public static class Extensions
 			 .ForEntity<DbMangaBookmark>()
 			 .ForEntity<DbMangaFavourite>()
 			 .ForEntity<DbMangaAttribute>()
+			 .ForEntity<DbMangaChapterProgress>()
 			 .ForEntity<MangaStats>()
 			 .ForEntity<GraphOut>()
 
