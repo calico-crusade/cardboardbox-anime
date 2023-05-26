@@ -353,9 +353,17 @@ public class MangaService : IMangaService
 		var iterator = chapters.GetEnumerator();
 
 		//Setup tracking stuff
-		var read = progress != null;
 		DbMangaChapter? chapter = null;
 		Volume? volume = null;
+
+		var progs = (progress?.Read ?? Array.Empty<DbMangaChapterProgress>()).ToDictionary(t => t.ChapterId, t => t.PageIndex);
+
+		static Volume postfix(Volume volume)
+		{
+			volume.Read = volume.Chapters.All(t => t.Read);
+			volume.InProgress = !volume.Read && volume.Chapters.Any(t => t.Read);
+			return volume;
+		};
 
 		while(true)
 		{
@@ -372,16 +380,11 @@ public class MangaService : IMangaService
 			var firstChap = versions.First();
 
 			//New volume started, create the wrapping object
-			volume ??= new Volume { Name = firstChap.Volume, Read = read };
+			volume ??= new Volume { Name = firstChap.Volume };
 
+			var read = versions.Any(t => progs.ContainsKey(t.Id));
 			//Check to see if the current chapter has been read
 			int? idx = !read ? null : versions.IndexOfNull(t => t.Id == progress?.MangaChapterId);
-			if (idx != null)
-			{
-				read = false;
-				volume.InProgress = true;
-			}
-
 			var chap = new VolumeChapter
 			{
 				Read = read,
@@ -396,14 +399,14 @@ public class MangaService : IMangaService
 			//New volume started, return the old one
 			if (index == 0 && volume != null)
 			{
-				yield return volume;
+				yield return postfix(volume);
 				volume = null;
 			}
 
 			chapter = last;
 		}
 
-		if (volume != null) yield return volume;
+		if (volume != null) yield return postfix(volume);
 	}
 
 	public async Task<MangaWithChapters?> GetData(string id, string? pid)

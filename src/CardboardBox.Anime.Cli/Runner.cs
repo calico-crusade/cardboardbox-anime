@@ -142,6 +142,7 @@ public class Runner : IRunner
 				case "index-covers": await IndexCovers(); break;
 				case "battwo": await TestBattow(); break;
 				case "tags": await FixTags(); break;
+				case "progress": await FixProgress(); break;
 				default: _logger.LogInformation("Invalid command: " + command); break;
 			}
 
@@ -963,5 +964,73 @@ public class Runner : IRunner
 		}
 
 		_logger.LogInformation("Tags fixed");
+	}
+
+	public async Task FixProgress()
+	{
+		var progresses = await _mangaDb.AllProgress();
+		if (progresses.Length == 0)
+		{
+			_logger.LogError("No progresses found.");
+			return;
+		}
+
+		var cache = new Dictionary<long, MangaWithChapters>();
+
+		async Task<MangaWithChapters?> getCache(long id)
+		{
+			if (cache.ContainsKey(id)) return cache[id];
+
+			var prog = await _mangaDb.GetManga(id, null);
+			if (prog == null) return null;
+
+			cache.Add(id, prog);
+			return prog;
+		}
+
+		foreach (var prog in progresses)
+		{
+			var manga = await getCache(prog.MangaId);
+			if (manga == null)
+			{
+				_logger.LogWarning("Couldnt find manga for: {MangaId}", prog.MangaId);
+				continue;
+			}
+
+			var pages = new List<DbMangaChapterProgress>();
+
+			var read = manga.Chapters.FirstOrDefault(t => t.Id == prog.MangaChapterId);
+
+			if (read == null)
+			{
+				_logger.LogWarning("Couldn't find read chapter for progress: {Id}", prog.Id);
+				continue;
+			}
+
+			foreach(var chap in manga.Chapters)
+			{
+				if (chap.Ordinal > read.Ordinal) continue;
+
+				if (chap.Ordinal < read.Ordinal)
+				{
+					pages.Add(new DbMangaChapterProgress
+					{
+						ChapterId = chap.Id,
+						PageIndex = chap.Pages.Length
+					});
+					continue;
+				}
+
+				pages.Add(new DbMangaChapterProgress { ChapterId = chap.Id, PageIndex = prog.PageIndex });
+			}
+
+			if (pages.Count == 0) continue;
+
+			prog.Read = pages.ToArray();
+			await _mangaDb.UpdateProgress(prog);
+			_logger.LogInformation("Finished: User: {ProfileId}, Manga Id: {MangaId}, Prog: {Id} - {Count}", prog.ProfileId, prog.MangaId, prog.Id, pages.Count);
+		}
+
+		_logger.LogInformation("Finished with: {Length}", progresses.Length);
 	}
 }

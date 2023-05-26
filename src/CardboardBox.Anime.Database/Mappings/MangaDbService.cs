@@ -69,6 +69,10 @@ public interface IMangaDbService
 	Task<GraphOut[]> Graphic(string? platformId, TouchedState state = TouchedState.Completed);
 
 	Task<DbManga[]> Random(int count);
+
+	Task<DbMangaProgress[]> AllProgress();
+
+	Task UpdateProgress(DbMangaProgress progress);
 }
 
 public class MangaDbService : OrmMapExtended<DbManga>, IMangaDbService
@@ -182,6 +186,17 @@ public class MangaDbService : OrmMapExtended<DbManga>, IMangaDbService
 	{
 		const string QUERY = "DELETE FROM manga_progress WHERE profile_id = :profileId AND manga_id = :mangaId";
 		return _sql.Execute(QUERY, new { profileId, mangaId });
+	}
+
+	public Task<DbMangaProgress[]> AllProgress()
+	{
+		return _sql.Get<DbMangaProgress>("SELECT * FROM manga_progress");
+	}
+
+	public Task UpdateProgress(DbMangaProgress progress)
+	{
+		_updateProgress ??= _query.Update<DbMangaProgress>(TABLE_NAME_MANGA_PROGRESS, t => t.With(a => a.Id).With(a => a.CreatedAt));
+		return _sql.Execute(_updateProgress, progress);
 	}
 
 	public override Task<PaginatedResult<DbManga>> Paginate(int page = 1, int size = 100)
