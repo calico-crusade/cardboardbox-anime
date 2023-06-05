@@ -161,6 +161,4 @@ public static class Extensions
 	}
 }
 
-public record class Group<TKey, TValue>(TKey Key, TValue[] Values);
-
 public record class Grouping<T>(T[] Items, T? Last, int Index);
