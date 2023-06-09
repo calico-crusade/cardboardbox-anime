@@ -14,6 +14,8 @@ public class MangaLookupService : IMangaLookupService
 	private readonly IMangaApiService _manga;
 	private readonly IDbService _db;
 
+	public const string IMPORT_URL = "https://manga.index-0.com/import?url=";
+
 	public MangaLookupService(
 		IDiscordApiService api, 
 		ILogger<MangaLookupService> logger, 
@@ -180,6 +182,8 @@ public class MangaLookupService : IMangaLookupService
 		await PrintOld(msg, imgUrl, search, data);
 	}
 
+	public string Encode(string url) => WebUtility.UrlEncode(url);
+
 	public async Task PrintFallback(IUserMessage msg, FallbackResult result, LookupRequest data)
 	{
 		if (result.Manga == null) return;
@@ -188,7 +192,7 @@ public class MangaLookupService : IMangaLookupService
 			.WithTitle(result.Manga.Title)
 			.WithUrl(result.Manga.Url)
 			.WithThumbnailUrl(result.Manga.Cover)
-			.WithDescription($"{result.Manga.Description}. [CBA+](https://cba.index-0.com/manga/add?url={result.Manga.Url})")
+			.WithDescription($"{result.Manga.Description}. [Reader]({IMPORT_URL}{Encode(result.Manga.Url)})")
 			.AddField("Tags", string.Join(", ", result.Manga.Tags))
 			.AddField("Score", $"{result.Score:0.00}. (EM: {result.ExactMatch})", true);
 
@@ -244,7 +248,7 @@ public class MangaLookupService : IMangaLookupService
 			embeds.Add(new EmbedBuilder()
 				.WithTitle(search.BestGuess.Title)
 				.WithUrl(search.BestGuess.Url)
-				.WithDescription($"{search.BestGuess.Description}. [CBA+](https://cba.index-0.com/manga/add?url={search.BestGuess.Url})")
+				.WithDescription($"{search.BestGuess.Description}. [Reader]({IMPORT_URL}{Encode(search.BestGuess.Url)})")
 				.WithThumbnailUrl(search.BestGuess.Cover)
 				.AddField("Tags", string.Join(", ", search.BestGuess.Tags))
 				.AddField("Source", $"[{search.BestGuess.Source}]({search.BestGuess.Url})", true)
