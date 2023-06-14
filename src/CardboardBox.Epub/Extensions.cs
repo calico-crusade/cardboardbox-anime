@@ -111,6 +111,9 @@ public static class Extensions
 	public static string FixFileName(this string text)
 	{
 		var ext = Path.GetExtension(text).TrimStart('.');
+		if (ext.Contains('?'))
+			ext = ext.Split('?').First();
+
 		var name = Path.GetFileNameWithoutExtension(text).TrimEnd('.').SnakeName();
 
 		return $"{name.Replace("-", "")}.{ext}";
