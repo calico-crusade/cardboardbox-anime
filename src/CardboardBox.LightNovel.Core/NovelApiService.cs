@@ -22,10 +22,11 @@ public class NovelApiService : INovelApiService
 		ILnpSourceService lnSrc, 
 		IShSourceService shSrc,
 		IReLibSourceService rlSrc,
+		ILntSourceService lntSrc,
 		ILnDbService db)
 	{
 		_db = db;
-		_srcs = new[] { (ISourceService)lnSrc, shSrc, rlSrc };
+		_srcs = new[] { (ISourceService)lnSrc, shSrc, rlSrc, lntSrc };
 	}
 
 	public ISourceService? Source(string url)
@@ -345,13 +346,30 @@ public class NovelApiService : INovelApiService
 
 	public Book BookFromVolume(Series info, SourceVolume volume, long ordinal)
 	{
-		var ia = string.IsNullOrEmpty(info.Image) ? Array.Empty<string>() : new[] { info.Image };
+		string[] Images(string[] source)
+		{
+			if (source != null && source.Length > 0) return source;
+			if (!string.IsNullOrEmpty(info.Image)) return new[] { info.Image };
+			return Array.Empty<string>();
+		}
+
+		string? Cover()
+		{
+			if (volume.Forwards.Length > 0) return volume.Forwards.First();
+			if (volume.Inserts.Length > 0) return volume.Inserts.First();
+			if (!string.IsNullOrEmpty(info.Image)) return info.Image;
+			return null;
+		}
+
+		var forwards = Images(volume.Forwards);
+		var inserts = Images(volume.Inserts);
+		
 		return new Book
 		{
 			SeriesId = info.Id,
-			CoverImage = info.Image,
-			Forwards = ia,
-			Inserts = ia,
+			CoverImage = Cover(),
+			Forwards = forwards,
+			Inserts = inserts,
 			Title = volume.Title,
 			HashId = volume.Title.MD5Hash(),
 			Ordinal = ordinal

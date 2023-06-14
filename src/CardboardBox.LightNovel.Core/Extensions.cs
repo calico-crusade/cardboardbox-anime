@@ -45,6 +45,7 @@ public static class Extensions
 			.AddTransient<ILnpSourceService, LnpSourceService>()
 			.AddTransient<IShSourceService, ShSourceService>()
 			.AddTransient<IReLibSourceService, ReLibSourceService>()
+			.AddTransient<ILntSourceService, LntSourceService>()
 
 			.AddTransient<INovelUpdatesService, NovelUpdatesService>()
 

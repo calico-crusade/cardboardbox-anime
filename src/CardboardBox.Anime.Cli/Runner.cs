@@ -55,6 +55,7 @@ public class Runner : IRunner
 	private readonly IMangaCacheDbService _cacheDb;
 	private readonly IMangaDbService _mangaDb;
 	private readonly IBattwoSource _battwo;
+	private readonly ILntSourceService _lnt;
 
 	public Runner(
 		IVrvApiService vrv, 
@@ -79,7 +80,8 @@ public class Runner : IRunner
 		IMangaMatchService match,
 		IMangaCacheDbService cacheDb,
 		IMangaDbService mangaDb,
-		IBattwoSource battwo)
+		IBattwoSource battwo,
+		ILntSourceService lnt)
 	{
 		_vrv = vrv;
 		_logger = logger;
@@ -104,6 +106,7 @@ public class Runner : IRunner
 		_cacheDb = cacheDb;
 		_mangaDb = mangaDb;
 		_battwo = battwo;
+		_lnt = lnt;
 	}
 
 	public async Task<int> Run(string[] args)
@@ -143,6 +146,7 @@ public class Runner : IRunner
 				case "battwo": await TestBattow(); break;
 				case "tags": await FixTags(); break;
 				case "progress": await FixProgress(); break;
+				case "lnt": await TestLnt(); break;
 				default: _logger.LogInformation("Invalid command: " + command); break;
 			}
 
@@ -1032,5 +1036,22 @@ public class Runner : IRunner
 		}
 
 		_logger.LogInformation("Finished with: {Length}", progresses.Length);
+	}
+
+	public async Task TestLnt()
+	{
+		var url = "https://lightnovelstranslations.com/novel/i-woke-up-piloting-the-strongest-starship-so-i-became-a-space-mercenary/";
+		var info = _lnt.Volumes(url);
+
+		var vols = await info.ToArrayAsync();
+		foreach(var volume in vols)
+		{
+			_logger.LogInformation("Found Volume: {title}", volume.Title);
+		}
+
+		var chapUrl = "https://lightnovelstranslations.com/novel/i-woke-up-piloting-the-strongest-starship-so-i-became-a-space-mercenary/415-pirate-hunting/";
+
+		var chapter = await _lnt.GetChapter(chapUrl, "");
+		_logger.LogInformation("Finished");
 	}
 }

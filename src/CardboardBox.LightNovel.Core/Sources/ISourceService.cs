@@ -68,14 +68,20 @@ public abstract class SourceService : ISourceService
 		if (!string.IsNullOrEmpty(next) && next.StartsWith("/"))
 			next = $"{rootUrl.TrimEnd('/')}{next}";
 
-		var validUrl = Uri.TryCreate(next, UriKind.Absolute, out var res) && (res.Scheme == Uri.UriSchemeHttp || res.Scheme == Uri.UriSchemeHttps);
+		var validUrl = Uri.TryCreate(next, UriKind.Absolute, out var res) && 
+			(res.Scheme == Uri.UriSchemeHttp || res.Scheme == Uri.UriSchemeHttps);
 
 		if (string.IsNullOrEmpty(next) ||
 			!Uri.IsWellFormedUriString(next, UriKind.Absolute) ||
 			!validUrl)
 			next = "";
 
-		return new SourceChapter(title ?? string.Empty, chapter ?? string.Empty, content ?? string.Empty, next, url);
+		return new SourceChapter(
+			title ?? string.Empty, 
+			chapter ?? string.Empty, 
+			content ?? string.Empty, 
+			next, 
+			url);
 	}
 
 	public abstract string? GetTitle(HtmlDocument doc);
