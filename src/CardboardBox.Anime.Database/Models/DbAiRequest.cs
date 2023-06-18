@@ -11,7 +11,7 @@ public class DbAiRequest : DbObject
 	public long Steps { get; set; }
 
 	public long BatchCount { get; set; }
-	
+
 	public long BatchSize { get; set; }
 
 	public double CfgScale { get; set; }
@@ -27,7 +27,6 @@ public class DbAiRequest : DbObject
 	public double? DenoiseStrength { get; set; }
 
 	public string[] OutputPaths { get; set; } = Array.Empty<string>();
-
 
 	public DateTime GenerationStart { get; set; }
 

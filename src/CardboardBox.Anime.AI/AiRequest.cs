@@ -7,19 +7,19 @@ public class AiRequest
 	[JsonPropertyName("prompt")]
 	public string Prompt { get; set; } = string.Empty;
 
-	[JsonPropertyName("negativePrompt")]
+	[JsonPropertyName("negative_prompt")]
 	public string NegativePrompt { get; set; } = string.Empty;
 
 	[JsonPropertyName("steps")]
 	public long Steps { get; set; } = 32;
 
-	[JsonPropertyName("batchCount")]
+	[JsonPropertyName("n_iter")]
 	public long BatchCount { get; set; } = 1;
 
-	[JsonPropertyName("batchSize")]
+	[JsonPropertyName("batch_size")]
 	public long BatchSize { get; set; } = 1;
 
-	[JsonPropertyName("cfgScale")]
+	[JsonPropertyName("cfg_scale")]
 	public double CfgScale { get; set; } = 12;
 
 	[JsonPropertyName("seed")]
@@ -34,9 +34,16 @@ public class AiRequest
 
 public class AiRequestImg2Img : AiRequest
 {
-	[JsonPropertyName("image")]
-	public string Image { get; set; } = string.Empty;
+	[JsonIgnore]
+	public string? Image
+	{
+		get => Images.FirstOrDefault();
+		set => Images = string.IsNullOrEmpty(value) ? Array.Empty<string>() : new[] { value };
+	}
 
-	[JsonPropertyName("denoiseStrength")]
+	[JsonPropertyName("init_images")]
+	public string[] Images { get; set; } = Array.Empty<string>();
+
+	[JsonPropertyName("denoising_strength")]
 	public double DenoiseStrength { get; set; } = 0.7;
 }

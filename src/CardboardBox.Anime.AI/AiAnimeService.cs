@@ -9,6 +9,7 @@ public interface IAiAnimeService
 	Task<AiResponse?> Text2Img(AiRequest request);
 	Task<AiResponse?> Img2Img(AiRequestImg2Img request);
 	Task<string[]> Embeddings();
+	Task<LoraResponse[]?> Loras();
 }
 
 public class AiAnimeService : IAiAnimeService
@@ -28,17 +29,22 @@ public class AiAnimeService : IAiAnimeService
 
 	public Task<AiResponse?> Text2Img(AiRequest request)
 	{
-		return _api.Post<AiResponse, AiRequest>(AIUrl + "/txt2img", request);
+		return _api.Post<AiResponse, AiRequest>(AIUrl + "/sdapi/v1/txt2img", request);
 	}
 
 	public Task<AiResponse?> Img2Img(AiRequestImg2Img request)
 	{
-		return _api.Post<AiResponse, AiRequestImg2Img>(AIUrl + "/img2img", request);
+		return _api.Post<AiResponse, AiRequestImg2Img>(AIUrl + "/sdapi/v1/img2img", request);
 	}
 
 	public async Task<string[]> Embeddings()
 	{
-		var embeds = await _api.Get<EmbeddingsResponse>(AIUrl + "/embeddings");
+		var embeds = await _api.Get<EmbeddingsResponse>(AIUrl + "/sdapi/v1/embeddings");
 		return embeds?.Embeddings ?? Array.Empty<string>();
+	}
+
+	public Task<LoraResponse[]?> Loras()
+	{
+		return _api.Get<LoraResponse[]>(AIUrl + "/sdapi/v1/loras");
 	}
 }

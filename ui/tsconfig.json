@@ -20,10 +20,11 @@
     "module": "es2020",
     "lib": [
       "es2020",
-      "dom"
+      "DOM",
+      "DOM.Iterable"
     ],
     "types": [
-        "node"
+      "node"
     ]
   },
   "angularCompilerOptions": {

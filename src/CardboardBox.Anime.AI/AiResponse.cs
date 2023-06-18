@@ -4,18 +4,45 @@ namespace CardboardBox.Anime.AI;
 
 public class AiResponse
 {
-	[JsonPropertyName("html")]
-	public string Html { get; set; } = string.Empty;
-
 	[JsonPropertyName("images")]
 	public string[] Images { get; set; } = Array.Empty<string>();
-
-	[JsonPropertyName("info")]
-	public string Info { get; set; } = string.Empty;
 }
 
 public class EmbeddingsResponse
 {
-	[JsonPropertyName("embeddings")]
-	public string[] Embeddings { get; set; } = Array.Empty<string>();
+	[JsonIgnore]
+	public string[] Embeddings => Loaded.Keys.ToArray();
+
+	[JsonPropertyName("loaded")]
+	public Dictionary<string, Embedding> Loaded { get; set; } = new();
+
+	public class Embedding
+	{
+		[JsonPropertyName("step")]
+		public int? Step { get; set; }
+
+		[JsonPropertyName("sd_checkpoint")]
+		public string? CheckpointId { get; set; }
+
+		[JsonPropertyName("sd_checkpoint_name")]
+		public string? CheckpointName { get; set; }
+
+		[JsonPropertyName("shape")]
+		public int? Shape { get; set; }
+
+		[JsonPropertyName("vectors")]
+		public int? Vectors { get; set; }
+	}
+}
+
+public class LoraResponse
+{
+	[JsonPropertyName("name")]
+	public string Name { get; set; } = string.Empty;
+
+	[JsonPropertyName("alias")]
+	public string Alias { get; set; } = string.Empty;
+
+	[JsonPropertyName("path")]
+	public string Path { get; set; } = string.Empty;
 }

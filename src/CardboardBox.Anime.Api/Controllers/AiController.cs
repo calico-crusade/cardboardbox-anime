@@ -118,6 +118,26 @@ public class AiController : ControllerBase
 	[HttpPost, Route("ai/img")]
 	public async Task<IActionResult> Img2Img([FromBody] AiRequestImg2Img request, [FromQuery] bool download = false)
 	{
+		async IAsyncEnumerable<string> GetImageData()
+		{
+			foreach(var image in request.Images)
+			{
+				var (stream, _, file, type) = await _api.GetData(image);
+				if (stream == null || !type.ToLower().StartsWith("image")) continue;
+
+				var data = Array.Empty<byte>();
+				using (var io = new MemoryStream())
+				{
+					await stream.CopyToAsync(io);
+					io.Position = 0;
+					data = io.ToArray();
+					await stream.DisposeAsync();
+				}
+
+				yield return Convert.ToBase64String(data);
+			}
+		}
+
 		var valRes = Validate(request);
 		if (valRes != null) return valRes;
 
@@ -126,21 +146,10 @@ public class AiController : ControllerBase
 
 		req.Id = await _db.AiRequests.Insert(req);
 
-		var (stream, _, file, type) = await _api.GetData(request.Image);
-		if (stream == null) return BadRequest();
+		request.Images = await GetImageData().ToArrayAsync();
+		if (request.Images.Length == 0)
+			return BadRequest();
 
-		if (!type.ToLower().StartsWith("image")) return BadRequest();
-
-		byte[] data = Array.Empty<byte>();
-		using (var io = new MemoryStream())
-		{
-			await stream.CopyToAsync(io);
-			io.Position = 0;
-			data = io.ToArray();
-			await stream.DisposeAsync();
-		}
-
-		request.Image = Convert.ToBase64String(data);
 		req.GenerationStart = DateTime.Now;
 
 		var res = await _ai.Img2Img(request);
@@ -190,6 +199,12 @@ public class AiController : ControllerBase
 		return Ok(embeds);
 	}
 
+	[HttpGet, Route("ai/loras")]
+	public async Task<IActionResult> Loras()
+	{
+		return Ok(await _ai.Loras());
+	}
+
 	[HttpGet, Route("ai/images"), AdminAuthorize]
 	public IActionResult Images()
 	{
@@ -231,6 +246,7 @@ public class AiController : ControllerBase
 		if (request is AiRequestImg2Img img2img)
 		{
 			validators.Add(validator("denoise strength", img2img.DenoiseStrength, MIN_DENOISE, MAX_DENOISE));
+			
 			if (string.IsNullOrEmpty(img2img.Image))
 				validators.Add("Image URL cannot be blank!");
 		}

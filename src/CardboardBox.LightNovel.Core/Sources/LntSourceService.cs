@@ -6,6 +6,7 @@ public class LntSourceService : ILntSourceService
 {
 	private readonly IApiService _api;
 	private readonly ILogger _logger;
+	private readonly IConfiguration _config;
 
 	public string Name => "lnt";
 
@@ -13,12 +14,29 @@ public class LntSourceService : ILntSourceService
 
 	public string NovelUrl => RootUrl + "/novel/";
 
+	public string AuthValue => _config["NovelSources:LntAuth"];
+
 	public LntSourceService(
 		IApiService api, 
-		ILogger<LntSourceService> logger) 
+		ILogger<LntSourceService> logger,
+		IConfiguration config) 
 	{
 		_api = api;
 		_logger = logger;
+		_config = config;
+	}
+
+	public Task<HtmlDocument> GetWithAuth(string url)
+	{
+		var authValue = AuthValue;
+		return _api.GetHtml(url, c =>
+		{
+			if (!string.IsNullOrEmpty(authValue))
+				c.Headers.Add("Cookie", authValue);
+
+			c.Headers.Remove("user-agent");
+			c.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/114.0");
+		});
 	}
 
 	public async Task<TempSeriesInfo?> GetSeriesInfo(string url)
@@ -63,7 +81,7 @@ public class LntSourceService : ILntSourceService
 		if (set == null) return null;
 
 		url = set.Root;
-		var doc = await _api.GetHtml(url);
+		var doc = await GetWithAuth(url);
 		if (doc == null) return null;
 
 		var title = doc.InnerText("//div[@class='novel_title']/h3");
@@ -157,7 +175,7 @@ public class LntSourceService : ILntSourceService
 		if (set == null) yield break;
 
 		var url = set.Root;
-		var doc = await _api.GetHtml(url);
+		var doc = await GetWithAuth(url);
 		if (doc == null) yield break;
 
 		var accordions = doc.DocumentNode.SelectNodes("//div[@class='novel_list_chapter_content']");
@@ -203,7 +221,7 @@ public class LntSourceService : ILntSourceService
 
 	public async Task<SourceChapter?> GetChapter(string url, string bookTitle)
 	{
-		var doc = await _api.GetHtml(url);
+		var doc = await GetWithAuth(url);
 		if (doc == null) return null;
 
 		var title = doc.InnerText("//div[@class='text_story']/h2");

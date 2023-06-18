@@ -1,8 +1,9 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { asyncScheduler, catchError, filter, map, observeOn, of, switchMap, tap } from 'rxjs';
-import { AiRequestImg2Img, AiService, AuthService, SubscriptionHandler, DEFAULT_REQUEST } from 'src/app/services';
+import { asyncScheduler, catchError, combineLatest, combineLatestWith, filter, map, observeOn, of, switchMap, tap } from 'rxjs';
+import { PopupComponent, PopupInstance, PopupService } from 'src/app/components';
+import { AiRequestImg2Img, AiService, AuthService, SubscriptionHandler, DEFAULT_REQUEST, AuthUser, AiLoras } from 'src/app/services';
 
 @Component({
     templateUrl: './ai.component.html',
@@ -11,6 +12,11 @@ import { AiRequestImg2Img, AiService, AuthService, SubscriptionHandler, DEFAULT_
 export class AiComponent implements OnInit, OnDestroy {
 
     private _subs = new SubscriptionHandler();
+    private _embedsPopupIns?: PopupInstance;
+    private _loraPopupIns?: PopupInstance;
+
+    @ViewChild('embedsPopup') embedsPopup!: PopupComponent;
+    @ViewChild('loraPopup') loraPopup!: PopupComponent;
 
     loading: boolean = false;
     issues: string[] = [];
@@ -33,43 +39,52 @@ export class AiComponent implements OnInit, OnDestroy {
             console.error('An error occurred while fetching AI image', { err });
             return of(undefined);
         }),
-        tap(t => {
+        tap(tRaw => {
             this.loading = false;
-            if (!t) return;
+            if (!tRaw) return;
+
+            const t = this.api.convertTo(tRaw);
 
             this.request = t;
-            this.img = !!t.image;
-            this.request.image = t.image || '';
-            this.request.denoiseStrength = t.denoiseStrength || 0.2;
-            this.urls = t.outputPaths;
+            this.img = !!t.init_images[0];
+            this.request.init_images = t.init_images;
+            this.request.denoise_strength = t.denoise_strength || 0.2;
+            this.urls = tRaw.outputPaths;
         }),
         map(t => t?.id)
     );
 
-    embeddings$ = this.auth.onLogin.pipe(
+    dataSet$ = this.auth.onLogin.pipe(
         observeOn(asyncScheduler),
-        filter(t => {
+        filter(authUser => {
             this.error = undefined;
-            if (t) return true;
+            if (authUser) return true;
             this.error = 'You need to be logged in to use this!';
             return false;
         }),
         tap(_ => this.loading = true),
-        switchMap(_ => this.api.embeddings().observable),
+        combineLatestWith(
+            this.api.embeddings().observable,
+            this.api.loras().observable
+        ),
         catchError((error) => {
-            this.error = 'An error occurred while fetching embeddings. Are you logged in?';
-            console.error('An error occurred while fetching embeddings', { error });
-            return of(undefined)
+            this.error = 'An error occurred while fetching embeddings and/or loras. Are you logged in?';
+            console.error('An error occurred while fetching embeddings and/or loras', { error });
+            return of([undefined, undefined, undefined])
         }),
         tap(_ => this.loading = false)
     );
+
+    embeddings$ = this.dataSet$.pipe(map(([u, embeds, l]) => embeds ?? []));
+    loras$ = this.dataSet$.pipe(map(([u, e, loras]) => loras ?? []));
 
     constructor(
         private api: AiService,
         private auth: AuthService,
         private title: Title,
         private route: ActivatedRoute,
-        private router: Router
+        private router: Router,
+        private pop: PopupService
     ) { }
 
     ngOnInit() {
@@ -85,12 +100,20 @@ export class AiComponent implements OnInit, OnDestroy {
 
     clone<T>(item: T) { return <T>JSON.parse(JSON.stringify(item)); }
 
+    openEmbeds() {
+        this._embedsPopupIns = this.pop.show(this.embedsPopup);
+    }
+
+    openLoras() {
+      this._loraPopupIns = this.pop.show(this.loraPopup);
+    }
+
     post() {
         this.loading = true;
         this.issues = [];
         this.urls = [];
         this.error = undefined;
-        
+
         let req = (!this.img ? this.api.text2Image : this.api.image2image);
 
         req.call(this.api, this.request)
@@ -100,7 +123,7 @@ export class AiComponent implements OnInit, OnDestroy {
                     this.error = err.statusText || 'An error occurred.';
                     return;
                 }
-                
+
                 this.issues = err.error.issues;
             }, { id: -1 })
             .subscribe(t => {

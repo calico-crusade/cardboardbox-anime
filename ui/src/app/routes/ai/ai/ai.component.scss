@@ -18,13 +18,13 @@ main {
                     &.advanced { display: none; }
                 }
             }
-            
+
             &.advanced {
                 .grid {
                     .form-control { display: flex; }
                 }
             }
-        
+
             &.hints {
                 .grid {
                     .form-control {
@@ -52,7 +52,7 @@ main {
         &:last-child {
             display: flex;
             flex-flow: column;
-            
+
             .image-result {
                 margin: 10px;
                 display: flex;
@@ -73,7 +73,19 @@ main {
                 &:last-child { margin-bottom: auto; }
             }
         }
-    }    
+    }
+}
+
+.keywords-list {
+    max-height: 80vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    code {
+        padding: 3px;
+        background-color: rgba(0, 0, 0, 0.7);
+        border-radius: 3px;
+    }
 }
 
 @media only screen and (max-width: 1000px) {

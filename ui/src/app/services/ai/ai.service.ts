@@ -2,7 +2,7 @@ import { Injectable } from "@angular/core";
 import { BehaviorSubject } from "rxjs";
 import { ConfigObject } from "../config.base";
 import { HttpService } from "../http.service";
-import { AiDbRequest, AiRequest, AiRequestImg2Img, AiResults } from "./ai.models";
+import { AiDbRequest, AiLoras, AiRequest, AiRequestImg2Img, AiResults } from "./ai.models";
 
 export type IdResponse = { id: number };
 
@@ -10,7 +10,7 @@ export type IdResponse = { id: number };
     providedIn: 'root'
 })
 export class AiService extends ConfigObject {
-    
+
     private _nextSub = new BehaviorSubject<AiRequest | undefined>(undefined);
 
     get onGen() { return this._nextSub.asObservable(); }
@@ -30,6 +30,10 @@ export class AiService extends ConfigObject {
 
     embeddings() {
         return this.http.get<string[]>(`ai/embeddings`);
+    }
+
+    loras() {
+        return this.http.get<AiLoras>(`ai/loras`);
     }
 
     images() {
@@ -56,25 +60,25 @@ export class AiService extends ConfigObject {
         if (req.denoiseStrength && req.imageUrl) {
             output = <AiRequestImg2Img>{
                 prompt: req.prompt,
-                negativePrompt: req.negativePrompt,
+                negative_prompt: req.negativePrompt,
                 steps: req.steps,
-                batchCount: req.batchCount,
-                batchSize: req.batchSize,
-                cfgScale: req.cfgScale,
+                n_iter: req.batchCount,
+                batch_size: req.batchSize,
+                cfg_scale: req.cfgScale,
                 seed: req.seed,
                 height: req.height,
                 width: req.width,
-                image: req.imageUrl,
-                denoiseStrength: req.denoiseStrength
+                init_images: [req.imageUrl],
+                denoise_strength: req.denoiseStrength
             };
         } else {
             output = {
                 prompt: req.prompt,
-                negativePrompt: req.negativePrompt,
+                negative_prompt: req.negativePrompt,
                 steps: req.steps,
-                batchCount: req.batchCount,
-                batchSize: req.batchSize,
-                cfgScale: req.cfgScale,
+                n_iter: req.batchCount,
+                batch_size: req.batchSize,
+                cfg_scale: req.cfgScale,
                 seed: req.seed,
                 height: req.height,
                 width: req.width
@@ -86,5 +90,21 @@ export class AiService extends ConfigObject {
 
     clear() {
         this._nextSub.next(undefined);
+    }
+
+    convertTo(db: AiDbRequest): AiRequestImg2Img {
+        return {
+            prompt: db.prompt,
+            negative_prompt: db.negativePrompt,
+            steps: db.steps,
+            n_iter: db.batchCount,
+            batch_size: db.batchSize,
+            cfg_scale: db.cfgScale,
+            seed: db.seed,
+            height: db.height,
+            width: db.width,
+            init_images: [db.imageUrl || ''],
+            denoise_strength: db.denoiseStrength
+        }
     }
 }

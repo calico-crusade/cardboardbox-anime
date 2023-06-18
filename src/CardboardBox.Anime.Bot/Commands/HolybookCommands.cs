@@ -261,7 +261,6 @@ public class HolybookCommands
 
 		var (worked, image) = await GetImage(imageUrl);
 
-
 		if (!worked)
 		{
 			await cmd.Modify("Image was not valid: " + image);
@@ -316,14 +315,27 @@ public class HolybookCommands
 			return;
 		}
 
-		var files = emebds
-			.Where(t => Path.GetExtension(t).ToLower().TrimStart('.') != "txt")
-			.Select(t => Path.GetFileNameWithoutExtension(t))
-			.ToArray();
-
 		await cmd.Modify(
 			"These are all of the embeddings I found, you can put them in prompts and it modifies what the image looks like:\r\n" +
-			string.Join(", ", files));
+			string.Join(", ", emebds));
+	}
+
+	[Command("ai-loras", "Displays a list of all loaded LORA models", LongRunning = true)]
+	public async Task Loras(SocketSlashCommand cmd)
+	{
+		var loras = await _ai.Loras();
+		if (loras == null || loras.Length == 0)
+		{
+			await cmd.Modify("I couldn't find any LORA models! Maybe the API is dead?");
+			return;
+		}
+
+		await cmd.Modify(
+			"These are all of the LORA models I found. You can put them in prompts and it will change how the image looks:\r\n\r\n* " +
+			string.Join("\r\n* ", loras.Select(t => $"{t.Name} ({t.Alias})")) + "\r\n\r\n" +
+			"You include them by adding `<lora:{name/alias}:{strength}>` to the prompt\r\n" +
+			"Example: `1girl, fran, cat tail, cat ears, black hair, blue eyes, <lora:FranRAAS:0.9>`\r\n" +
+			"Found an interesting model? You can ask [Cardboard](<https://discord.com/users/191100926486904833>) to load it! You can browse models on: <https://civitai.com>");
 	}
 
 	[GuildCommand("guilds", "Displays a list of discord servers the bot is in", CARDBOARD_BOX_SERVER)]

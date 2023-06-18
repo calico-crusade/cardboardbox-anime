@@ -6,66 +6,66 @@
                     <div class="form-control checkbox">
                         <label><input type="checkbox" [(ngModel)]="img" />Image 2 Image</label>
                     </div>
-            
+
                     <div class="form-control checkbox">
                         <label><input type="checkbox" [(ngModel)]="hints" />Show Hints</label>
                     </div>
-        
+
                     <div class="form-control checkbox">
                         <label><input type="checkbox" [(ngModel)]="advanced" /> Advanced Config</label>
                     </div>
-        
+
                 </div>
-        
+
                 <div class="grid">
                     <div class="form-control">
                         <label>Prompt:</label>
                         <textarea [(ngModel)]="request.prompt" placeholder="What do you want me to generate?"></textarea>
                         <p class="note">These are any key words you want the algorithm to use to generate your image.</p>
                     </div>
-            
+
                     <div class="form-control">
                         <label>Negative Prompt:</label>
-                        <textarea [(ngModel)]="request.negativePrompt" placeholder="What things do you want me to avoid?"></textarea>
+                        <textarea [(ngModel)]="request.negative_prompt" placeholder="What things do you want me to avoid?"></textarea>
                         <p class="note">These are any key words you want the algorithm to actively avoid.</p>
                     </div>
-            
+
                     <div class="form-control advanced">
                         <label>Steps:</label>
                         <input type="number" [(ngModel)]="request.steps" min="1" max="64" step="1" />
                         <p class="note">The number of sampling steps to use during the generation (Min: 1, Max: 64)</p>
                     </div>
-            
+
                     <div class="form-control advanced">
                         <label>CFG Scale:</label>
-                        <input type="number" [(ngModel)]="request.cfgScale" min="1" max="32" step="0.5" />
+                        <input type="number" [(ngModel)]="request.cfg_scale" min="1" max="32" step="0.5" />
                         <p class="note">How strongly the image should conform to prompt - lower values produce more creative results (Min: 1, Max: 32)</p>
                     </div>
-            
+
                     <div class="form-control advanced">
                         <label>Batch Count:</label>
-                        <input type="number" [(ngModel)]="request.batchCount" min="1" max="2" />
+                        <input type="number" [(ngModel)]="request.n_iter" min="1" max="2" />
                         <p class="note">How many different batches of images to create. (Min: 1, Max: 2)</p>
                     </div>
-            
+
                     <div class="form-control advanced">
                         <label>Batch Size:</label>
-                        <input type="number" [(ngModel)]="request.batchSize" min="1" max="4" />
+                        <input type="number" [(ngModel)]="request.batch_size" min="1" max="4" />
                         <p class="note">How many images to create in a single batch. (Min: 1, Max: 4)</p>
                     </div>
-            
+
                     <div class="form-control advanced">
                         <label>Seed:</label>
                         <input type="number" [(ngModel)]="request.seed" />
                         <p class="note">A value that determines the output of random number generator (-1 = Random Seed)</p>
                     </div>
-            
+
                     <div class="form-control advanced">
                         <label>Width:</label>
                         <input type="number" [(ngModel)]="request.width" min="64" max="1024" step="64" />
                         <p class="note">The width of the generated image (Min: 64, Max: 1024)</p>
                     </div>
-            
+
                     <div class="form-control advanced">
                         <label>Height:</label>
                         <input type="number" [(ngModel)]="request.height" min="64" max="1024" step="64"  />
@@ -74,28 +74,24 @@
                     <ng-container *ngIf="img">
                         <div class="form-control">
                             <label>Image URL:</label>
-                            <input type="url" [(ngModel)]="request.image" />
+                            <input type="url" [(ngModel)]="request.init_images[0]" />
                             <p class="note">This is the base image to use when generating an image. This has to be a URL directly to the image, this cannot target a web-page.</p>
                         </div>
                         <div class="form-control">
                             <label>Denoise Strength:</label>
-                            <input type="number" [(ngModel)]="request.denoiseStrength" min="0.0" max="1.0" step="0.1" />
+                            <input type="number" [(ngModel)]="request.denoise_strength" min="0.0" max="1.0" step="0.1" />
                             <p class="note">Determines how little respect the algorithm should have for image's content. The lower the closer to the original image (Min: 0.0, Max: 1.0)</p>
                         </div>
                     </ng-container>
-                </div>                
+                </div>
             </div>
 
             <div class="submit">
+                <button class="btn" (click)="openEmbeds()">Embeds</button>
+                <button class="btn" (click)="openLoras()">LORA Models</button>
                 <a class="btn" [routerLink]="['/ai', 'requests']">History</a>
                 <button class="btn" (click)="post()">Generate</button>
             </div>
-            <ng-container *ngIf="embeddings$ | async as embeddings">
-                <div class="notes" *ngIf="hints">
-                    The following key words will force the generator to use specific embeddings that modify how the image is generated. <br />
-                    {{ embeddings.join(', ') }}
-                </div>
-            </ng-container>
         </article>
         <article>
             <h1 class="image-issues" *ngIf="issues.length > 0">There were a few issues with your request:</h1>
@@ -109,3 +105,43 @@
         </article>
     </main>
 </cba-container>
+
+<cba-popup #embedsPopup>
+    <div class="keywords-list">
+        <h2>AI Embeddings:</h2>
+        <p>
+            Here is a list of all of the keyword embeddings you can use.<br />
+            These will change the style of image generated.<br />
+            You can include them by adding the name of the embedding in your prompt followed by a strength modifier, split with a semi-color (:),<br />
+            like so: <code>some prompt [some prompt word:&lt;embedding-name&gt;:&lt;strength&gt;]</code>
+        </p>
+        <p>
+            Here is an example using the "botan-50000" and a strenght of "0.5". <br />
+            <code>detailed blushing [anime lady:botan-50000:.05] in a black outfit with ((starry eyes)), a perfect face, lit by ((strong rim light)) at ((night)), (intense shadows), ((sharp focus))</code>
+        </p>
+        <p>Here is a list of all of the embeddings loaded:</p>
+        <ul *ngIf="embeddings$ | async as embeddings" class="grid by-3">
+          <li *ngFor="let embed of embeddings">{{ embed }}</li>
+        </ul>
+    </div>
+</cba-popup>
+
+<cba-popup #loraPopup>
+  <div class="keywords-list">
+      <h2>AI Loras:</h2>
+      <p>
+          Here is a list of all of the keyword LORA models you can use.<br />
+          Specifying a LORA model will tell the AI image generator to base all of the generated images off of the given model.<br />
+          You can include them by adding the name or alias of the lora in your prompt followed by a strength modifier, split with a semi-color (:),<br />
+          like so: <code>some prompt &lt;lora:[name/alias]:[strength]&gt;</code>
+      </p>
+      <p>
+          Here is an example using the "MilimNavaMerge1" lora.<br />
+          <code>milim nava,pink hair,blue eyes,sitting on a beach &lt;lora:MilimNavaMerge1:0.9&gt;</code>
+      </p>
+      <p>Here is a list of all of the LORA models loaded:</p>
+      <ul *ngIf="loras$ | async as loras">
+        <li *ngFor="let lora of loras">{{ lora.name }} ({{ lora.alias }})</li>
+      </ul>
+  </div>
+</cba-popup>
