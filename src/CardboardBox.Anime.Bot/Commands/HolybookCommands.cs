@@ -380,7 +380,8 @@ public class HolybookCommands
 
 	[Command("secret", "Exposes all of your inner-most secrets!", LongRunning = true)]
 	public async Task Secrets(SocketSlashCommand cmd,
-		[Option("Secret Type", false, "fetish")] string? type)
+		[Option("Secret Type", false, "fetish")] string? type,
+		[Option("Who to expose", false)] IUser? user)
 	{
 		static string OffsetForCardboard(string[] items, Random rnd)
 		{
@@ -388,7 +389,8 @@ public class HolybookCommands
 			return items[index];
 		}
 
-        var userRan = new Random(CalculateSeed(cmd.User.Id));
+		var uid = user?.Id ?? cmd.User.Id;
+        var userRan = new Random(CalculateSeed(uid));
 		var validTypes = new[] { "gif", "png", "jpg", "jpeg", "webp" };
 		(string name, string[] path)[] types = new[]
 		{
@@ -411,11 +413,12 @@ public class HolybookCommands
 		var image = OffsetForCardboard(files, userRan);
 		await cmd.ModifyOriginalResponseAsync(c =>
 		{
-			c.Content = "Here is your deepest darkest secret: ";
+			c.Content = $"Here is <@{uid}>'s deepest darkest secret: ";
 			c.Attachments = new FileAttachment[]
 			{
 				new FileAttachment(image)
 			};
+			c.AllowedMentions = new AllowedMentions(AllowedMentionTypes.None);
 		});
 	}
 
