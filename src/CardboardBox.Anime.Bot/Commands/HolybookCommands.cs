@@ -390,14 +390,14 @@ public class HolybookCommands
 
         var userRan = new Random(CalculateSeed(cmd.User.Id));
 		var validTypes = new[] { "gif", "png", "jpg", "jpeg", "webp" };
-		(string name, string path)[] types = new[]
+		(string name, string[] path)[] types = new[]
 		{
-			("fetish", "ImageSets\\Fetish")
+			("fetish", new[] { "ImageSets", "Fetish" })
 		};
 
 		var path = types.PreferedOrFirst(t => t.name.ToLower().Trim() == type?.ToLower().Trim()).path;
 
-		var files = Directory.GetFiles(path)
+		var files = Directory.GetFiles(Path.Combine(path))
 			.Where(t => validTypes.Contains(Path.GetExtension(t).Trim('.').ToLower()))
 			.OrderBy(t => t)
 			.ToArray();
