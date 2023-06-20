@@ -73,6 +73,11 @@ public static class Extensions
 		return handler.RemoveComponents(action);
 	}
 
+	public static int Martial(this int input, int max)
+	{
+		return (input + max) % max;
+	}
+
 	public static IServiceCollection AddDatabase(this IServiceCollection services)
 	{
 		MapConfig.AddMap(c =>

@@ -6,11 +6,12 @@ using CardboardBox.Anime.Bot.Services;
 using CardboardBox.Anime.Holybooks;
 using CardboardBox.Discord;
 using CardboardBox.Manga;
+using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 
 var isLocal = Environment.GetCommandLineArgs().Any(t => t.ToLower().Contains("local"));
-
-var bot = DiscordBotBuilder.Start()
+var client = isLocal ? new DiscordSocketClient(new DiscordSocketConfig{ UseInteractionSnowflakeDate = false }) : null;
+var bot = DiscordBotBuilder.Start(null, client)
 	.WithServices(c =>
 	{
 		c.AddTransient<IHolyBooksService, HolyBooksService>()

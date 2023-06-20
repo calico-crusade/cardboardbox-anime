@@ -18,6 +18,17 @@
     <None Update="creds.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="ImageSets\Fetish\*.gif">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+	
+  <ItemGroup>
+    <Folder Include="ImageSets\Fetish\" />
+  </ItemGroup>
+	
+  <ItemGroup>
+    <PackageReference Include="Discord.Net" Version="3.10.0" />
   </ItemGroup>
 
 </Project>

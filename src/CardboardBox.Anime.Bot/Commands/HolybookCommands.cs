@@ -5,6 +5,7 @@ namespace CardboardBox.Anime.Bot.Commands;
 
 using AI;
 using Holybooks;
+using Microsoft.VisualBasic;
 using Services;
 using Maturity = AnimeFilter.MatureType;
 
@@ -376,6 +377,52 @@ public class HolybookCommands
 			await cmd.RespondAsync("Error occurred while processing your request", ephemeral: true);
 		}
 	}
+
+	[Command("secret", "Exposes all of your inner-most secrets!", LongRunning = true)]
+	public async Task Secrets(SocketSlashCommand cmd,
+		[Option("Secret Type", false, "fetish")] string? type)
+	{
+		static string OffsetForCardboard(string[] items, Random rnd)
+		{
+			var index = (rnd.Next(items.Length) - 1).Martial(items.Length);
+			return items[index];
+		}
+
+        var userRan = new Random(CalculateSeed(cmd.User.Id));
+		var validTypes = new[] { "gif", "png", "jpg", "jpeg", "webp" };
+		(string name, string path)[] types = new[]
+		{
+			("fetish", "ImageSets\\Fetish")
+		};
+
+		var path = types.PreferedOrFirst(t => t.name.ToLower().Trim() == type?.ToLower().Trim()).path;
+
+		var files = Directory.GetFiles(path)
+			.Where(t => validTypes.Contains(Path.GetExtension(t).Trim('.').ToLower()))
+			.OrderBy(t => t)
+			.ToArray();
+
+		if (files.Length == 0)
+		{
+			await cmd.Modify("Unfortunately, I was unable to handle your request at this time. Please try again later!");
+			return;
+		}
+
+		var image = OffsetForCardboard(files, userRan);
+		await cmd.ModifyOriginalResponseAsync(c =>
+		{
+			c.Content = "Here is your deepest darkest secret: ";
+			c.Attachments = new FileAttachment[]
+			{
+				new FileAttachment(image)
+			};
+		});
+	}
+
+	private int CalculateSeed(ulong id)
+	{
+        return int.Parse(new string(id.ToString().TakeLast(6).ToArray()));
+    }
 
 	private async Task<(bool, string)> GetImage(string url)
 	{
