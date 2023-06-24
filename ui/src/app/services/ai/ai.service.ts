@@ -2,7 +2,10 @@ import { Injectable } from "@angular/core";
 import { BehaviorSubject } from "rxjs";
 import { ConfigObject } from "../config.base";
 import { HttpService } from "../http.service";
-import { AiDbRequest, AiLoras, AiRequest, AiRequestImg2Img, AiResults } from "./ai.models";
+import { 
+    AiDbRequest, AiLoras, AiRequest, 
+    AiRequestImg2Img, AiResults, AiSamplers 
+} from "./ai.models";
 
 export type IdResponse = { id: number };
 
@@ -34,6 +37,10 @@ export class AiService extends ConfigObject {
 
     loras() {
         return this.http.get<AiLoras>(`ai/loras`);
+    }
+
+    samplers() {
+        return this.http.get<AiSamplers>(`ai/samplers`);
     }
 
     images() {
@@ -69,7 +76,8 @@ export class AiService extends ConfigObject {
                 height: req.height,
                 width: req.width,
                 init_images: [req.imageUrl],
-                denoise_strength: req.denoiseStrength
+                denoise_strength: req.denoiseStrength,
+                sampler_name: req.sampler
             };
         } else {
             output = {
@@ -81,7 +89,8 @@ export class AiService extends ConfigObject {
                 cfg_scale: req.cfgScale,
                 seed: req.seed,
                 height: req.height,
-                width: req.width
+                width: req.width,
+                sampler_name: req.sampler
             };
         }
 
@@ -104,7 +113,8 @@ export class AiService extends ConfigObject {
             height: db.height,
             width: db.width,
             init_images: [db.imageUrl || ''],
-            denoise_strength: db.denoiseStrength
+            denoise_strength: db.denoiseStrength,
+            sampler_name: db.sampler,
         }
     }
 }

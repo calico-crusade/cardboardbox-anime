@@ -10,6 +10,7 @@ export interface AiRequest {
     seed: number;
     height: number;
     width: number;
+    sampler_name: string;
 }
 
 export interface AiRequestImg2Img extends AiRequest {
@@ -25,6 +26,13 @@ export interface AiLora {
 
 export type AiLoras = AiLora[];
 
+export interface AiSampler {
+    name: string;
+    aliases: string[];
+}
+
+export type AiSamplers = AiSampler[];
+
 export interface AiDbRequest extends DbObject {
     profileId: number;
 
@@ -39,6 +47,7 @@ export interface AiDbRequest extends DbObject {
     width: number;
     imageUrl?: string;
     denoiseStrength?: number;
+    sampler: string;
 
     outputPaths: string[];
     generationStart: Date;
@@ -59,5 +68,6 @@ export const DEFAULT_REQUEST : AiRequestImg2Img = {
     height: 1024,
     width: 512,
     init_images: [''],
-    denoise_strength: 0.2
+    denoise_strength: 0.2,
+    sampler_name: "Euler"
 }

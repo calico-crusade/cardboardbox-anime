@@ -3,7 +3,7 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { asyncScheduler, catchError, combineLatest, combineLatestWith, filter, map, observeOn, of, switchMap, tap } from 'rxjs';
 import { PopupComponent, PopupInstance, PopupService } from 'src/app/components';
-import { AiRequestImg2Img, AiService, AuthService, SubscriptionHandler, DEFAULT_REQUEST, AuthUser, AiLoras } from 'src/app/services';
+import { AiRequestImg2Img, AiService, AuthService, SubscriptionHandler, DEFAULT_REQUEST, AuthUser, AiLoras, AiSamplers } from 'src/app/services';
 
 @Component({
     templateUrl: './ai.component.html',
@@ -65,18 +65,24 @@ export class AiComponent implements OnInit, OnDestroy {
         tap(_ => this.loading = true),
         combineLatestWith(
             this.api.embeddings().observable,
-            this.api.loras().observable
+            this.api.loras().observable,
+            this.api.samplers().observable,
         ),
         catchError((error) => {
             this.error = 'An error occurred while fetching embeddings and/or loras. Are you logged in?';
             console.error('An error occurred while fetching embeddings and/or loras', { error });
-            return of([undefined, undefined, undefined])
+            return of([undefined, undefined, undefined, undefined])
         }),
         tap(_ => this.loading = false)
-    );
+    ).subscribe(([_, embeddings, loras, samplers]) => {
+        this.embeddings = embeddings || [];
+        this.loras = loras || [];
+        this.samplers = samplers || [];
+    });
 
-    embeddings$ = this.dataSet$.pipe(map(([u, embeds, l]) => embeds ?? []));
-    loras$ = this.dataSet$.pipe(map(([u, e, loras]) => loras ?? []));
+    embeddings: string[] = [];
+    loras: AiLoras = [];
+    samplers: AiSamplers = [];
 
     constructor(
         private api: AiService,

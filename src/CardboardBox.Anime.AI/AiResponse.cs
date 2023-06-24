@@ -46,3 +46,12 @@ public class LoraResponse
 	[JsonPropertyName("path")]
 	public string Path { get; set; } = string.Empty;
 }
+
+public class SamplerResponse
+{
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
+
+    [JsonPropertyName("aliases")]
+    public string[] Aliases { get; set; } = Array.Empty<string>();
+}

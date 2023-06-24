@@ -33,4 +33,6 @@ public class DbAiRequest : DbObject
 	public DateTime? GenerationEnd { get; set; }
 
 	public long? SecondsElapsed { get; set; }
+
+	public string Sampler { get; set; } = "Euler";
 }

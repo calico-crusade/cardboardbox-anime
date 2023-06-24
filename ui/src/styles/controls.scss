@@ -4,13 +4,17 @@
     padding: 5px;
 
     &:not(.checkbox) {
-        input {
+        input, select {
             outline: none;
             border: 1px solid var(--brd-color-accent);
             background-color: transparent;
             padding: 5px;
             border-radius: 5px;
             color: var(--text-color);
+        }
+
+        select {
+            background-color: var(--bg-accent);
         }
     }
 

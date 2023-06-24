@@ -5,6 +5,7 @@ using Commands.Nsfw;
 using Database.Mapping;
 using Database.Generation;
 using Services;
+using Scripting.Tokening;
 
 public static class Extensions
 {
@@ -108,6 +109,9 @@ public static class Extensions
 			.AddTransient<IGptDbService, GptDbService>()
 			.AddTransient<INsfwConfigDbService, NsfwConfigDbService>()
 			.AddTransient<IChatGptService, ChatGptService>()
-			.AddTransient<INsfwService, NsfwService>();
+			.AddTransient<INsfwService, NsfwService>()
+			.AddTransient<IScriptMethods, ScriptMethods>()
+			.AddTransient<ITokenService, TokenService>()
+			.AddSingleton<ICommandStateService, CommandStateService>();
 	}
 }

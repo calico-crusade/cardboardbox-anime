@@ -26,9 +26,5 @@
   <ItemGroup>
     <Folder Include="ImageSets\Fetish\" />
   </ItemGroup>
-	
-  <ItemGroup>
-    <PackageReference Include="Discord.Net" Version="3.10.0" />
-  </ItemGroup>
 
 </Project>

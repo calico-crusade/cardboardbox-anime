@@ -2,6 +2,8 @@
 
 using ChatGPT;
 using Services;
+using Scripting;
+using Scripting.Tokening;
 
 using Match = System.Text.RegularExpressions.Match;
 using CMsg = Cacheable<IUserMessage, ulong>;
@@ -15,6 +17,8 @@ public class EasterEggs
 	private readonly IChatGptService _chat;
 	private readonly ILogger _logger;
 	private readonly IDbService _db;
+	private readonly IServiceProvider _provider;
+	private readonly ITokenService _token;
 
 	private static Dictionary<ulong, GptChat> _chats = new();
 	private static ulong[] AUTHORIZED_USERS = { 191100926486904833 };
@@ -25,7 +29,9 @@ public class EasterEggs
 		IMangaLookupService lookup,
 		IChatGptService chat,
 		ILogger<EasterEggs> logger,
-		IDbService db)
+		IDbService db,
+		IServiceProvider provider,
+		ITokenService token)
 	{
 		_client = client;
 		_api = api;
@@ -33,6 +39,8 @@ public class EasterEggs
 		_chat = chat;
 		_logger = logger;
 		_db = db;
+		_provider = provider;
+		_token = token;
 	}
 
 	public Task Setup()
@@ -77,6 +85,14 @@ public class EasterEggs
 		}
 
 		if (!arg.MentionedUsers.Any(t => t.Id == _client.CurrentUser.Id)) return;
+
+		if (arg.Content.ToLower().Contains("exec"))
+		{
+			if (!AUTHORIZED_USERS.Contains(arg.Author.Id)) return;
+
+            await HandleScript(arg);
+            return;
+        }
 
 		if (arg.Reference == null || !arg.Reference.MessageId.IsSpecified)
 		{
@@ -208,5 +224,36 @@ public class EasterEggs
 
 		foreach(var m in messages)
 			await msg.Channel.SendMessageAsync(m, messageReference: reference);
+	}
+
+	public async Task HandleScript(SocketMessage msg)
+    {
+        var reference = new MessageReference(msg.Id, msg.Channel.Id);
+        var reply = (string message) => msg.Channel.SendMessageAsync(message, messageReference: reference);
+		try
+		{
+            var engine = new ScriptEngineBuilder()
+				.WithProvider(_provider)
+				.WithGlobalMethods<IScriptMethods>()
+				.WithVariable("msg", msg)
+				.WithMethod("reply", reply)
+				.Build();
+
+			var config = new TokenParserConfig("```js", "```", "\\");
+			var tokens = _token.ParseTokens(msg.Content, config).ToArray();
+			if (tokens.Length == 0) return;
+
+			foreach (var token in tokens)
+            {
+                _logger.LogDebug("Found content: {username} ({id}) [{messageId}]: \r\n{content}",
+                    msg.Author.Username, msg.Author.Id, msg.Id, token.Content.Trim('\r', '\n'));
+                engine.Execute(token.Content);
+            }
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "An error occurred while processing script");
+			await reply($"An error occurred while processing your script: \r\n```\r\n{ex}\r\n```");
+		}
 	}
 }

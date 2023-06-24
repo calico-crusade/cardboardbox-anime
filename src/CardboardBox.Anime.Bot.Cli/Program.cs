@@ -34,9 +34,11 @@ var bot = DiscordBotBuilder.Start(null, client)
 		 .With<MangaCommand>()
 		 .With<NsfwCommands>()
 		 .With<GptToggleCommands>()
+		 .With<AiCommands>()
 		 .WithComponent<MangaSearchComponent>()
 		 .WithComponent<MangaReadComponent>()
-		 .WithComponent<MangaSearchReadComponent>();
+		 .WithComponent<MangaSearchReadComponent>()
+		 .WithComponent<AiComponent>();
 	})
 	.Build();
 

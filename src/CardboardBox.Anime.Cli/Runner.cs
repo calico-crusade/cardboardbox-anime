@@ -147,7 +147,8 @@ public class Runner : IRunner
 				case "tags": await FixTags(); break;
 				case "progress": await FixProgress(); break;
 				case "lnt": await TestLnt(); break;
-				default: _logger.LogInformation("Invalid command: " + command); break;
+				case "nuchaps": await TestNUChapters(); break;
+                default: _logger.LogInformation("Invalid command: " + command); break;
 			}
 
 			_logger.LogInformation("Finished.");
@@ -1053,5 +1054,19 @@ public class Runner : IRunner
 
 		var chapter = await _lnt.GetChapter(chapUrl, "");
 		_logger.LogInformation("Finished");
+	}
+
+	public async Task TestNUChapters()
+	{
+		var url = "https://www.novelupdates.com/series/tsuki-ga-michibiku-isekai-douchuu/";
+
+		var (info, chaps) = await _info.GetChapters(url);
+
+		if (info == null || 
+			chaps.Length == 0)
+		{
+			_logger.LogWarning("Couldn't find content for the given NU page.");
+			return;
+		}
 	}
 }

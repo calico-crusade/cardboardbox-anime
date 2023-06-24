@@ -3,9 +3,7 @@ using DiscordClient = Discord.WebSocket.DiscordSocketClient;
 
 namespace CardboardBox.Anime.Bot.Commands;
 
-using AI;
 using Holybooks;
-using Microsoft.VisualBasic;
 using Services;
 using Maturity = AnimeFilter.MatureType;
 
@@ -21,8 +19,6 @@ public class HolybookCommands
 	private readonly IHolyBooksService _holybooks;
 	private readonly IAnimeApiService _anime;
 	private readonly ILogger _logger;
-	private readonly IAiAnimeService _ai;
-	private readonly IDbService _db;
 	private readonly DiscordClient _client;
 	private readonly Random _rnd = new();
 
@@ -30,18 +26,14 @@ public class HolybookCommands
 		IHolyBooksService holybooks, 
 		ILogger<HolybookCommands> logger,
 		IAnimeApiService anime,
-		IAiAnimeService ai,
 		IApiService api,
-		IDbService db,
 		DiscordClient client)
 	{
 		_holybooks = holybooks;
 		_logger = logger;
 		_anime = anime;
-		_ai = ai;
 		_api = api;
 		_client = client;
-		_db = db;
 	}
 
 	[Command("ping", "Checks to see if the bot is still alive.")]
@@ -131,212 +123,6 @@ public class HolybookCommands
 			_logger.LogError(ex, "Error occurred while requesting anime");
 			await cmd.Modify("An error occurred.");
 		}
-	}
-
-	[Command("ai", "Generates an image with the given data", LongRunning = true)]
-	public async Task Ai(SocketSlashCommand cmd,
-		[Option("Generation Prompt", true)] string prompt,
-		[Option("Negative Generation Prompt", false)] string? negativePrompt,
-		[Option("Generation Steps (1 - 64)", false)] long? steps,
-		[Option("CFG Scale (1 - 30)", false)] double? cfg,
-		[Option("Generation Seed (1+)", false)] string? seed,
-		[Option("Image Width (100 - 1024)", false)] long? width,
-		[Option("Image Height (100 - 1024)", false)] long? height)
-	{
-		negativePrompt ??= "";
-		steps ??= DEFAULT_STEPS;
-		cfg ??= DEFAULT_CFG;
-		seed ??= DEFAULT_SEED;
-		width ??= DEFAULT_SIZE;
-		height ??= DEFAULT_SIZE;
-
-		if (width < 100 || width > 1024 || height < 100 || height > 1024)
-		{
-			await cmd.Modify("Image size has to be within 100x100 and 1024x1024!");
-			return;
-		}
-
-		if (steps < 1 || steps > 64)
-		{
-			await cmd.Modify("Generation Steps has to be between 1 and 64");
-			return;
-		}
-
-		if (cfg < 1 || cfg > 30)
-		{
-			await cmd.Modify("CFG has to be between 1 and 30");
-			return;
-		}
-
-		if (!long.TryParse(seed, out long actualSeed) || (actualSeed < 1 && actualSeed != -1))
-		{
-			await cmd.Modify("Seed has to be a number and cannot be less than 1!");
-			return;
-		}
-
-		var resp = await _ai.Text2Img(new AiRequest
-		{
-			Prompt = prompt,
-			NegativePrompt = negativePrompt,
-			Steps = steps ?? DEFAULT_STEPS,
-			CfgScale = cfg ?? DEFAULT_CFG,
-			BatchCount = 1,
-			BatchSize = 1,
-			Seed = actualSeed,
-			Width = width ?? DEFAULT_SIZE,
-			Height = height ?? DEFAULT_SIZE
-		});
-		
-		if (resp == null || resp.Images == null || resp.Images.Length == 0)
-		{
-			await cmd.Modify("Something went wrong! Contact an admin!");
-			return;
-		}
-
-		var images = resp.Images.Select((t, i) =>
-		{
-			var temp = Path.GetRandomFileName() + ".png";
-			var bytes = Convert.FromBase64String(t);
-			File.WriteAllBytes(temp, bytes);
-
-			var attach = new FileAttachment(temp);
-			return (temp, attach);
-		}).ToArray();
-		
-		await cmd.Modify("I have finished generating your image! Give me a second to post it! Thanks!");
-		await cmd.Channel.SendFilesAsync(images.Select(t => t.attach));
-
-		foreach (var (temp, _) in images)
-			File.Delete(temp);
-	}
-
-	[Command("ai-img", "Generates an image with the given data", LongRunning = true)]
-	public async Task Img2ImgAi(SocketSlashCommand cmd,
-		[Option("Image Url", true)] string imageUrl,
-		[Option("Generation Prompt", true)] string prompt,
-		[Option("Negative Generation Prompt", false)] string? negativePrompt,
-		[Option("Generation Steps (1 - 64)", false)] long? steps,
-		[Option("CFG Scale (1 - 30)", false)] double? cfg,
-		[Option("Generation Seed (1+)", false)] string? seed,
-		[Option("Image Width (100 - 1024)", false)] long? width,
-		[Option("Image Height (100 - 1024)", false)] long? height,
-		[Option("Denoise Strength (0.0 - 1.0)", false)] double? denoiseStrength)
-	{
-		negativePrompt ??= "";
-		steps ??= DEFAULT_STEPS;
-		cfg ??= DEFAULT_CFG;
-		seed ??= DEFAULT_SEED;
-		width ??= DEFAULT_SIZE;
-		height ??= DEFAULT_SIZE;
-		denoiseStrength ??= DEFAULT_DENOISE;
-
-		if (width < 100 || width > 1024 || height < 100 || height > 1024)
-		{
-			await cmd.Modify("Image size has to be within 100x100 and 1024x1024!");
-			return;
-		}
-
-		if (steps < 1 || steps > 64)
-		{
-			await cmd.Modify("Generation Steps has to be between 1 and 64");
-			return;
-		}
-
-		if (cfg < 1 || cfg > 30)
-		{
-			await cmd.Modify("CFG has to be between 1 and 30");
-			return;
-		}
-
-		if (!long.TryParse(seed, out long actualSeed) || (actualSeed < 1 && actualSeed != -1))
-		{
-			await cmd.Modify("Seed has to be a number and cannot be less than 1!");
-			return;
-		}
-
-		if (denoiseStrength < 0 || denoiseStrength > 1)
-		{
-			await cmd.Modify("Denoise Strength has to be between 0.0 and 1.0!");
-			return;
-		}
-
-		var (worked, image) = await GetImage(imageUrl);
-
-		if (!worked)
-		{
-			await cmd.Modify("Image was not valid: " + image);
-			return;
-		}
-
-		var resp = await _ai.Img2Img(new AiRequestImg2Img
-		{
-			Prompt = prompt,
-			NegativePrompt = negativePrompt,
-			Steps = steps ?? DEFAULT_STEPS,
-			CfgScale = cfg ?? DEFAULT_CFG,
-			BatchCount = 1,
-			BatchSize = 1,
-			Seed = actualSeed,
-			Width = width ?? DEFAULT_SIZE,
-			Height = height ?? DEFAULT_SIZE,
-			Image = image,
-			DenoiseStrength = denoiseStrength ?? DEFAULT_DENOISE
-		});
-
-		if (resp == null || resp.Images == null || resp.Images.Length == 0)
-		{
-			await cmd.Modify("Something went wrong! Contact an admin!");
-			return;
-		}
-
-		var images = resp.Images.Select((t, i) =>
-		{
-			var temp = Path.GetRandomFileName() + ".png";
-			var bytes = Convert.FromBase64String(t);
-			File.WriteAllBytes(temp, bytes);
-
-			var attach = new FileAttachment(temp);
-			return (temp, attach);
-		}).ToArray();
-
-		await cmd.Modify("I have finished generating your image! Give me a second to post it! Thanks!");
-		await cmd.Channel.SendFilesAsync(images.Select(t => t.attach));
-
-		foreach (var (temp, _) in images)
-			File.Delete(temp);
-	}
-
-	[Command("ai-embeds", "Displays a list of all of the embeds loaded on the system", LongRunning = true)]
-	public async Task EmbeddingList(SocketSlashCommand cmd)
-	{
-		var emebds = await _ai.Embeddings();
-		if (emebds.Length == 0)
-		{
-			await cmd.Modify("I couldn't find any embeds! Maybe the API is dead?");
-			return;
-		}
-
-		await cmd.Modify(
-			"These are all of the embeddings I found, you can put them in prompts and it modifies what the image looks like:\r\n" +
-			string.Join(", ", emebds));
-	}
-
-	[Command("ai-loras", "Displays a list of all loaded LORA models", LongRunning = true)]
-	public async Task Loras(SocketSlashCommand cmd)
-	{
-		var loras = await _ai.Loras();
-		if (loras == null || loras.Length == 0)
-		{
-			await cmd.Modify("I couldn't find any LORA models! Maybe the API is dead?");
-			return;
-		}
-
-		await cmd.Modify(
-			"These are all of the LORA models I found. You can put them in prompts and it will change how the image looks:\r\n\r\n* " +
-			string.Join("\r\n* ", loras.Select(t => $"{t.Name} ({t.Alias})")) + "\r\n\r\n" +
-			"You include them by adding `<lora:{name/alias}:{strength}>` to the prompt\r\n" +
-			"Example: `1girl, fran, cat tail, cat ears, black hair, blue eyes, <lora:FranRAAS:0.9>`\r\n" +
-			"Found an interesting model? You can ask [Cardboard](<https://discord.com/users/191100926486904833>) to load it! You can browse models on: <https://civitai.com>");
 	}
 
 	[GuildCommand("guilds", "Displays a list of discord servers the bot is in", CARDBOARD_BOX_SERVER)]

@@ -13,6 +13,7 @@
 	width BIGINT not null,
 	image_url TEXT,
 	denoise_strength DECIMAL,
+	sampler TEXT NOT NULL DEFAULT 'Euler',
 
 	output_paths TEXT[] not null,
 

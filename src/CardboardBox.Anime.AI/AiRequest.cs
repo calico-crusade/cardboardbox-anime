@@ -30,6 +30,12 @@ public class AiRequest
 
 	[JsonPropertyName("width")]
 	public long Width { get; set; } = 512;
+
+	[JsonPropertyName("sampler_name")]
+	public string Sampler { get; set; } = "Euler";
+
+	[JsonPropertyName("sampler_index")]
+	public string SamplerIndex { get => Sampler; set => Sampler = value; }
 }
 
 public class AiRequestImg2Img : AiRequest

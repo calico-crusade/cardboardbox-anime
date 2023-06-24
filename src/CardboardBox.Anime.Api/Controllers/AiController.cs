@@ -95,16 +95,7 @@ public class AiController : ControllerBase
 			return File(singleData, "image/png", "image.png");
 		}
 
-		if (!Directory.Exists(ImageDir)) Directory.CreateDirectory(ImageDir);
-
-		var urls = await res.Images.Select(async t =>
-		{
-			var path = Path.GetRandomFileName() + ".png";
-			var bytes = Convert.FromBase64String(t);
-			await IOFile.WriteAllBytesAsync(Path.Combine(ImageDir, path), bytes);
-
-			return string.Join("/", ImageDir.Split('/', '\\').Skip(1)) + "/" + path;
-		}).ToArray().WhenAll();
+		var urls = await res.Images.Select(t => _ai.DecodeAndSaveUrl(t, ImageDir)).ToArray().WhenAll();
 
 		req.OutputPaths = urls;
 		await _db.AiRequests.Update(req);
@@ -118,26 +109,6 @@ public class AiController : ControllerBase
 	[HttpPost, Route("ai/img")]
 	public async Task<IActionResult> Img2Img([FromBody] AiRequestImg2Img request, [FromQuery] bool download = false)
 	{
-		async IAsyncEnumerable<string> GetImageData()
-		{
-			foreach(var image in request.Images)
-			{
-				var (stream, _, file, type) = await _api.GetData(image);
-				if (stream == null || !type.ToLower().StartsWith("image")) continue;
-
-				var data = Array.Empty<byte>();
-				using (var io = new MemoryStream())
-				{
-					await stream.CopyToAsync(io);
-					io.Position = 0;
-					data = io.ToArray();
-					await stream.DisposeAsync();
-				}
-
-				yield return Convert.ToBase64String(data);
-			}
-		}
-
 		var valRes = Validate(request);
 		if (valRes != null) return valRes;
 
@@ -146,7 +117,6 @@ public class AiController : ControllerBase
 
 		req.Id = await _db.AiRequests.Insert(req);
 
-		request.Images = await GetImageData().ToArrayAsync();
 		if (request.Images.Length == 0)
 			return BadRequest();
 
@@ -169,16 +139,7 @@ public class AiController : ControllerBase
 			return File(singleData, "image/png", "image.png");
 		}
 
-		if (!Directory.Exists(ImageDir)) Directory.CreateDirectory(ImageDir);
-
-		var urls = await res.Images.Select(async t =>
-		{
-			var path = Path.GetRandomFileName() + ".png";
-			var bytes = Convert.FromBase64String(t);
-			await IOFile.WriteAllBytesAsync(Path.Combine(ImageDir, path), bytes);
-
-			return string.Join("/", ImageDir.Split('/', '\\').Skip(1)) + "/" + path;
-		}).ToArray().WhenAll();
+		var urls = await res.Images.Select(t => _ai.DecodeAndSaveUrl(t, ImageDir)).ToArray().WhenAll();
 
 		req.OutputPaths = urls;
 		await _db.AiRequests.Update(req);
@@ -221,6 +182,12 @@ public class AiController : ControllerBase
 	{
 		var classifiction = await _nsfw.Get(url);
 		return Ok(classifiction);
+	}
+
+	[HttpGet, Route("ai/samplers")]
+	public async Task<IActionResult> Samplers()
+	{
+		return Ok(await _ai.Samplers());
 	}
 
 	private IActionResult? Validate(AiRequest request)
@@ -282,7 +249,8 @@ public class AiController : ControllerBase
 			Seed = request.Seed,
 			Height = request.Height,
 			Width = request.Width,
-			GenerationStart = DateTime.Now
+			GenerationStart = DateTime.Now,
+			Sampler = request.Sampler,
 		};
 
 		if (request is AiRequestImg2Img img)

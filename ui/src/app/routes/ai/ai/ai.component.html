@@ -71,6 +71,13 @@
                         <input type="number" [(ngModel)]="request.height" min="64" max="1024" step="64"  />
                         <p class="note">The height of the generated image (Min: 64, Max: 1024)</p>
                     </div>
+                    <div class="form-control advanced">
+                        <label>Sampler:</label>
+                        <select [(ngModel)]="request.sampler_name">
+                            <option *ngFor="let sampler of samplers" [value]="sampler.name">{{ sampler.name }}</option>
+                        </select>
+                        <p class="note">Changes the rendering engine of the AI image generator</p>
+                    </div>
                     <ng-container *ngIf="img">
                         <div class="form-control">
                             <label>Image URL:</label>
@@ -120,7 +127,7 @@
             <code>detailed blushing [anime lady:botan-50000:.05] in a black outfit with ((starry eyes)), a perfect face, lit by ((strong rim light)) at ((night)), (intense shadows), ((sharp focus))</code>
         </p>
         <p>Here is a list of all of the embeddings loaded:</p>
-        <ul *ngIf="embeddings$ | async as embeddings" class="grid by-3">
+        <ul class="grid by-3">
           <li *ngFor="let embed of embeddings">{{ embed }}</li>
         </ul>
     </div>
@@ -140,7 +147,7 @@
           <code>milim nava,pink hair,blue eyes,sitting on a beach &lt;lora:MilimNavaMerge1:0.9&gt;</code>
       </p>
       <p>Here is a list of all of the LORA models loaded:</p>
-      <ul *ngIf="loras$ | async as loras">
+      <ul>
         <li *ngFor="let lora of loras">{{ lora.name }} ({{ lora.alias }})</li>
       </ul>
   </div>

@@ -19,6 +19,7 @@
     <ProjectReference Include="..\CardboardBox.Anime.Database\CardboardBox.Anime.Database.csproj" />
     <ProjectReference Include="..\CardboardBox.Anime.Holybooks\CardboardBox.Anime.Holybooks.csproj" />
     <ProjectReference Include="..\CardboardBox.Manga\CardboardBox.Manga.csproj" />
+    <ProjectReference Include="..\CardboardBox.Scripting\CardboardBox.Scripting.csproj" />
   </ItemGroup>
 
 	<ItemGroup>
