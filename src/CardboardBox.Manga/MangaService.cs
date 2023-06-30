@@ -33,14 +33,18 @@ public interface IMangaService
 	Task<(MemoryStream stream, string name)?> CreateZip(string mangaId, int chapterId, string? platformId);
 
 	Task<MangaData?> Volumed(string id, string? pid, ChapterSortColumn sort, bool asc);
+
+    Task<bool> ToggleRead(string id, string pid, params long[] chapters);
 }
 
 public class MangaService : IMangaService
 {
 	private readonly IMangaSource[] _sources;
-	private readonly IMangaDbService _db;
 	private readonly IMatchApiService _match;
 	private readonly IApiService _api;
+	private readonly IDbService _db;
+
+	private IMangaDbService _manga => _db.Manga;
 
 	private readonly IMangaDexService _md;
 
@@ -53,7 +57,7 @@ public class MangaService : IMangaService
 		.ToArray();
 
 	public MangaService(
-		IMangaDbService db,
+		IDbService db,
 		IMatchApiService match,
 		IApiService api,
 		IMangaDexService md,
@@ -102,13 +106,13 @@ public class MangaService : IMangaService
 			Size = 9999999,
 			Nsfw = NsfwCheck.DontCare
 		};
-		var db = await _db.Search(filter, null);
+		var db = await _manga.Search(filter, null);
 		return db ?? new();
 	}
 
 	public async Task<string[]> MangaPages(long chapterId, bool refetch)
 	{
-		var chapter = await _db.GetChapter(chapterId);
+		var chapter = await _manga.GetChapter(chapterId);
 		return await MangaPages(chapter, refetch);
 	}
 
@@ -117,7 +121,7 @@ public class MangaService : IMangaService
 		if (chapter == null) return Array.Empty<string>();
 		if (chapter.Pages.Length > 0 && !refetch) return chapter.Pages;
 
-		var manga = await _db.Get(chapter.MangaId);
+		var manga = await _manga.Get(chapter.MangaId);
 		if (manga == null) return Array.Empty<string>();
 
 		return await MangaPages(chapter, manga, refetch);
@@ -135,14 +139,14 @@ public class MangaService : IMangaService
 			await src.ChapterPages(manga.SourceId, chapter.SourceId);
 		if (pages == null) return Array.Empty<string>();
 
-		await _db.SetPages(chapter.Id, pages.Pages);
+		await _manga.SetPages(chapter.Id, pages.Pages);
 		chapter.Pages = pages.Pages;
 		return chapter.Pages;
 	}
 
 	public Task<PaginatedResult<DbManga>> Manga(int page, int size)
 	{
-		return _db.Paginate(page, size);
+		return _manga.Paginate(page, size);
 	}
 
 	public async Task<MangaWithChapters?> Manga(string url, string? platformId, bool forceUpdate = false)
@@ -150,7 +154,7 @@ public class MangaService : IMangaService
 		var (src, id) = DetermineSource(url);
 		if (src == null || id == null) return null;
 
-		var manga = await _db.Get(id);
+		var manga = await _manga.Get(id);
 		if (manga == null || forceUpdate) return await LoadManga(src, id, platformId);
 
 		return await Manga(manga.Id, platformId);
@@ -158,7 +162,7 @@ public class MangaService : IMangaService
 
 	public Task<MangaWithChapters?> Manga(long id, string? platformId)
 	{
-		return _db.GetManga(id, platformId);
+		return _manga.GetManga(id, platformId);
 	}
 
 	public async Task<MangaWithChapters?> LoadManga(IMangaSource src, string id, string? platformId)
@@ -191,7 +195,7 @@ public class MangaService : IMangaService
 				.Select(t => new DbMangaAttribute(t.Name, t.Value))
 				.ToArray()
 		};
-		m.Id = await _db.Upsert(m);
+		m.Id = await _manga.Upsert(m);
 		return m;
 	}
 
@@ -219,14 +223,14 @@ public class MangaService : IMangaService
 					.ToArray()
 			};
 
-			chap.Id = await _db.Upsert(chap);
+			chap.Id = await _manga.Upsert(chap);
 			yield return chap;
 		}
 	}
 
 	public async Task<MangaWorked[]> Updated(int count, string? platformId)
 	{
-		var needs = await _db.FirstUpdated(count);
+		var needs = await _manga.FirstUpdated(count);
 
 		return await needs.Select(async t =>
 		{
@@ -243,7 +247,7 @@ public class MangaService : IMangaService
 		if (long.TryParse(id, out var mid))
 			return mid;
 
-		return (await _db.GetByHashId(id))?.Id;
+		return (await _manga.GetByHashId(id))?.Id;
 	}
 
 	public string IndexId(DbManga manga, DbMangaChapter chapter, int i)
@@ -260,7 +264,7 @@ public class MangaService : IMangaService
 			indexed = true;
 
 			if (chapter.Pages.Length == 0) return (false, indexed);
-			await _db.SetPages(chapter.Id, chapter.Pages);
+			await _manga.SetPages(chapter.Id, chapter.Pages);
 		}
 
 		return (true, indexed);
@@ -291,7 +295,7 @@ public class MangaService : IMangaService
 
 	public async Task<bool> ResetChapterPages(string mangaId, int chapterId, string? platformId)
 	{
-		var manga = await _db.GetManga(mangaId, platformId);
+		var manga = await _manga.GetManga(mangaId, platformId);
 		if (manga == null) return false;
 
 		var chapter = manga.Chapters.FirstOrDefault(t => t.Id == chapterId);
@@ -306,13 +310,13 @@ public class MangaService : IMangaService
 
 		if (pages == null || pages.Pages == null || pages.Pages.Length == 0) return false;
 
-		await _db.SetPages(chapterId, pages.Pages);
+		await _manga.SetPages(chapterId, pages.Pages);
 		return true;
 	}
 
 	public async Task<(MemoryStream stream, string name)?> CreateZip(string mangaId, int chapterId, string? platformId)
 	{
-		var manga = await _db.GetManga(mangaId, platformId);
+		var manga = await _manga.GetManga(mangaId, platformId);
 		if (manga == null) return null;
 
 		var chapter = manga.Chapters.FirstOrDefault(t => t.Id == chapterId);
@@ -396,7 +400,7 @@ public class MangaService : IMangaService
 
 			var read = versions.Any(t => progs.ContainsKey(t.Id));
 			//Check to see if the current chapter has been read
-			int? idx = !read ? null : versions.IndexOfNull(t => t.Id == progress?.MangaChapterId);
+			int? idx = versions.IndexOfNull(t => t.Id == progress?.MangaChapterId);
 			var chap = new VolumeChapter
 			{
 				Read = read,
@@ -427,14 +431,14 @@ public class MangaService : IMangaService
 		if (string.IsNullOrEmpty(id)) return null;
 
 		//Check if a random manga was requested
-		if (id.ToLower().Trim() == "random") return await _db.Random(pid);
+		if (id.ToLower().Trim() == "random") return await _manga.Random(pid);
 
 		//Determine if the ID was passed
 		if (long.TryParse(id, out var mid))
-			return await _db.GetManga(mid, pid);
+			return await _manga.GetManga(mid, pid);
 
 		//Or the hash
-		return await _db.GetManga(id, pid);
+		return await _manga.GetManga(id, pid);
 	}
 
 	public async Task<MangaData?> Volumed(string id, string? pid, ChapterSortColumn sort, bool asc)
@@ -444,7 +448,7 @@ public class MangaService : IMangaService
 
 		//Fetch progress, stats, and other authed stuff
 		//Skip fetching if the user isn't logged in
-		var ext = string.IsNullOrEmpty(pid) ? null : await _db.GetMangaExtended(manga.Manga.Id, pid);
+		var ext = string.IsNullOrEmpty(pid) ? null : await _manga.GetMangaExtended(manga.Manga.Id, pid);
 
 		//Create a clone of manga data with extra fields
 		var output = manga.Clone<MangaWithChapters, MangaData>();
@@ -461,6 +465,65 @@ public class MangaService : IMangaService
 		output.VolumeIndex = ext?.Chapter == null ? 0 : output.Volumes.IndexOfNull(t => t.InProgress) ?? 0;
 
 		return output;
+	}
+
+	public async Task<bool> ToggleRead(string id, string pid, params long[] chapters)
+	{
+		async Task<bool> DoUpdate(DbMangaProgress progress)
+		{
+			if (progress.Id == -1)
+                return await _manga.InsertProgress(progress) > 0;
+            
+			await _manga.UpdateProgress(progress);
+			return true;
+		}
+
+		var profile = await _db.Profiles.Fetch(pid);
+		if (profile == null) return false;
+
+		var manga = await _manga.GetManga(id, pid);
+		if (manga == null) return false;
+
+		var progress = await _manga.GetProgress(pid, id) ?? new DbMangaProgress
+		{
+			Id = -1,
+            ProfileId = profile.Id,
+            MangaId = manga.Manga.Id
+        };
+
+		//Toggle full list of chapters
+		if (chapters.Length == 0)
+		{
+			progress.Read = progress.Read.Length == 0 ? manga.Chapters.Select(t => new DbMangaChapterProgress
+			{
+                ChapterId = t.Id,
+                PageIndex = t.Pages.Length - 1
+            }).ToArray() : Array.Empty<DbMangaChapterProgress>();
+
+			return await DoUpdate(progress);
+		}
+
+		//Toggle specific chapters
+		var read = progress.Read.ToList();
+		foreach(var chapter in chapters)
+		{
+			var chap = manga.Chapters.FirstOrDefault(t => t.Id == chapter);
+			if (chap == null) continue;
+
+			var index = chap.Pages.Length - 1 < 0 ? 0 : chap.Pages.Length - 1;
+
+			var exists = read.FirstOrDefault(t => t.ChapterId == chapter);
+			if (exists == null)
+			{
+				read.Add(new DbMangaChapterProgress(chap.Id, index));
+				continue;
+			}
+
+			read.Remove(exists);
+		}
+
+		progress.Read = read.ToArray();
+		return await DoUpdate(progress);
 	}
 }
 

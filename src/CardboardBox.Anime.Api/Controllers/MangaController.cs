@@ -347,6 +347,36 @@ public class MangaController : ControllerBase
 	{
 		return Ok(_manga.Providers);
 	}
+
+	[HttpGet, Route("manga/{id}/mark-as-read"), Authorize]
+	public async Task<IActionResult> MarkAsRead([FromRoute] string id)
+	{
+        var pid = this.UserFromIdentity()?.Id;
+        if (pid == null) return BadRequest();
+
+        var worked = await _manga.ToggleRead(id, pid);
+        return Ok(new { worked });
+    }
+
+	[HttpGet, Route("manga/{id}/mark-as-read/{chapterId}"), Authorize]
+	public async Task<IActionResult> MarkAsReadChapter([FromRoute] string id, [FromRoute] long chapterId)
+	{
+        var pid = this.UserFromIdentity()?.Id;
+        if (pid == null) return BadRequest();
+
+        var worked = await _manga.ToggleRead(id, pid, chapterId);
+        return Ok(new { worked });
+    }
+
+	[HttpPost, Route("manga/{id}/mark-as-read"), Authorize]
+	public async Task<IActionResult> MarkAsReadPost([FromRoute] string id, [FromBody] long[] chapters)
+	{
+        var pid = this.UserFromIdentity()?.Id;
+        if (pid == null) return BadRequest();
+
+        var worked = await _manga.ToggleRead(id, pid, chapters);
+        return Ok(new { worked });
+    }
 }
 
 public class SauceRequest

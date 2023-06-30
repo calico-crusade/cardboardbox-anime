@@ -9,10 +9,10 @@ public class DbMangaProgress : DbObject
 	public long MangaId { get; set; }
 
 	[JsonPropertyName("mangaChapterId")]
-	public long MangaChapterId { get; set; }
+	public long? MangaChapterId { get; set; }
 
 	[JsonPropertyName("pageIndex")]
-	public int PageIndex { get; set; }
+	public int? PageIndex { get; set; }
 
 	[JsonPropertyName("read")]
 	public DbMangaChapterProgress[] Read { get; set; } = Array.Empty<DbMangaChapterProgress>();

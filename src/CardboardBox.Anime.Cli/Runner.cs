@@ -1026,7 +1026,7 @@ public class Runner : IRunner
 					continue;
 				}
 
-				pages.Add(new DbMangaChapterProgress { ChapterId = chap.Id, PageIndex = prog.PageIndex });
+				pages.Add(new DbMangaChapterProgress { ChapterId = chap.Id, PageIndex = prog.PageIndex ?? 0 });
 			}
 
 			if (pages.Count == 0) continue;

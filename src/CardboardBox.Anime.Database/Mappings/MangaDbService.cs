@@ -60,8 +60,6 @@ public interface IMangaDbService
 
 	Task<MangaWithChapters?> Random(string? platformId);
 
-	Task<PaginatedResult<MangaProgress>> Touched(string? platformId, int page, int size, TouchedState state = TouchedState.All);
-
 	Task<PaginatedResult<MangaProgress>> Since(string? platform, DateTime since, int page, int size);
 
 	Task DeleteProgress(long profileId, long mangaId);
@@ -73,6 +71,8 @@ public interface IMangaDbService
 	Task<DbMangaProgress[]> AllProgress();
 
 	Task UpdateProgress(DbMangaProgress progress);
+
+	Task<long> InsertProgress(DbMangaProgress progress);
 }
 
 public class MangaDbService : OrmMapExtended<DbManga>, IMangaDbService
@@ -148,26 +148,33 @@ public class MangaDbService : OrmMapExtended<DbManga>, IMangaDbService
 		var exists = await _sql.Fetch<DbMangaProgress>(_getProgress, new { progress.ProfileId, progress.MangaId });
 		if (exists == null)
 		{
-			progress.Read = new[]
-			{
-				new DbMangaChapterProgress(progress.MangaChapterId, progress.PageIndex)
-			};
+			if (progress.MangaChapterId != null && progress.PageIndex != null)
+				progress.Read = new[]
+				{
+					new DbMangaChapterProgress(progress.MangaChapterId.Value, progress.PageIndex.Value)
+				};
 			return await _sql.ExecuteScalar<long>(_insertProgress, progress);
 		}
 
-		var found = false;
-		var pages = exists.Read.Select(t =>
-		{
-			if (t.ChapterId != progress.MangaChapterId) return t;
-			found = true;
+		var pages = exists.Read;
+		if (progress.MangaChapterId != null &&
+			progress.PageIndex != null)
+        {
+			var cur = new DbMangaChapterProgress(progress.MangaChapterId.Value, progress.PageIndex.Value);
+            var found = false;
+            pages = exists.Read.Select(t =>
+			{
+				if (t.ChapterId != progress.MangaChapterId) return t;
+				found = true;
 
-			if (t.PageIndex > progress.PageIndex) return t;
+				if (t.PageIndex > progress.PageIndex) return t;
 
-			return new DbMangaChapterProgress(progress.MangaChapterId, progress.PageIndex);
-		}).ToArray();
+				return cur;
+			}).ToArray();
 
-		if (!found)
-			pages = pages.Append(new DbMangaChapterProgress(progress.MangaChapterId, progress.PageIndex)).ToArray();
+            if (!found)
+                pages = pages.Append(cur).ToArray();
+        }
 
 		progress.Id = exists.Id;
 		progress.Read = pages.OrderBy(t => t.ChapterId).ToArray();
@@ -184,7 +191,13 @@ public class MangaDbService : OrmMapExtended<DbManga>, IMangaDbService
 
 	public Task DeleteProgress(long profileId, long mangaId)
 	{
-		const string QUERY = "DELETE FROM manga_progress WHERE profile_id = :profileId AND manga_id = :mangaId";
+		const string QUERY = @"UPDATE manga_progress 
+SET 
+	manga_chapter_id = NULL, 
+	page_index = NULL 
+WHERE 
+	profile_id = :profileId AND 
+	manga_id = :mangaId";
 		return _sql.Execute(QUERY, new { profileId, mangaId });
 	}
 
@@ -198,6 +211,12 @@ public class MangaDbService : OrmMapExtended<DbManga>, IMangaDbService
 		_updateProgress ??= _query.Update<DbMangaProgress>(TABLE_NAME_MANGA_PROGRESS, t => t.With(a => a.Id).With(a => a.CreatedAt));
 		return _sql.Execute(_updateProgress, progress);
 	}
+
+	public Task<long> InsertProgress(DbMangaProgress progress)
+	{
+        _insertProgress ??= _query.InsertReturn<DbMangaProgress, long>(TABLE_NAME_MANGA_PROGRESS, t => t.Id, t => t.With(a => a.Id));
+		return _sql.ExecuteScalar<long>(_insertProgress, progress);
+    }
 
 	public override Task<PaginatedResult<DbManga>> Paginate(int page = 1, int size = 100)
 	{
@@ -260,6 +279,9 @@ WHERE
 
 	public Task<DbMangaProgress?> GetProgress(string platformId, string mangaId)
 	{
+		if (long.TryParse(mangaId, out var id))
+            return GetProgress(platformId, id);
+
 		const string QUERY = @"SELECT 
 	mp.*
 FROM manga_progress mp
@@ -341,16 +363,19 @@ ORDER BY key, value";
 
 	public async Task<PaginatedResult<MangaProgress>> Search(MangaFilter filter, string? platformId)
 	{
-		const string QUERY = @"CREATE TEMP TABLE touched_manga AS
-SELECT
-	DISTINCT
-    t.*
-FROM get_manga(:platformId, :state) t
-JOIN manga m ON m.id = t.manga_id
-LEFT JOIN manga_attributes a ON a.id = m.id
-WHERE
-    {0};
+		const string FILTER_QUERY = @"WITH touched_manga AS (
+	SELECT
+		*
+	FROM get_manga_filtered(:platformId,:state, ARRAY(
+		SELECT
+			m.id
+		FROM manga m
+		LEFT JOIN manga_attributes a ON a.id = m.id
+		WHERE {0}
+	))
+)";
 
+		const string SEARCH_QUERY = FILTER_QUERY + @"
 SELECT
     m.*,
     '' as split,
@@ -364,10 +389,10 @@ JOIN manga m ON m.id = t.manga_id
 JOIN manga_chapter mc ON mc.id = t.manga_chapter_id
 LEFT JOIN manga_progress mp ON mp.id = t.progress_id
 ORDER BY {2} {1}
-LIMIT :size OFFSET :offset;
+LIMIT :size OFFSET :offset";
 
-SELECT COUNT(*) FROM touched_manga;
-DROP TABLE touched_manga;";
+		const string COUNT_QUERY = FILTER_QUERY + @"
+SELECT COUNT(*) FROM touched_manga";
 
 		var sortField = SortFields().FirstOrDefault(t => t.Id == (filter.Sort ?? 0))?.SqlName ?? "m.title";
 
@@ -441,14 +466,19 @@ DROP TABLE touched_manga;";
 		var where = string.Join(" AND ", parts);
 		var sort = filter.Ascending ? "ASC" : "DESC";
 
-		var query = string.Format(QUERY, where, sort, sortField);
+		var search = string.Format(SEARCH_QUERY, where, sort, sortField);
+		var count = string.Format(COUNT_QUERY, where);
 
 		var offset = (filter.Page - 1) * filter.Size;
 		using var con = _sql.CreateConnection();
-		using var rdr = await con.QueryMultipleAsync(query, pars);
 
-		var results = rdr.Read<DbManga, DbMangaProgress, DbMangaChapter, MangaStats, MangaProgress>((m, p, c, s) => new MangaProgress(m, p, c, s), splitOn: "split");
-		var total = await rdr.ReadSingleAsync<int>();
+		var results = await con.QueryAsync<DbManga, DbMangaProgress, DbMangaChapter, MangaStats, MangaProgress>(
+			search,
+			(m, p, c, s) => new MangaProgress(m, p, c, s),
+			splitOn: "split",
+			param: pars);
+
+		var total = await con.ExecuteScalarAsync<int>(count, pars);
 		var pages = (long)Math.Ceiling((double)total / filter.Size);
 		return new PaginatedResult<MangaProgress>(pages, total, results.ToArray());
 	}
@@ -633,42 +663,6 @@ WHERE p.platform_id = :platformId AND mf.manga_id = :id";
 		return _sql.Get<DbManga>("SELECT * FROM manga ORDER BY random() LIMIT :count", new { count });
 	}
 
-	public async Task<PaginatedResult<MangaProgress>> Touched(string? platformId, int page, int size, TouchedState state = TouchedState.All)
-	{
-		const string QUERY = @"CREATE TEMP TABLE touched_manga AS
-SELECT
-    *
-FROM get_manga(:platformId, :state);
-
-SELECT
-    m.*,
-    '' as split,
-    mp.*,
-    '' as split,
-    mc.*,
-    '' as split,
-    t.*
-FROM touched_manga t
-JOIN manga m ON m.id = t.manga_id
-JOIN manga_chapter mc ON mc.id = t.manga_chapter_id
-LEFT JOIN manga_progress mp ON mp.id = t.progress_id
-ORDER BY m.title ASC
-LIMIT :size OFFSET :offset;
-
-SELECT COUNT(*) FROM touched_manga;
-
-DROP TABLE touched_manga;";
-
-		var offset = (page - 1) * size;
-		using var con = _sql.CreateConnection();
-		using var rdr = await con.QueryMultipleAsync(QUERY, new { platformId, state = (int)state, offset, size });
-
-		var results = rdr.Read<DbManga, DbMangaProgress, DbMangaChapter, MangaStats, MangaProgress>((m, p, c, s) =>  new MangaProgress(m, p, c, s), splitOn: "split");
-		var total = await rdr.ReadSingleAsync<int>();
-		var pages = (long)Math.Ceiling((double)total / size);
-		return new PaginatedResult<MangaProgress>(pages, total, results.ToArray());
-	}
-
 	public async Task<PaginatedResult<MangaProgress>> Since(string? platformId, DateTime since, int page, int size)
 	{
 		const string QUERY = @"CREATE TEMP TABLE touched_manga AS
@@ -728,13 +722,16 @@ DROP TABLE touched_manga;";
     mc.*,
     '' as split,
     t.*
-FROM get_manga( :platformId , 99) t
+FROM get_manga_filtered( :platformId , 99, ARRAY(
+	SELECT
+	    id
+    FROM manga
+    WHERE
+        hash_id = :hashId OR id = :id
+)) t
 JOIN manga m ON m.id = t.manga_id
 JOIN manga_chapter mc ON mc.id = t.manga_chapter_id
-LEFT JOIN manga_progress mp ON mp.id = t.progress_id
-WHERE
-    m.id = :id OR
-    m.hash_id = :hashId";
+LEFT JOIN manga_progress mp ON mp.id = t.progress_id";
 
 		using var con = _sql.CreateConnection();
 		var records = await con.QueryAsync<DbManga, DbMangaProgress, DbMangaChapter, MangaStats, MangaProgress>(
