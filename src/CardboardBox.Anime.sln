@@ -75,7 +75,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CardboardBox.BackgroundTask
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CardboardBox.Anime.ChatGPT", "CardboardBox.Anime.ChatGPT\CardboardBox.Anime.ChatGPT.csproj", "{E16185B1-6A62-409C-AA5D-2CB73B30421F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CardboardBox.Scripting", "CardboardBox.Scripting\CardboardBox.Scripting.csproj", "{9D81A8C2-45C6-4222-B478-6462AC032835}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CardboardBox.Scripting", "CardboardBox.Scripting\CardboardBox.Scripting.csproj", "{9D81A8C2-45C6-4222-B478-6462AC032835}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CardboardBox.ImageTransformers", "CardboardBox.ImageTransformers\CardboardBox.ImageTransformers.csproj", "{DC4E731B-D69C-476E-9698-F4C8CECC5AF2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -183,6 +185,10 @@ Global
 		{9D81A8C2-45C6-4222-B478-6462AC032835}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9D81A8C2-45C6-4222-B478-6462AC032835}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9D81A8C2-45C6-4222-B478-6462AC032835}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC4E731B-D69C-476E-9698-F4C8CECC5AF2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC4E731B-D69C-476E-9698-F4C8CECC5AF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC4E731B-D69C-476E-9698-F4C8CECC5AF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC4E731B-D69C-476E-9698-F4C8CECC5AF2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -209,6 +215,7 @@ Global
 		{94F06A50-B66D-4DD5-9F55-561DE9EBF3B5} = {C0D571C4-DBA0-49C8-B3F5-19C040C6E267}
 		{E16185B1-6A62-409C-AA5D-2CB73B30421F} = {1910D6AC-09FF-4281-8278-11482CBE65E5}
 		{9D81A8C2-45C6-4222-B478-6462AC032835} = {54046D76-A0A0-4EBA-BF99-B1DDB6479448}
+		{DC4E731B-D69C-476E-9698-F4C8CECC5AF2} = {54046D76-A0A0-4EBA-BF99-B1DDB6479448}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F429A525-1A87-4D64-8900-FDC4C26EE386}

@@ -249,7 +249,10 @@ public static class Extensions
 		req.EnsureSuccessStatusCode();
 
 		var headers = req.Content.Headers;
-		var path = headers?.ContentDisposition?.FileName ?? headers?.ContentDisposition?.Parameters?.FirstOrDefault()?.Value ?? "";
+		var path = headers?.ContentDisposition?.FileName 
+			?? headers?.ContentDisposition?.Parameters?.FirstOrDefault()?.Value 
+			?? url.Split('/', StringSplitOptions.RemoveEmptyEntries).LastOrDefault()?.Split('?', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() 
+			?? "";
 		var type = headers?.ContentType?.ToString() ?? "";
 		var length = headers?.ContentLength ?? 0;
 

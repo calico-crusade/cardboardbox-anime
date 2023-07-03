@@ -93,13 +93,13 @@ public class MangaEpubService : IMangaEpubService
 		await data.DisposeAsync();
 	}
 
-	public Task<(Stream stream, string filename, string type)> GetData(string url)
+	public Task<StreamResult> GetData(string url)
 	{
 		if (url.ToLower().StartsWith("file://")) return GetDataFromFile(url.Remove(0, 7));
 		return _file.GetFile(url);
 	}
 
-	public Task<(Stream stream, string filename, string type)> GetDataFromFile(string path)
+	public Task<StreamResult> GetDataFromFile(string path)
 	{
 		var name = Path.GetFileName(path);
 		var ext = Path.GetExtension(path).ToLower().TrimStart('.');
@@ -115,7 +115,7 @@ public class MangaEpubService : IMangaEpubService
 		};
 
 		var stream = (Stream)File.OpenRead(path);
-		return Task.FromResult((stream, name, type));
+		return Task.FromResult(new StreamResult(stream, name, type));
 	}
 
 	public string RandomBits(int size, string? chars = null)
@@ -151,4 +151,3 @@ public class MangaEpubService : IMangaEpubService
 	}
 }
 
-public record class StreamResult(Stream Stream, string Name, string Mimetype);

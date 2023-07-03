@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CardboardBox.Anime.Database\CardboardBox.Anime.Database.csproj" />
     <ProjectReference Include="..\CardboardBox.Epub\CardboardBox.Epub.csproj" />
+    <ProjectReference Include="..\CardboardBox.ImageTransformers\CardboardBox.ImageTransformers.csproj" />
   </ItemGroup>
 
 

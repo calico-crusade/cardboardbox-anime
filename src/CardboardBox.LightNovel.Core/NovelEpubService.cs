@@ -5,6 +5,7 @@ namespace CardboardBox.LightNovel.Core;
 
 using Anime.Core;
 using Epub;
+using ImageTransformers;
 
 public interface INovelEpubService
 {
@@ -215,13 +216,20 @@ public class NovelEpubService : INovelEpubService
 		return Path.GetRandomFileName() + "." + ext;
 	}
 
-	public Task<(Stream stream, string filename, string type)> GetData(string url)
+	public async Task<StreamResult> GetData(string url, bool skipTransform = false)
 	{
-		if (url.ToLower().StartsWith("file://")) return GetDataFromFile(url.Remove(0, 7));
-		return _file.GetFile(url);
+		var output = await (url.ToLower().StartsWith("file://") ? GetDataFromFile(url.Remove(0, 7)) : _file.GetFile(url));
+
+		if (output.Mimetype != "image/webp" || skipTransform) return output;
+
+		var pngStream = new MemoryStream();
+		await output.Stream.ConvertImage(pngStream, ImageMagick.MagickFormat.Png);
+		pngStream.Position = 0;
+
+		return new StreamResult(pngStream, $"{Path.GetFileNameWithoutExtension(output.Name)}.png", "image/png");
 	}
 
-	public Task<(Stream stream, string filename, string type)> GetDataFromFile(string path)
+	public Task<StreamResult> GetDataFromFile(string path)
 	{
 		var name = Path.GetFileName(path);
 		var ext = Path.GetExtension(path).ToLower().TrimStart('.');
@@ -237,7 +245,7 @@ public class NovelEpubService : INovelEpubService
 		};
 
 		var stream = (Stream)File.OpenRead(path);
-		return Task.FromResult((stream, name, type));
+		return Task.FromResult(new StreamResult(stream, name, type));
 	}
 
 	public string CleanContents(string content, string chap)
@@ -306,4 +314,3 @@ public class NovelEpubService : INovelEpubService
 	#endregion
 }
 
-public record class StreamResult(Stream Stream, string Name, string Mimetype);

@@ -2,7 +2,7 @@
 
 public interface IFileCacheService
 {
-	Task<(Stream stream, string name, string mimetype)> GetFile(string url);
+	Task<StreamResult> GetFile(string url);
 }
 
 public class FileCacheService : IFileCacheService
@@ -15,7 +15,7 @@ public class FileCacheService : IFileCacheService
 		_api = api;
 	}
 
-	public async Task<(Stream stream, string name, string mimetype)> GetFile(string url)
+	public async Task<StreamResult> GetFile(string url)
 	{
 		if (!Directory.Exists(FILE_CACHE_DIR))
 			Directory.CreateDirectory(FILE_CACHE_DIR);
@@ -24,7 +24,7 @@ public class FileCacheService : IFileCacheService
 
 		var cacheInfo = await ReadCacheInfo(hash);
 		if (cacheInfo != null)
-			return (ReadFile(hash), cacheInfo.Name, cacheInfo.MimeType);
+			return new (ReadFile(hash), cacheInfo.Name, cacheInfo.MimeType);
 
 		
 		var io = new MemoryStream();
@@ -37,7 +37,7 @@ public class FileCacheService : IFileCacheService
 			await WriteCacheInfo(hash, cacheInfo);
 		io.Position = 0;
 
-		return (io, file, type);
+		return new (io, file, type);
 	}
 
 	public string FilePath(string hash) => Path.Combine(FILE_CACHE_DIR, $"{hash}.data");
@@ -108,3 +108,5 @@ public class FileCacheService : IFileCacheService
 		}
 	}
 }
+
+public record class StreamResult(Stream Stream, string Name, string Mimetype);
