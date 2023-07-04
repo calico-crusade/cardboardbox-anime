@@ -14,7 +14,7 @@ public static class Extensions
             { 
                 (double)maxSize / mgc.Width, 
                 (double)maxSize / mgc.Height 
-            }.Min();
+            }.Max();
 
             mgc.Resize(new Percentage(ratio * 100));
         }
