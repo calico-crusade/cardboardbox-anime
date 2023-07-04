@@ -148,6 +148,7 @@ public class Runner : IRunner
 				case "progress": await FixProgress(); break;
 				case "lnt": await TestLnt(); break;
 				case "nuchaps": await TestNUChapters(); break;
+				case "lntfix": await LntImageFix(); break;
                 default: _logger.LogInformation("Invalid command: " + command); break;
 			}
 
@@ -1067,6 +1068,33 @@ public class Runner : IRunner
 		{
 			_logger.LogWarning("Couldn't find content for the given NU page.");
 			return;
+		}
+	}
+
+	public async Task LntImageFix()
+	{
+		var pages = await _lnDb.Pages.ImagePages();
+
+		if (pages.Length == 0)
+		{
+            _logger.LogWarning("No pages found.");
+            return;
+        }
+
+		foreach(var page in pages)
+		{
+			var doc = new HtmlDocument();
+			doc.LoadHtml(page.Content);
+
+			foreach(var child in doc.DocumentNode.ChildNodes.ToArray())
+			{
+				if (child.InnerHtml.ToLower().Contains("<img"))
+					((LntSourceService)_lnt).PurgeNoScriptImages(child);
+			}
+
+			page.Content = doc.DocumentNode.InnerHtml;
+
+			await _lnDb.Pages.Update(page);
 		}
 	}
 }

@@ -233,12 +233,21 @@ public class LntSourceService : ILntSourceService
 		if (locked != null) return null;
 
 		var content = doc.DocumentNode.SelectSingleNode("//div[@class='text_story']");
-		var validEls = new[] { "p", "hr" };
+		var validEls = new[] { "p", "hr", "img" };
 		foreach(var child in content.ChildNodes.ToArray())
 		{
-			if (!validEls.Contains(child.Name))
+			if (!validEls.Contains(child.Name) || child.InnerHtml == "&nbsp;")
+			{
 				content.RemoveChild(child);
+				continue;
+			}
+
+			if (child.InnerHtml.ToLower().Contains("<img"))
+				PurgeNoScriptImages(child);
 		}
+
+		while (content.FirstChild.Name == "hr") content.RemoveChild(content.FirstChild);
+		while (content.LastChild.Name == "hr") content.RemoveChild(content.LastChild);
 
 		return new SourceChapter
 		{
@@ -275,6 +284,35 @@ public class LntSourceService : ILntSourceService
 	public string SeriesFromChapter(string url)
 	{
 		return SeriesFromUrl(url)?.Root ?? string.Empty;
+	}
+
+	public void PurgeNoScriptImages(HtmlNode parent)
+	{
+		parent.SelectNodes("//noscript")?
+			.ToList()
+			.ForEach(t => t.Remove());
+
+		parent.SelectNodes("//img")?
+			.ToList()
+			.ForEach(t =>
+			{
+				foreach(var attr in t.Attributes.ToArray())
+                    if (attr.Name != "src" && attr.Name != "alt")
+                        t.Attributes.Remove(attr);
+			});
+
+		if (parent.ChildNodes.Count == 0)
+		{
+			parent.Remove();
+			return;
+		}
+
+		if (parent.ChildNodes.Count == 1 && parent.FirstChild.Name == "img")
+		{
+			parent.ParentNode.InsertBefore(parent.FirstChild, parent);
+			parent.Remove();
+			return;
+		}
 	}
 }
 

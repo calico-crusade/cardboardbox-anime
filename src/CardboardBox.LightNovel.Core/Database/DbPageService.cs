@@ -8,6 +8,7 @@ public interface IDbPageService : ILnOrmMap<Page>
 {
 	Task<PaginatedResult<Page>> Paginate(long seriesId, int page = 1, int size = 100);
 	Task<Page?> LastPage(long seriesId);
+	Task<Page[]> ImagePages();
 }
 
 public class DbPageService : LnOrmMap<Page>, IDbPageService
@@ -36,4 +37,10 @@ public class DbPageService : LnOrmMap<Page>, IDbPageService
 		const string BACKUP_QUERY = "SELECT * FROM ln_pages WHERE series_id = :seriesId ORDER BY ordinal DESC LIMIT 1";
 		return await _sql.Fetch<Page?>(BACKUP_QUERY, new { seriesId });
 	}
+
+	public Task<Page[]> ImagePages()
+	{
+		const string QUERY = "SELECT * FROM ln_pages WHERE content LIKE '%<img%';";
+		return _sql.Get<Page>(QUERY);
+    }
 }

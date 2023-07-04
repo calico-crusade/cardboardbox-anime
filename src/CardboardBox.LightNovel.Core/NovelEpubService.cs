@@ -158,7 +158,8 @@ public class NovelEpubService : INovelEpubService
 					if (page.Mimetype.ToLower() == "application/html")
 					{
 						var header = p == 0 ? $"<h1>{chap.Title}</h1>" : "";
-						await c.AddRawPage($"chapter-{i}-{p}.xhtml", $"{header}{CleanContents(page.Content, page.Title)}");
+						var content = $"{header}{CleanContents(page.Content, page.Title)}";
+						await PostFixImages(bob, c, $"chapter-{i}-{p}.xhtml", content);
 						continue;
 					}
 
@@ -180,6 +181,44 @@ public class NovelEpubService : INovelEpubService
 		}
 	}
 
+	public async Task PostFixImages(IEpubBuilder epub, IChapterBuilder bob, string filename, string content)
+	{
+		if (!content.ToLower().Contains("<img"))
+		{
+			await bob.AddRawPage(filename, content);
+			return;
+		}
+
+		var doc = new HtmlDocument();
+		doc.LoadHtml(content);
+
+		foreach(var img in doc.DocumentNode.SelectNodes("//img"))
+		{
+			var src = img.GetAttributeValue("src", "");
+			if (string.IsNullOrEmpty(src))
+			{
+				img.Remove();
+				continue;
+			}
+
+			try
+			{
+				var (dataIn, file, type) = await GetData(src);
+				var name = DetermineName(src, file, type);
+				var relPath = await epub.AddFile(name, dataIn, FileType.Image);
+				img.SetAttributeValue("src", relPath);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"Error occurred while attempting to load image: \"{src}\" Into \"{filename}\"");
+				img.Remove();
+			}
+		}
+
+		content = doc.DocumentNode.InnerHtml;
+		await bob.AddRawPage(filename, content);
+	}
+
 	#endregion
 
 	#region Utilities
@@ -196,8 +235,24 @@ public class NovelEpubService : INovelEpubService
 		return output;
 	}
 
+	public string GetImageExtension(string type)
+	{
+		return type switch
+		{
+			"image/jpeg" => "jpg",
+			"image/jpg" => "jpg",
+			"image/png" => "png",
+			"image/webp" => "webp",
+			_ => throw new NotSupportedException($"`{type}` is not a known media-type")
+		};
+	}
+
 	public string DetermineName(string url, string name, string type)
 	{
+		if (!string.IsNullOrEmpty(name) && 
+			string.IsNullOrEmpty(Path.GetExtension(name)))
+			name += "." + GetImageExtension(type);
+
 		if (!string.IsNullOrEmpty(name)) return RandomBits(5) + name;
 
 		name = url.Split('/').Last();

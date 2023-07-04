@@ -4,8 +4,8 @@ using Management;
 using Metadata;
 
 public interface IEpubBuilder : IEpubBuilderStylesheets, IEpubBuilderImage, IEpubBuilderCover, IEpubBuilderMetadata, IEpubBuilderChapters
-{ 
-
+{
+	Task<string> AddFile(string name, Stream stream, FileType type);
 }
 
 public interface IEpub : IAsyncDisposable

@@ -58,16 +58,14 @@ CREATE TABLE profiles (
     email text not null,
     provider text null,
     provider_id text null,
-    settings_blob not null DEFAULT '{}',
+    settings_blob text not null DEFAULT '{}',
 
     created_at timestamp,
     updated_at timestamp,
-    deleted_at timestamp
+    deleted_at timestamp,
+
+    CONSTRAINT profiles_platform_id_uiq UNIQUE(platform_id)
 );
-
-CREATE UNIQUE INDEX profiles_platform_id_uiq ON profiles (platform_id);
-
-CREATE UNIQUE INDEX profiles_email_uiq ON profiles (email);
 
 -- CREATE lists TABLE
 CREATE TABLE lists (

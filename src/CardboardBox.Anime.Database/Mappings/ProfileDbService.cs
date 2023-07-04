@@ -11,8 +11,8 @@ public interface IProfileDbService
 
 public class ProfileDbService : OrmMapExtended<DbProfile>, IProfileDbService
 {
-	private string? _upsertQuery;
-	private string? _getQuery;
+	private static string? _upsertQuery;
+	private static string? _getQuery;
 
 	public override string TableName => "profiles";
 
