@@ -1,0 +1,65 @@
+.component-container {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-flow: column;
+
+    .center-content {
+        margin: 10px auto;
+        max-width: 1050px;
+        display: flex;
+        flex-flow: column;
+
+        header {
+            margin: 0 auto;
+
+            h3 {
+                text-align: center;
+            }
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        section {
+            display: flex;
+            flex-flow: row;
+            margin-bottom: 30px;
+
+            img {
+                max-height: 250px;
+                max-width: 250px;
+                margin: 20px 0;
+
+                &.rounded {
+                    border-radius: 50%;
+                }
+            }
+
+            article {
+                margin-left: 20px;
+
+                p {
+                    margin-top: 10px;
+                    line-height: 1.5rem;
+                }
+            }
+
+            &:nth-child(even) {
+                flex-flow: row-reverse;
+
+                article {
+                    margin-left: 0;
+                    margin-right: 20px;
+
+                    h2 {
+                        text-align: right;
+                    }
+                }
+            }
+        }
+
+    }
+}

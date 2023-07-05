@@ -1,0 +1,244 @@
+<div class="component-container">
+    <div class="center-content">
+        <h1>About this site</h1>
+        <header>
+            <h3>Table of Contents</h3>
+            <ul>
+                <li><a routerLink="/about" [queryParams]="{ id: 'about-me' }">Who are you?</a></li>
+                <li><a routerLink="/about" [queryParams]="{ id: 'what-and-why' }">What is this?</a></li>
+                <li><a routerLink="/about" [queryParams]="{ id: 'nowadays' }">Nowadays?</a></li>
+                <li><a routerLink="/about" [queryParams]="{ id: 'what-about-manga' }">What about manga?</a></li>
+                <li><a routerLink="/about" [queryParams]="{ id: 'tech-stack' }">How did you do this? (tech-stack)</a></li>
+                <li><a routerLink="/about" [queryParams]="{ id: 'infrastructure' }">How am I seeing this? (infrastructure)</a></li>
+                <li><a routerLink="/about" [queryParams]="{ id: 'how-long' }">Are you ok? (Time investment)</a></li>
+                <li><a routerLink="/about" [queryParams]="{ id: 'whats-next' }">What now? (The future)</a></li>
+            </ul>
+        </header>
+        <section id="about-me">
+            <img class="rounded" src="/assets/emotes/cow.jpg" />
+            <article>
+                <h2>Hi, I'm Cardboard</h2>
+                <p>
+                    I am a software developer by trade, and I work in health insurance as my daily job, but I do various volunteer and side projects to sate my boredom.
+                    Most of the projects I do are open-source and can be found on my <a href="https://github.com/calico-crusade" target="_blank">github</a>.
+                    They are mostly related to my reading addiction, Artificial Intelligence, or helpful libraries for other developers.
+                    My primary programming languages are C# and TypeScript, but I've dabbled in many others.
+                </p>
+                <p>
+                    I read <i>A LOT</i>, in 2022 I read over 400 books, and I've already read over 100 books this year (as of July 2023).
+                    I mostly read light novels, but I also read some non-fiction books and text-books.
+                    I'm a big fan of the "In another world" (Isekai) genre, but I also enjoy romance, rom-coms, and slice-of-life.
+                </p>
+                <p>
+                    While most people would probably label me a weeb, that isn't entirely accurate.
+                    I'm not really interested in Japan as a whole, I just like the stories and shows that come from there.
+                    But enough about me, you probably want to know more about this site.
+                </p>
+            </article>
+        </section>
+
+        <section id="what-and-why">
+            <img class="rounded" src="/assets/emotes/danbo.jpg" />
+            <article>
+                <h2>What is this site and why?</h2>
+                <p>
+                    This website (<b>C</b>ardboard<b>B</b>ox - <b>A</b>nime), and subsequent applications, are mostly a pet project of mine and is something I made to sate my boredom.
+                    I have no intention of making money off of any of this, and I don't plan on adding ads ever (seems like too much work).
+                    I mentioned before that I read alot, and most of this website (now-adays) is to facilitate that.
+                    However it didn't begin that way.
+                </p>
+                <p>
+                    Originally, the purpose of this website was to keep track of my anime collection (what I've watched, and where I watched it).
+                    I used a few different streaming sites at the time (funimation, crunchyroll, VRV, hidive, netflix, hulu, etc), and there was no easy way to search all of them at once.
+                    Hence this website was born.
+                </p>
+                <p>
+                    It was setup to scrape the various streaming site APIs and store all of the data into a postgres database.
+                    From there I could create lists of what I've watched and where (<a href="http://localhost:4200/anime/all/8" target="_blank">Here's some rom-coms for you!</a>).
+                    A great side-effect was that I could also search all of the sites, keep track of where the dubbed and subbed versions were, and recommend shows to friends.
+                </p>
+            </article>
+        </section>
+
+        <section id="nowadays">
+            <img src="/assets/emotes/cardboard.jpg" />
+            <article>
+                <h2>Nowadays</h2>
+                <p>
+                    In 2021/22 Sony (Funimations parent company)
+                    <a href="https://finance.yahoo.com/news/sony-inks-1-2b-deal-043000709.html" target="_blank">bought Crunchyroll</a>
+                    , and started merging libraries.
+                    They also decided to
+                    <a href="https://animecorner.me/vrv-set-to-officially-shut-down-and-merge-with-crunchyroll/" target="_blank">
+                        kill off VRV
+                    </a>
+                    and
+                    <a href="https://help.crunchyroll.com/hc/en-us/articles/4418412542868-Funimation-Update-FAQ" target="_blank">
+                        Funimation, and just stick with Crunchyroll
+                    </a>.
+                    Netflix's <a href="https://www.tomsguide.com/news/netflix-pricing" target="_blank">pricing changes were stupid</a>.
+                    And Hulu barely updates their library with interesting shows.
+                    All of those changes kinda killed the purpose of this project as the only two sites still around are hidive and crunchyroll.
+                </p>
+                <p>
+                    Around the same time, I stopped really watching a lot of shows, and started reading a lot more.
+                    I prefer reading novels on my iPad using the kindle app, but there are a bunch of novels that have been fan translated that aren't available via Amazon yet.
+                    So I decided to write an app to scrape the fan translations and create ebooks (epubs) for them.
+                    I then ran into an issue where I couldn't keep the epubs up-to-date as I'd have to regenerate <i>all of them</i> whenever they were updated.
+                    So I started loading them into a table on postgres so I could keep track of just the changes.
+                </p>
+            </article>
+        </section>
+
+        <section id="what-about-manga">
+            <img class="rounded" src="/assets/twirl.gif" />
+            <article>
+                <h2>What about Manga?</h2>
+                <p>
+                    I didn't used to read a lot of manga, I was mostly a novel kinda guy.
+                    That was until I realized that I could read ahead in some of the stories because the manga was further ahead than the novels.
+                    But all of the existing manga readers hurt my eyes! They were all so bright and white!
+                    "Why didn't you just turn on night-light or lower your brightness?" Ya don't think I tried?
+                    It was still too bloody bright! So I made my own reader that has a blue-light filter (that you can adjust) and a dark theme by default.
+                    Yay! My old eyes are saved (I'm not actually that old, I'm only in my 20s!)
+                </p>
+                <p>
+                    I then proceeded to add a bunch of other features to it at the behest of some friends and aquaintances;
+                    reverse image searching, progress tracking, read statistics, library searching, push notifications (via a discord bot), etc.
+                    All of those ended up being a lot of work, but it was a good waste of time.
+                </p>
+            </article>
+        </section>
+
+        <section id="tech-stack">
+            <img src="/assets/emotes/ducttape.webp" />
+            <article>
+                <h2>Enough history! We get it!</h2>
+                <p>
+                    Yeah, I probably rambled a bit too much there. Oh well. <br />
+                    You're probably curious about the tech stack I'm using for this site, so here it is:
+                </p>
+                <h4>Front End:</h4>
+                <p>
+                    There are actually 2 different front-ends for this site.
+                    The first is the site you're on. It's written in angular 14 and a load of custom CSS (I'm not a designer, so it's not pretty).
+                    You can actually see how this site has enhanced my UX/UI skills as I've worked on it, because the anime related stuff is ugly as hell.
+                    The other front-end is a Nuxt3 app that is used for the <a href="https://manga.index-0.com" target="_blank">manga reader</a>.
+                    It's a lot more standardized then this site, and is a lot prettier (also has more customization too!)
+                </p>
+                <h4>Back End:</h4>
+                <p>
+                    All of the back-end APIs (yes, there are multiple) are written in asp.net core and C#.
+                    I've been using C# for almost 12 years now, and it's still my go-to language for just about anything.
+                </p>
+                <h4>Database(s):</h4>
+                <p>
+                    There are actually a number of databases that I use throughout these applications.
+                    The primary database that houses all of the data for this site is Postgres.
+                    I have an apache Cassandra instance that houses my
+                    <a href="https://auth.index-0.com" target="_blank">authentication application</a>
+                    and deals with all the OAuth stuff.
+                    The bot has it's own SQLite database for handling interactions and resumability.
+                    Then there is the MongoDB database (that I'm moving away from) that used to house the light-novel stuff.
+                    And finally, there is the elastic search database that is used as a glorified vector database for the reverse image search stuff.
+                </p>
+            </article>
+        </section>
+
+        <section id="infrastructure">
+            <img src="/assets/servers.jpg" />
+            <article>
+                <h2>Hosting must cost a lot...</h2>
+                <p>
+                    I host pretty much everything locally on my own servers.
+                    The image you see next to this is the rack I have in my office.
+                    It's got an ubuntu server in it where most of the web-stuff is hosted, and a windows 10 machine for the AI stuff.
+                    The other computer is my main rig, for gaming and development and whatnot.
+                </p>
+                <p>
+                    For internet speeds, I have gigabit to my house, and 2.5gig within my local network.
+                    Upload speeds are kinda an issue, but it works for the most part.
+                    There is also a fail-over system in place that keeps the site up (most of the time) if my internet goes down.
+                    Whenever my network dies, an AWS EC2 instance gets spun up and the site continues hosting from there.
+                    It's not perfect, but it works (most of the time).
+                </p>
+            </article>
+
+        </section>
+
+        <section id="how-long">
+            <img src="/assets/emotes/noa.webp" />
+            <article>
+                <h2>Wow, that's a major time investment</h2>
+                <p>
+                    Yep. It is. But it was worth it. I've had a lot of fun and it's a great way to stave off boredom between books.
+                    The first commit to the git repo was August 3rd 2022, but I probably started working on it 3-4 months before that.
+                    I've been working on it on and off since then, and it still gets regular updates whenever I run into issues or get bored.
+                    I use this site and the manga reader every day, so I tend to notice issues pretty quickly and update it as needed otherwise it would bug me.
+                </p>
+                <p>
+                    There are also a <i>lot</i> of other projects/libraries, that I've written, that this site uses.
+                    Some of the major open-source ones that are used here are:
+                </p>
+                <ul>
+                    <li>
+                        <a href="https://github.com/calico-crusade/cardboardbox-database" target="_blank">CardboardBox.Database</a>
+                        - a micro-ORM written ontop of Dapper that provides some query gen.
+                    </li>
+                    <li>
+                        <a href="https://github.com/calico-crusade/mangadex-sharp" target="_blank">MangadexSharp</a>
+                        - a library for interfacing with the MangaDex API (I'm a FE dev (recruit) for MD!)
+                    </li>
+                    <li>
+                        <a href="https://github.com/calico-crusade/cardboardbox-proxy" target="_blank">CardboardBox.Proxy</a>
+                        - a proxy server that allows me to bypass CORS/hot-link issues and cache images.
+                    </li>
+                    <li>
+                        <a href="https://github.com/calico-crusade/CardboardBox" target="_blank">CardboardBox</a>
+                        - a collection of extension methods and utilities that I use in most of my projects.
+                    </li>
+                </ul>
+                <p>
+                    Some of the other libraries or APIs that I use (that I didn't write) include:
+                </p>
+                <ul>
+                    <li>
+                        <a href="https://github.com/AUTOMATIC1111/stable-diffusion-webui" target="_blank">stable-diffusion-webui</a>
+                        - a client used for AI Image Generation
+                    </li>
+                    <li>
+                        <a href="https://github.com/calico-crusade/nsfw-detection" target="_blank">nsfw-detection</a>
+                        - an API that can be used to detect NSFW images (I cannot find the original source)
+                    </li>
+                    <li>
+                        <a href="https://github.com/dsys/match" target="_blank">dsys/match</a>
+                        - an API for handling reverse image matching
+                    </li>
+                </ul>
+            </article>
+        </section>
+
+        <section id="whats-next">
+            <img src="/assets/loading.gif" />
+            <article>
+                <h2>What's next?</h2>
+                <p>
+                    Uh... I'm not sure. I have a few plans on the horizon;
+                    such as moving novels to a seperate site (like the manga-reader),
+                    books to read, manga to puruse, work to do, and friends to game with.
+                    But mostly, I'll keep fixing issues that I see with this site and keep adding features as I get bored.
+                    If you have any suggestions; you can
+                    <a href="https://discord.com/users/191100926486904833" target="_blank">reach out on discord</a>
+                    or
+                    <a href="https://discord.gg/RV9MvvYXsp" target="_blank">join me in my discord server.</a>
+                    You can also
+                    <a href="https://github.com/calico-crusade/cardboardbox-anime" target="_blank">checkout the code on github</a>
+                    or read some
+                    <a href="https://cba.index-0.com/series" target="_blank">novels</a>
+                    and
+                    <a href="https://manga.index-0.com" target="_blank">manga</a>!
+                </p>
+            </article>
+        </section>
+    </div>
+</div>

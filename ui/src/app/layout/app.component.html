@@ -9,7 +9,7 @@
         </button>
         <button class="login-menu" (click)="menuOpen = !menuOpen"  *ngIf="!loggedIn">
             <cba-icon>menu</cba-icon>
-        </button>        
+        </button>
     </header>
     <main [ngClass]="{ 'open': menuOpen, 'pin': menuPin }">
         <div class="content">
@@ -17,6 +17,12 @@
         </div>
         <div class="fade" (click)="menuOpen = false"></div>
         <aside>
+            <a routerLink="/about" routerLinkActive="active" (click)="menuOpen = false">
+                <span class="icon">
+                    <cba-icon>info</cba-icon>
+                </span>
+                <span class="title">About CBA</span>
+            </a>
             <div class="dropdown-menu active">
                 <a class="menu" routerLink="/anime/all" routerLinkActive="active" (click)="menuOpen = false">
                     <span class="icon">
@@ -168,7 +174,7 @@
                     </a>
                 </div>
             </div>
-            
+
         </aside>
     </main>
 </div>

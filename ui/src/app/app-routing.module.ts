@@ -6,6 +6,7 @@ import { RerouteComponent } from './routes/reroute/reroute.component';
 import { TestComponent } from './routes/test/test.component';
 import { InstallInstructionsComponent } from './routes/install-instructions/install-instructions.component';
 import { CallbackComponent } from './routes/callback/callback.component';
+import { AboutComponent } from './routes/about/about.component';
 
 const routes: Routes = [
     {
@@ -20,18 +21,18 @@ const routes: Routes = [
     }, {
         path: 'manga',
         loadChildren: () => import('./routes/manga').then(m => m.MangaModule)
-    }, { 
-        path: 'discord', 
-        loadChildren: () => import('./routes/discord').then(m => m.DiscordModule) 
-    }, { 
-        path: 'chat', 
-        loadChildren: () => import('./routes/chat-gpt/chat-gpt.module').then(m => m.ChatGptModule) 
     }, {
-       path: 'admin',
-       component: AdminComponent
+        path: 'discord',
+        loadChildren: () => import('./routes/discord').then(m => m.DiscordModule)
     }, {
-       path: 'test',
-       component: TestComponent 
+        path: 'chat',
+        loadChildren: () => import('./routes/chat-gpt/chat-gpt.module').then(m => m.ChatGptModule)
+    }, {
+        path: 'admin',
+        component: AdminComponent
+    }, {
+        path: 'test',
+        component: TestComponent
     }, {
         path: 'install',
         pathMatch: 'full',
@@ -40,8 +41,11 @@ const routes: Routes = [
         path: 'install/:type',
         component: InstallInstructionsComponent
     }, {
-       path: 'callback',
-       component: CallbackComponent 
+        path: 'callback',
+        component: CallbackComponent
+    }, {
+        path: 'about',
+        component: AboutComponent
     }, {
         path: '',
         pathMatch: 'full',
@@ -53,7 +57,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes)],
-  exports: [RouterModule]
+    imports: [RouterModule.forRoot(routes)],
+    exports: [RouterModule]
 })
 export class AppRoutingModule { }

@@ -17,6 +17,7 @@ import { TestComponent } from './routes/test/test.component';
 import { MagicCircleModule } from './components/magic-circle';
 import { InstallInstructionsComponent } from './routes/install-instructions/install-instructions.component';
 import { CallbackComponent } from './routes/callback/callback.component';
+import { AboutComponent } from './routes/about/about.component';
 
 @NgModule({
     declarations: [
@@ -27,6 +28,7 @@ import { CallbackComponent } from './routes/callback/callback.component';
         TestComponent,
         InstallInstructionsComponent,
         CallbackComponent,
+        AboutComponent,
     ],
     imports: [
         ComponentsModule,
