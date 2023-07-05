@@ -120,4 +120,11 @@ public abstract class SourceService : ISourceService
 	public abstract string SeriesFromChapter(string url);
 }
 
-public record class TempSeriesInfo(string Title, string? Description, string[] Authors, string? Image, string? FirstChapterUrl, string[] Genre, string[] Tags);
+public record class TempSeriesInfo(
+	string Title, 
+	string? Description, 
+	string[] Authors, 
+	string? Image, 
+	string? FirstChapterUrl, 
+	string[] Genre, 
+	string[] Tags);

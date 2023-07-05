@@ -30,6 +30,47 @@ public static class Extensions
 		};
 	}
 
+	public static string Join(this IEnumerable<HtmlNode> nodes, bool checkWs = false)
+	{
+		var doc = new HtmlDocument();
+		foreach (var node in nodes)
+			if (!checkWs || !string.IsNullOrWhiteSpace(node.InnerText))
+				doc.DocumentNode.AppendChild(node);
+
+		return doc.DocumentNode.InnerHtml.Trim();
+	}
+
+	public static void CleanupNode(this HtmlNode parent)
+	{
+        parent.SelectNodes("./noscript")?
+            .ToList()
+            .ForEach(t => t.Remove());
+
+        parent.SelectNodes("./img")?
+            .ToList()
+            .ForEach(t =>
+            {
+                foreach (var attr in t.Attributes.ToArray())
+                    if (attr.Name != "src" && attr.Name != "alt")
+                        t.Attributes.Remove(attr);
+            });
+
+        if (parent.ChildNodes.Count == 0)
+        {
+            parent.Remove();
+            return;
+        }
+
+        if (parent.ParentNode != null &&
+			parent.ChildNodes.Count == 1 && 
+			parent.FirstChild.Name == "img")
+        {
+            parent.ParentNode.InsertBefore(parent.FirstChild, parent);
+            parent.Remove();
+            return;
+        }
+    }
+
 	public static IServiceCollection AddLightNovel(this IServiceCollection services)
 	{
 		MapConfig.AddMap(c =>
@@ -46,8 +87,11 @@ public static class Extensions
 			.AddTransient<IShSourceService, ShSourceService>()
 			.AddTransient<IReLibSourceService, ReLibSourceService>()
 			.AddTransient<ILntSourceService, LntSourceService>()
+			.AddTransient<INyxSourceService, NyxSourceService>()
 
 			.AddTransient<INovelUpdatesService, NovelUpdatesService>()
+
+			.AddTransient<IPurgeUtils, PurgeUtils>()
 
 			.AddTransient<IOldLnApiService, OldLnApiService>()
 			.AddTransient<INovelApiService, NovelApiService>()

@@ -20,7 +20,7 @@ using Manga.Providers;
 
 using AImage = Core.Models.Image;
 using MangaDexSharp;
-using CardboardBox.Epub;
+using Microsoft.Extensions.Logging;
 
 public interface IRunner
 {
@@ -56,6 +56,8 @@ public class Runner : IRunner
 	private readonly IMangaDbService _mangaDb;
 	private readonly IBattwoSource _battwo;
 	private readonly ILntSourceService _lnt;
+	private readonly INyxSourceService _nyx;
+	private readonly IPurgeUtils _purge;
 
 	public Runner(
 		IVrvApiService vrv, 
@@ -81,7 +83,9 @@ public class Runner : IRunner
 		IMangaCacheDbService cacheDb,
 		IMangaDbService mangaDb,
 		IBattwoSource battwo,
-		ILntSourceService lnt)
+		ILntSourceService lnt,
+		INyxSourceService nyx,
+		IPurgeUtils purge)
 	{
 		_vrv = vrv;
 		_logger = logger;
@@ -107,6 +111,8 @@ public class Runner : IRunner
 		_mangaDb = mangaDb;
 		_battwo = battwo;
 		_lnt = lnt;
+		_nyx = nyx;
+		_purge = purge;
 	}
 
 	public async Task<int> Run(string[] args)
@@ -149,6 +155,7 @@ public class Runner : IRunner
 				case "lnt": await TestLnt(); break;
 				case "nuchaps": await TestNUChapters(); break;
 				case "lntfix": await LntImageFix(); break;
+				case "nyx": await Nyx(); break;
                 default: _logger.LogInformation("Invalid command: " + command); break;
 			}
 
@@ -1089,7 +1096,7 @@ public class Runner : IRunner
 			foreach(var child in doc.DocumentNode.ChildNodes.ToArray())
 			{
 				if (child.InnerHtml.ToLower().Contains("<img"))
-					((LntSourceService)_lnt).PurgeNoScriptImages(child);
+					child.CleanupNode();
 			}
 
 			page.Content = doc.DocumentNode.InnerHtml;
@@ -1097,4 +1104,79 @@ public class Runner : IRunner
 			await _lnDb.Pages.Update(page);
 		}
 	}
+
+	public async Task PurgeAll()
+	{
+        var pages = await _lnDb.Pages.AnchorPages();
+
+        foreach (var page in pages)
+        {
+            page.Content = _purge.PurgeBadElements(page.Content);
+            await _lnDb.Pages.Update(page);
+        }
+
+        _logger.LogInformation("Finished");
+    }
+
+	public async Task PurgeBadStuff()
+	{
+        var page = await _lnDb.Pages.Fetch(577);
+		if (page == null)
+		{
+			_logger.LogInformation("Page does not exist");
+			return;
+		}
+
+		var before = page.Content;
+		var after = _purge.PurgeBadElements(page.Content);
+
+		_logger.LogInformation("Before: {before}\r\nAfter: {after}", before, after);
+    }
+
+	public async Task Nyx()
+	{
+		await PurgeAll();
+
+        var pages = await _lnDb.Pages.AnchorPages();
+
+		var lanks = new List<(string href, string content, Page page)>();
+
+		foreach(var page in pages)
+		{
+			var doc = new HtmlDocument();
+			doc.LoadHtml(page.Content);
+
+			var links = doc.DocumentNode.SelectNodes("//a")
+				.Select(t => (t.GetAttributeValue("href", ""), t.InnerText))
+				.ToArray();
+
+			lanks.AddRange(links.Select(t => (t.Item1, t.InnerText, page)));
+		}
+
+		var csv = lanks
+            .Select(t => new NyxCsvLine(t.href,
+				t.content,
+				t.page.Id.ToString(),
+				t.page.Title,
+				t.page.HashId,
+				t.page.SeriesId.ToString())
+			)
+            .ToArray();
+		var distinct = lanks.Select(t => t.Item1).Distinct().ToArray();
+
+		_logger.LogInformation("Links: {Count}", distinct.Length);
+
+		//await _lnDb.Series.Delete(69);
+
+		//var chap = "https://nyx-translation.com/2020/02/17/i-got-a-cheat-ability-in-a-different-world-and-become-extraordinary-even-in-the-real-world-chapter-1-part-1/";
+		//var chapData = await _nyx.GetChapter(chap, "");
+
+
+  //      var url = "https://nyx-translation.com/i-got-a-cheat-ability-in-a-different-world-and-become-extraordinary-even-in-the-real-world/";
+		//var info = await _nyx.Volumes(url).ToArrayAsync();
+
+		//_logger.LogInformation("Found info: ");
+	}
 }
+
+public record class NyxCsvLine(string Link, string Content, string PageId, string Title, string HashId, string SeriesId);

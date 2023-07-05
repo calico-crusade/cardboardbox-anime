@@ -23,10 +23,11 @@ public class NovelApiService : INovelApiService
 		IShSourceService shSrc,
 		IReLibSourceService rlSrc,
 		ILntSourceService lntSrc,
+		INyxSourceService nyxSrc,
 		ILnDbService db)
 	{
 		_db = db;
-		_srcs = new[] { (ISourceService)lnSrc, shSrc, rlSrc, lntSrc };
+		_srcs = new[] { (ISourceService)lnSrc, shSrc, rlSrc, lntSrc, nyxSrc };
 	}
 
 	public ISourceService? Source(string url)

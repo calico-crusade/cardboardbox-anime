@@ -203,6 +203,18 @@ public static class Extensions
 				config?.Invoke(c);
 			})
 			.Result() ?? throw new NullReferenceException($"Request returned null for: {url}");
+
+		if (req.StatusCode == HttpStatusCode.Moved)
+		{
+			var location = req.Headers?.Location?.ToString();
+			if (string.IsNullOrEmpty(location))
+			{
+				req.EnsureSuccessStatusCode();
+				throw new NullReferenceException($"Request returned null for: {url}");
+			}
+
+			return await api.GetHtml(location, config);
+        }
 		req.EnsureSuccessStatusCode();
 
 		using var io = await req.Content.ReadAsStreamAsync();

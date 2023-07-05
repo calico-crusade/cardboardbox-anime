@@ -243,7 +243,7 @@ public class LntSourceService : ILntSourceService
 			}
 
 			if (child.InnerHtml.ToLower().Contains("<img"))
-				PurgeNoScriptImages(child);
+				child.CleanupNode();
 		}
 
 		while (content.FirstChild.Name == "hr") content.RemoveChild(content.FirstChild);
@@ -286,34 +286,6 @@ public class LntSourceService : ILntSourceService
 		return SeriesFromUrl(url)?.Root ?? string.Empty;
 	}
 
-	public void PurgeNoScriptImages(HtmlNode parent)
-	{
-		parent.SelectNodes("//noscript")?
-			.ToList()
-			.ForEach(t => t.Remove());
-
-		parent.SelectNodes("//img")?
-			.ToList()
-			.ForEach(t =>
-			{
-				foreach(var attr in t.Attributes.ToArray())
-                    if (attr.Name != "src" && attr.Name != "alt")
-                        t.Attributes.Remove(attr);
-			});
-
-		if (parent.ChildNodes.Count == 0)
-		{
-			parent.Remove();
-			return;
-		}
-
-		if (parent.ChildNodes.Count == 1 && parent.FirstChild.Name == "img")
-		{
-			parent.ParentNode.InsertBefore(parent.FirstChild, parent);
-			parent.Remove();
-			return;
-		}
-	}
 }
 
 public record class LntUrlSet(string Root, string Volumes, string Images);

@@ -9,6 +9,7 @@ public interface IDbPageService : ILnOrmMap<Page>
 	Task<PaginatedResult<Page>> Paginate(long seriesId, int page = 1, int size = 100);
 	Task<Page?> LastPage(long seriesId);
 	Task<Page[]> ImagePages();
+	Task<Page[]> AnchorPages();
 }
 
 public class DbPageService : LnOrmMap<Page>, IDbPageService
@@ -42,5 +43,11 @@ public class DbPageService : LnOrmMap<Page>, IDbPageService
 	{
 		const string QUERY = "SELECT * FROM ln_pages WHERE content LIKE '%<img%';";
 		return _sql.Get<Page>(QUERY);
+    }
+
+    public Task<Page[]> AnchorPages()
+    {
+        const string QUERY = "SELECT * FROM ln_pages WHERE content LIKE '%<a%';";
+        return _sql.Get<Page>(QUERY);
     }
 }
