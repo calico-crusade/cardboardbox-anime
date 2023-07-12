@@ -1,6 +1,4 @@
-﻿using static System.Net.Mime.MediaTypeNames;
-
-namespace CardboardBox.LightNovel.Core.Sources;
+﻿namespace CardboardBox.LightNovel.Core.Sources;
 
 public interface INyxSourceService : ISourceVolumeService { }
 

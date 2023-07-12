@@ -2,8 +2,8 @@
     position: fixed;
     top: 0;
     left: 0;
-    width: 100vw;
-    height: 100vh;
+    width: min(100vw, 100%);
+    height: min(100vh, 100%);
     display: flex;
     flex-flow: column;
     z-index: 900;
@@ -11,8 +11,8 @@
         position: absolute;
         top: 0;
         left: 0;
-        width: 100vw;
-        height: 100vh;
+        width: min(100vw, 100%);
+        height: min(100vh, 100%);
         background-color: rgba(0, 0, 0, 0.85);
         z-index: 901;
     }
@@ -51,7 +51,7 @@
             text-align: center;
             vertical-align: middle;
             display: inline-flex;
-            align-items: center; 
+            align-items: center;
             &:hover {
                 color: #fff;
                 transform: rotate(90deg);

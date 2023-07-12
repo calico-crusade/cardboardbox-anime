@@ -102,8 +102,8 @@ $filter-margin: 5px;
             &.no-animation {
                 span { animation: none; }
             }
-            @keyframes spin { 
-                from { transform: rotate(0deg); } 
+            @keyframes spin {
+                from { transform: rotate(0deg); }
                 to { transform: rotate(360deg); }
             }
         }

@@ -5,6 +5,7 @@ using Anime.Database.Mapping;
 using Database;
 using Sources;
 using Sources.Utilities;
+using Sources.ZirusSource;
 
 public static class Extensions
 {
@@ -88,6 +89,8 @@ public static class Extensions
 			.AddTransient<IReLibSourceService, ReLibSourceService>()
 			.AddTransient<ILntSourceService, LntSourceService>()
 			.AddTransient<INyxSourceService, NyxSourceService>()
+			.AddTransient<IZirusApiService, ZirusApiService>()
+			.AddTransient<IZirusMusingsSourceService, ZirusMusingsSourceService>()
 
 			.AddTransient<INovelUpdatesService, NovelUpdatesService>()
 
@@ -97,6 +100,7 @@ public static class Extensions
 			.AddTransient<INovelApiService, NovelApiService>()
 			.AddTransient<INovelEpubService, NovelEpubService>()
 			.AddTransient<IPdfService, PdfService>()
+			.AddTransient<IMarkdownService, MarkdownService>()
 			
 			.AddTransient<IDbBookService, DbBookService>()
 			.AddTransient<IDbChapterService, DbChapterService>()

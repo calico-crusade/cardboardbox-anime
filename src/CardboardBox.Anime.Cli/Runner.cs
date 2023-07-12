@@ -13,6 +13,7 @@ using Vrv;
 using LightNovel.Core;
 using LightNovel.Core.Sources;
 using LightNovel.Core.Sources.Utilities;
+using LightNovel.Core.Sources.ZirusSource;
 
 using Manga;
 using Manga.MangaDex;
@@ -58,6 +59,7 @@ public class Runner : IRunner
 	private readonly ILntSourceService _lnt;
 	private readonly INyxSourceService _nyx;
 	private readonly IPurgeUtils _purge;
+	private readonly IZirusMusingsSourceService _zirus;
 
 	public Runner(
 		IVrvApiService vrv, 
@@ -85,7 +87,8 @@ public class Runner : IRunner
 		IBattwoSource battwo,
 		ILntSourceService lnt,
 		INyxSourceService nyx,
-		IPurgeUtils purge)
+		IPurgeUtils purge,
+		IZirusMusingsSourceService zirus)
 	{
 		_vrv = vrv;
 		_logger = logger;
@@ -113,6 +116,7 @@ public class Runner : IRunner
 		_lnt = lnt;
 		_nyx = nyx;
 		_purge = purge;
+		_zirus = zirus;
 	}
 
 	public async Task<int> Run(string[] args)
@@ -156,6 +160,7 @@ public class Runner : IRunner
 				case "nuchaps": await TestNUChapters(); break;
 				case "lntfix": await LntImageFix(); break;
 				case "nyx": await Nyx(); break;
+				case "zirus": await ZirusTest(); break;
                 default: _logger.LogInformation("Invalid command: " + command); break;
 			}
 
@@ -1176,6 +1181,36 @@ public class Runner : IRunner
 		//var info = await _nyx.Volumes(url).ToArrayAsync();
 
 		//_logger.LogInformation("Found info: ");
+	}
+
+	public async Task ZirusTest()
+	{
+		var url = "https://zirusmusings.net/series/mg";
+		var info = await _zirus.GetSeriesInfo(url);
+		if (info == null)
+		{
+			_logger.LogInformation("Could not find series.");
+			return;
+		}
+
+		_logger.LogInformation("Series: {title}", info.Title);
+
+		url = "https://zirusmusings.net/_next/data/2XCJ9PL_uxx4mf-pTDI_k/series/mg/1/0.json?seriesId=mg&firstId=1&secondId=0";
+
+		//var chapters = _zirus.Chapters(url);
+		//await foreach(var chapter in chapters)
+		//{
+		//	_logger.LogInformation("Chapter: {title}", chapter.ChapterTitle);
+		//}
+		var chap = await _zirus.GetChapter(url, "");
+		if (chap == null)
+		{
+			_logger.LogInformation("Could not find series.");
+			return;
+		}
+
+		_logger.LogInformation("Series: {title}", chap.ChapterTitle);
+
 	}
 }
 

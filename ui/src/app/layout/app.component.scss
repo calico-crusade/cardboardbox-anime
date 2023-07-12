@@ -3,8 +3,8 @@
     position: fixed;
     top: 0;
     left: 0;
-    width: 100vw;
-    height: 100vh;
+    width: min(100vw, 100%);
+    height: min(100vh, 100%);
     display: flex;
     flex-flow: column;
     overflow: hidden;

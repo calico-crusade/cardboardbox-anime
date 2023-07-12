@@ -15,6 +15,7 @@ CREATE OR REPLACE FUNCTION get_manga_filtered(platformId text, state int, ids bi
         has_bookmarks BOOLEAN,
         profile_id BIGINT,
         latest_chapter TIMESTAMP,
+        progress_removed BOOLEAN,
         completed BOOLEAN
     )
 LANGUAGE plpgsql
@@ -78,7 +79,8 @@ BEGIN
             LIMIT 1
         ), false) as has_bookmarks,
         mp.profile_id as profile_id,
-        mmc.latest_chapter
+        mmc.latest_chapter,
+        mp.page_index IS NULL as progress_removed
     FROM manga m
     LEFT JOIN progress mp ON mp.manga_id = m.id
     LEFT JOIN max_chapter_numbers mmc ON mmc.manga_id = m.id
@@ -93,14 +95,14 @@ BEGIN
     SELECT
         DISTINCT
         r.*,
-        (CASE WHEN r.chapter_progress >= 100 THEN true ELSE false END) as completed
+        r.chapter_progress >= 100 as completed
     FROM records r
 )
 SELECT * FROM all_records t
 WHERE
     (t.favourite = true AND (state = 1 OR state = 6)) OR
     (t.completed = true AND (state = 2 OR state = 6)) OR
-    (t.completed = false AND t.profile_id IS NOT NULL AND (state = 3 OR state = 6)) OR
+    (t.completed = false AND t.profile_id IS NOT NULL AND t.progress_removed = false AND (state = 3 OR state = 6)) OR
     (t.has_bookmarks = true AND (state = 4 OR state = 6)) OR
     (state = 5 AND t.favourite = false AND t.profile_id IS NULL and t.has_bookmarks = false) OR
     state NOT IN (1, 2, 3, 4, 5, 6);

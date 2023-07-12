@@ -1,5 +1,6 @@
 ﻿namespace CardboardBox.LightNovel.Core;
 
+using CardboardBox.LightNovel.Core.Sources.ZirusSource;
 using Sources;
 
 public interface INovelApiService
@@ -24,10 +25,11 @@ public class NovelApiService : INovelApiService
 		IReLibSourceService rlSrc,
 		ILntSourceService lntSrc,
 		INyxSourceService nyxSrc,
+		IZirusMusingsSourceService zirusSrc,
 		ILnDbService db)
 	{
 		_db = db;
-		_srcs = new[] { (ISourceService)lnSrc, shSrc, rlSrc, lntSrc, nyxSrc };
+		_srcs = new[] { (ISourceService)lnSrc, shSrc, rlSrc, lntSrc, nyxSrc, zirusSrc };
 	}
 
 	public ISourceService? Source(string url)

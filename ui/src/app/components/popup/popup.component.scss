@@ -2,8 +2,8 @@
     position: fixed;
     top: 0;
     left: 0;
-    width: 100vw;
-    height: 100vh;
+    width: min(100vw, 100%);
+    height: min(100vh, 100%);
     display: none;
     z-index: 999;
 
@@ -47,7 +47,7 @@
                 transform: rotate(90deg);
             }
         }
-        
+
         &.big {
             max-width: 90%;
             width: 85vw;
