@@ -97,7 +97,7 @@ services:
     depends_on:
       - cba-api
   cba-manga-web:
-    image: ghcr.io/calico-crusade/cardboardbox-anime-vue/nuxt:latest
+    image: ghcr.io/cardboards-box/manga-ui/nuxt:latest
     restart: always
     ports:
       - 8894:3000
