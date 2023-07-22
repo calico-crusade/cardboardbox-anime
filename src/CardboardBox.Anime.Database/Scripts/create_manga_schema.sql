@@ -117,3 +117,38 @@ AS
         (unnest(attributes)).name as name,
         (unnest(attributes)).value as value
     FROM manga;
+
+CREATE TABLE manga_stats (
+    manga_id bigint not null references manga(id),
+    last_chapter_id bigint not null references manga_chapter(id),
+    last_chapter_ordinal numeric not null,
+    first_chapter_id bigint not null references manga_chapter(id),
+    first_chapter_ordinal numeric not null,
+    chapter_count numeric not null,
+    unique_chapter_count numeric not null,
+
+    CONSTRAINT uiq_manga_stats UNIQUE(manga_id)
+);
+
+CREATE TABLE manga_progress_ext (
+    manga_id BIGINT NOT NULL REFERENCES manga(id),
+    profile_id BIGINT NOT NULL REFERENCES profiles(id),
+    manga_chapter_id BIGINT NOT NULL REFERENCES manga_chapter(id),
+    first_chapter_id BIGINT NOT NULL REFERENCES manga_chapter(id),
+    progress_chapter_id BIGINT REFERENCES manga_chapter(id),
+    progress_id BIGINT REFERENCES manga_progress(id),
+    max_chapter_ordinal NUMERIC NOT NULL,
+    chapter_num NUMERIC,
+    page_count NUMERIC NOT NULL,
+    page_index NUMERIC NOT NULL,
+    chapter_progress NUMERIC NOT NULL,
+    page_progress NUMERIC NOT NULL,
+    favourite BOOLEAN NOT NULL DEFAULT FALSE,
+    bookmarks INT[] NOT NULL DEFAULT '{}',
+    bookmark_count NUMERIC NOT NULL,
+    has_bookmarks BOOLEAN NOT NULL DEFAULT FALSE,
+    completed BOOLEAN NOT NULL DEFAULT FALSE,
+    in_progress BOOLEAN NOT NULL DEFAULT FALSE,
+
+    CONSTRAINT uiq_manga_progress_ext UNIQUE(manga_id, profile_id)
+);

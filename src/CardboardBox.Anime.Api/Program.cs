@@ -1,3 +1,4 @@
+using CardboardBox;
 using CardboardBox.Anime;
 using Microsoft.OpenApi.Models;
 
@@ -35,7 +36,9 @@ builder.Services.AddSwaggerGen(c =>
 	});
 });
 
-builder.Services.RegisterCba(builder.Configuration);
+builder
+	.Services
+	.RegisterCba(builder.Configuration);
 
 var app = builder.Build();
 

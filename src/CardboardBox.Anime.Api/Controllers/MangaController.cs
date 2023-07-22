@@ -7,10 +7,10 @@ namespace CardboardBox.Anime.Api.Controllers;
 using Auth;
 using Core;
 using Core.Models;
+using Database;
 using Match;
 using Match.SauceNao;
 using Manga;
-using Database;
 
 [ApiController]
 public class MangaController : ControllerBase

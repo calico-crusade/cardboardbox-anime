@@ -8,71 +8,88 @@ using Generation;
 
 public interface IMangaDbService
 {
-	Task<DbManga[]> All();
+    #region For DbManga
+    Task<DbManga[]> All();
 
-	Task<DbMangaChapter[]> AllChapters();
+    Task<long> Upsert(DbManga manga);
 
-	Task<long> Upsert(DbManga manga);
+    Task<DbManga?> Get(string sourceId);
 
-	Task<long> Upsert(DbMangaChapter chapter);
+    Task<DbManga?> Get(long id);
 
-	Task<long> Upsert(DbMangaProgress progress);
+    Task<DbManga?> GetByHashId(string hashId);
 
-	Task<DbManga?> Get(string sourceId); 
+    Task<PaginatedResult<DbManga>> Paginate(int page = 1, int size = 100);
 
-	Task<DbManga?> Get(long id);
+    Task<DbManga[]> FirstUpdated(int count);
 
-	Task<DbManga?> GetByHashId(string hashId);
+    Task<DbManga[]> Random(int count);
+    #endregion
 
-	Task<DbMangaChapter[]> Chapters(long mangaId, string language = "en");
+    #region For MangaWithChapters
 
-	Task<PaginatedResult<DbManga>> Paginate(int page = 1, int size = 100);
+    Task<MangaWithChapters?> GetManga(long id, string? platformId);
 
-	Task<DbMangaChapter?> GetChapter(long id);
+    Task<MangaWithChapters?> GetManga(string id, string? platformId);
 
-	Task<DbMangaProgress?> GetProgress(string platformId, long mangaId);
+    Task<MangaWithChapters?> Random(string? platformId);
+    #endregion
 
-	Task<DbMangaProgress?> GetProgress(string platformId, string mangaId);
+    #region for DbMangaChapter
+    Task<DbMangaChapter[]> AllChapters();
 
-	Task<Filter[]> Filters();
+    Task<long> Upsert(DbMangaChapter chapter);
 
-	Task<PaginatedResult<MangaProgress>> Search(MangaFilter filter, string? platformId);
+    Task<DbMangaChapter[]> Chapters(long mangaId, string language = "en");
 
-	Task SetPages(long id, string[] pages);
+    Task<DbMangaChapter?> GetChapter(long id);
 
-	Task<bool?> Favourite(string platformId, long mangaId);
+    Task SetPages(long id, string[] pages);
+    #endregion
 
-	Task<DbMangaBookmark[]> Bookmarks(long id, string? platformId);
+    #region For DbMangaProgress
 
-	Task<bool> IsFavourite(string? platformId, long mangaId);
+    Task<long> Upsert(DbMangaProgress progress);
 
-	Task<MangaWithChapters?> GetManga(long id, string? platformId);
+    Task<DbMangaProgress?> GetProgress(string platformId, long mangaId);
 
-	Task<MangaWithChapters?> GetManga(string id, string? platformId);
+    Task<DbMangaProgress?> GetProgress(string platformId, string mangaId);
+
+    Task<DbMangaProgress[]> AllProgress();
+
+    Task UpdateProgress(DbMangaProgress progress);
+
+    Task<long> InsertProgress(DbMangaProgress progress);
+
+    Task DeleteProgress(long profileId, long mangaId);
+	#endregion
+
+	#region For MangaProgress (technically Extended Manga information + Search)
 
 	Task<MangaProgress?> GetMangaExtended(long id, string? platformId);
 
-	Task<MangaProgress?> GetMangaExtended(string id, string? platformId);
+    Task<MangaProgress?> GetMangaExtended(string id, string? platformId);
 
-	Task Bookmark(long id, long chapterId, int[] pages, string platformId);
+    Task<PaginatedResult<MangaProgress>> Since(string? platform, DateTime since, int page, int size);
 
-	Task<DbManga[]> FirstUpdated(int count);
+    Task<PaginatedResult<MangaProgress>> Search(MangaFilter filter, string? platformId);
 
-	Task<MangaWithChapters?> Random(string? platformId);
+    Task<Filter[]> Filters();
+    #endregion
 
-	Task<PaginatedResult<MangaProgress>> Since(string? platform, DateTime since, int page, int size);
+    #region For DbMangaBookmark
+    Task<DbMangaBookmark[]> Bookmarks(long id, string? platformId);
 
-	Task DeleteProgress(long profileId, long mangaId);
+    Task Bookmark(long id, long chapterId, int[] pages, string platformId);
+    #endregion
+
+    #region For DbMangaFavourites
+    Task<bool?> Favourite(string platformId, long mangaId);
+
+    Task<bool> IsFavourite(string? platformId, long mangaId);
+    #endregion
 
 	Task<GraphOut[]> Graphic(string? platformId, TouchedState state = TouchedState.Completed);
-
-	Task<DbManga[]> Random(int count);
-
-	Task<DbMangaProgress[]> AllProgress();
-
-	Task UpdateProgress(DbMangaProgress progress);
-
-	Task<long> InsertProgress(DbMangaProgress progress);
 }
 
 public class MangaDbService : OrmMapExtended<DbManga>, IMangaDbService
@@ -115,29 +132,33 @@ public class MangaDbService : OrmMapExtended<DbManga>, IMangaDbService
 		{
 			new MangaSortField("Title", 0, "m.title"),
 			new("Provider", 1, "m.provider"),
-			new("Latest Chapter", 2, "t.latest_chapter"),
+			new("Latest Chapter", 2, "lc.created_at"),
 			new("Description", 3, "m.description"),
 			new("Updated", 4, "m.updated_at"),
 			new("Created", 5, "m.created_at")
 		};
 	}
 
-	public Task<long> Upsert(DbManga manga)
+	public async Task<long> Upsert(DbManga manga)
 	{
-		return FakeUpsert(manga, TABLE_NAME_MANGA, _upsertManga,
+		var id = await FakeUpsert(manga, TABLE_NAME_MANGA, _upsertManga,
 			(v) => v.With(t => t.Provider).With(t => t.SourceId),
 			(v) => v.With(t => t.Id),
 			(v) => v.With(t => t.Id).With(t => t.CreatedAt));
-	}
+        await UpdateComputed();
+		return id;
+    }
 
-	public Task<long> Upsert(DbMangaChapter chapter)
+	public async Task<long> Upsert(DbMangaChapter chapter)
 	{
-		return FakeUpsert(chapter, TABLE_NAME_MANGA_CHAPTER,
+		var id = await FakeUpsert(chapter, TABLE_NAME_MANGA_CHAPTER,
 			_upsertChapters,
 			(v) => v.With(t => t.MangaId).With(t => t.SourceId).With(t => t.Language),
 			(v) => v.With(t => t.Id),
 			v => v.With(t => t.Id).With(t => t.CreatedAt).With(t => t.Pages));
-	}
+        await UpdateComputed();
+		return id;
+    }
 
 	public async Task<long> Upsert(DbMangaProgress progress)
 	{
@@ -153,8 +174,10 @@ public class MangaDbService : OrmMapExtended<DbManga>, IMangaDbService
 				{
 					new DbMangaChapterProgress(progress.MangaChapterId.Value, progress.PageIndex.Value)
 				};
-			return await _sql.ExecuteScalar<long>(_insertProgress, progress);
-		}
+			var id = await _sql.ExecuteScalar<long>(_insertProgress, progress);
+            await UpdateComputed();
+			return id;
+        }
 
 		var pages = exists.Read;
 		if (progress.MangaChapterId != null &&
@@ -179,17 +202,19 @@ public class MangaDbService : OrmMapExtended<DbManga>, IMangaDbService
 		progress.Id = exists.Id;
 		progress.Read = pages.OrderBy(t => t.ChapterId).ToArray();
 
-		var res = await _sql.Execute(_updateProgress, progress);
-		return exists.Id;
+		await _sql.Execute(_updateProgress, progress);
+        await UpdateComputed();
+        return exists.Id;
 	}
 
-	public Task SetPages(long id, string[] pages)
+	public async Task SetPages(long id, string[] pages)
 	{
 		const string QUERY = "UPDATE manga_chapter SET pages = :pages WHERE id = :id";
-		return _sql.Execute(QUERY, new { id, pages });
-	}
+		await _sql.Execute(QUERY, new { id, pages });
+        await UpdateComputed();
+    }
 
-	public Task DeleteProgress(long profileId, long mangaId)
+	public async Task DeleteProgress(long profileId, long mangaId)
 	{
 		const string QUERY = @"UPDATE manga_progress 
 SET 
@@ -198,24 +223,28 @@ SET
 WHERE 
 	profile_id = :profileId AND 
 	manga_id = :mangaId";
-		return _sql.Execute(QUERY, new { profileId, mangaId });
-	}
+		await _sql.Execute(QUERY, new { profileId, mangaId });
+        await UpdateComputed();
+    }
 
 	public Task<DbMangaProgress[]> AllProgress()
 	{
 		return _sql.Get<DbMangaProgress>("SELECT * FROM manga_progress");
 	}
 
-	public Task UpdateProgress(DbMangaProgress progress)
+	public async Task UpdateProgress(DbMangaProgress progress)
 	{
 		_updateProgress ??= _query.Update<DbMangaProgress>(TABLE_NAME_MANGA_PROGRESS, t => t.With(a => a.Id).With(a => a.CreatedAt));
-		return _sql.Execute(_updateProgress, progress);
-	}
+		await _sql.Execute(_updateProgress, progress);
+        await UpdateComputed();
+    }
 
-	public Task<long> InsertProgress(DbMangaProgress progress)
+	public async Task<long> InsertProgress(DbMangaProgress progress)
 	{
         _insertProgress ??= _query.InsertReturn<DbMangaProgress, long>(TABLE_NAME_MANGA_PROGRESS, t => t.Id, t => t.With(a => a.Id));
-		return _sql.ExecuteScalar<long>(_insertProgress, progress);
+		var id = await _sql.ExecuteScalar<long>(_insertProgress, progress);
+        await UpdateComputed();
+		return id;
     }
 
 	public override Task<PaginatedResult<DbManga>> Paginate(int page = 1, int size = 100)
@@ -363,125 +392,161 @@ ORDER BY key, value";
 
 	public async Task<PaginatedResult<MangaProgress>> Search(MangaFilter filter, string? platformId)
 	{
-		const string FILTER_QUERY = @"WITH touched_manga AS (
-	SELECT
-		*
-	FROM get_manga_filtered(:platformId,:state, ARRAY(
-		SELECT
-			m.id
-		FROM manga m
-		LEFT JOIN manga_attributes a ON a.id = m.id
-		WHERE {0}
-	))
-)";
+		const string QUERY = @"
+DROP TABLE IF EXISTS progress;
+DROP TABLE IF EXISTS search_manga;
 
-		const string SEARCH_QUERY = FILTER_QUERY + @"
+CREATE TABLE progress AS
 SELECT
+    e.*
+FROM manga_progress_ext e
+JOIN profiles p on e.profile_id = p.id
+WHERE p.platform_id = :platformId;
+
+CREATE TEMP TABLE search_manga AS
+SELECT
+    DISTINCT
+    m.id
+FROM manga m
+LEFT JOIN manga_attributes a ON a.id = m.id
+LEFT JOIN progress p ON p.manga_id = m.id
+WHERE (
+    (p.favourite AND (:state = 1 OR :state = 6)) OR
+    (p.completed AND (:state = 2 OR :state = 6)) OR
+    (p.completed = FALSE AND p.in_progress AND (:state = 3 OR :state = 6)) OR
+    (p.has_bookmarks AND (:state = 4 OR :state = 6)) OR
+    (:state = 5 AND p.profile_id IS NULL) OR
+    (:state NOT IN (1, 2, 3, 4, 5, 6))
+) AND ( {0} );
+
+SELECT
+    DISTINCT
     m.*,
     '' as split,
     mp.*,
     '' as split,
     mc.*,
     '' as split,
-    t.*
-FROM touched_manga t
-JOIN manga m ON m.id = t.manga_id
-JOIN manga_chapter mc ON mc.id = t.manga_chapter_id
-LEFT JOIN manga_progress mp ON mp.id = t.progress_id
+    m.id as manga_id,
+    mc.id as manga_chapter_id,
+    s.first_chapter_id,
+    p.progress_chapter_id,
+    mp.id as progress_id,
+    p.max_chapter_ordinal as max_chapter_num,
+    p.chapter_num,
+    p.page_count,
+    p.chapter_progress,
+    p.page_progress,
+    p.favourite,
+    p.bookmarks,
+    p.has_bookmarks,
+    p.profile_id,
+    lc.created_at as latest_chapter,
+    mp.id IS NOT NULL AND mp.page_index IS NULL as progress_removed,
+    COALESCE(p.completed, FALSE) as completed
+FROM manga m
+JOIN search_manga c ON c.id = m.id
+JOIN manga_stats s ON s.manga_id = m.id
+LEFT JOIN manga_attributes a ON a.id = m.id
+LEFT JOIN progress p ON p.manga_id = m.id
+LEFT JOIN manga_progress mp ON mp.manga_id = m.id AND mp.profile_id = p.profile_id
+JOIN manga_chapter mc ON
+    (p.manga_chapter_id IS NOT NULL AND mc.id = p.manga_chapter_id) OR
+    (p.manga_chapter_id IS NULL AND mc.id = s.first_chapter_id)
+JOIN manga_chapter lc ON lc.id = s.last_chapter_id
 ORDER BY {2} {1}
-LIMIT :size OFFSET :offset";
+LIMIT :size OFFSET :offset;
 
-		const string COUNT_QUERY = FILTER_QUERY + @"
-SELECT COUNT(*) FROM touched_manga";
+SELECT COUNT(*) FROM search_manga;
 
-		var sortField = SortFields().FirstOrDefault(t => t.Id == (filter.Sort ?? 0))?.SqlName ?? "m.title";
+DROP TABLE progress;
+DROP TABLE search_manga;";
 
-		var parts = new List<string>();
-		var pars = new DynamicParameters();
-		pars.Add("offset", (filter.Page - 1) * filter.Size);
-		pars.Add("size", filter.Size);
-		pars.Add("platformId", platformId);
-		pars.Add("state", (int)filter.State);
+        var sortField = SortFields().FirstOrDefault(t => t.Id == (filter.Sort ?? 0))?.SqlName ?? "m.title";
 
-		if (filter.Attributes != null && filter.Attributes.Length > 0)
-		{
-			for (var i = 0; i < filter.Attributes.Length; i++)
-			{
-				var attr = filter.Attributes[i];
-				var name = $"attr{i}";
-				var type = attr.Type switch
-				{
-					AttributeType.ContentRating => "content rating",
-					AttributeType.Status => "status",
-					AttributeType.OriginalLanguage => "original language",
-					_ => null
-				};
+        var parts = new List<string>();
+        var pars = new DynamicParameters();
+        pars.Add("offset", (filter.Page - 1) * filter.Size);
+        pars.Add("size", filter.Size);
+        pars.Add("platformId", platformId);
+        pars.Add("state", (int)filter.State);
 
-				if (type == null || attr.Values == null || attr.Values.Length == 0) continue;
+        if (filter.Attributes != null && filter.Attributes.Length > 0)
+        {
+            for (var i = 0; i < filter.Attributes.Length; i++)
+            {
+                var attr = filter.Attributes[i];
+                var name = $"attr{i}";
+                var type = attr.Type switch
+                {
+                    AttributeType.ContentRating => "content rating",
+                    AttributeType.Status => "status",
+                    AttributeType.OriginalLanguage => "original language",
+                    _ => null
+                };
 
-				pars.Add(name + "val", attr.Values);
-				pars.Add(name + "type", type);
+                if (type == null || attr.Values == null || attr.Values.Length == 0) continue;
 
-				if (attr.Include)
-				{
-					parts.Add($"(LOWER(a.name) = :{name}type AND a.value = ANY( :{name}val ))");
-					continue;
-				}
+                pars.Add(name + "val", attr.Values);
+                pars.Add(name + "type", type);
 
-				parts.Add($"(LOWER(a.name) = :{name}type AND NOT (a.value = ANY( :{name}val )))");
-			}
-		}
+                if (attr.Include)
+                {
+                    parts.Add($"(LOWER(a.name) = :{name}type AND a.value = ANY( :{name}val ))");
+                    continue;
+                }
 
-		if (!string.IsNullOrEmpty(filter.Search))
-		{
-			parts.Add("m.fts @@ phraseto_tsquery('english', :search)");
-			pars.Add("search", filter.Search);
-		}
+                parts.Add($"(LOWER(a.name) = :{name}type AND NOT (a.value = ANY( :{name}val )))");
+            }
+        }
 
-		if (filter.Sources != null && filter.Sources.Length > 0)
-		{
-			parts.Add("m.provider = ANY( :source )");
-			pars.Add("source", filter.Sources);
-		}
+        if (!string.IsNullOrEmpty(filter.Search))
+        {
+            parts.Add("m.fts @@ phraseto_tsquery('english', :search)");
+            pars.Add("search", filter.Search);
+        }
 
-		if (filter.Include != null && filter.Include.Length > 0)
-		{
-			parts.Add("(LOWER(m.tags::text)::text[]) @> :include");
-			pars.Add("include", filter.Include);
-		}
+        if (filter.Sources != null && filter.Sources.Length > 0)
+        {
+            parts.Add("m.provider = ANY( :source )");
+            pars.Add("source", filter.Sources);
+        }
 
-		if (filter.Exclude != null && filter.Exclude.Length > 0)
-		{
-			parts.Add("NOT ((LOWER(m.tags::text)::text[]) && :exclude )");
-			pars.Add("exclude", filter.Exclude);
-		}
+        if (filter.Include != null && filter.Include.Length > 0)
+        {
+            parts.Add("(LOWER(m.tags::text)::text[]) @> :include");
+            pars.Add("include", filter.Include);
+        }
 
-		if (filter.Nsfw != NsfwCheck.DontCare)
-		{
-			parts.Add("m.nsfw = :nsfw");
-			pars.Add("nsfw", filter.Nsfw == NsfwCheck.Nsfw);
-		}
+        if (filter.Exclude != null && filter.Exclude.Length > 0)
+        {
+            parts.Add("NOT ((LOWER(m.tags::text)::text[]) && :exclude )");
+            pars.Add("exclude", filter.Exclude);
+        }
 
-		parts.Add("m.deleted_at IS NULL");
-		var where = string.Join(" AND ", parts);
-		var sort = filter.Ascending ? "ASC" : "DESC";
+        if (filter.Nsfw != NsfwCheck.DontCare)
+        {
+            parts.Add("m.nsfw = :nsfw");
+            pars.Add("nsfw", filter.Nsfw == NsfwCheck.Nsfw);
+        }
 
-		var search = string.Format(SEARCH_QUERY, where, sort, sortField);
-		var count = string.Format(COUNT_QUERY, where);
+        parts.Add("m.deleted_at IS NULL");
+        var where = string.Join(" AND ", parts);
+        var sort = filter.Ascending ? "ASC" : "DESC";
+        var offset = (filter.Page - 1) * filter.Size;
 
-		var offset = (filter.Page - 1) * filter.Size;
 		using var con = _sql.CreateConnection();
 
-		var results = await con.QueryAsync<DbManga, DbMangaProgress, DbMangaChapter, MangaStats, MangaProgress>(
-			search,
-			(m, p, c, s) => new MangaProgress(m, p, c, s),
-			splitOn: "split",
-			param: pars);
+		var query = string.Format(QUERY, where, sort, sortField);
+		using var multi = await con.QueryMultipleAsync(query, pars);
 
-		var total = await con.ExecuteScalarAsync<int>(count, pars);
-		var pages = (long)Math.Ceiling((double)total / filter.Size);
-		return new PaginatedResult<MangaProgress>(pages, total, results.ToArray());
-	}
+		var result = multi.Read<DbManga, DbMangaProgress, DbMangaChapter, MangaStats, MangaProgress>(
+			func: (m, p, c, s) => new MangaProgress(m, p, c, s),
+			splitOn: "split").ToArray();
+		var total = await multi.ReadSingleAsync<int>();
+        var pages = (long)Math.Ceiling((double)total / filter.Size);
+        return new PaginatedResult<MangaProgress>(pages, total, result);
+    }
 
 	public async Task<DbMangaBookmark[]> Bookmarks(long id, string? platformId)
 	{
@@ -509,7 +574,8 @@ WHERE id IN (
 		if (pages.Length == 0)
 		{
 			await _sql.Execute(DELETE_QUERY, new { id, chapterId, pages, platformId });
-			return;
+            await UpdateComputed();
+            return;
 		}
 
 		var pid = await _prof.Fetch(platformId);
@@ -525,7 +591,9 @@ WHERE id IN (
 			v => v.With(t => t.ProfileId).With(t => t.MangaId).With(t => t.MangaChapterId),
 			v => v.With(t => t.Id),
 			v => v.With(t => t.Id).With(t => t.CreatedAt));
-	}
+
+        await UpdateComputed();
+    }
 
 	public async Task<bool> IsFavourite(string? platformId, long mangaId)
 	{
@@ -543,7 +611,9 @@ WHERE p.platform_id = :platformId AND mf.manga_id = :mangaId";
 		const string QUERY = @"SELECT toggle_favourite(:platformId, :mangaId)";
 		var res = await _sql.ExecuteScalar<int>(QUERY, new { platformId, mangaId });
 		if (res == -1) return null;
-		return res == 1;
+
+		await UpdateComputed();
+        return res == 1;
 	}
 
 	public async Task<MangaWithChapters?> GetManga(long id, string? platformId)
@@ -625,6 +695,7 @@ WHERE p.platform_id = :platformId AND m.hash_id = :id";
 		return _sql.Get<DbManga>(QUERY, new { count }); 
 	}
 
+	//
 	public async Task<MangaWithChapters?> Random(string? platformId)
 	{
 		const string RANDOM_QUERY = "SELECT * FROM manga ORDER BY random() LIMIT 1;";
@@ -764,6 +835,8 @@ GROUP BY x.tag
 ORDER BY COUNT(*) DESC;";
 		return _sql.Get<GraphOut>(QUERY, new { platformId, state });
 	}
+
+	public Task UpdateComputed() => _sql.Execute("CALL update_computed()");
 }
 
 public record class MangaSortField(string Name, int Id, string SqlName);
