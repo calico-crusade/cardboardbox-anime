@@ -363,3 +363,4 @@ dist/
 image-cache/
 /src/CardboardBox.Anime.Web/wwwroot
 creds.json
+/src/CardboardBox.Anime.Api/fcm_creds.json
