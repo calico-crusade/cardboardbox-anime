@@ -166,12 +166,12 @@ public class HolybookCommands
 
 	[Command("secret", "Exposes all of your inner-most secrets!", LongRunning = true)]
 	public async Task Secrets(SocketSlashCommand cmd,
-		[Option("Secret Type", false, "fetish")] string? type,
+		[Option("Secret Type", false, "fetish", "sfw-fetish")] string? type,
 		[Option("Who to expose", false)] IUser? user)
 	{
 		static string OffsetForCardboard(string[] items, Random rnd)
 		{
-			var index = (rnd.Next(items.Length) - 1).Martial(items.Length);
+			var index = (rnd.Next(items.Length)).Martial(items.Length);
 			return items[index];
 		}
 
@@ -180,7 +180,8 @@ public class HolybookCommands
 		var validTypes = new[] { "gif", "png", "jpg", "jpeg", "webp" };
 		(string name, string[] path)[] types = new[]
 		{
-			("fetish", new[] { "ImageSets", "Fetish" })
+			("fetish", new[] { "ImageSets", "Fetish" }),
+			("sfw-fetish", new[] { "ImageSets", "OldFetish" })
 		};
 
 		var path = types.PreferedOrFirst(t => t.name.ToLower().Trim() == type?.ToLower().Trim()).path;
@@ -210,7 +211,8 @@ public class HolybookCommands
 
 	private int CalculateSeed(ulong id)
 	{
-        return int.Parse(new string(id.ToString().TakeLast(6).ToArray()));
+		var weekOfYear = DateTime.Now.DayOfYear / 52;
+        return int.Parse(new string(id.ToString().TakeLast(6).ToArray())) + weekOfYear;
     }
 
 	private async Task<(bool, string)> GetImage(string url)

@@ -6,6 +6,7 @@ using Database.Mapping;
 using Database.Generation;
 using Services;
 using Scripting.Tokening;
+using CardboardBox.Anime.Bot.Commands.TierLists;
 
 public static class Extensions
 {
@@ -112,6 +113,7 @@ public static class Extensions
 			.AddTransient<INsfwService, NsfwService>()
 			.AddTransient<IScriptMethods, ScriptMethods>()
 			.AddTransient<ITokenService, TokenService>()
-			.AddSingleton<ICommandStateService, CommandStateService>();
+			.AddSingleton<ICommandStateService, CommandStateService>()
+			.AddTransient<ITierFetchService, TierFetchService>();
 	}
 }

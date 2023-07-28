@@ -161,6 +161,7 @@ public class Runner : IRunner
 				case "lntfix": await LntImageFix(); break;
 				case "nyx": await Nyx(); break;
 				case "zirus": await ZirusTest(); break;
+				case "fetishes": await Fetishes(); break;
                 default: _logger.LogInformation("Invalid command: " + command); break;
 			}
 
@@ -1211,6 +1212,30 @@ public class Runner : IRunner
 
 		_logger.LogInformation("Series: {title}", chap.ChapterTitle);
 
+	}
+
+	public async Task Fetishes()
+	{
+		const string filePath = "images.json";
+		const string OUTPUT = "fetish-images";
+
+		using var io = File.OpenRead(filePath);
+		var urls = await JsonSerializer.DeserializeAsync<string[]>(io) ?? Array.Empty<string>();
+
+		if (!Directory.Exists(OUTPUT)) Directory.CreateDirectory(OUTPUT);
+
+		foreach(var url in urls)
+		{
+			var filename = url.Split('/').Last().Replace("png.png", ".png");
+            _logger.LogInformation("Writing: {filename}", filename);
+            var (data, _, _, _) = await _api.GetData(url);
+
+			var path = Path.Combine(OUTPUT, filename);
+			using var write = File.OpenWrite(path);
+			await data.CopyToAsync(write);
+			await write.FlushAsync();
+			_logger.LogInformation("Finished Writing {filename}", filename);
+        }
 	}
 }
 

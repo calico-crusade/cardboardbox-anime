@@ -17,6 +17,9 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="images.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="stylesheet.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

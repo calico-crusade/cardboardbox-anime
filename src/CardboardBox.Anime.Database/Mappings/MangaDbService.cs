@@ -108,6 +108,7 @@ public class MangaDbService : OrmMapExtended<DbManga>, IMangaDbService
 	private static readonly List<string> _upsertChapters = new();
 	private static readonly List<string> _upsertManga = new();
 	private static readonly List<string> _upsertBookmark = new();
+	private static readonly Random _rnd = new();
 
 	public override string TableName => TABLE_NAME_MANGA;
 
@@ -390,26 +391,32 @@ ORDER BY key, value";
 			.ToArray();
 	}
 
+	public string RandomSuffix(int length = 10)
+	{
+		var chars = "abcdefghijklmnopqrstuvwxyz";
+		return new string(Enumerable.Range(0, 10).Select(t => chars[_rnd.Next(chars.Length)]).ToArray());
+	}
+
 	public async Task<PaginatedResult<MangaProgress>> Search(MangaFilter filter, string? platformId)
 	{
 		const string QUERY = @"
-DROP TABLE IF EXISTS progress;
-DROP TABLE IF EXISTS search_manga;
+DROP TABLE IF EXISTS progress_{3};
+DROP TABLE IF EXISTS search_manga_{3};
 
-CREATE TABLE progress AS
+CREATE TABLE progress_{3} AS
 SELECT
     e.*
 FROM manga_progress_ext e
 JOIN profiles p on e.profile_id = p.id
 WHERE p.platform_id = :platformId;
 
-CREATE TEMP TABLE search_manga AS
+CREATE TEMP TABLE search_manga_{3} AS
 SELECT
     DISTINCT
     m.id
 FROM manga m
 LEFT JOIN manga_attributes a ON a.id = m.id
-LEFT JOIN progress p ON p.manga_id = m.id
+LEFT JOIN progress_{3} p ON p.manga_id = m.id
 WHERE (
     (p.favourite AND (:state = 1 OR :state = 6)) OR
     (p.completed AND (:state = 2 OR :state = 6)) OR
@@ -445,10 +452,10 @@ SELECT
     mp.id IS NOT NULL AND mp.page_index IS NULL as progress_removed,
     COALESCE(p.completed, FALSE) as completed
 FROM manga m
-JOIN search_manga c ON c.id = m.id
+JOIN search_manga_{3} c ON c.id = m.id
 JOIN manga_stats s ON s.manga_id = m.id
 LEFT JOIN manga_attributes a ON a.id = m.id
-LEFT JOIN progress p ON p.manga_id = m.id
+LEFT JOIN progress_{3} p ON p.manga_id = m.id
 LEFT JOIN manga_progress mp ON mp.manga_id = m.id AND mp.profile_id = p.profile_id
 JOIN manga_chapter mc ON
     (p.manga_chapter_id IS NOT NULL AND mc.id = p.manga_chapter_id) OR
@@ -457,10 +464,10 @@ JOIN manga_chapter lc ON lc.id = s.last_chapter_id
 ORDER BY {2} {1}
 LIMIT :size OFFSET :offset;
 
-SELECT COUNT(*) FROM search_manga;
+SELECT COUNT(*) FROM search_manga_{3};
 
-DROP TABLE progress;
-DROP TABLE search_manga;";
+DROP TABLE progress_{3};
+DROP TABLE search_manga_{3};";
 
         var sortField = SortFields().FirstOrDefault(t => t.Id == (filter.Sort ?? 0))?.SqlName ?? "m.title";
 
@@ -537,7 +544,7 @@ DROP TABLE search_manga;";
 
 		using var con = _sql.CreateConnection();
 
-		var query = string.Format(QUERY, where, sort, sortField);
+		var query = string.Format(QUERY, where, sort, sortField, RandomSuffix());
 		using var multi = await con.QueryMultipleAsync(query, pars);
 
 		var result = multi.Read<DbManga, DbMangaProgress, DbMangaChapter, MangaStats, MangaProgress>(
