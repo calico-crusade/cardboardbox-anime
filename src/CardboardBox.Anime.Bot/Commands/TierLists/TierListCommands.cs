@@ -15,18 +15,18 @@ public class TierListCommands
         _tierApi = tierApi;
     }
 
-    [Command("tier", "Fetches a tier list", LongRunning = true)]
-    public async Task GetTier(SocketSlashCommand cmd,
-        [Option("Url", true)] string url)
-    {
-        var item = await _tierApi.FetchTierList(url);
-        if (item == null)
-        {
-            await cmd.Modify("Something went wrong");
-            return;
-        }
+    //[Command("tier", "Fetches a tier list", LongRunning = true)]
+    //public async Task GetTier(SocketSlashCommand cmd,
+    //    [Option("Url", true)] string url)
+    //{
+    //    var item = await _tierApi.FetchTierList(url);
+    //    if (item == null)
+    //    {
+    //        await cmd.Modify("Something went wrong");
+    //        return;
+    //    }
 
-        await cmd.Modify($"Found it! {item.Title} (Tiers: {item.Tiers.Length} - Images: {item.Images.Length})");
+    //    await cmd.Modify($"Found it! {item.Title} (Tiers: {item.Tiers.Length} - Images: {item.Images.Length})");
 
-    }
+    //}
 }

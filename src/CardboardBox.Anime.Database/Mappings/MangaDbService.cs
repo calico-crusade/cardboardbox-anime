@@ -403,7 +403,7 @@ ORDER BY key, value";
 DROP TABLE IF EXISTS progress_{3};
 DROP TABLE IF EXISTS search_manga_{3};
 
-CREATE TABLE progress_{3} AS
+CREATE TEMP TABLE progress_{3} AS
 SELECT
     e.*
 FROM manga_progress_ext e
