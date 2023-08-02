@@ -172,6 +172,7 @@ public class MangaService : IMangaService
 
 		var manga = await ConvertManga(m);
 		await ConvertChapters(m, manga.Id).ToArrayAsync();
+		await _db.Manga.UpdateComputed();
 		return await Manga(manga.Id, platformId);
 	}
 
@@ -223,7 +224,7 @@ public class MangaService : IMangaService
 					.ToArray()
 			};
 
-			chap.Id = await _manga.Upsert(chap);
+			chap.Id = await _manga.Upsert(chap, false);
 			yield return chap;
 		}
 	}

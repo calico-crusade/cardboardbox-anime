@@ -38,7 +38,7 @@ public interface IMangaDbService
     #region for DbMangaChapter
     Task<DbMangaChapter[]> AllChapters();
 
-    Task<long> Upsert(DbMangaChapter chapter);
+    Task<long> Upsert(DbMangaChapter chapter, bool updateComputed = true);
 
     Task<DbMangaChapter[]> Chapters(long mangaId, string language = "en");
 
@@ -90,6 +90,8 @@ public interface IMangaDbService
     #endregion
 
 	Task<GraphOut[]> Graphic(string? platformId, TouchedState state = TouchedState.Completed);
+
+	Task UpdateComputed();
 }
 
 public class MangaDbService : OrmMapExtended<DbManga>, IMangaDbService
@@ -150,14 +152,15 @@ public class MangaDbService : OrmMapExtended<DbManga>, IMangaDbService
 		return id;
     }
 
-	public async Task<long> Upsert(DbMangaChapter chapter)
+	public async Task<long> Upsert(DbMangaChapter chapter, bool updateComputed = true)
 	{
 		var id = await FakeUpsert(chapter, TABLE_NAME_MANGA_CHAPTER,
 			_upsertChapters,
 			(v) => v.With(t => t.MangaId).With(t => t.SourceId).With(t => t.Language),
 			(v) => v.With(t => t.Id),
 			v => v.With(t => t.Id).With(t => t.CreatedAt).With(t => t.Pages));
-        await UpdateComputed();
+        if (updateComputed)
+            await UpdateComputed();
 		return id;
     }
 
