@@ -18,7 +18,7 @@ services:
     restart: always
     environment:
       - Mongo:ConnectionString=${MONGO_CON_URL}
-      - Postgres:ConnectionString=User ID=${POSTGRES_USER};Password=${POSTGRES_PASS};Host=cba-postgres;Database=${POSTGRES_HOST};
+      - Postgres:ConnectionString=User ID=${POSTGRES_USER};Password=${POSTGRES_PASS};Host=cba-postgres;Database=${POSTGRES_HOST};Include Error Detail=true;
       - OAuth:AppId=${OAUTH_APP_ID}
       - OAuth:Secret=${OAUTH_SECRET}
       - OAuth:Key=${OAUTH_KEY}
@@ -57,7 +57,7 @@ services:
     image: ghcr.io/calico-crusade/cardboardbox-proxy/api:latest
     restart: always
     environment:
-      - Postgres:ConnectionString=User ID=${POSTGRES_USER};Password=${POSTGRES_PASS};Host=cba-postgres;Database=caching;
+      - Postgres:ConnectionString=User ID=${POSTGRES_USER};Password=${POSTGRES_PASS};Host=cba-postgres;Database=caching;Include Error Detail=true;
     ports:
       - 8899:80
     depends_on:
@@ -69,7 +69,7 @@ services:
     restart: always
     environment:
       - Mongo:ConnectionString=${MONGO_CON_URL}
-      - Postgres:ConnectionString=User ID=${POSTGRES_USER};Password=${POSTGRES_PASS};Host=cba-postgres;Database=${POSTGRES_HOST};
+      - Postgres:ConnectionString=User ID=${POSTGRES_USER};Password=${POSTGRES_PASS};Host=cba-postgres;Database=${POSTGRES_HOST};Include Error Detail=true;
       - OAuth:AppId=${OAUTH_APP_ID}
       - OAuth:Secret=${OAUTH_SECRET}
       - OAuth:Key=${OAUTH_KEY}
@@ -84,7 +84,7 @@ services:
     restart: always
     environment:
       - Mongo:ConnectionString=${MONGO_CON_URL}
-      - Postgres:ConnectionString=User ID=${POSTGRES_USER};Password=${POSTGRES_PASS};Host=cba-postgres;Database=${POSTGRES_HOST};
+      - Postgres:ConnectionString=User ID=${POSTGRES_USER};Password=${POSTGRES_PASS};Host=cba-postgres;Database=${POSTGRES_HOST};Include Error Detail=true;
       - OAuth:AppId=${OAUTH_APP_ID}
       - OAuth:Secret=${OAUTH_SECRET}
       - OAuth:Key=${OAUTH_KEY}
