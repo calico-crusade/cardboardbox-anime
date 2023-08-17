@@ -6,6 +6,8 @@ using CardboardBox.Anime.Bot.Commands.TierLists;
 using CardboardBox.Anime.Bot.Services;
 using CardboardBox.Anime.Holybooks;
 using CardboardBox.Discord;
+using CardboardBox.Http;
+using CardboardBox.Json;
 using CardboardBox.Manga;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,7 +29,9 @@ var bot = DiscordBotBuilder.Start(null, client)
 		 .AddDatabase()
 		 .AddTransient<MangaUpdater>()
 		 .AddTransient<EasterEggs>()
-		 .AddManga();
+		 .AddManga()
+		 .AddCardboardHttp()
+		 .AddJson();
 	})
 	.WithSlashCommands(c =>
 	{
