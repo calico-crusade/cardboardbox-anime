@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CardboardBox.Http.Files" Version="1.0.1" />
+    <PackageReference Include="CardboardBox.Http.Files" Version="2.0.0" />
   </ItemGroup>
 
   <ItemGroup>
