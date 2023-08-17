@@ -19,6 +19,7 @@ using Manga;
 using Vrv;
 
 using LightNovel.Core;
+using Json;
 
 public static class Extensions
 {
@@ -28,6 +29,7 @@ public static class Extensions
 
 		return services
 			.AddCardboardHttp()
+			.AddJson()
 			.AddLightNovel()
 			.AddDatabase()
 			.AddOAuth(config)
