@@ -30,6 +30,12 @@ export class MangaReverseImageComponent implements OnInit, OnDestroy {
         return this.combined.find(t => t.manga.id === this.results?.bestGuess?.id) || this.results?.bestGuess;
     }
 
+    get showNewPopup() { return !localStorage.getItem('hide-new-popup'); }
+    set showNewPopup(v: boolean) {
+        if (v) localStorage.removeItem('hide-new-popup');
+        else localStorage.setItem('hide-new-popup', 'true');
+    }
+
     constructor(
         private api: MangaService,
         private route: ActivatedRoute,
@@ -37,6 +43,8 @@ export class MangaReverseImageComponent implements OnInit, OnDestroy {
     ) { }
 
     ngOnInit(): void {
+
+
         this._subs
             .subscribe(this.route.queryParams, (t) => {
                 this.url = t['search'] || '';

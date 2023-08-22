@@ -1,3 +1,28 @@
+.alert {
+    display: flex;
+    flex-flow: row;
+    margin: 10px auto;
+    border: 1px solid var(--brd-color-accent);
+    background-color: rgba(255, 0, 0, 0.5);
+    padding: 10px;
+    border-radius: 10px;
+
+    p {
+        flex: 1;
+        margin: auto 0;
+    }
+
+    button {
+        margin: auto 0;
+        margin-left: 10px;
+        background-color: transparent;
+        outline: none;
+        border: none;
+        color: var(--text-color);
+        cursor: pointer;
+    }
+}
+
 header {
     display: flex;
     flex-flow: row;
@@ -38,7 +63,7 @@ main {
 
     &.center {
         flex: 1;
-        
+
         p {
             margin: auto;
         }
