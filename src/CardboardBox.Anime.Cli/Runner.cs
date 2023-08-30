@@ -14,6 +14,7 @@ using LightNovel.Core;
 using LightNovel.Core.Sources;
 using LightNovel.Core.Sources.Utilities;
 using LightNovel.Core.Sources.ZirusSource;
+using CChapter = LightNovel.Core.Chapter;
 
 using Manga;
 using Manga.MangaDex;
@@ -22,7 +23,6 @@ using Manga.Providers;
 using AImage = Core.Models.Image;
 using MangaDexSharp;
 using Microsoft.Extensions.Logging;
-using System.Security.Policy;
 
 public interface IRunner
 {
@@ -168,6 +168,7 @@ public class Runner : IRunner
 				case "fetishes": await Fetishes(); break;
 				case "nncon-images": await NnconImages(); break;
                 case "nncon-load": await NnconLoad(); break;
+				case "fix-yururi": await FixYururiBooking(); break;
                 default: _logger.LogInformation("Invalid command: " + command); break;
 			}
 
@@ -1318,6 +1319,178 @@ public class Runner : IRunner
 			_logger.LogInformation("Chapter found: {0}", chap.ChapterTitle);
 		}
 	}
+
+	public async Task FixYururiBooking()
+    {
+		const long SERIES_ID = 79;
+        const string IMAGE_DIR = "nncon-images";
+        const string IMAGE_URL = "https://static.index-0.com/image/nncon/";
+		const string DEFAULT_IMAGE = "https://static.index-0.com/image/nncon/nya-1024x732-1.gif";
+
+        var imageFiles = Directory.GetFiles(IMAGE_DIR).Select(path =>
+        {
+            var name = Path.GetFileName(path);
+            return (path, name);
+        }).ToArray();
+
+        static IEnumerable<(int volume, Page[] pages)> SplitVolumes(Page[] pages, string[] splits)
+		{
+			int i = 0;
+			var current = new List<Page>();
+			foreach(var page in pages)
+			{
+				if (i >= splits.Length)
+				{
+                    current.Add(page);
+                    continue;
+                }
+
+				var split = splits[i];
+				if (page.Title == split)
+				{
+                    yield return (i + 1, current.ToArray());
+                    current.Clear();
+                    i++;
+                }
+
+                current.Add(page);
+			}
+
+			if (current.Count == 0) yield break;
+
+			yield return (i + 1, current.ToArray());
+		}
+
+		string? GetImage(int number, string part, string? @default = null)
+		{
+			if (imageFiles == null || imageFiles.Length == 0) return @default;
+			var mask = $"v{number}-{part}".ToLower();
+
+			var valids = imageFiles.Where(t => t.name.ToLower().Contains(mask)).ToArray();
+			if (valids.Length == 0) return @default;
+
+			return $"{IMAGE_URL}{valids.First().name}";
+		}
+
+		string StripContent(string input)
+		{
+			return input;
+		}
+
+		Book FromVolume(Series series, int number)
+		{
+			var title = $"{series.Title} Vol {number}";
+            var cover = GetImage(number, "cover", series.Image) ?? DEFAULT_IMAGE;
+			string[] images = new[]
+			{
+				GetImage(number, "chars"),
+				GetImage(number, "1"),
+			}.Where(t => !string.IsNullOrEmpty(t))
+				.ToArray()!;
+
+			return new Book
+			{
+				SeriesId = series.Id,
+				CoverImage = cover,
+				Forwards = images,
+				Inserts = images,
+				Title = title,
+				HashId = title.MD5Hash(),
+				Ordinal = number
+			};
+		}
+
+		Page FromPage(Series series, Page previous, long ordinal)
+		{
+			return new Page
+			{
+				HashId = previous.HashId,
+				Title = previous.Title,
+				Ordinal = ordinal,
+				SeriesId = series.Id,
+				Url = previous.Url,
+				NextUrl = previous.NextUrl,
+				Content = StripContent(previous.Content),
+				Mimetype = previous.Mimetype,
+			};
+		}
+
+        CChapter FromChapter(string title, int bc, long bid, long ordinal)
+		{
+            return new CChapter
+            {
+                HashId = $"{title}-{bc - 1}-{ordinal}".MD5Hash(),
+				Title = title,
+				Ordinal = ordinal,
+				BookId = bid
+            };
+        }
+
+		var api = (NovelApiService)_napi;
+
+        var scaffold = await _lnDb.Series.Scaffold(SERIES_ID);
+		if (scaffold == null)
+		{
+			_logger.LogWarning("Couldn't find series");
+			return;
+		}
+
+		var series = scaffold.Series;
+
+		var pages = scaffold
+			.Books
+			.SelectMany(b => 
+				b.Chapters
+				.SelectMany(t => t.Pages))
+			.Select(t => t.Page)
+			.ToArray();
+
+		var splits = new[] 
+		{ 
+			"Chapter 28", 
+			"Chapter 60", 
+			"Chapter 95", 
+			"Chapter 126",
+			"Chapter 156",
+			"Chapter 183",
+			"Chapter 206",
+            "V8 illustrations",
+            "v9 illustrations",
+            "v10 illustrations",
+			"Chapter 305",
+			"Chapter 333",
+            "v12 & v13 illustrations",
+            "v14 illustrations"
+        };
+
+		await _lnDb.Series.Delete(SERIES_ID);
+
+        series.Id = await _lnDb.Series.Upsert(series);
+
+		var books = SplitVolumes(pages, splits).ToArray();
+		int pageOrdinal = 0;
+		foreach(var (volume, ps) in books)
+		{
+			var bid = await _lnDb.Books.Upsert(FromVolume(series, volume));
+			int pageCount = 0;
+			foreach(var page in ps)
+			{
+				if (page.Title.ToLower().Contains("illustrations")) continue;
+
+				pageOrdinal++;
+				pageCount++;
+
+				var pid = await _lnDb.Pages.Upsert(FromPage(series, page, pageOrdinal));
+				var cid = await _lnDb.Chapters.Upsert(FromChapter(page.Title, volume, bid, pageCount));
+				await _lnDb.ChapterPages.Upsert(new ChapterPage
+				{
+                    ChapterId = cid,
+                    PageId = pid,
+                    Ordinal = 0
+                });
+			}
+		}
+    }
 }
 
 public record class NyxCsvLine(string Link, string Content, string PageId, string Title, string HashId, string SeriesId);
