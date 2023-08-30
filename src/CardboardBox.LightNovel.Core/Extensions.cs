@@ -33,12 +33,19 @@ public static class Extensions
 
 	public static string Join(this IEnumerable<HtmlNode> nodes, bool checkWs = false)
 	{
-		var doc = new HtmlDocument();
-		foreach (var node in nodes)
-			if (!checkWs || !string.IsNullOrWhiteSpace(node.InnerText))
-				doc.DocumentNode.AppendChild(node);
+		try
+		{
+			var doc = new HtmlDocument();
+			foreach (var node in nodes)
+				if (!checkWs || !string.IsNullOrWhiteSpace(node.InnerText))
+					doc.DocumentNode.AppendChild(node);
 
-		return doc.DocumentNode.InnerHtml.Trim();
+			return doc.DocumentNode.InnerHtml.Trim();
+		}
+		catch
+		{
+			return string.Empty;
+		}
 	}
 
 	public static void CleanupNode(this HtmlNode parent)
@@ -91,6 +98,7 @@ public static class Extensions
 			.AddTransient<INyxSourceService, NyxSourceService>()
 			.AddTransient<IZirusApiService, ZirusApiService>()
 			.AddTransient<IZirusMusingsSourceService, ZirusMusingsSourceService>()
+			.AddTransient<INncSourceService, NncSourceService>()
 
 			.AddTransient<INovelUpdatesService, NovelUpdatesService>()
 

@@ -1,7 +1,5 @@
 ﻿namespace CardboardBox.LightNovel.Core.Sources;
 
-using Anime;
-
 public interface ILnpSourceService : ISourceService { }
 
 public class LnpSourceService : SourceService, ILnpSourceService

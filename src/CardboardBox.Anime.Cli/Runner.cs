@@ -22,6 +22,7 @@ using Manga.Providers;
 using AImage = Core.Models.Image;
 using MangaDexSharp;
 using Microsoft.Extensions.Logging;
+using System.Security.Policy;
 
 public interface IRunner
 {
@@ -60,8 +61,9 @@ public class Runner : IRunner
 	private readonly INyxSourceService _nyx;
 	private readonly IPurgeUtils _purge;
 	private readonly IZirusMusingsSourceService _zirus;
+	private readonly INncSourceService _nnc;
 
-	public Runner(
+    public Runner(
 		IVrvApiService vrv, 
 		ILogger<Runner> logger,
 		IFunimationApiService fun,
@@ -88,7 +90,8 @@ public class Runner : IRunner
 		ILntSourceService lnt,
 		INyxSourceService nyx,
 		IPurgeUtils purge,
-		IZirusMusingsSourceService zirus)
+		IZirusMusingsSourceService zirus,
+        INncSourceService nnc)
 	{
 		_vrv = vrv;
 		_logger = logger;
@@ -117,6 +120,7 @@ public class Runner : IRunner
 		_nyx = nyx;
 		_purge = purge;
 		_zirus = zirus;
+		_nnc = nnc;
 	}
 
 	public async Task<int> Run(string[] args)
@@ -162,6 +166,8 @@ public class Runner : IRunner
 				case "nyx": await Nyx(); break;
 				case "zirus": await ZirusTest(); break;
 				case "fetishes": await Fetishes(); break;
+				case "nncon-images": await NnconImages(); break;
+                case "nncon-load": await NnconLoad(); break;
                 default: _logger.LogInformation("Invalid command: " + command); break;
 			}
 
@@ -1236,6 +1242,81 @@ public class Runner : IRunner
 			await write.FlushAsync();
 			_logger.LogInformation("Finished Writing {filename}", filename);
         }
+	}
+
+	public async Task NnconImages()
+	{
+		const string IMAGE_DIR = "nncon-images";
+
+		if (!Directory.Exists(IMAGE_DIR)) Directory.CreateDirectory(IMAGE_DIR);
+
+		var imageJson = @"[
+  ""https://novelonomicon.com/wp-content/uploads/2021/06/v1cover.jpg"",
+  ""https://novelonomicon.com/wp-content/uploads/2021/06/v1charlist.jpeg"",
+  ""https://novelonomicon.com/wp-content/uploads/2021/06/v1-1.jpeg"",
+  ""https://novelonomicon.com/wp-content/uploads/2021/06/nya-1024x732-1.gif"",
+  ""https://novelonomicon.com/wp-content/uploads/2021/06/v2cover.jpg"",
+  ""https://novelonomicon.com/wp-content/uploads/2021/06/v2charlist.jpeg"",
+  ""https://novelonomicon.com/wp-content/uploads/2021/06/v2-1.jpeg"",
+  ""https://novelonomicon.com/wp-content/uploads/2021/06/v3cover.jpg"",
+  ""https://novelonomicon.com/wp-content/uploads/2021/06/v3charlist.jpeg"",
+  ""https://novelonomicon.com/wp-content/uploads/2021/06/v3-1.jpeg"",
+  ""https://novelonomicon.com/wp-content/uploads/2021/06/v4cover.jpg"",
+  ""https://novelonomicon.com/wp-content/uploads/2021/06/v4charlist.jpeg"",
+  ""https://novelonomicon.com/wp-content/uploads/2021/06/v4-1.jpeg"",
+  ""https://novelonomicon.com/wp-content/uploads/2021/06/v5cover.jpg"",
+  ""https://novelonomicon.com/wp-content/uploads/2021/06/v5charlist.jpeg"",
+  ""https://novelonomicon.com/wp-content/uploads/2021/06/v5-1.jpeg"",
+  ""https://novelonomicon.com/wp-content/uploads/2021/06/v6cover.jpg"",
+  ""https://novelonomicon.com/wp-content/uploads/2021/06/v6charlist.jpeg"",
+  ""https://novelonomicon.com/wp-content/uploads/2021/06/v6-1.jpeg"",
+  ""https://novelonomicon.com/wp-content/uploads/2021/06/v7.jpg"",
+  ""https://novelonomicon.com/wp-content/uploads/2021/06/v7char.jpeg"",
+  ""https://novelonomicon.com/wp-content/uploads/2021/06/v7-1.jpeg"",
+  ""https://novelonomicon.com/wp-content/uploads/2021/06/v8cover.jpg"",
+  ""https://novelonomicon.com/wp-content/uploads/2021/06/v8charlist-2048x1503-1.jpeg"",
+  ""https://novelonomicon.com/wp-content/uploads/2021/06/v8-1.jpeg"",
+  ""https://novelonomicon.com/wp-content/uploads/2021/06/v9.jpg"",
+  ""https://novelonomicon.com/wp-content/uploads/2021/06/v9_char-2048x1503-1.jpeg"",
+  ""https://novelonomicon.com/wp-content/uploads/2021/06/v9_1.jpeg"",
+  ""https://novelonomicon.com/wp-content/uploads/2021/06/v10.jpg"",
+  ""https://novelonomicon.com/wp-content/uploads/2021/06/v10char-2048x1503-1.jpeg"",
+  ""https://novelonomicon.com/wp-content/uploads/2021/06/v10_1.jpeg"",
+  ""https://novelonomicon.com/wp-content/uploads/2021/10/v11cover.jpg"",
+  ""https://novelonomicon.com/wp-content/uploads/2021/10/v11charlist.jpeg"",
+  ""https://novelonomicon.com/wp-content/uploads/2021/10/v11_1.jpeg"",
+  ""https://novelonomicon.com/wp-content/uploads/2022/10/v12cover.jpg"",
+  ""https://novelonomicon.com/wp-content/uploads/2022/10/v12charlist-scaled.jpeg"",
+  ""https://novelonomicon.com/wp-content/uploads/2022/10/v12-1.jpeg"",
+  ""https://novelonomicon.com/wp-content/uploads/2022/10/v13cover.jpg"",
+  ""https://novelonomicon.com/wp-content/uploads/2022/10/v13charlist-scaled.jpeg"",
+  ""https://novelonomicon.com/wp-content/uploads/2022/10/v13-1.jpeg""
+]";
+		var images = JsonSerializer.Deserialize<string[]>(imageJson) ?? Array.Empty<string>();
+
+		foreach(var image in images)
+		{
+            var filename = image.Split('/').Last();
+            var (data, _, _, _) = await _api.GetData(image);
+
+            var path = Path.Combine(IMAGE_DIR, filename);
+            using var write = File.OpenWrite(path);
+            await data.CopyToAsync(write);
+            await write.FlushAsync();
+			await data.DisposeAsync();
+            _logger.LogInformation("Finished Writing {filename}", filename);
+        }
+		_logger.LogInformation("Finished");
+	}
+
+	public async Task NnconLoad()
+	{
+		const string URL = "https://novelonomicon.com/novels/isekai-yururi-kikou/prologue/";
+		var chapters = _nnc.Chapters(URL);
+		await foreach(var chap in chapters)
+		{
+			_logger.LogInformation("Chapter found: {0}", chap.ChapterTitle);
+		}
 	}
 }
 

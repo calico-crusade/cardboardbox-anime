@@ -60,6 +60,19 @@ public class HtmlTraverser
             yield return node;
     }
 
+    public IEnumerable<HtmlNode> EverythingBut(Func<HtmlNode, bool> exclude)
+    {
+        if (_targetNode == null) yield break;
+
+        while (Index < _targetNode.ChildNodes.Count)
+        {
+            var node = Current;
+            Index++;
+            if (node == null || exclude(node)) continue;
+            yield return node;
+        }
+    }
+
     public HtmlNode? BackUntil(Func<HtmlNode, bool> predicate)
     {
         if (_targetNode == null) return null;

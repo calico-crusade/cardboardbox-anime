@@ -298,6 +298,19 @@ public static class Extensions
 			parameters,
 			splitOn: splitOn)).ToArray();
 	}
+
+	public static int IndexOf<T>(this IEnumerable<T> items, Func<T, bool> predicate, int start = 0)
+	{
+		int i = 0; 
+		foreach (var item in items)
+		{
+            if (i >= start && predicate(item))
+                return i;
+            i++;
+        }
+
+		return -1;
+	}
 }
 
 //

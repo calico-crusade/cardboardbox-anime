@@ -5,6 +5,8 @@ public interface INovelUpdatesService
 	Task<TempSeriesInfo?> Series(string url);
 
     Task<(TempSeriesInfo? info, SourceChapterItem[] chapters)> GetChapters(string url);
+
+    Task<string?> GetChapterUrl(SourceChapterItem item);
 }
 
 public class NovelUpdatesService : INovelUpdatesService
@@ -102,5 +104,18 @@ public class NovelUpdatesService : INovelUpdatesService
 
         var chaps = await GetChapters(postid, filter, ggr);
         return (info, chaps);
+    }
+
+    public async Task<string?> GetChapterUrl(SourceChapterItem item)
+    {
+        var req = await _api.Create(item.Url)
+            .Accept("text/html")
+            .With(c =>
+            {
+                c.Headers.Add("user-agent", CardboardBox.Extensions.USER_AGENT);
+            }).Result() ?? throw new NullReferenceException($"Request returned null for: {item.Url}");
+
+        req.EnsureSuccessStatusCode();
+        return req.RequestMessage?.RequestUri?.OriginalString;
     }
 }
