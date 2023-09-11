@@ -63,7 +63,7 @@ BEGIN
                 ELSE round(mc.row_num / CAST(mmc.max as decimal) * 100, 2)
             END
         ) as chapter_progress,
-        coalesce(round(mp.page_index / CAST(array_length(mc.pages, 1) as decimal), 2), 0) * 100 as page_progress,
+        coalesce(round((mp.page_index + 1) / CAST(array_length(mc.pages, 1) as decimal), 2), 0) * 100 as page_progress,
         coalesce((
             SELECT true
             FROM manga_favourites mf

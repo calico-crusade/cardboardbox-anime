@@ -1437,30 +1437,13 @@ public class Runner : IRunner
 
 		var series = scaffold.Series;
 
-		var pages = scaffold
-			.Books
-			.SelectMany(b => 
-				b.Chapters
-				.SelectMany(t => t.Pages))
-			.Select(t => t.Page)
-			.ToArray();
+		var pages = scaffold.Books.SelectMany(b => b.Chapters.SelectMany(t => t.Pages)).Select(t => t.Page).ToArray();
 
 		var splits = new[] 
 		{ 
-			"Chapter 28", 
-			"Chapter 60", 
-			"Chapter 95", 
-			"Chapter 126",
-			"Chapter 156",
-			"Chapter 183",
-			"Chapter 206",
-            "V8 illustrations",
-            "v9 illustrations",
-            "v10 illustrations",
-			"Chapter 305",
-			"Chapter 333",
-            "v12 & v13 illustrations",
-            "v14 illustrations"
+			"Chapter 28", "Chapter 60", "Chapter 95",  "Chapter 126", "Chapter 156", "Chapter 183",
+			"Chapter 206", "V8 illustrations", "v9 illustrations", "v10 illustrations", "Chapter 305", "Chapter 333",
+            "v12 & v13 illustrations", "v14 illustrations"
         };
 
 		await _lnDb.Series.Delete(SERIES_ID);
