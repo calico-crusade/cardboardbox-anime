@@ -170,13 +170,14 @@ public class MangaService : IMangaService
 		var m = await src.Manga(id);
 		if (m == null) return null;
 
-		var manga = await ConvertManga(m);
+		var pid = !string.IsNullOrEmpty(platformId) ? (await _db.Profiles.Fetch(platformId))?.Id : null;
+		var manga = await ConvertManga(m, pid);
 		await ConvertChapters(m, manga.Id).ToArrayAsync();
 		await _db.Manga.UpdateComputed();
 		return await Manga(manga.Id, platformId);
 	}
 
-	public async Task<DbManga> ConvertManga(Manga manga)
+	public async Task<DbManga> ConvertManga(Manga manga, long? pid)
 	{
 		var m = new DbManga
 		{
@@ -194,7 +195,8 @@ public class MangaService : IMangaService
 			SourceCreated = manga.SourceCreated,
 			Attributes = manga.Attributes
 				.Select(t => new DbMangaAttribute(t.Name, t.Value))
-				.ToArray()
+				.ToArray(),
+			Uploader = pid,
 		};
 		m.Id = await _manga.Upsert(m);
 		return m;

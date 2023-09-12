@@ -377,6 +377,25 @@ public class MangaController : ControllerBase
         var worked = await _manga.ToggleRead(id, pid, chapters);
         return Ok(new { worked });
     }
+
+	[HttpPut, Route("manga/display-title"), AdminAuthorize]
+	public async Task<IActionResult> SetDisplayTitle([FromBody] DisplayTitleRequest req)
+	{
+		if (string.IsNullOrWhiteSpace(req.Title))
+			req.Title = null;
+
+		await _db.Manga.SetDisplayTitle(req.Id, req.Title);
+		return Ok();
+	}
+}
+
+public class DisplayTitleRequest
+{
+	[JsonPropertyName("id")]
+	public string Id { get; set; } = string.Empty;
+
+	[JsonPropertyName("title")]
+	public string? Title { get; set; }
 }
 
 public class SauceRequest

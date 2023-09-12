@@ -8,7 +8,7 @@ CREATE TYPE manga_chapter_progress AS (
     page_index INT
 );
 
-CREATE TABLE manga (
+CREATE TABLE IF NOT EXISTS manga (
     id BIGSERIAL PRIMARY KEY,
 
     title text not null,
@@ -23,6 +23,8 @@ CREATE TABLE manga (
     nsfw boolean not null default False,
     referer text,
     source_created timestamp,
+    uploader bigint REFERENCES profiles(id),
+    display_title TEXT,
 
     attributes manga_attribute[] not null default '{}',
 
@@ -36,14 +38,23 @@ CREATE TABLE manga (
 CREATE OR REPLACE FUNCTION f_ciarr2text(text[]) RETURNS text LANGUAGE sql IMMUTABLE AS $$SELECT array_to_string($1, ',')$$;
 
 ALTER TABLE manga
-    ADD COLUMN fts tsvector
+    ADD COLUMN IF NOT EXISTS 
+        fts tsvector
         GENERATED ALWAYS AS (
             to_tsvector('english',
                 title || ' ' || description || ' ' || f_ciarr2text(alt_titles)
             )
         ) STORED;
 
-CREATE TABLE manga_chapter (
+ALTER TABLE manga
+    ADD COLUMN IF NOT EXISTS
+        uploader bigint REFERENCES profiles(id);
+
+ALTER TABLE manga 
+    ADD COLUMN IF NOT EXISTS 
+        display_title TEXT;
+
+CREATE TABLE IF NOT EXISTS manga_chapter (
     id BIGSERIAL PRIMARY KEY,
 
     manga_id bigint not null references manga(id),
@@ -64,7 +75,7 @@ CREATE TABLE manga_chapter (
     CONSTRAINT uiq_manga_chapter UNIQUE(manga_id, source_id, language)
 );
 
-CREATE TABLE manga_progress (
+CREATE TABLE IF NOT EXISTS manga_progress (
     id BIGSERIAL PRIMARY KEY,
     
     profile_id bigint not null references profiles(id),
@@ -80,7 +91,7 @@ CREATE TABLE manga_progress (
     CONSTRAINT uiq_manga_progress UNIQUE(profile_id, manga_id)
 );
 
-CREATE TABLE manga_bookmarks (
+CREATE TABLE IF NOT EXISTS manga_bookmarks (
     id BIGSERIAL PRIMARY KEY,
 
     profile_id bigint not null references profiles(id),
@@ -95,7 +106,7 @@ CREATE TABLE manga_bookmarks (
     CONSTRAINT uiq_manga_bookmarks UNIQUE(profile_id, manga_id, manga_chapter_id)
 );
 
-CREATE TABLE manga_favourites (
+CREATE TABLE IF NOT EXISTS manga_favourites (
     id BIGSERIAL PRIMARY KEY,
 
     profile_id bigint not null references profiles(id),
@@ -108,7 +119,7 @@ CREATE TABLE manga_favourites (
     CONSTRAINT uiq_manga_favourites UNIQUE(profile_id, manga_id)
 );
 
-CREATE VIEW manga_attributes
+CREATE OR REPLACE VIEW manga_attributes
 AS
     SELECT
         DISTINCT
@@ -118,7 +129,7 @@ AS
         (unnest(attributes)).value as value
     FROM manga;
 
-CREATE TABLE manga_stats (
+CREATE TABLE IF NOT EXISTS manga_stats (
     manga_id bigint not null references manga(id),
     last_chapter_id bigint not null references manga_chapter(id),
     last_chapter_ordinal numeric not null,
@@ -130,7 +141,7 @@ CREATE TABLE manga_stats (
     CONSTRAINT uiq_manga_stats UNIQUE(manga_id)
 );
 
-CREATE TABLE manga_progress_ext (
+CREATE TABLE IF NOT EXISTS manga_progress_ext (
     manga_id BIGINT NOT NULL REFERENCES manga(id),
     profile_id BIGINT NOT NULL REFERENCES profiles(id),
     manga_chapter_id BIGINT NOT NULL REFERENCES manga_chapter(id),

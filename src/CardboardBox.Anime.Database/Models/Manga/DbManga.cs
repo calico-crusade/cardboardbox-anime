@@ -40,4 +40,10 @@ public class DbManga : DbObject
 
 	[JsonPropertyName("sourceCreated")]
 	public DateTime? SourceCreated { get; set; }
+
+	[JsonPropertyName("uploader")]
+	public long? Uploader { get; set; }
+
+	[JsonPropertyName("displayTitle")]
+	public string? DisplayTitle { get; set; }
 }

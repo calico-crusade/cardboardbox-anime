@@ -24,6 +24,8 @@ public interface IMangaDbService
     Task<DbManga[]> FirstUpdated(int count);
 
     Task<DbManga[]> Random(int count);
+
+	Task SetDisplayTitle(string id, string? title);
     #endregion
 
     #region For MangaWithChapters
@@ -147,7 +149,7 @@ public class MangaDbService : OrmMapExtended<DbManga>, IMangaDbService
 		var id = await FakeUpsert(manga, TABLE_NAME_MANGA, _upsertManga,
 			(v) => v.With(t => t.Provider).With(t => t.SourceId),
 			(v) => v.With(t => t.Id),
-			(v) => v.With(t => t.Id).With(t => t.CreatedAt));
+			(v) => v.With(t => t.Id).With(t => t.CreatedAt).With(t => t.Uploader).With(t => t.DisplayTitle));
         await UpdateComputed();
 		return id;
     }
@@ -847,6 +849,21 @@ ORDER BY COUNT(*) DESC;";
 	}
 
 	public Task UpdateComputed() => _sql.Execute("CALL update_computed()");
+
+	public Task SetDisplayTitle(string id, string? title)
+	{
+		const string QUERY = @"UPDATE manga SET display_title = :title WHERE id = :id OR hash_id = :hashId";
+
+		long? mid = null;
+		string? hashId = id;
+		if (long.TryParse(id, out var m))
+		{
+            hashId = null;
+			mid = m;
+		}
+
+		return _sql.Execute(QUERY, new { id = mid, hashId, title });
+	}
 }
 
 public record class MangaSortField(string Name, int Id, string SqlName);
