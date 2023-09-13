@@ -40,6 +40,16 @@ public class NyxSourceService : INyxSourceService
             }
         }
 
+        doc.DocumentNode
+           .SelectNodes("//div[@id='editdescription']")
+           .Each(t =>
+           {
+               foreach (var child in t.ChildNodes)
+                   t.ParentNode.InsertBefore(child, t);
+
+               t.Remove();
+           });
+
         var title = doc.InnerText("//header[@class='entry-header']/h1");
         if (string.IsNullOrEmpty(title)) return (null, null);
 
@@ -47,8 +57,8 @@ public class NyxSourceService : INyxSourceService
 
         if (!traverser.Valid) return (null, null);
 
-        var cover = traverser.MoveUntil("figure")?.FirstChild?.GetAttributeValue("src", "");
-        _ = traverser.MoveUntil("h3")?.InnerText?.Trim();
+        var cover = traverser.MoveUntil("p")?.FirstChild?.GetAttributeValue("src", "");
+        _ = traverser.MoveUntil("h1")?.InnerText?.Trim();
 
         var attrs = HandleAttributes(traverser.MoveUntil("p")).ToArray();
         var genres = attrs.FirstOrDefault(x => x.key == "Genre").value;
@@ -57,7 +67,7 @@ public class NyxSourceService : INyxSourceService
 
         var desc = traverser.AfterUntil(
             t => t.InnerText == "Description", 
-            t => t.InnerText == "Alternative Name(s)")
+            t => t.InnerText.Contains("Alternative Name(s)"))
             .ToArray()
             .Join(true)
             .Trim();
@@ -235,7 +245,7 @@ public class NyxSourceService : INyxSourceService
 
             if (firstPass != null) return firstPass;
 
-            return copy.SelectNodes("//a")
+            return copy.SelectNodes("//a")?
                 .FirstOrDefault(t => t.InnerText.ToLower().Contains(text.ToLower()))?
                 .GetAttributeValue("href", "")?
                 .Trim();

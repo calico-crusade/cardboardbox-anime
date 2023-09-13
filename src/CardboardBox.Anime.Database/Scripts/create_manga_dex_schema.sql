@@ -13,6 +13,8 @@
     hash_id text not null,
     referer text,
     source_created timestamp,
+    uploader BIGINT,
+    display_title TEXT,
 
     attributes manga_attribute[] not null default '{}',
 

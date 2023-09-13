@@ -1322,6 +1322,41 @@ public class Runner : IRunner
 
 	public async Task FixYururiBooking()
     {
+		static string plusOut(string input, string keep, char replacewith = '+')
+		{
+			var chars = input.ToCharArray();
+			if (input.Contains(keep) == false)
+				return new string(replacewith, input.Length);
+
+			int i = 0;
+			while(i <= chars.Length)
+			{
+				int index = input.IndexOf(keep, i);
+				if (index == -1)
+				{
+					for(var x = i; x < chars.Length; x++)
+						chars[x] = replacewith;
+					break;
+				}
+
+				for(var x = i; x < index; x++)
+					chars[x] = replacewith;
+				i = index + keep.Length;
+			}
+
+			return new string(chars);
+		}
+
+		Console.WriteLine(plusOut("12xy34", "xy"));
+		Console.WriteLine(plusOut("12xy34", "1"));
+		Console.WriteLine(plusOut("12xy34xyabcxy", "xy"));
+		Console.WriteLine(plusOut("abXYabcXYZ", "ab"));
+		Console.WriteLine(plusOut("abXYabcXYZ", "abc"));
+
+		return;
+
+
+
 		const long SERIES_ID = 79;
         const string IMAGE_DIR = "nncon-images";
         const string IMAGE_URL = "https://static.index-0.com/image/nncon/";
