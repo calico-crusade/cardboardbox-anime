@@ -66,6 +66,7 @@ public class MangaService : IMangaService
 		IMangakakalotComAltSource mangakakalot3,
 		IMangaDexSource mangaDex,
 		IMangaClashSource mangaClash,
+		IDarkScansSource dark,
 		INhentaiSource nhentai,
 		IMangaKatanaSource katana,
 		IBattwoSource battwo)
@@ -82,7 +83,8 @@ public class MangaService : IMangaService
 			nhentai,
 			mangakakalot2,
 			mangakakalot3,
-			katana
+			katana,
+			dark
 		};
 	}
 
