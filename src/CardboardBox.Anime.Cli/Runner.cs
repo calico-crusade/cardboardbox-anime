@@ -1325,7 +1325,7 @@ public class Runner : IRunner
 		static string plusOut(string input, string keep, char replacewith = '+')
 		{
 			var chars = input.ToCharArray();
-			if (input.Contains(keep) == false)
+			if (!input.Contains(keep))
 				return new string(replacewith, input.Length);
 
 			int i = 0;

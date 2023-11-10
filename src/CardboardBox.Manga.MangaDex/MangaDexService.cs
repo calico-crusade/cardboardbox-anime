@@ -30,10 +30,14 @@ public interface IMangaDexService
 public class MangaDexService : IMangaDexService
 {
 	private readonly IMangaDex _md;
+	private readonly ILogger _logger;
 
-	public MangaDexService(IMangaDex md)
+	public MangaDexService(
+		IMangaDex md,
+		ILogger<MangaDexService> logger)
 	{
 		_md = md;
+		_logger = logger;
 	}
 
 	public Task<MangaList> Search(string title) => Search(new MangaFilter() { Title = title });
@@ -83,5 +87,16 @@ public class MangaDexService : IMangaDexService
 		return _md.Chapter.Get(id, includes);
 	}
 
-	public Task<Pages> Pages(string id) => _md.Pages.Pages(id);
+	public async Task<Pages> Pages(string id)
+	{
+		try
+		{
+			return await _md.Pages.Pages(id);
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Error occurred while getting pages for {Id}", id);
+			return new Pages() { };
+		}
+	}
 }

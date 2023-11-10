@@ -545,7 +545,6 @@ DROP TABLE search_manga_{3};";
         parts.Add("m.deleted_at IS NULL");
         var where = string.Join(" AND ", parts);
         var sort = filter.Ascending ? "ASC" : "DESC";
-        var offset = (filter.Page - 1) * filter.Size;
 
 		using var con = _sql.CreateConnection();
 
