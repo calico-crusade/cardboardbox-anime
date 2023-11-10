@@ -9,15 +9,22 @@ using CardboardBox.Discord;
 using CardboardBox.Http;
 using CardboardBox.Json;
 using CardboardBox.Manga;
+using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 
 var isLocal = Environment.GetCommandLineArgs().Any(t => t.ToLower().Contains("local"));
-var client = isLocal ? new DiscordSocketClient(new DiscordSocketConfig
-{ 
-	UseInteractionSnowflakeDate = false, 
-	GatewayIntents = Discord.GatewayIntents.AllUnprivileged | Discord.GatewayIntents.MessageContent 
-}) : null;
+
+var config = isLocal ? new DiscordSocketConfig
+{
+	UseInteractionSnowflakeDate = false,
+	GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.MessageContent
+} : new DiscordSocketConfig
+{
+	GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.MessageContent
+};
+
+var client = new DiscordSocketClient(config);
 var bot = DiscordBotBuilder.Start(null, client)
 	.WithServices(c =>
 	{
