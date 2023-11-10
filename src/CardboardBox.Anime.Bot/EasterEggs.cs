@@ -11,6 +11,8 @@ using CChn = Cacheable<IMessageChannel, ulong>;
 
 public class EasterEggs
 {
+	private readonly string[] TWITTER_FIX_DOMAINS = new[] { "x.com", "twitter.com" };
+
 	private readonly DiscordSocketClient _client;
 	private readonly IDiscordApiService _api;
 	private readonly IMangaLookupService _lookup;
@@ -84,7 +86,11 @@ public class EasterEggs
 			return;
 		}
 
-		if (!arg.MentionedUsers.Any(t => t.Id == _client.CurrentUser.Id)) return;
+		if (!arg.MentionedUsers.Any(t => t.Id == _client.CurrentUser.Id))
+		{
+			await HandleTwitterFix(arg);
+            return;
+		}
 
 		if (arg.Content.ToLower().Contains("exec"))
 		{
@@ -255,5 +261,27 @@ public class EasterEggs
 			_logger.LogError(ex, "An error occurred while processing script");
 			await reply($"An error occurred while processing your script: \r\n```\r\n{ex}\r\n```");
 		}
+	}
+
+	public async Task<bool> HandleTwitterFix(SocketMessage msg)
+	{
+		var urlRegex = new Regex(@"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)");
+		if (!urlRegex.IsMatch(msg.Content)) return false;
+
+		var urls = urlRegex.Matches(msg.Content)
+			.Select(t => new Uri(t.ToString()))
+			.Where(t => TWITTER_FIX_DOMAINS.Contains(t.Host.ToLower()))
+			.ToArray();
+
+		if (urls.Length == 0) return false;
+
+		var changed = string.Join("\r\n", urls.Select(t => $"https://vxtwitter.com/" + t.PathAndQuery.TrimStart('/')));
+
+		var men = new AllowedMentions
+		{
+			MentionRepliedUser = false,
+		};
+		await msg.Channel.SendMessageAsync(changed, messageReference: new MessageReference(msg.Id, msg.Channel.Id), allowedMentions: men);
+		return true;
 	}
 }

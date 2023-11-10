@@ -13,7 +13,11 @@ using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 
 var isLocal = Environment.GetCommandLineArgs().Any(t => t.ToLower().Contains("local"));
-var client = isLocal ? new DiscordSocketClient(new DiscordSocketConfig{ UseInteractionSnowflakeDate = false }) : null;
+var client = isLocal ? new DiscordSocketClient(new DiscordSocketConfig
+{ 
+	UseInteractionSnowflakeDate = false, 
+	GatewayIntents = Discord.GatewayIntents.AllUnprivileged | Discord.GatewayIntents.MessageContent 
+}) : null;
 var bot = DiscordBotBuilder.Start(null, client)
 	.WithServices(c =>
 	{
