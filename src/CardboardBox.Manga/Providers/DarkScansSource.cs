@@ -19,7 +19,7 @@ public class DarkScansSource : IDarkScansSource
 
     public async Task<MangaChapterPages?> ChapterPages(string mangaId, string chapterId)
     {
-        var url = $"{MangaBaseUri}{mangaId}/{chapterId}/";
+        var url = $"{MangaBaseUri}{mangaId}/{chapterId}/?style=list";
         var doc = await _api.GetHtml(url);
         if (doc == null) return null;
 
