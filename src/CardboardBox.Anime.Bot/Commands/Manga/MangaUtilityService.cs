@@ -57,10 +57,11 @@ public class MangaUtilityService : IMangaUtilityService
 		var mangaCreated = (manga.CreatedAt ?? DateTime.Now).AddMinutes(1);
 		var latestChapter = progress.Stats.LatestChapter ?? DateTime.Now;
 		var isNew = latestChapter < mangaCreated;
+		var desc = manga.Description.Length > 4096 ? manga.Description[..4090] + "..." : manga.Description;
 
 		var e = new EmbedBuilder()
 			.WithTitle(manga.Title)
-			.WithDescription(manga.Description)
+			.WithDescription(desc)
 			.WithColor(Color.Blue)
 			.WithThumbnailUrl(ProxyUrlMangaCover(manga.Cover))
 			.WithUrl("https://manga.index-0.com/manga/" + manga.Id)
@@ -77,10 +78,11 @@ public class MangaUtilityService : IMangaUtilityService
 	}
 
 	public EmbedBuilder GenerateEmbed(Manga manga, bool local = true)
-	{
-		var e = new EmbedBuilder()
+    {
+        var desc = manga.Description.Length > 4096 ? manga.Description[..4090] + "..." : manga.Description;
+        var e = new EmbedBuilder()
 			.WithTitle(manga.Title)
-			.WithDescription(manga.Description)
+			.WithDescription(desc)
 			.WithColor(Color.Blue)
 			.WithThumbnailUrl(ProxyUrlMangaCover(manga.Cover))
 			.WithUrl(local ? "https://manga.index-0.com/manga/" + manga.Id : "https://mangadex.org/title/" + manga.Id)
