@@ -270,7 +270,7 @@ WHERE
 	manga_id = :mangaId AND 
 	language = :language AND 
 	deleted_at IS NULL
-ORDER BY ordinal";
+ORDER BY volume, ordinal";
 		return _sql.Get<DbMangaChapter>(QUERY, new { mangaId, language });
 	}
 
