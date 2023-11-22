@@ -630,7 +630,7 @@ WHERE p.platform_id = :platformId AND mf.manga_id = :mangaId";
 	public async Task<MangaWithChapters?> GetManga(long id, string? platformId)
 	{
 		const string QUERY = "SELECT * FROM manga WHERE id = :id;" +
-			"SELECT * FROM manga_chapter WHERE manga_id = :id ORDER BY ordinal ASC, created_at ASC;";
+			"SELECT * FROM manga_chapter WHERE manga_id = :id ORDER BY volume, ordinal ASC, created_at ASC;";
 		const string TARGETED_QUERY = @"SELECT mb.* 
 FROM manga_bookmarks mb
 JOIN profiles p ON p.id = mb.profile_id
@@ -668,7 +668,7 @@ WHERE p.platform_id = :platformId AND mf.manga_id = :id";
 		const string QUERY = "SELECT * FROM manga WHERE hash_id = :id;" +
 			@"SELECT c.* FROM manga_chapter c
 JOIN manga m ON m.id = c.manga_id
-WHERE m.hash_id = :id ORDER BY c.ordinal ASC, c.created_at ASC;";
+WHERE m.hash_id = :id ORDER BY c.volume, c.ordinal ASC, c.created_at ASC;";
 		const string TARGETED_QUERY = @"SELECT mb.* 
 FROM manga_bookmarks mb
 JOIN manga m ON m.id = mb.manga_id
@@ -710,7 +710,7 @@ WHERE p.platform_id = :platformId AND m.hash_id = :id";
 	public async Task<MangaWithChapters?> Random(string? platformId)
 	{
 		const string RANDOM_QUERY = "SELECT * FROM manga ORDER BY random() LIMIT 1;";
-		const string QUERY = "SELECT * FROM manga_chapter WHERE manga_id = :id ORDER BY ordinal;";
+		const string QUERY = "SELECT * FROM manga_chapter WHERE manga_id = :id ORDER BY volume, ordinal;";
 		const string TARGETED_QUERY = @"SELECT mb.* 
 FROM manga_bookmarks mb
 JOIN profiles p ON p.id = mb.profile_id
