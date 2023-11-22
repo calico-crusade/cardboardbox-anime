@@ -142,7 +142,7 @@ public class MangaDexSource : IMangaDexSource
 
 			var sortedChapters = chapters
 				.Data
-				.GroupBy(t => t.Attributes.Chapter)
+				.GroupBy(t => t.Attributes.Chapter + t.Attributes.Volume)
 				.Select(t => t.PreferedOrFirst(t => t.Attributes.TranslatedLanguage == DEFAULT_LANG))
 				.Where(t => t != null)
 				.Select(t =>
@@ -158,6 +158,7 @@ public class MangaDexSource : IMangaDexSource
 						Attributes = GetChapterAttributes(t).ToList()
 					};
 				})
+				.OrderBy(t => t.Volume)
 				.OrderBy(t => t.Number);
 
 			foreach (var chap in sortedChapters)

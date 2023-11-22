@@ -354,7 +354,7 @@ public class MangaService : IMangaService
 			ChapterSortColumn.Language => asc ? chap.OrderBy(t => t.Language) : chap.OrderByDescending(t => t.Language),
 			ChapterSortColumn.Title => asc ? chap.OrderBy(t => t.Title) : chap.OrderByDescending(t => t.Title),
 			ChapterSortColumn.Read => OrderByRead(chap, asc, progress),
-			_ => asc ? chap.OrderBy(t => t.Ordinal) : chap.OrderByDescending(t => t.Ordinal),
+			_ => asc ? chap.OrderBy(t => t.Ordinal).OrderBy(t => t.Volume ?? 99999) : chap.OrderByDescending(t => t.Ordinal),
 		};
 	}
 
