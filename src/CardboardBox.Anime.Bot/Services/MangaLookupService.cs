@@ -14,7 +14,7 @@ public class MangaLookupService : IMangaLookupService
 	private readonly IMangaApiService _manga;
 	private readonly IDbService _db;
 
-	public const string IMPORT_URL = "https://manga.index-0.com/import?url=";
+	public const string IMPORT_URL = Constants.MANGA_UI + "/import?url=";
 
 	public MangaLookupService(
 		IDiscordApiService api, 

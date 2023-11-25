@@ -23,7 +23,7 @@ public class MangaCommand
 		_settings = settings;
 	}
 
-	[Command("manga", "Search for a manga available on https://cba.index-0.com/manga", LongRunning = true)]
+	[Command("manga", "Search for a manga available on https://mangabox.app", LongRunning = true)]
 	public async Task Manga(SocketSlashCommand cmd,
 		[Option("Search Text", false)] string? search,
 		[Option("Allow NSFW results", false)] bool? nsfw)
