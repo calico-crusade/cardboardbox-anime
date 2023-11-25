@@ -387,6 +387,13 @@ public class MangaController : ControllerBase
 		await _db.Manga.SetDisplayTitle(req.Id, req.Title);
 		return Ok();
 	}
+
+	[HttpPut, Route("manga/ordinal-reset"), AdminAuthorize]
+	public async Task<IActionResult> ResetOrdinal([FromBody] OrdinalResetRequest req)
+	{
+        await _db.Manga.SetOrdinalReset(req.Id, req.Reset);
+        return Ok();
+    }
 }
 
 public class DisplayTitleRequest
@@ -396,6 +403,15 @@ public class DisplayTitleRequest
 
 	[JsonPropertyName("title")]
 	public string? Title { get; set; }
+}
+
+public class OrdinalResetRequest
+{
+	[JsonPropertyName("id")]
+    public string Id { get; set; } = string.Empty;
+
+	[JsonPropertyName("reset")]
+    public bool Reset { get; set; }
 }
 
 public class SauceRequest

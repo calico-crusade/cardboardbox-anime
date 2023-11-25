@@ -40,6 +40,9 @@ public class Manga
 
 	[JsonPropertyName("sourceCreated"), BsonElement("source_created")]
 	public DateTime? SourceCreated { get; set; }
+
+	[JsonPropertyName("ordinalVolumeReset")]
+	public bool OrdinalVolumeReset { get; set; } = false;
 }
 
 public class MangaAttribute

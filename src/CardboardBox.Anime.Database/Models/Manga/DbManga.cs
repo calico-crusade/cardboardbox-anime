@@ -46,4 +46,7 @@ public class DbManga : DbObject
 
 	[JsonPropertyName("displayTitle")]
 	public string? DisplayTitle { get; set; }
+
+	[JsonPropertyName("ordinalVolumeReset")]
+	public bool OrdinalVolumeReset { get; set; } = false;
 }

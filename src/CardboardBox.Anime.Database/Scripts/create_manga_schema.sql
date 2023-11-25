@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS manga (
     source_created timestamp,
     uploader bigint REFERENCES profiles(id),
     display_title TEXT,
+    ordinal_volume_reset BOOLEAN NOT NULL DEFAULT FALSE,
 
     attributes manga_attribute[] not null default '{}',
 
