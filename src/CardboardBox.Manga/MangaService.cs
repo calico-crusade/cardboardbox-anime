@@ -40,6 +40,7 @@ public interface IMangaService
 
 public class MangaService : IMangaService
 {
+	private readonly ILogger _logger;
 	private readonly IMangaSource[] _sources;
 	private readonly IMatchApiService _match;
 	private readonly IApiService _api;
@@ -61,6 +62,7 @@ public class MangaService : IMangaService
 		IDbService db,
 		IMatchApiService match,
 		IApiService api,
+		ILogger<MangaService> logger,
 		IMangaDexService md,
 		IMangakakalotTvSource mangakakalot,
 		IMangakakalotComSource mangakakalot2,
@@ -76,6 +78,7 @@ public class MangaService : IMangaService
 		_match = match;
 		_api = api;
 		_md = md;
+		_logger = logger;
 		_sources = new IMangaSource[]
 		{
 			mangaDex,
@@ -132,19 +135,27 @@ public class MangaService : IMangaService
 
 	public async Task<string[]> MangaPages(DbMangaChapter chapter, DbManga manga, bool refetch)
 	{
-		if (chapter.Pages.Length > 0 && !refetch) return chapter.Pages;
+		try
+		{
+			if (chapter.Pages.Length > 0 && !refetch) return chapter.Pages;
 
-		var (src, id) = DetermineSource(manga.Url);
-		if (src == null || id == null) return Array.Empty<string>();
+			var (src, id) = DetermineSource(manga.Url);
+			if (src == null || id == null) return Array.Empty<string>();
 
-		var pages = src is IMangaUrlSource url ?
-			await url.ChapterPages(chapter.Url) :
-			await src.ChapterPages(manga.SourceId, chapter.SourceId);
-		if (pages == null) return Array.Empty<string>();
+			var pages = src is IMangaUrlSource url ?
+				await url.ChapterPages(chapter.Url) :
+				await src.ChapterPages(manga.SourceId, chapter.SourceId);
+			if (pages == null) return Array.Empty<string>();
 
-		await _manga.SetPages(chapter.Id, pages.Pages);
-		chapter.Pages = pages.Pages;
-		return chapter.Pages;
+			await _manga.SetPages(chapter.Id, pages.Pages);
+			chapter.Pages = pages.Pages;
+			return chapter.Pages;
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Failed to get pages for chapter: {chapterId} >> manga: {mangaId}", chapter.Id, manga.Id);
+			return Array.Empty<string>();
+		}
 	}
 
 	public Task<PaginatedResult<DbManga>> Manga(int page, int size)

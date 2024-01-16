@@ -80,6 +80,7 @@ public class DarkScansSource : IDarkScansSource
 
         return manga;
     }
+
     public async Task<List<MangaChapter>> GetChapters(string url)
     {
         //https://dark-scan.com/manga/yuusha-party-o-oida-sareta-kiyou-binbou/ajax/chapters/
