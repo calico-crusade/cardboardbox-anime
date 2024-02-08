@@ -182,7 +182,7 @@ public class MangaMatchService : IMangaMatchService
 
 			if (existing != null && !reindex) continue;
 
-			if (pageRequests >= 35)
+			if (pageRequests >= 25)
 			{
 				_logger.LogDebug($"Manga match indexing: Delaying indexing due to rate-limits >> {manga.Attributes.Title.PreferedOrFirst(t => t.Key == "en").Value} ({manga.Id}) >> {chapter.Attributes.Title ?? chapter.Attributes.Chapter} ({chapter.Id})");
 				await Task.Delay(60 * 1000);
