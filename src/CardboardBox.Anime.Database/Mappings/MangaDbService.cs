@@ -706,7 +706,7 @@ WHERE p.platform_id = :platformId AND m.hash_id = :id";
 	{
 		const string QUERY = @"SELECT *
 FROM manga
-WHERE provider <> 'mangadex'
+WHERE provider NOT IN ('mangadex', 'mangakakalot-com')
 ORDER BY updated_at ASC
 LIMIT :count";
 		return _sql.Get<DbManga>(QUERY, new { count }); 
