@@ -30,6 +30,7 @@ services:
       - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
       - ChatGPT:Token=${CHAT_GPT_TOKEN}
       - SauceNao:Token=${SAUCE_NAO_TOKEN}
+      - Redis:Connection=${REDIS_CONNECTION}
     ports:
       - 8891:80
     depends_on:
@@ -49,6 +50,7 @@ services:
       - Match:Url=${MATCH_URL}
       - Sqlite:ConnectionString=Data Source=persist/database.db;
       - ChatGPT:Token=${CHAT_GPT_TOKEN}
+      - Redis:Connection=${REDIS_CONNECTION}
     depends_on:
       - cba-api
     volumes:
@@ -76,6 +78,7 @@ services:
       - OAuth:Key=${OAUTH_KEY}
       - Ai:Url=${DISCORD_AI_URL}
       - Match:Url=${MATCH_URL}
+      - Redis:Connection=${REDIS_CONNECTION}
     ports:
       - 8897:80
     depends_on:
@@ -92,6 +95,7 @@ services:
       - Ai:Url=${DISCORD_AI_URL}
       - Match:Url=${MATCH_URL}
       - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
+      - Redis:Connection=${REDIS_CONNECTION}
     volumes:
       - ./creds.json:/app/creds.json
       - ./persist:/app/persist
