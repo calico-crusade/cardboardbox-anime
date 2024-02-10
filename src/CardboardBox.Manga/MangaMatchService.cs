@@ -5,6 +5,7 @@ using MManga = MangaDexSharp.Manga;
 namespace CardboardBox.Manga;
 
 using Anime.Database;
+using CardboardBox.Redis;
 using MangaDex;
 using Match;
 
@@ -36,19 +37,27 @@ public class MangaMatchService : IMangaMatchService
 	private readonly ILogger _logger;
 	private readonly IMangaCacheDbService _db;
 	private readonly IMangaService _manga;
+	private readonly IRedisService _redis;
+	private readonly IConfiguration _config;
+
+	public string QueueName => $"{_config["Redis:Queue:Name"]}:queue";
 
 	public MangaMatchService(
 		IMatchApiService api,
 		IMangaDexService md,
 		ILogger<MangaMatchService> logger,
 		IMangaCacheDbService db,
-		IMangaService manga)
+		IMangaService manga,
+		IRedisService redis,
+		IConfiguration config)
 	{
 		_api = api;
 		_md = md;
 		_logger = logger;
 		_db = db;
 		_manga = manga;
+		_redis = redis;
+		_config = config;
 	}
 
 	public string ProxyUrl(string url, string group = "manga-page", string? referer = null, bool noCache = false)
@@ -161,6 +170,12 @@ public class MangaMatchService : IMangaMatchService
 		return true;
 	}
 
+	public async Task Queue(IndexRequest request)
+	{
+		await _redis.List<IndexRequest>(QueueName).Append(request);
+		await _redis.Publish(QueueName, request);
+	}
+
 	public async Task IndexChapterList(ChapterList latest, bool reindex = false)
 	{
 		await PolyfillCoverArt(latest);
@@ -168,7 +183,6 @@ public class MangaMatchService : IMangaMatchService
 		var chapIds = latest.Data.Select(t => t.Id).ToArray();
 		var existings = (await _db.DetermineExisting(chapIds)).ToDictionary(t => t.chapter.SourceId);
 
-		int pageRequests = 0;
 		foreach (var chapter in latest.Data)
 		{
 			var existing = existings.ContainsKey(chapter.Id) ? existings[chapter.Id] : null;
@@ -182,56 +196,32 @@ public class MangaMatchService : IMangaMatchService
 
 			if (existing != null && !reindex) continue;
 
-			if (pageRequests >= 25)
-			{
-				_logger.LogDebug($"Manga match indexing: Delaying indexing due to rate-limits >> {manga.Attributes.Title.PreferedOrFirst(t => t.Key == "en").Value} ({manga.Id}) >> {chapter.Attributes.Title ?? chapter.Attributes.Chapter} ({chapter.Id})");
-				await Task.Delay(60 * 1000);
-				pageRequests = 0;
-			}
-
 			if (!string.IsNullOrEmpty(chapter.Attributes.ExternalUrl))
 			{
 				_logger.LogWarning($"Manga match indexing: External URL detected, skipping: {manga.Attributes.Title.PreferedOrFirst(t => t.Key == "en").Value} ({manga.Id}) >> {chapter.Attributes.Title} ({chapter.Id})");
 				continue;
 			}
 
-			var pages = await _md.Pages(chapter.Id);
-			pageRequests++;
-			if (pages == null || pages.Images.Length == 0)
-			{
-				_logger.LogWarning("Manga match indexing: Couldn't find any pages for chapter: " + chapter.Id);
-				continue;
-			}
+			var (dbChap, dbManga) = await Convert(chapter, manga, Array.Empty<string>());
 
-			var (dbChap, dbManga) = await Convert(chapter, manga, pages.Images);
-
-			await IndexPageProxy(dbManga.Cover, new MangaMetadata
+			await Queue(new IndexRequest
 			{
-				Id = dbManga.Cover.MD5Hash(),
-				Source = "mangadex",
-				Url = dbManga.Cover,
-				Type = MangaMetadataType.Cover,
+				Type = IndexRequest.TYPE_PAGES,
 				MangaId = manga.Id,
-			}, dbManga.Referer);
-
-			for (var i = 0; i < dbChap.Pages.Length; i++)
+				ChapterId = chapter.Id,
+			});
+			await Queue(new IndexRequest
 			{
-				var url = dbChap.Pages[i];
-				var meta = new MangaMetadata
-				{
-					Id = url.MD5Hash(),
-					Source = "mangadex",
-					Url = url,
-					Type = MangaMetadataType.Page,
-					MangaId = manga.Id,
-					ChapterId = chapter.Id,
-					Page = i + 1,
-				};
+				Type = IndexRequest.TYPE_COVER,
+				MangaId = manga.Id,
+				Url = dbManga.Cover,
+			});
 
-				await IndexPageProxy(url, meta, dbManga.Referer);
-			}
-
-			_logger.LogDebug($"Manga match indexing: Indexed chapter >> {dbManga.Title} ({dbManga.SourceId}) >> {dbChap.Title} ({dbChap.SourceId})");
+			_logger.LogInformation("Manga match indexing: Indexed chapter queued >> {MangaTitle} ({MangaSourceId}) >> {ChapterTitle} ({ChapterSourceId})",
+				dbManga.Title,
+				dbManga.SourceId,
+				dbChap.Title,
+				dbChap.SourceId);
 		}
 	}
 

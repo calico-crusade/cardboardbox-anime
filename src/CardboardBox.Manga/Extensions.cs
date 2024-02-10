@@ -1,8 +1,9 @@
-﻿namespace CardboardBox.Manga;
+﻿using CardboardBox.Redis;
+
+namespace CardboardBox.Manga;
 
 using Match;
 using Providers;
-using System.Collections.Generic;
 
 public static class Extensions
 {
@@ -31,6 +32,7 @@ public static class Extensions
 
 			.AddTransient<IGoogleVisionService, GoogleVisionService>()
 			.AddTransient<IMangaSearchService, MangaSearchService>()
+			.AddRedis()
 
 			.AddMangadex();
 	}

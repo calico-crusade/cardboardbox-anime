@@ -345,11 +345,19 @@ public class MangaService : IMangaService
 
 		using var zip = new ZipFile();
 
+		int requests = 0;
 		for (var i = 0; i < pages.Length; i++)
 		{
+			requests++;
 			var proxy = ProxyUrl(pages[i], referer: manga.Manga.Referer);
 			var (stream, _, name, _) = await _api.GetData(proxy);
 			zip.AddEntry($"{i}-{name}", stream);
+
+			if (requests >= 25)
+			{
+				await Task.Delay(5000);
+				requests = 0;
+			}
 		}
 
 		var ms = new MemoryStream();

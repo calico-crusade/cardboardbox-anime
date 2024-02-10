@@ -9,10 +9,12 @@ public abstract class MangakakalotComBase : IMangaUrlSource
 	public abstract string Provider { get; }
 
 	private readonly IApiService _api;
+	private readonly ILogger _logger;
 
-	public MangakakalotComBase(IApiService api)
+	public MangakakalotComBase(IApiService api, ILogger<MangakakalotComBase> logger)
 	{
 		_api = api;
+		_logger = logger;
 	}
 
 	public Task<MangaChapterPages?> ChapterPages(string mangaId, string chapterId)
@@ -56,65 +58,73 @@ public abstract class MangakakalotComBase : IMangaUrlSource
 
 	public virtual async Task<Manga?> Manga(string id)
 	{
-		var url = id.ToLower().StartsWith("http") ? id : $"{MangaBaseUri}{id}";
-		var doc = await _api.GetHtml(url);
-		if (doc == null) return null;
-
-		var title = doc.DocumentNode.SelectSingleNode("//ul[@class=\"manga-info-text\"]/li/h1").InnerText;
-		var cover = doc.DocumentNode.SelectSingleNode("//div[@class=\"manga-info-pic\"]/img").GetAttributeValue("src", "");
-
-		var manga = new Manga
+		try
 		{
-			Title = title,
-			Id = id,
-			Provider = Provider,
-			HomePage = url,
-			Cover = cover,
-			Referer = HomeUrl
-		};
+			var url = id.ToLower().StartsWith("http") ? id : $"{MangaBaseUri}{id}";
+			var doc = await _api.GetHtml(url);
+			if (doc == null) return null;
 
-		var desc = doc.DocumentNode.SelectSingleNode("//div[@id='noidungm']");
-		foreach (var item in desc.ChildNodes.ToArray())
-		{
-			if (item.Name == "h2") item.Remove();
-		}
+			var title = doc.DocumentNode.SelectSingleNode("//ul[@class=\"manga-info-text\"]/li/h1").InnerText;
+			var cover = doc.DocumentNode.SelectSingleNode("//div[@class=\"manga-info-pic\"]/img").GetAttributeValue("src", "");
 
-		manga.Description = desc.InnerHtml;
-
-		var textEntries = doc.DocumentNode.SelectNodes("//ul[@class=\"manga-info-text\"]/li");
-
-		foreach (var li in textEntries)
-		{
-			if (!li.InnerText.StartsWith("Genres")) continue;
-
-			var atags = li.ChildNodes.Where(t => t.Name == "a").Select(t => t.InnerText).ToArray();
-			manga.Tags = atags;
-			break;
-		}
-
-		var chapterEntries = doc.DocumentNode.SelectNodes("//div[@class=\"chapter-list\"]/div[@class=\"row\"]");
-
-		int num = chapterEntries.Count;
-		foreach (var chapter in chapterEntries)
-		{
-			var a = chapter.SelectSingleNode("./span/a");
-			var href = a.GetAttributeValue("href", "").TrimStart('/');
-			if (!href.StartsWith("http")) href = HomeUrl + "/" + href;
-
-			var c = new MangaChapter
+			var manga = new Manga
 			{
-				Title = a.InnerText.Trim(),
-				Url = href,
-				Number = num--,
-				Id = href.Split('/').Last()
+				Title = title,
+				Id = id,
+				Provider = Provider,
+				HomePage = url,
+				Cover = cover,
+				Referer = HomeUrl
 			};
 
-			manga.Chapters.Add(c);
+			var desc = doc.DocumentNode.SelectSingleNode("//div[@id='noidungm']");
+			foreach (var item in desc.ChildNodes.ToArray())
+			{
+				if (item.Name == "h2") item.Remove();
+			}
+
+			manga.Description = desc.InnerHtml;
+
+			var textEntries = doc.DocumentNode.SelectNodes("//ul[@class=\"manga-info-text\"]/li");
+
+			foreach (var li in textEntries)
+			{
+				if (!li.InnerText.StartsWith("Genres")) continue;
+
+				var atags = li.ChildNodes.Where(t => t.Name == "a").Select(t => t.InnerText).ToArray();
+				manga.Tags = atags;
+				break;
+			}
+
+			var chapterEntries = doc.DocumentNode.SelectNodes("//div[@class=\"chapter-list\"]/div[@class=\"row\"]");
+
+			int num = chapterEntries.Count;
+			foreach (var chapter in chapterEntries)
+			{
+				var a = chapter.SelectSingleNode("./span/a");
+				var href = a.GetAttributeValue("href", "").TrimStart('/');
+				if (!href.StartsWith("http")) href = HomeUrl + "/" + href;
+
+				var c = new MangaChapter
+				{
+					Title = a.InnerText.Trim(),
+					Url = href,
+					Number = num--,
+					Id = href.Split('/').Last()
+				};
+
+				manga.Chapters.Add(c);
+			}
+
+			manga.Chapters = manga.Chapters.OrderBy(t => t.Number).ToList();
+
+			return manga;
 		}
-
-		manga.Chapters = manga.Chapters.OrderBy(t => t.Number).ToList();
-
-		return manga;
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Failed to get manga");
+            return null;
+		}
 	}
 
 	public virtual (bool matches, string? part) MatchesProvider(string url)
@@ -135,7 +145,7 @@ public class MangakakalotComSource : MangakakalotComBase, IMangakakalotComSource
 
 	public override string Provider => "mangakakalot-com";
 
-	public MangakakalotComSource(IApiService api) : base(api) { }
+	public MangakakalotComSource(IApiService api, ILogger<MangakakalotComSource> logger) : base(api, logger) { }
 }
 
 public interface IMangakakalotComAltSource : IMangaUrlSource { }
@@ -146,5 +156,5 @@ public class MangakakalotComAltSource : MangakakalotComBase, IMangakakalotComAlt
 
 	public override string MangaBaseUri => $"{HomeUrl}manga/";
 
-	public MangakakalotComAltSource(IApiService api) : base(api) { }
+	public MangakakalotComAltSource(IApiService api, ILogger<MangakakalotComSource> logger) : base(api, logger) { }
 }

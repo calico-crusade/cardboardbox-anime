@@ -704,7 +704,11 @@ WHERE p.platform_id = :platformId AND m.hash_id = :id";
 
 	public Task<DbManga[]> FirstUpdated(int count)
 	{
-		const string QUERY = "SELECT * FROM manga ORDER BY updated_at ASC LIMIT :count";
+		const string QUERY = @"SELECT *
+FROM manga
+WHERE provider <> 'mangadex'
+ORDER BY updated_at ASC
+LIMIT :count";
 		return _sql.Get<DbManga>(QUERY, new { count }); 
 	}
 
