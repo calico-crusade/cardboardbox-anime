@@ -1,4 +1,6 @@
-﻿CREATE TYPE manga_attribute AS (
+﻿CREATE EXTENSION pg_trgm;
+
+CREATE TYPE manga_attribute AS (
     name text,
     value text
 );
@@ -164,3 +166,22 @@ CREATE TABLE IF NOT EXISTS manga_progress_ext (
 
     CONSTRAINT uiq_manga_progress_ext UNIQUE(manga_id, profile_id)
 );
+
+CREATE INDEX manga_idx_description ON manga USING gist (description gist_trgm_ops);
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS manga_similar_tags AS
+WITH manga_tags AS (
+    SELECT
+        id as manga_id,
+        UNNEST(tags) as tag
+    FROM manga
+)
+SELECT
+    a.manga_id as first_manga_id,
+    b.manga_id as second_manga_id,
+    COUNT(*) as same_tags
+FROM manga_tags a
+JOIN manga_tags b ON
+    a.manga_id > b.manga_id AND
+    a.tag = b.tag
+GROUP BY a.manga_id, b.manga_id;

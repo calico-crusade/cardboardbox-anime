@@ -23,6 +23,7 @@ AS $$
             ) AS row_num
         FROM manga_chapter c
         JOIN touched m ON m.manga_id = c.manga_id
+        WHERE c.deleted_at IS NULL
     ), max_chapter_numbers AS (
         SELECT
             c.manga_id,

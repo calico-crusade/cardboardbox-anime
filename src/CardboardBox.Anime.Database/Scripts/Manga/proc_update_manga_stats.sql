@@ -11,6 +11,7 @@ AS $$
             COUNT(ordinal) as chapter_count,
             manga_id
         FROM manga_chapter
+        WHERE deleted_at IS NULL
         GROUP BY manga_id
         ORDER BY manga_id
     ), temp_latest_grouping AS (

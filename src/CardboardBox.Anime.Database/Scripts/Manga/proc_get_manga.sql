@@ -29,6 +29,7 @@ BEGIN
         ) as row_num
     FROM manga_chapter c
     JOIN manga m ON m.id = c.manga_id
+    WHERE m.deleted_at IS NULL AND c.deleted_at IS NULL
 ), max_chapter_numbers AS (
     SELECT
         c.manga_id,

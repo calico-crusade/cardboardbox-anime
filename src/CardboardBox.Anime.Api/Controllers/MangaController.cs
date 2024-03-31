@@ -421,6 +421,29 @@ public class MangaController : ControllerBase
 			count = res
 		});
 	}
+
+    [HttpDelete, Route("manga/{id}"), AdminAuthorize]
+    public async Task<IActionResult> DeleteManga([FromRoute] long id)
+    {
+        var res = await _db.Manga.Get(id);
+        if (res == null) return NotFound();
+
+        await _db.Manga.DeleteManga(res.Id);
+        return Ok();
+    }
+
+    [HttpDelete, Route("manga/{id}/{chapterId}"), AdminAuthorize]
+    public async Task<IActionResult> DeleteChapter([FromRoute] long id, [FromRoute] long chapterId)
+    {
+        var res = await _db.Manga.Get(id);
+        if (res == null) return NotFound();
+
+        var chapter = await _db.Manga.GetChapter(chapterId);
+        if (chapter == null) return NotFound();
+
+        await _db.Manga.DeleteChapter(chapter.Id);
+        return Ok();
+    }
 }
 
 public class DisplayTitleRequest

@@ -96,6 +96,10 @@ public interface IMangaDbService
 	Task<GraphOut[]> Graphic(string? platformId, TouchedState state = TouchedState.Completed);
 
 	Task UpdateComputed();
+
+	Task DeleteManga(long id);
+
+	Task DeleteChapter(long id);
 }
 
 public class MangaDbService : OrmMapExtended<DbManga>, IMangaDbService
@@ -332,6 +336,18 @@ WHERE
 		return _sql.Fetch<DbMangaProgress?>(QUERY, new { platformId, mangaId });
 	}
 
+	public Task DeleteManga(long id)
+	{
+		const string QUERY = "UPDATE manga SET deleted_at = NOW() WHERE id = :id";
+		return _sql.Execute(QUERY, new { id });
+	}
+
+	public Task DeleteChapter(long id)
+	{
+        const string QUERY = "UPDATE manga_chapter SET deleted_at = NOW() WHERE id = :id";
+        return _sql.Execute(QUERY, new { id });
+    }
+
 	public async Task<Filter[]> Filters()
 	{
 		const string QUERY = @"WITH allTags as (
@@ -431,7 +447,8 @@ WHERE (
     (p.has_bookmarks AND (:state = 4 OR :state = 6)) OR
     (:state = 5 AND p.profile_id IS NULL) OR
     (:state NOT IN (1, 2, 3, 4, 5, 6))
-) AND ( {0} );
+) AND ( {0} ) AND
+m.deleted_at IS NULL;
 
 SELECT
     DISTINCT
@@ -465,9 +482,11 @@ LEFT JOIN manga_attributes a ON a.id = m.id
 LEFT JOIN progress_{3} p ON p.manga_id = m.id
 LEFT JOIN manga_progress mp ON mp.manga_id = m.id AND mp.profile_id = p.profile_id
 JOIN manga_chapter mc ON
-    (p.manga_chapter_id IS NOT NULL AND mc.id = p.manga_chapter_id) OR
-    (p.manga_chapter_id IS NULL AND mc.id = s.first_chapter_id)
+	(p.manga_chapter_id IS NOT NULL AND mc.id = p.manga_chapter_id AND mc.deleted_at IS NULL) OR
+	(p.manga_chapter_id IS NULL AND mc.id = s.first_chapter_id AND mc.deleted_at IS NULL)
 JOIN manga_chapter lc ON lc.id = s.last_chapter_id
+WHERE
+	m.deleted_at IS NULL
 ORDER BY {2} {1}
 LIMIT :size OFFSET :offset;
 
@@ -631,18 +650,26 @@ WHERE p.platform_id = :platformId AND mf.manga_id = :mangaId";
 
 	public async Task<MangaWithChapters?> GetManga(long id, string? platformId)
 	{
-		const string QUERY = "SELECT * FROM manga WHERE id = :id;" +
-			"SELECT * FROM manga_chapter WHERE manga_id = :id ORDER BY volume, ordinal ASC, created_at ASC;";
-		const string TARGETED_QUERY = @"SELECT mb.* 
+		const string QUERY = "SELECT * FROM manga WHERE id = :id AND deleted_at IS NULL;" +
+            "SELECT * FROM manga_chapter WHERE manga_id = :id AND deleted_at IS NULL ORDER BY volume, ordinal ASC, created_at ASC;";
+		const string TARGETED_QUERY = @"SELECT DISTINCT mb.* 
 FROM manga_bookmarks mb
 JOIN profiles p ON p.id = mb.profile_id
-WHERE p.platform_id = :platformId AND mb.manga_id = :id
+JOIN manga_chapter mc ON mc.id = mb.manga_chapter_id
+WHERE 
+	p.platform_id = :platformId AND 
+	mb.manga_id = :id AND
+	mc.deleted_at IS NULL
 ORDER BY mb.manga_chapter_id;
 
-SELECT 1 
+SELECT DISTINCT 1 
 FROM manga_favourites mf 
 JOIN profiles p ON p.id = mf.profile_id
-WHERE p.platform_id = :platformId AND mf.manga_id = :id";
+JOIN manga m ON m.id = mf.manga_id
+WHERE 
+	p.platform_id = :platformId AND 
+	mf.manga_id = :id AND
+	m.deleted_at IS NULL";
 
 		var query = string.IsNullOrEmpty(platformId) ? QUERY : QUERY + TARGETED_QUERY;
 
@@ -667,22 +694,34 @@ WHERE p.platform_id = :platformId AND mf.manga_id = :id";
 		if (long.TryParse(id, out long mid))
 			return await GetManga(mid, platformId);
 
-		const string QUERY = "SELECT * FROM manga WHERE hash_id = :id;" +
+		const string QUERY = "SELECT * FROM manga WHERE hash_id = :id AND deleted_at IS NULL;" +
 			@"SELECT c.* FROM manga_chapter c
 JOIN manga m ON m.id = c.manga_id
-WHERE m.hash_id = :id ORDER BY c.volume, c.ordinal ASC, c.created_at ASC;";
-		const string TARGETED_QUERY = @"SELECT mb.* 
+WHERE 
+	m.hash_id = :id AND
+	m.deleted_at IS NULL AND
+	c.deleted_at IS NULL
+ORDER BY c.volume, c.ordinal ASC, c.created_at ASC;";
+		const string TARGETED_QUERY = @"SELECT DISTINCT mb.* 
 FROM manga_bookmarks mb
 JOIN manga m ON m.id = mb.manga_id
 JOIN profiles p ON p.id = mb.profile_id
-WHERE p.platform_id = :platformId AND m.hash_id = :id
+JOIN manga_chapter mc ON mc.id = mb.manga_chapter_id
+WHERE 
+	p.platform_id = :platformId AND 
+	m.hash_id = :id AND
+    m.deleted_at IS NULL AND
+    mc.deleted_at IS NULL
 ORDER BY mb.manga_chapter_id;
 
 SELECT 1 
 FROM manga_favourites mf 
 JOIN manga m ON m.id = mf.manga_id
 JOIN profiles p ON p.id = mf.profile_id
-WHERE p.platform_id = :platformId AND m.hash_id = :id";
+WHERE 
+	p.platform_id = :platformId AND 
+	m.hash_id = :id AND
+	m.deleted_at IS NULL";
 
 		var query = string.IsNullOrEmpty(platformId) ? QUERY : QUERY + TARGETED_QUERY;
 
@@ -815,7 +854,8 @@ FROM get_manga_filtered( :platformId , 99, ARRAY(
 	    id
     FROM manga
     WHERE
-        hash_id = :hashId OR id = :id
+        (hash_id = :hashId OR id = :id) AND
+	    deleted_at IS NULL
 )) t
 JOIN manga m ON m.id = t.manga_id
 JOIN manga_chapter mc ON mc.id = t.manga_chapter_id

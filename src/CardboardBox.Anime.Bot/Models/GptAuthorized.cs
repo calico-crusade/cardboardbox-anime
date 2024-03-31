@@ -6,6 +6,8 @@ public class GptAuthorized : DbObject
 
 	public string? ServerId { get; set; }
 
+	public string? Model { get; set; }
+
 	public string Type { get; set; } = WHITE_LIST;
 
 	public const string WHITE_LIST = "white-list";
