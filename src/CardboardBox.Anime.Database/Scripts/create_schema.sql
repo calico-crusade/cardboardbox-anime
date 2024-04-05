@@ -133,6 +133,7 @@ CREATE TABLE discord_guild_settings (
      manga_updates_channel text,
      manga_updates_ids text[] not null default '{}',
      manga_updates_nsfw boolean not null default false,
+     enable_twitter_urls boolean not null default true,
 
      created_at timestamp not null default CURRENT_TIMESTAMP,
      updated_at timestamp not null default CURRENT_TIMESTAMP,

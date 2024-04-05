@@ -265,7 +265,9 @@ public class EasterEggs
 
 	public async Task<bool> HandleTwitterFix(SocketMessage msg)
 	{
-		var urlRegex = new Regex(@"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)");
+		var refe = new MessageReference(msg.Id, msg.Channel.Id);
+
+        var urlRegex = new Regex(@"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)");
 		if (!urlRegex.IsMatch(msg.Content)) return false;
 
 		var urls = urlRegex.Matches(msg.Content)
@@ -273,15 +275,18 @@ public class EasterEggs
 			.Where(t => TWITTER_FIX_DOMAINS.Contains(t.Host.ToLower()))
 			.ToArray();
 
-		if (urls.Length == 0) return false;
+		if (urls.Length == 0 || msg.Channel is not SocketGuildChannel guild) return false;
 
-		var changed = string.Join("\r\n", urls.Select(t => $"https://vxtwitter.com/" + t.PathAndQuery.TrimStart('/')));
+        var settings = await _api.Settings(guild.Guild.Id);
+		if (settings == null || !settings.EnableTwitterUrls) return true;
+
+        var changed = string.Join("\r\n", urls.Select(t => $"https://vxtwitter.com/" + t.PathAndQuery.TrimStart('/')));
 
 		var men = new AllowedMentions
 		{
 			MentionRepliedUser = false,
 		};
-		await msg.Channel.SendMessageAsync(changed, messageReference: new MessageReference(msg.Id, msg.Channel.Id), allowedMentions: men);
+		await msg.Channel.SendMessageAsync(changed, messageReference: refe, allowedMentions: men);
 		return true;
 	}
 }

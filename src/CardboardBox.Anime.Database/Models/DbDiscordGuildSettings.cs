@@ -22,4 +22,7 @@ public class DbDiscordGuildSettings : DbObject
 
 	[JsonPropertyName("mangaUpdatesNsfw")]
 	public bool MangaUpdatesNsfw { get; set; } = false;
+
+	[JsonPropertyName("enableTwitterUrls")]
+	public bool EnableTwitterUrls { get; set; } = true;
 }
