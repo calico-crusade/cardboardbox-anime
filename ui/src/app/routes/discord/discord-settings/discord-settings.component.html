@@ -7,6 +7,7 @@
                     <th>Name</th>
                     <th>Lookup</th>
                     <th>Theft</th>
+                    <th>VX-Twitter</th>
                     <th>Manga Channel Id</th>
                     <th>Manga NSFW</th>
                     <th></th>
@@ -20,6 +21,7 @@
                     <td>{{ item.guild.name }}</td>
                     <td>{{ item.settings.enableLookup }}</td>
                     <td>{{ item.settings.enableTheft }}</td>
+                    <td>{{ item.settings.enableTwitterUrls }}</td>
                     <td>{{ item.settings.mangaUpdatesChannel }}</td>
                     <td>{{ item.settings.mangaUpdatesNsfw }}</td>
                     <td>
@@ -56,6 +58,12 @@
                 <label>
                     <input type="checkbox" [(ngModel)]="selected.settings.mangaUpdatesNsfw" />
                     Enable NSFW Manga Updates
+                </label>
+            </section>
+            <section>
+                <label>
+                    <input type="checkbox" [(ngModel)]="selected.settings.enableTwitterUrls" />
+                    Enable VX-Twitter URLs
                 </label>
             </section>
             <section>

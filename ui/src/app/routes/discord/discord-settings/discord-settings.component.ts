@@ -57,8 +57,8 @@ export class DiscordSettingsComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this._subs
-            .subscribe(this.auth.onLogin, t => { 
-                this.process(); 
+            .subscribe(this.auth.onLogin, t => {
+                this.process();
             });
     }
 
@@ -101,7 +101,8 @@ export class DiscordSettingsComponent implements OnInit, OnDestroy {
                     enableLookup: false,
                     enableTheft: false,
                     mangaUpdatesIds: [],
-                    mangaUpdatesNsfw: false
+                    mangaUpdatesNsfw: false,
+                    enableTwitterUrls: true,
                 };
             }
 

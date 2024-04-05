@@ -12,10 +12,11 @@ export interface DiscordSettings {
     authedUsers: string[];
     enableLookup: boolean;
     enableTheft: boolean;
-    
+
     mangaUpdatesChannel?: string;
     mangaUpdatesIds: string[];
     mangaUpdatesNsfw: boolean;
+    enableTwitterUrls: boolean;
 }
 
 export interface DiscordUser {
