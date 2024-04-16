@@ -39,7 +39,7 @@ public class ChapmanganatoSource : IChapmanganatoSource
                 .DocumentNode
                 .SelectNodes("//div[@class=\"container-chapter-reader\"]/img")
                 .Select(t => t.GetAttributeValue("src", ""))
-                .ToArray()
+                .ToArray(),
         };
 
         return chapter;
@@ -63,7 +63,8 @@ public class ChapmanganatoSource : IChapmanganatoSource
             Id = id,
             Provider = Provider,
             HomePage = url,
-            Cover = doc.DocumentNode.SelectSingleNode("//span[@class=\"info-image\"]/img[@class=\"img-loading\"]")?.GetAttributeValue("src", "") ?? ""
+            Cover = doc.DocumentNode.SelectSingleNode("//span[@class=\"info-image\"]/img[@class=\"img-loading\"]")?.GetAttributeValue("src", "") ?? "",
+            Referer = url,
         };
 
         var desc = doc.DocumentNode.SelectSingleNode("//div[@id='panel-story-info-description']");
@@ -100,7 +101,7 @@ public class ChapmanganatoSource : IChapmanganatoSource
                 Title = a.InnerText.Trim(),
                 Url = href,
                 Number = num--,
-                Id = href.Split('/').Last()
+                Id = href.Split('/').Last(),
             };
 
             manga.Chapters.Add(c);
