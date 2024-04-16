@@ -185,3 +185,34 @@ JOIN manga_tags b ON
     a.manga_id > b.manga_id AND
     a.tag = b.tag
 GROUP BY a.manga_id, b.manga_id;
+
+CREATE OR REPLACE VIEW manga_avg_dif
+AS
+WITH numbered_chapters AS (
+    SELECT
+        m.id as manga_id,
+        c.id as chapter_id,
+        c.volume,
+        c.ordinal,
+        c.created_at as chapter_created,
+        ROW_NUMBER() OVER (
+            PARTITION BY c.manga_id, c.volume, c.ordinal
+            ORDER BY c.created_at DESC
+        ) as chapter_row
+    FROM manga m
+    JOIN manga_chapter c ON m.id = c.manga_id
+    WHERE
+        date_trunc('day', m.created_at) <> date_trunc('day', c.created_at) AND
+        m.deleted_at IS NULL AND
+        c.deleted_at IS NULL
+), time_between AS (
+    SELECT
+        (MAX(chapter_created) - MIN(chapter_created)) / nullif(COUNT(*) - 1, 0) as average,
+        manga_id
+    FROM numbered_chapters
+    WHERE chapter_row = 1
+    GROUP BY manga_id
+)
+SELECT *
+FROM time_between
+WHERE average IS NOT NULL;

@@ -72,7 +72,8 @@ public class MangaService : IMangaService
 		IDarkScansSource dark,
 		INhentaiSource nhentai,
 		IMangaKatanaSource katana,
-		IBattwoSource battwo)
+		IBattwoSource battwo,
+        IChapmanganatoSource chap)
 	{
 		_db = db;
 		_match = match;
@@ -88,7 +89,8 @@ public class MangaService : IMangaService
 			mangakakalot2,
 			mangakakalot3,
 			katana,
-			dark
+			dark,
+			chap
 		};
 	}
 
