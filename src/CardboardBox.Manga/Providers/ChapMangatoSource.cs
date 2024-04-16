@@ -64,7 +64,7 @@ public class ChapmanganatoSource : IChapmanganatoSource
             Provider = Provider,
             HomePage = url,
             Cover = doc.DocumentNode.SelectSingleNode("//span[@class=\"info-image\"]/img[@class=\"img-loading\"]")?.GetAttributeValue("src", "") ?? "",
-            Referer = url,
+            Referer = MangaBaseUri + "/",
         };
 
         var desc = doc.DocumentNode.SelectSingleNode("//div[@id='panel-story-info-description']");
