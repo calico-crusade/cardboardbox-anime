@@ -2,7 +2,7 @@
     <div class="container" *ngIf="series">
         <main>
             <div class="image">
-                <img [src]="series.image" fallback alt="Series Cover Image" />
+                <img [src]="series.image" alt="Series Cover Image" />
             </div>
             <div class="details">
                 <h1>{{ series.title }}</h1>
@@ -71,15 +71,15 @@
             <div class="book-container" *ngFor="let book of books">
                 <a class="book" [routerLink]="[ '/series', series.id, 'book' , book.book.id ]">
                     <div class="float-ribbon"></div>
-    
+
                     <div class="image">
-                        <img [src]="book.book.coverImage" fallback />
+                        <img [src]="book.book.coverImage" [fallback]="series.image" />
                     </div>
-    
+
                     <div class="float-number">
                         <span>#{{ book.book.ordinal }}</span>
                     </div>
-    
+
                     <div class="details">
                         <h2>{{ book.book.title }}</h2>
                     </div>

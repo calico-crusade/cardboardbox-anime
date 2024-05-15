@@ -146,18 +146,15 @@ public class MangaDexSource : IMangaDexSource
 				.GroupBy(t => t.Attributes.Chapter + t.Attributes.Volume)
 				.Select(t => t.PreferedOrFirst(t => t.Attributes.TranslatedLanguage == DEFAULT_LANG))
 				.Where(t => t != null)
-				.Select(t =>
-				{
-					return new MangaChapter
-					{
-						Title = t?.Attributes.Title ?? string.Empty,
-						Url = $"{HomeUrl}/chapter/{t?.Id}",
-						Id = t?.Id ?? string.Empty,
-						Number = double.TryParse(t?.Attributes.Chapter, out var a) ? a : 0,
-						Volume = double.TryParse(t?.Attributes.Volume, out var b) ? b : null,
-						ExternalUrl = t?.Attributes.ExternalUrl,
-						Attributes = GetChapterAttributes(t).ToList()
-					};
+				.Select(t => new MangaChapter
+                {
+					Title = t?.Attributes.Title ?? string.Empty,
+					Url = $"{HomeUrl}/chapter/{t?.Id}",
+					Id = t?.Id ?? string.Empty,
+					Number = double.TryParse(t?.Attributes.Chapter, out var a) ? a : 0,
+					Volume = double.TryParse(t?.Attributes.Volume, out var b) ? b : null,
+					ExternalUrl = t?.Attributes.ExternalUrl,
+					Attributes = GetChapterAttributes(t).ToList()
 				})
 				.OrderBy(t => t.Volume)
 				.OrderBy(t => t.Number);

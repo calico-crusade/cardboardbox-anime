@@ -13,7 +13,7 @@
         <main *ngIf="books.length > 0" class="content">
             <div class="book" *ngFor="let book of books">
                 <a class="image" [routerLink]="['/series', book.id]">
-                    <img [src]="book.image" fallback />
+                    <img [src]="book.image" fallback="https://mangabox.app/broken.png" />
                 </a>
                 <div class="details">
                     <a [routerLink]="['/series', book.id]">
