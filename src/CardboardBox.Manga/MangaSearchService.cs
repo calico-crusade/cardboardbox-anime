@@ -5,6 +5,7 @@ namespace CardboardBox.Manga;
 using Anime.Database;
 using MangaDex;
 using Match;
+using Http;
 using Providers;
 
 public interface IMangaSearchService
@@ -22,6 +23,7 @@ public class MangaSearchService : IMangaSearchService
 	private readonly ILogger _logger;
 	private readonly IMangaCacheDbService _db;
 	private readonly ISauceNaoApiService _sauce;
+	private readonly IApiService _api;
 
 	public MangaSearchService(
 		IGoogleVisionService vision, 
@@ -30,7 +32,8 @@ public class MangaSearchService : IMangaSearchService
 		ILogger<MangaSearchService> logger,
 		IMangaCacheDbService db,
 		IMangaDexService mangadex,
-		ISauceNaoApiService sauce)
+		ISauceNaoApiService sauce,
+		IApiService api)
 	{
 		_vision = vision;
 		_match = match;
@@ -39,7 +42,46 @@ public class MangaSearchService : IMangaSearchService
 		_db = db;
 		_mangadex = mangadex;
 		_sauce = sauce;
+		_api = api;
 	}
+
+	public async Task<(MemoryStream? stream, string? filename)> GetImage(string url)
+	{
+        static string GetUserAgent(string url)
+        {
+            if (url.ToLower().Contains("mangadex"))
+                return "CBA-API-BOT/1.0";
+
+            return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 OPR/106.0.0.0";
+        }
+
+        static string GetFileName(string? file, string imageUrl)
+        {
+            if (!string.IsNullOrEmpty(file)) return file;
+
+            var uri = new Uri(imageUrl);
+            return Path.GetFileName(uri.LocalPath);
+        }
+
+		try
+		{
+			var io = new MemoryStream();
+			var (stream, _, file, type) = await _api.GetData(url, c => 
+			{
+				c.Headers.Add("User-Agent", GetUserAgent(url));
+			});
+			await stream.CopyToAsync(io);
+			stream.Dispose();
+			io.Position = 0;
+			var filename = GetFileName(file, url);
+			return (io, filename);
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Error occurred while fetching image: {url}", url);
+			return (null, null);
+		}
+    }
 
 	public async Task<ImageSearchResults> Search(MemoryStream stream, string filename)
 	{
@@ -64,15 +106,25 @@ public class MangaSearchService : IMangaSearchService
 	{
 		if (Uri.IsWellFormedUriString(image, UriKind.Absolute))
 		{
+			var (stream, filename) = await GetImage(image);
+			if (stream == null || string.IsNullOrEmpty(filename))
+                return new ImageSearchResults();
+
 			var results = new ImageSearchResults();
 
-			await HandleFallback(image, results);
+            using var second = new MemoryStream();
+            await stream.CopyToAsync(second);
+
+            stream.Position = 0;
+            second.Position = 0;
+
+            await HandleFallback(stream, filename, results);
 
 			if (!AnyMatches(results))
 				await HandleSauceNao(image, results);
 
 			if (!AnyMatches(results))
-				await HandleVision(image, results);
+				await HandleVision(second, filename, results);
 
 			DetermineBestGuess(results);
 

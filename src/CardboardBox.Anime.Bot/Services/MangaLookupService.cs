@@ -13,6 +13,7 @@ public class MangaLookupService : IMangaLookupService
 	private readonly ILogger _logger;
 	private readonly IMangaApiService _manga;
 	private readonly IDbService _db;
+	private readonly IApiService _http;
 
 	public const string IMPORT_URL = Constants.MANGA_UI + "/import?url=";
 
@@ -20,12 +21,14 @@ public class MangaLookupService : IMangaLookupService
 		IDiscordApiService api, 
 		ILogger<MangaLookupService> logger, 
 		IMangaApiService manga, 
-		IDbService db)
+		IDbService db,
+		IApiService http)
 	{
 		_api = api;
 		_logger = logger;
 		_manga = manga;
 		_db = db;
+		_http = http;
 	}
 
 	public async Task HandleEmojiLookup(IMessage msg, IMessageChannel channel, SocketReaction reaction)
@@ -74,11 +77,11 @@ public class MangaLookupService : IMangaLookupService
 
 		try
 		{
-			await DoSearch(mod, img, existing);
+			await DoLocalSearch(mod, img, existing);
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError(ex, $"Error occurred during manga lookup: {img}");
+			_logger.LogError(ex, "Error occurred during manga lookup: {img}", img);
 			await mod.ModifyAsync(t =>
 			{
 				t.Content = "Something went wrong! " +
@@ -138,7 +141,7 @@ public class MangaLookupService : IMangaLookupService
 
 		try
 		{
-			await DoSearch(mod, img, existing);
+			await DoLocalSearch(mod, img, existing);
 		}
 		catch (Exception ex)
 		{
@@ -158,9 +161,50 @@ public class MangaLookupService : IMangaLookupService
 		await msg.Channel.SendMessageAsync($"Uh, <@{authorId}>, it's right here...", messageReference: refe);
 	}
 
-	public async Task DoSearch(IUserMessage msg, string imgUrl, LookupRequest data)
+	public string GetUserAgent(string url)
 	{
-		var search = await _manga.Search(imgUrl) ?? new ImageSearchResults();
+		if (url.ToLower().Contains("mangadex"))
+			return "CBA-API-BOT/1.0";
+
+		return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 OPR/106.0.0.0";
+    }
+
+	public string GetFileName(string? file, string imageUrl)
+	{
+		if (!string.IsNullOrEmpty(file)) return file;
+
+		var uri = new Uri(imageUrl);
+		return Path.GetFileName(uri.LocalPath);
+	}
+
+	public async Task DoLocalSearch(IUserMessage msg, string imgUrl, LookupRequest data)
+    {
+        using var io = new MemoryStream();
+		string? filename = null;
+
+        try
+		{
+			var (stream, _, file, type) = await _http.GetData(imgUrl, c =>
+			{
+
+			}, GetUserAgent(imgUrl));
+			await stream.CopyToAsync(io);
+			io.Position = 0;
+			filename = GetFileName(file, imgUrl);
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Error occurred during image download: {imgUrl}", imgUrl);
+			await msg.ModifyAsync(t => t.Content = $"<@{data.AuthorId}> I couldn't download that image! {ex.Message}");
+			return;
+		}
+
+		await DoSearch(msg, data, io, filename, imgUrl);
+	}
+
+	public async Task DoSearch(IUserMessage msg, LookupRequest data, MemoryStream stream, string filename, string imgUrl)
+	{
+		var search = await _manga.Search(stream, filename) ?? new ImageSearchResults();
 		data.Results = Serialize(search);
 		await _db.Lookup.Upsert(data);
 		if (search == null || !search.Success)

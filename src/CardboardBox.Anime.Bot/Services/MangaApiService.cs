@@ -16,6 +16,7 @@ public interface IMangaApiService
 	Task<MangaWorked[]?> Update(int count);
 	Task<PaginatedResult<MangaProgress>?> Since(DateTime date, int page = 1, int size = 100);
 	Task<ImageSearchResults?> Search(string url);
+	Task<ImageSearchResults?> Search(MemoryStream stream, string filename);
 }
 
 public class MangaApiService : IMangaApiService
@@ -25,7 +26,7 @@ public class MangaApiService : IMangaApiService
 	private readonly IConfiguration _config;
 	private readonly IApiService _api;
 
-	public string ApiUrl => _config["CBA:Url"];
+	public string ApiUrl => _config["CBA:Url"] ?? throw new NullReferenceException("CBA:Url is null");
 
 	public MangaApiService(
 		IConfiguration config,
@@ -93,4 +94,18 @@ public class MangaApiService : IMangaApiService
 	{
 		return _api.Get<ImageSearchResults>($"{ApiUrl}/manga/search?path={WebUtility.UrlEncode(url)}");
 	}
+
+	public async Task<ImageSearchResults?> Search(MemoryStream stream, string filename)
+	{
+		using var content = new StreamContent(stream);
+		using var formContent = new MultipartFormDataContent
+        {
+            { content, "file", filename }
+        };
+		var result = await _api.Create($"{ApiUrl}/manga/image-search", "POST")
+			.BodyContent(formContent)
+			.Result<ImageSearchResults>();
+
+		return result;
+    }
 }
