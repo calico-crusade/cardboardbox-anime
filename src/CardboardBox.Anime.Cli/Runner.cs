@@ -23,6 +23,7 @@ using Manga.Providers;
 using AImage = Core.Models.Image;
 using MangaDexSharp;
 using Microsoft.Extensions.Logging;
+using System.IO.Compression;
 
 public interface IRunner
 {
@@ -62,6 +63,7 @@ public class Runner : IRunner
 	private readonly IPurgeUtils _purge;
 	private readonly IZirusMusingsSourceService _zirus;
 	private readonly INncSourceService _nnc;
+	private readonly IRawKumaSource _kuma;
 
     public Runner(
 		IVrvApiService vrv, 
@@ -91,7 +93,8 @@ public class Runner : IRunner
 		INyxSourceService nyx,
 		IPurgeUtils purge,
 		IZirusMusingsSourceService zirus,
-        INncSourceService nnc)
+        INncSourceService nnc,
+		IRawKumaSource kuma)
 	{
 		_vrv = vrv;
 		_logger = logger;
@@ -121,6 +124,7 @@ public class Runner : IRunner
 		_purge = purge;
 		_zirus = zirus;
 		_nnc = nnc;
+		_kuma = kuma;
 	}
 
 	public async Task<int> Run(string[] args)
@@ -169,6 +173,7 @@ public class Runner : IRunner
 				case "nncon-images": await NnconImages(); break;
                 case "nncon-load": await NnconLoad(); break;
 				case "fix-yururi": await FixYururiBooking(); break;
+				case "kuma": await DownloadChapters(); break;
                 default: _logger.LogInformation("Invalid command: " + command); break;
 			}
 
@@ -1507,6 +1512,61 @@ public class Runner : IRunner
                     Ordinal = 0
                 });
 			}
+		}
+    }
+
+	public async Task DownloadChapters()
+	{
+        const string URL = "https://rawkuma.com/manga/daikenja-no-manadeshi-bougyo-mahou-no-susume/";
+		var output = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "kuma-download");
+
+		var fromHtml = true;
+
+		var chapters = new List<(string path, int count)>();
+		await foreach(var chapter in _kuma.GetDownloadLinks(URL))
+		{
+			var zip = await (fromHtml 
+				? _kuma.DownloadFromPages(chapter, output) 
+				: _kuma.Download(chapter, output));
+			if (string.IsNullOrEmpty(zip)) continue;
+
+			if (fromHtml)
+			{
+				var fn = Path.GetFileNameWithoutExtension(zip);
+                var ps = Directory.GetFiles(zip).Length;
+                chapters.Add((fn, ps));
+				continue;
+            }
+
+			zip = zip.Replace("\"", "");
+
+			var fileName = Path.GetFileNameWithoutExtension(zip);
+			var path = Path.Combine(output, fileName);
+			if (Directory.Exists(path)) Directory.Delete(path, true);
+
+			Directory.CreateDirectory(path);
+			ZipFile.ExtractToDirectory(zip, path);
+
+			var pages = Directory.GetFiles(path).Length;
+			chapters.Add((fileName, pages));
+		}
+
+		foreach(var (path, count) in chapters)
+		{
+            _logger.LogInformation("Chapter {path} has {count} pages", path, count);
+        }
+	}
+
+	public void CountFiles()
+	{
+        var output = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "kuma-download");
+		var dirs = Directory.GetDirectories(output);
+
+		foreach(var dir in dirs)
+		{
+			var chapterName = dir.Split('\\').Last();
+			var files = Directory.GetFiles(dir).Length;
+			_logger.LogInformation("Chapter {chapterName} has {files} pages", chapterName, files);
 		}
     }
 }

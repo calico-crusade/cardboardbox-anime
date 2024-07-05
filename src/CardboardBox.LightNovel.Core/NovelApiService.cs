@@ -14,10 +14,12 @@ public interface INovelApiService
 
 public class NovelApiService : INovelApiService
 {
+	private readonly static Random _rnd = new();
 	private const int AUTO_BOOK_SPLIT = 75;
 
 	private readonly ISourceService[] _srcs;
 	private readonly ILnDbService _db;
+	private readonly ILogger _logger;
 
 	public NovelApiService(
 		ILnpSourceService lnSrc, 
@@ -27,8 +29,10 @@ public class NovelApiService : INovelApiService
 		INyxSourceService nyxSrc,
 		IZirusMusingsSourceService zirusSrc,
         INncSourceService nncSrc,
-        ILnDbService db)
+        ILnDbService db,
+		ILogger<NovelApiService> logger)
 	{
+		_logger = logger;
 		_db = db;
 		_srcs = new[] { (ISourceService)lnSrc, shSrc, rlSrc, lntSrc, nyxSrc, zirusSrc, nncSrc };
 	}
@@ -140,6 +144,14 @@ public class NovelApiService : INovelApiService
 				PageId = pageId,
 				Ordinal = 0
 			});
+
+			if (offset % 10 == 0 && offset > 0)
+			{
+				var sec = _rnd.Next(3, 10);
+				_logger.LogInformation("Waiting for {sec} seconds", sec);
+                await Task.Delay(sec * 1000);
+				_logger.LogInformation("Finished waiting... Restarting feed.");
+            }
 		}
 
 		return offset;

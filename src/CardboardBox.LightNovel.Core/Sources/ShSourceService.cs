@@ -80,17 +80,19 @@ public class ShSourceService : SourceService, IShSourceService
 	public override string[] SeriesTags(HtmlDocument doc)
 	{
 		return doc.DocumentNode
-			.SelectNodes("//a[@id='etagme']")
-			.Select(t => t.InnerText.HTMLDecode())
-			.ToArray();
+			.SelectNodes("//a[@id='etagme']")?
+			.Select(t => t?.InnerText?.HTMLDecode()!)
+			.Where(t => !string.IsNullOrEmpty(t))
+			.ToArray() ?? Array.Empty<string>();
 	}
 
 	public override string[] SeriesGenres(HtmlDocument doc)
 	{
 		return doc.DocumentNode
-			.SelectNodes("//span[@property='genre']/a")
-			.Select(t => t.InnerText.HTMLDecode())
-			.ToArray();
+			.SelectNodes("//span[@property='genre']/a")?
+			.Select(t => t?.InnerText?.HTMLDecode()!)
+            .Where(t => !string.IsNullOrEmpty(t))
+            .ToArray() ?? Array.Empty<string>();
 	}
 
 	public override string SeriesFromChapter(string url)

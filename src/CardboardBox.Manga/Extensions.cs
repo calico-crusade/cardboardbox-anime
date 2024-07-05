@@ -23,6 +23,8 @@ public static class Extensions
 			.AddTransient<IDarkScansSource, DarkScansSource>()
 			.AddTransient<IChapmanganatoSource, ChapmanganatoSource>()
 
+			.AddTransient<IRawKumaSource, RawKumaSource>()
+
 			.AddTransient<IMangaEpubService, MangaEpubService>()
 			.AddTransient<IMangaImageService, MangaImageService>()
 
