@@ -47,6 +47,7 @@ var bot = DiscordBotBuilder.Start(null, client)
 	.WithSlashCommands(c =>
 	{
 		c.With<HolybookCommands>()
+		 .With<DateCommands>()
 		 .With<MangaCommand>()
 		 .With<TierListCommands>()
 		 .With<NsfwCommands>()
