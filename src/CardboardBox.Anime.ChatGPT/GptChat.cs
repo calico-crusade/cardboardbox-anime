@@ -3,7 +3,7 @@
 public class GptChat
 {
 	[JsonPropertyName("model")]
-	public string Model { get; set; } = "gpt-3.5-turbo-0301";
+	public string Model { get; set; } = "gpt-4-turbo";
 
 	[JsonPropertyName("messages")]
 	public List<GptMessage> Messages { get; set; } = new();
