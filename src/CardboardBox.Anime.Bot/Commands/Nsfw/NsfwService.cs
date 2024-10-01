@@ -141,7 +141,7 @@ public class NsfwService : INsfwService
 		return $@"Enabled: {config.Enabled}
 Ignore AR Channels: {config.IgnoreNsfwChannels}
 Hentai Threshold: {config.ClassifyHentai}%
-Pornograph Threshold: {config.ClassifyPorn}%
+Pornography Threshold: {config.ClassifyPorn}%
 Sexual Threshold: {config.ClassifySexy}%
 Delete Messages: {config.DeleteMessage}
 Kick After: {config.KickAfter}

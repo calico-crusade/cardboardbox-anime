@@ -29,12 +29,13 @@ public class NovelApiService : INovelApiService
 		INyxSourceService nyxSrc,
 		IZirusMusingsSourceService zirusSrc,
         INncSourceService nncSrc,
+        IBakaPervertSourceService baka,
         ILnDbService db,
 		ILogger<NovelApiService> logger)
 	{
 		_logger = logger;
 		_db = db;
-		_srcs = new[] { (ISourceService)lnSrc, shSrc, rlSrc, lntSrc, nyxSrc, zirusSrc, nncSrc };
+		_srcs = new[] { (ISourceService)lnSrc, shSrc, rlSrc, lntSrc, nyxSrc, zirusSrc, nncSrc, baka };
 	}
 
 	public ISourceService? Source(string url)

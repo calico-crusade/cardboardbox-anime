@@ -64,6 +64,7 @@ public class Runner : IRunner
 	private readonly IZirusMusingsSourceService _zirus;
 	private readonly INncSourceService _nnc;
 	private readonly IRawKumaSource _kuma;
+	private readonly IBakaPervertSourceService _baka;
 
     public Runner(
 		IVrvApiService vrv, 
@@ -94,7 +95,8 @@ public class Runner : IRunner
 		IPurgeUtils purge,
 		IZirusMusingsSourceService zirus,
         INncSourceService nnc,
-		IRawKumaSource kuma)
+		IRawKumaSource kuma,
+        IBakaPervertSourceService baka)
 	{
 		_vrv = vrv;
 		_logger = logger;
@@ -125,6 +127,7 @@ public class Runner : IRunner
 		_zirus = zirus;
 		_nnc = nnc;
 		_kuma = kuma;
+		_baka = baka;
 	}
 
 	public async Task<int> Run(string[] args)
@@ -174,6 +177,7 @@ public class Runner : IRunner
                 case "nncon-load": await NnconLoad(); break;
 				case "fix-yururi": await FixYururiBooking(); break;
 				case "kuma": await DownloadChapters(); break;
+				case "baka": await Baka(); break;
                 default: _logger.LogInformation("Invalid command: " + command); break;
 			}
 
@@ -186,6 +190,40 @@ public class Runner : IRunner
 			return 1;
 		}
 	}
+
+	public async Task Baka()
+	{
+		const string URL = "https://bakapervert.wordpress.com/arifureta-shokugyo-de-sekai-saikyou/";
+
+		async Task GetVolumes()
+		{
+            var volumes = _baka.Volumes(URL);
+
+            await foreach (var volume in volumes)
+            {
+                _logger.LogInformation("Volume: {Title} - {Url}", volume.Title, volume.Url);
+                foreach (var chapter in volume.Chapters)
+                {
+                    _logger.LogInformation("\tChapter: {Title} - {Url}", chapter.Title, chapter.Url);
+                }
+            }
+        }
+		
+		async Task GetInfo()
+		{
+			var info = await _baka.GetSeriesInfo(URL);
+			if (info is null)
+			{
+				_logger.LogError("Failed to fetch series info");
+				return;
+			}
+
+			_logger.LogInformation("Title: {Title}", info.Title);
+		}
+
+		await GetInfo();
+		await GetVolumes();
+    }
 
 	public async Task Crunchy()
 	{
