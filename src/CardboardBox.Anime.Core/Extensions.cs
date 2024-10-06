@@ -224,6 +224,26 @@ public static class Extensions
 		return doc;
 	}
 
+	public static async Task<HtmlDocument> PostHtml(this IApiService api, string url, Action<HttpRequestMessage>? config = null)
+	{
+		var req = await api.Create(url, "POST")
+			.Accept("*/*")
+			.With(c =>
+			{
+                c.Headers.Add("user-agent", USER_AGENT);
+                config?.Invoke(c);
+            })
+			.Result() ?? throw new NullReferenceException($"Request returned null for: {url}");
+
+        req.EnsureSuccessStatusCode();
+
+        using var io = await req.Content.ReadAsStreamAsync();
+        var doc = new HtmlDocument();
+        doc.Load(io);
+
+        return doc;
+    }
+
 	public static async Task<HtmlDocument> PostHtml(this IApiService api, string url, (string, string)[] formData, Action<HttpRequestMessage>? config = null)
 	{
 		var req = await api.Create(url, "POST")

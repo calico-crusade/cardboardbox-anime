@@ -65,6 +65,7 @@ public class Runner : IRunner
 	private readonly INncSourceService _nnc;
 	private readonly IRawKumaSource _kuma;
 	private readonly IBakaPervertSourceService _baka;
+	private readonly IFanTransSourceService _ftl;
 
     public Runner(
 		IVrvApiService vrv, 
@@ -96,7 +97,8 @@ public class Runner : IRunner
 		IZirusMusingsSourceService zirus,
         INncSourceService nnc,
 		IRawKumaSource kuma,
-        IBakaPervertSourceService baka)
+        IBakaPervertSourceService baka,
+        IFanTransSourceService ftl)
 	{
 		_vrv = vrv;
 		_logger = logger;
@@ -128,6 +130,7 @@ public class Runner : IRunner
 		_nnc = nnc;
 		_kuma = kuma;
 		_baka = baka;
+		_ftl = ftl;
 	}
 
 	public async Task<int> Run(string[] args)
@@ -178,6 +181,7 @@ public class Runner : IRunner
 				case "fix-yururi": await FixYururiBooking(); break;
 				case "kuma": await DownloadChapters(); break;
 				case "baka": await Baka(); break;
+				case "ftl": await Ftl(); break;
                 default: _logger.LogInformation("Invalid command: " + command); break;
 			}
 
@@ -189,6 +193,54 @@ public class Runner : IRunner
 			_logger.LogError(ex, "Error occurred while processing command: " + string.Join(" ", args));
 			return 1;
 		}
+	}
+
+	public async Task Ftl()
+	{
+		const string URL = "https://fanstranslations.com/novel/why-am-i-a-priestess-when-i-reach-the-maximum-level/";
+
+        async Task GetVolumes()
+        {
+            var volumes = _ftl.Volumes(URL);
+
+            await foreach (var volume in volumes)
+            {
+                _logger.LogInformation("Volume: {Title} - {Url}", volume.Title, volume.Url);
+                foreach (var chapter in volume.Chapters)
+                {
+                    _logger.LogInformation("\t\tChapter: {Title} - {Url}", chapter.Title, chapter.Url);
+                }
+            }
+        }
+
+        async Task GetInfo()
+		{
+            var info = await _ftl.GetSeriesInfo(URL);
+            if (info is null)
+            {
+                _logger.LogError("Failed to fetch series info");
+                return;
+            }
+
+            _logger.LogInformation("Title: {Title}", info.Title);
+        }
+
+		async Task GetChapter()
+		{
+			const string CHAP_URL = "https://fanstranslations.com/novel/why-am-i-a-priestess-when-i-reach-the-maximum-level/vol-3-chapter-46/";
+			var chapter = await _ftl.GetChapter(CHAP_URL, "");
+			if (chapter is null)
+			{
+				_logger.LogError("Failed to fetch chapter");
+				return;
+			}
+
+			_logger.LogInformation("Chapter: {Title}", chapter.ChapterTitle);
+        }
+
+		//await GetInfo();
+		//await GetVolumes();
+		await GetChapter();
 	}
 
 	public async Task Baka()

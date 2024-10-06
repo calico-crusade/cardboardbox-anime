@@ -117,8 +117,6 @@ internal class BakaPervertSourceService : IBakaPervertSourceService
 
     public async Task<SourceChapter?> GetChapter(string url, string bookTitle)
     {
-
-
         var doc = await _api.GetHtml(SubUrl(url));
         if (doc == null)
         {

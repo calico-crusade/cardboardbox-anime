@@ -100,6 +100,7 @@ public static class Extensions
 			.AddTransient<IZirusMusingsSourceService, ZirusMusingsSourceService>()
 			.AddTransient<INncSourceService, NncSourceService>()
 			.AddTransient<IBakaPervertSourceService, BakaPervertSourceService>()
+			.AddTransient<IFanTransSourceService, FanTransSourceService>()
 
 			.AddTransient<INovelUpdatesService, NovelUpdatesService>()
 
