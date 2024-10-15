@@ -326,6 +326,11 @@ public class Runner : IRunner
 			.WhenAll();
 	}
 
+	public async Task GetChapters()
+	{
+
+	}
+
 	public async Task Load()
 	{
 		using var io = File.OpenRead("hidive.json");

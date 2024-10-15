@@ -36,9 +36,15 @@ public class AuthUserResponse
 
 		public static implicit operator UserData(DbProfile profile)
 		{
+			var roles = new List<string>();
+			if (profile.Admin)
+                roles.Add("Admin");
+			if (profile.Admin || profile.UiApproval)
+				roles.Add("Approved");
+
 			return new UserData
 			{
-				Roles = profile.Admin ? new[] { "Admin" } : Array.Empty<string>(),
+				Roles = roles.ToArray(),
 				Nickname = profile.Username,
 				Id = profile.PlatformId,
 				Email = profile.Email,

@@ -23,7 +23,7 @@ public class ProfileDbService : OrmMapExtended<DbProfile>, IProfileDbService
 		_upsertQuery ??= _query.Upsert<DbProfile, long>(TableName,
 			(v) => v.With(t => t.PlatformId),
 			(v) => v.With(t => t.Id),
-			(v) => v.With(t => t.Id).With(t => t.CreatedAt).With(t => t.Admin).With(t => t.SettingsBlob),
+			(v) => v.With(t => t.Id).With(t => t.CreatedAt).With(t => t.Admin).With(t => t.SettingsBlob).With(t => t.UiApproval),
 			(v) => v.Id);
 
 		return _sql.ExecuteScalar<long>(_upsertQuery, profile);

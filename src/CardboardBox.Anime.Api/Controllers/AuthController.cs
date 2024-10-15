@@ -47,10 +47,8 @@ public class AuthController : ControllerBase
 
 		profile = await _db.Profiles.Fetch(res.User.Id);
 
-		var roles = profile.Admin ? new[] { "Admin" } : Array.Empty<string>();
-		var token = _token.GenerateToken(res, roles);
-
-		var user = (AuthUserResponse.UserData)profile;
+        var user = (AuthUserResponse.UserData)profile;
+		var token = _token.GenerateToken(res, user.Roles);
 
 		return Ok(new AuthUserResponse
 		{

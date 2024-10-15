@@ -23,10 +23,12 @@ public class MangaUtilityService : IMangaUtilityService
 {
 	private const long MAX_SIZE = 8000000;
 	private readonly IApiService _api;
+	private readonly IConfiguration _config;
 
-	public MangaUtilityService(IApiService api)
+	public MangaUtilityService(IApiService api, IConfiguration config)
 	{
 		_api = api;
+		_config = config;
 	}
 
 
@@ -37,7 +39,8 @@ public class MangaUtilityService : IMangaUtilityService
 			.WithDescription(manga.Description)
 			.WithColor(Color.Blue)
 			.WithImageUrl(ProxyUrlMangaCover(manga.Cover))
-			.WithUrl($"{Constants.MANGA_UI}/manga/{manga.Id}")
+			//.WithUrl($"{Constants.MANGA_UI}/manga/{manga.Id}")
+			.WithUrl(manga.Url)
 			.WithCurrentTimestamp()
 			.WithFooter("CardboardBox | Manga")
 			.AddOptField("Source", $"[{manga.Provider}]({manga.Url})")

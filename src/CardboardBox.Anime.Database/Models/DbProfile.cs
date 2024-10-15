@@ -25,4 +25,7 @@ public class DbProfile : DbObject
 
 	[JsonPropertyName("settingsBlob")]
 	public string SettingsBlob { get; set; } = string.Empty;
+
+	[JsonPropertyName("uiApproval")]
+	public bool UiApproval { get; set; } = false;
 }
