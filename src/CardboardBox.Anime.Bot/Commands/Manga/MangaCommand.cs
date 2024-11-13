@@ -1,6 +1,6 @@
-﻿using CardboardBox.Anime.Bot.Services;
+﻿namespace CardboardBox.Anime.Bot.Commands;
 
-namespace CardboardBox.Anime.Bot.Commands;
+using Services;
 
 public class MangaCommand
 {
@@ -8,6 +8,7 @@ public class MangaCommand
 	private readonly IMangaApiService _api;
 	private readonly IMangaUtilityService _util;
 	private readonly IDiscordApiService _settings;
+	private readonly IMangaLookupService _lookup;
 
 	private const ulong CARDBOARD_BOX = 1009959054073933885;
 
@@ -15,12 +16,21 @@ public class MangaCommand
 		IComponentService components,
 		IMangaApiService api,
 		IMangaUtilityService util,
-		IDiscordApiService settings)
+		IDiscordApiService settings,
+		IMangaLookupService lookup)
 	{
 		_components = components;
 		_api = api;
 		_util = util;
 		_settings = settings;
+		_lookup = lookup;
+	}
+
+	[Command("manga-image-lookup", "Search for a manga by an image", LongRunning = true)]
+	public Task MangaImageLookup(SocketSlashCommand cmd,
+		[Option("Image URL", true)] string url)
+	{
+		return _lookup.HandleLookup(cmd, url);
 	}
 
 	[Command("manga", "Search for a manga available on https://mangabox.app", LongRunning = true)]

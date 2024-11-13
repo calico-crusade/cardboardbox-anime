@@ -1,7 +1,7 @@
 ﻿namespace CardboardBox.LightNovel.Core;
 
-using CardboardBox.LightNovel.Core.Sources.ZirusSource;
 using Sources;
+using Sources.ZirusSource;
 
 public interface INovelApiService
 {
@@ -15,7 +15,7 @@ public interface INovelApiService
 public class NovelApiService : INovelApiService
 {
 	private readonly static Random _rnd = new();
-	private const int AUTO_BOOK_SPLIT = 75;
+	private const int AUTO_BOOK_SPLIT = 200;
 
 	private readonly ISourceService[] _srcs;
 	private readonly ILnDbService _db;
@@ -31,12 +31,13 @@ public class NovelApiService : INovelApiService
         INncSourceService nncSrc,
         IBakaPervertSourceService baka,
         IFanTransSourceService ftl,
+        IHeadCanonTLSourceService headCanon,
         ILnDbService db,
 		ILogger<NovelApiService> logger)
 	{
 		_logger = logger;
 		_db = db;
-		_srcs = new[] { (ISourceService)lnSrc, shSrc, rlSrc, lntSrc, nyxSrc, zirusSrc, nncSrc, baka, ftl };
+		_srcs = new[] { (ISourceService)lnSrc, shSrc, rlSrc, lntSrc, nyxSrc, zirusSrc, nncSrc, baka, ftl, headCanon };
 	}
 
 	public ISourceService? Source(string url)

@@ -1,10 +1,14 @@
-﻿namespace CardboardBox.Anime.Bot.Services;
+﻿using Discord;
+
+namespace CardboardBox.Anime.Bot.Services;
 
 public interface IMangaLookupService
 {
 	Task HandleLookup(IMessage msg, SocketMessage rpl, MessageReference refe);
 
-	Task HandleEmojiLookup(IMessage msg, IMessageChannel channel, SocketReaction reaction);
+	Task HandleLookup(SocketSlashCommand cmd, string url);
+
+    Task HandleEmojiLookup(IMessage msg, IMessageChannel channel, SocketReaction reaction);
 }
 
 public class MangaLookupService : IMangaLookupService
@@ -155,6 +159,77 @@ public class MangaLookupService : IMangaLookupService
 		}
 	}
 
+	public async Task HandleLookup(SocketSlashCommand cmd, string url)
+	{
+		if (cmd.GuildId is not null)
+		{
+			var settings = await _api.Settings(cmd.GuildId.Value);
+			if (settings == null || !settings.EnableLookup)
+			{
+				await cmd.ModifyOriginalResponseAsync(f =>
+				{
+					f.Content = "This feature is not enabled within this server. Contact Cardboard to get it enabled!";
+                });
+				return;
+			}
+		}
+
+		var local = await DownloadImage(url);
+		if (local is null)
+		{
+            await cmd.ModifyOriginalResponseAsync(f =>
+            {
+                f.Content = "I couldn't download the image!";
+            });
+			return;
+		}
+
+		var (io, filename) = local.Value;
+		using var stream = io;
+
+		var search = await _manga.Search(stream, filename) ?? new ImageSearchResults();
+		if (search is null || !search.Success)
+		{
+			await cmd.ModifyOriginalResponseAsync(f => { f.Content = "I couldn't find any results that matched that image :("; });
+			return;
+		}
+
+		var fallback = search.Match
+			.OrderByDescending(t => t.Score)
+			.FirstOrDefault();
+
+		if (fallback != null && fallback.Manga != null &&
+			(fallback.Score > 90 || fallback.ExactMatch))
+		{
+			var embed = GenerateEmbed(fallback);
+			if (embed is null)
+			{
+				await cmd.ModifyOriginalResponseAsync(f => { f.Content = "I couldn't generate an embed for the results!"; });
+				return;
+			}
+
+            await cmd.ModifyOriginalResponseAsync(f =>
+            {
+                f.Content = "Here you go:";
+				f.Embed = embed;
+            });
+			return;
+		}
+
+		var embeds = GenerateEmbeds(url, search);
+		if (embeds is null || embeds.Count == 0)
+        {
+            await cmd.ModifyOriginalResponseAsync(f => { f.Content = "I couldn't generate an embed for the results!"; });
+            return;
+        }
+
+        await cmd.ModifyOriginalResponseAsync(f =>
+        {
+            f.Content = "Here are some results:";
+            f.Embeds = embeds.ToArray();
+        });
+	}
+
 	public async Task HandleIdiots(SocketGuildChannel channel, IMessage msg, string authorId, LookupRequest request)
 	{
 		var refe = new MessageReference(ulong.Parse(request.ResponseId), channel.Id, channel.Guild.Id);
@@ -177,29 +252,43 @@ public class MangaLookupService : IMangaLookupService
 		return Path.GetFileName(uri.LocalPath);
 	}
 
-	public async Task DoLocalSearch(IUserMessage msg, string imgUrl, LookupRequest data)
-    {
-        using var io = new MemoryStream();
+	public async Task<(MemoryStream stream, string filename)?> DownloadImage(string url)
+	{
+		var io = new MemoryStream();
 		string? filename = null;
 
-        try
+		try
 		{
-			var (stream, _, file, type) = await _http.GetData(imgUrl, c =>
-			{
+            var (stream, _, file, type) = await _http.GetData(url, c =>
+            {
 
-			}, GetUserAgent(imgUrl));
-			await stream.CopyToAsync(io);
-			io.Position = 0;
-			filename = GetFileName(file, imgUrl);
-		}
+            }, GetUserAgent(url));
+            await stream.CopyToAsync(io);
+            io.Position = 0;
+            filename = GetFileName(file, url);
+			return (io, filename);
+        }
 		catch (Exception ex)
 		{
-			_logger.LogError(ex, "Error occurred during image download: {imgUrl}", imgUrl);
-			await msg.ModifyAsync(t => t.Content = $"<@{data.AuthorId}> I couldn't download that image! {ex.Message}");
-			return;
-		}
+            _logger.LogError(ex, "Error occurred during image download: {imgUrl}", url);
+            return null;
+        }
+	}
 
-		await DoSearch(msg, data, io, filename, imgUrl);
+	public async Task DoLocalSearch(IUserMessage msg, string imgUrl, LookupRequest data)
+    {
+		var local = await DownloadImage(imgUrl);
+		if (local == null)
+		{
+            await msg.ModifyAsync(t => t.Content = $"<@{data.AuthorId}> I couldn't download that image!");
+            return;
+        }
+
+		var (io, filename) = local.Value;
+		using (io)
+        {
+            await DoSearch(msg, data, io, filename, imgUrl);
+        }
 	}
 
 	public async Task DoSearch(IUserMessage msg, LookupRequest data, MemoryStream stream, string filename, string imgUrl)
@@ -228,78 +317,95 @@ public class MangaLookupService : IMangaLookupService
 
 	public string Encode(string url) => WebUtility.UrlEncode(url);
 
+	public Embed? GenerateEmbed(FallbackResult result)
+	{
+        if (result.Manga == null) return null;
+
+        var embed = new EmbedBuilder()
+            .WithTitle(result.Manga.Title)
+            .WithUrl(result.Manga.Url)
+            .WithThumbnailUrl(result.Manga.Cover)
+            .WithDescription($"{result.Manga.Description}. [Reader]({IMPORT_URL}{Encode(result.Manga.Url)})")
+            .AddField("Tags", string.Join(", ", result.Manga.Tags))
+            .AddField("Score", $"{result.Score:0.00}. (EM: {result.ExactMatch})", true);
+
+        if (result.Manga.Nsfw)
+            embed.AddField("NSFW", "yes", true);
+
+        if (result.Metadata != null)
+        {
+            embed.AddField("Source", $"[{result.Metadata.Source}]({result.Metadata.Url})", true);
+
+            if (result.Metadata.Type == MangaMetadataType.Page && result.Metadata.Source == "mangadex")
+                embed.AddField("Type", $"[Page](https://mangadex.org/chapter/{result.Metadata.ChapterId}/{result.Metadata.Page})", true);
+
+            if (result.Metadata.Type == MangaMetadataType.Cover)
+                embed.AddField("Type", "Cover", true);
+        }
+
+		return embed.Build();
+    }
+
+	public List<Embed> GenerateEmbeds(string img, ImageSearchResults search)
+	{
+        var embeds = new List<Embed>();
+
+        var header = new EmbedBuilder()
+            .WithTitle("Manga Search Results")
+            .WithDescription("Here is what I found: ")
+            .WithThumbnailUrl(img)
+            .WithFooter("Cardboard Box | Manga")
+            .WithCurrentTimestamp();
+
+        foreach (var res in search.Vision)
+            header.AddField(res.Title, $"Google Result: [{res.FilteredTitle}]({res.Url}) - (CF: {res.Score:0.00}, EM: {res.ExactMatch})");
+
+        int count = 0;
+        foreach (var res in search.Match)
+        {
+            if (count >= 5) break;
+
+            if (res.Manga == null || res.Metadata == null || res.Score < 70) continue;
+
+            header.AddField(res.Manga.Title, $"CBA Fallback: [Mangadex]({res.Manga.Url}) - (CF: {res.Score:0.00}, EM: {res.ExactMatch})");
+            count++;
+        }
+
+        embeds.Add(header.Build());
+
+        if (search.BestGuess != null)
+            embeds.Add(new EmbedBuilder()
+                .WithTitle(search.BestGuess.Title)
+                .WithUrl(search.BestGuess.Url)
+                .WithDescription($"{search.BestGuess.Description}. [Reader]({IMPORT_URL}{Encode(search.BestGuess.Url)})")
+                .WithThumbnailUrl(search.BestGuess.Cover)
+                .AddField("Tags", string.Join(", ", search.BestGuess.Tags))
+                .AddField("Source", $"[{search.BestGuess.Source}]({search.BestGuess.Url})", true)
+                .AddField("NSFW", search.BestGuess.Nsfw ? "yes" : "no", true)
+                .WithFooter("Cardboard Box | Manga")
+                .WithCurrentTimestamp()
+                .Build());
+
+		return embeds;
+    }
+
 	public async Task PrintFallback(IUserMessage msg, FallbackResult result, LookupRequest data)
 	{
 		if (result.Manga == null) return;
 
-		var embed = new EmbedBuilder()
-			.WithTitle(result.Manga.Title)
-			.WithUrl(result.Manga.Url)
-			.WithThumbnailUrl(result.Manga.Cover)
-			.WithDescription($"{result.Manga.Description}. [Reader]({IMPORT_URL}{Encode(result.Manga.Url)})")
-			.AddField("Tags", string.Join(", ", result.Manga.Tags))
-			.AddField("Score", $"{result.Score:0.00}. (EM: {result.ExactMatch})", true);
-
-		if (result.Manga.Nsfw)
-			embed.AddField("NSFW", "yes", true);
-
-		if (result.Metadata != null)
-		{
-			embed.AddField("Source", $"[{result.Metadata.Source}]({result.Metadata.Url})", true);
-
-			if (result.Metadata.Type == MangaMetadataType.Page && result.Metadata.Source == "mangadex")
-				embed.AddField("Type", $"[Page](https://mangadex.org/chapter/{result.Metadata.ChapterId}/{result.Metadata.Page})", true);
-			
-			if (result.Metadata.Type == MangaMetadataType.Cover)
-				embed.AddField("Type", "Cover", true);
-		}
+		var embed = GenerateEmbed(result);
+		if (embed is null) return;
 
 		await msg.ModifyAsync(t =>
 		{
-			t.Embed = embed.Build();
+			t.Embed = embed;
 			t.Content = $"<@{data.AuthorId}>, Here you go:";
 		});
 	}
 
 	public async Task PrintOld(IUserMessage mod, string img, ImageSearchResults search, LookupRequest data)
 	{
-		var embeds = new List<Embed>();
-
-		var header = new EmbedBuilder()
-			.WithTitle("Manga Search Results")
-			.WithDescription("Here is what I found: ")
-			.WithThumbnailUrl(img)
-			.WithFooter("Cardboard Box | Manga")
-			.WithCurrentTimestamp();
-
-		foreach (var res in search.Vision)
-			header.AddField(res.Title, $"Google Result: [{res.FilteredTitle}]({res.Url}) - (CF: {res.Score:0.00}, EM: {res.ExactMatch})");
-
-		int count = 0;
-		foreach (var res in search.Match)
-		{
-			if (count >= 5) break;
-
-			if (res.Manga == null || res.Metadata == null || res.Score < 70) continue;
-
-			header.AddField(res.Manga.Title, $"CBA Fallback: [Mangadex]({res.Manga.Url}) - (CF: {res.Score:0.00}, EM: {res.ExactMatch})");
-			count++;
-		}
-
-		embeds.Add(header.Build());
-
-		if (search.BestGuess != null)
-			embeds.Add(new EmbedBuilder()
-				.WithTitle(search.BestGuess.Title)
-				.WithUrl(search.BestGuess.Url)
-				.WithDescription($"{search.BestGuess.Description}. [Reader]({IMPORT_URL}{Encode(search.BestGuess.Url)})")
-				.WithThumbnailUrl(search.BestGuess.Cover)
-				.AddField("Tags", string.Join(", ", search.BestGuess.Tags))
-				.AddField("Source", $"[{search.BestGuess.Source}]({search.BestGuess.Url})", true)
-				.AddField("NSFW", search.BestGuess.Nsfw ? "yes" : "no", true)
-				.WithFooter("Cardboard Box | Manga")
-				.WithCurrentTimestamp()
-				.Build());
+		var embeds = GenerateEmbeds(img, search);
 
 		await mod.ModifyAsync(t =>
 		{

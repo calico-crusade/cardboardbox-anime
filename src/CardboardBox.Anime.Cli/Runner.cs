@@ -66,6 +66,7 @@ public class Runner : IRunner
 	private readonly IRawKumaSource _kuma;
 	private readonly IBakaPervertSourceService _baka;
 	private readonly IFanTransSourceService _ftl;
+	private readonly IHeadCanonTLSourceService _headCanon;
 
     public Runner(
 		IVrvApiService vrv, 
@@ -98,7 +99,8 @@ public class Runner : IRunner
         INncSourceService nnc,
 		IRawKumaSource kuma,
         IBakaPervertSourceService baka,
-        IFanTransSourceService ftl)
+        IFanTransSourceService ftl,
+        IHeadCanonTLSourceService headCanon)
 	{
 		_vrv = vrv;
 		_logger = logger;
@@ -131,6 +133,7 @@ public class Runner : IRunner
 		_kuma = kuma;
 		_baka = baka;
 		_ftl = ftl;
+		_headCanon = headCanon;
 	}
 
 	public async Task<int> Run(string[] args)
@@ -182,6 +185,7 @@ public class Runner : IRunner
 				case "kuma": await DownloadChapters(); break;
 				case "baka": await Baka(); break;
 				case "ftl": await Ftl(); break;
+				case "head-canon": await HeadCanon(); break;
                 default: _logger.LogInformation("Invalid command: " + command); break;
 			}
 
@@ -193,6 +197,40 @@ public class Runner : IRunner
 			_logger.LogError(ex, "Error occurred while processing command: " + string.Join(" ", args));
 			return 1;
 		}
+	}
+
+	public async Task HeadCanon()
+	{
+		async Task Info()
+        {
+            const string URL = "https://headcanontl.wordpress.com/all-works-maid-table-of-contents/";
+            var (info, vols) = await _headCanon.Actual(URL);
+
+            if (info is null ||
+                vols.Length == 0)
+            {
+                _logger.LogError("Error fetching series info");
+                return;
+            }
+
+            _logger.LogInformation("Title: {Title}", info.Title);
+        }
+
+		async Task Chapter()
+		{
+			const string URL = "https://headcanontl.wordpress.com/2022/04/30/all-works-maid-vol1-illustrations/";
+			var chap = await _headCanon.GetChapter(URL, string.Empty);
+
+			if (chap is null)
+			{
+                _logger.LogError("Error fetching chapter");
+                return;
+            }
+
+			_logger.LogInformation("Chapter: {Title}", chap.ChapterTitle);
+		}
+
+		await Chapter();
 	}
 
 	public async Task Ftl()

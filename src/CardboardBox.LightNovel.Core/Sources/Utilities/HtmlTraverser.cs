@@ -88,6 +88,15 @@ public class HtmlTraverser
         return null;
     }
 
+    public HtmlNode? Next()
+    {
+        if (_targetNode is null) return null;
+
+        Index++;
+        if (!Valid) return null;
+        return Current;
+    }
+
     public (HtmlNode? node, int index) UntilOneOf(params Func<HtmlNode, bool>[] preds)
     {
         if (_targetNode == null) return (null, -1);

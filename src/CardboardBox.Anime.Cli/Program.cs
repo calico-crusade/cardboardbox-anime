@@ -1,5 +1,6 @@
 ﻿using CardboardBox.Anime;
 using CardboardBox.Anime.Cli;
+using CardboardBox.Anime.Cli.Verbs;
 using Serilog;
 
 var config = new ConfigurationBuilder()
@@ -15,12 +16,12 @@ return await new ServiceCollection()
 			.CreateLogger())
 	)
 	.AddSingleton<IConfiguration>(config)
-
 	.RegisterCba(config)
+    .AddSingleton<IRunner, Runner>()
 
-	.AddSingleton<IRunner, Runner>()
-	.BuildServiceProvider()
-	.GetRequiredService<IRunner>()
-	.Run(Environment.GetCommandLineArgs());
+    .Cli(args, c => c
+		.Add<RunnerVerb>()
+		.Add<LoadNovelVerb>()
+		.Add<NovelEPubVerb>());
 
 	

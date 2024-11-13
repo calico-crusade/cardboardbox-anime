@@ -273,6 +273,9 @@ public class NovelEpubService : INovelEpubService
 
 	public async Task<StreamResult> GetData(string url, bool skipTransform = false)
 	{
+		if (url.ToLower().StartsWith("https://static.index-0.com/"))
+			url = url.Replace("https://static.index-0.com/", "file://C:/users/cardboard/documents/local-files/");
+
 		var output = await (url.ToLower().StartsWith("file://") ? GetDataFromFile(url.Remove(0, 7)) : _file.GetFile(url));
 
 		if (output.Mimetype != "image/webp" || skipTransform) return output;
