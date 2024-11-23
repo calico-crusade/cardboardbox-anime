@@ -54,10 +54,27 @@ public class EasterEggs
 		_client.MessageReceived += _client_MessageReceived;
 		_client.ReactionAdded += _client_ReactionAdded;
 		_client.MessageUpdated += _client_MessageUpdated;
+        _client.MessageDeleted += _client_MessageDeleted;
 		return Task.CompletedTask;
 	}
 
-	private Task _client_ReactionAdded(CMsg message, CChn channel, SocketReaction reaction)
+    private Task _client_MessageDeleted(CMMsg arg1, CChn arg2)
+    {
+		_ = Task.Run(async () =>
+		{
+			try
+			{
+				await _anime.DeleteMessage(arg1.Id.ToString());
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error handling message deletion");
+			}
+		});
+		return Task.CompletedTask;
+    }
+
+    private Task _client_ReactionAdded(CMsg message, CChn channel, SocketReaction reaction)
 	{
 		return Task.Run(() => HandOff(message, channel, reaction));
 	}

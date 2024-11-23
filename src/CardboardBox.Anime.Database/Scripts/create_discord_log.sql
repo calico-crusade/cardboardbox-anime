@@ -54,3 +54,8 @@ CREATE TABLE IF NOT EXISTS discord_message_logs (
 	updated_at TIMESTAMP not null default CURRENT_TIMESTAMP,
 	deleted_at TIMESTAMP
 );
+
+CREATE INDEX IF NOT EXISTS dml_idx_mid ON discord_message_logs (message_id);
+CREATE INDEX IF NOT EXISTS dml_idx_aid ON discord_message_logs (author_id);
+CREATE INDEX IF NOT EXISTS dml_idx_gid ON discord_message_logs (guild_id);
+CREATE INDEX IF NOT EXISTS dml_idx_cid ON discord_message_logs (channel_id);

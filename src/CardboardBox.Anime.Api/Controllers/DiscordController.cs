@@ -38,6 +38,14 @@ public class DiscordController : ControllerBase
 		return Ok(log);
 	}
 
+	[HttpDelete, Route("discord/message/{messageId}")]
+    [ProducesDefaultResponseType(typeof(DeleteCount))]
+    public async Task<IActionResult> DeleteMessage([FromRoute] string messageId)
+	{
+		var res = await _logs.Delete(messageId);
+		return Ok(res);
+	}
+
 	[HttpGet, Route("discord/settings/{guildId}")]
 	[ProducesDefaultResponseType(typeof(DbDiscordGuildSettings))]
 	[ProducesResponseType(404)]

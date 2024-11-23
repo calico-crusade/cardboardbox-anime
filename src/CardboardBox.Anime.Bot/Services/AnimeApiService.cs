@@ -7,6 +7,8 @@ public interface IAnimeApiService
 	Task<Filter[]?> Filters();
 	Task<DbDiscordLog?> PostMessage(DbDiscordLog log);
 	Task<DbDiscordLog?> PostMessage(SocketMessage message);
+
+	Task<DeleteCount?> DeleteMessage(string messageId);
 }
 
 public class AnimeApiService : IAnimeApiService
@@ -87,4 +89,9 @@ public class AnimeApiService : IAnimeApiService
 	{
         return _api.Post<DbDiscordLog, DbDiscordLog>($"{ApiUrl}/discord/message", log);
     }
+
+	public Task<DeleteCount?> DeleteMessage(string messageId)
+	{
+		return _api.Delete<DeleteCount>($"{ApiUrl}/discord/message/{messageId}");
+	}
 }
