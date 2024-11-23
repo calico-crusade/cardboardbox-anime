@@ -7,6 +7,7 @@ using Scripting.Tokening;
 
 using Match = System.Text.RegularExpressions.Match;
 using CMsg = Cacheable<IUserMessage, ulong>;
+using CMMsg = Cacheable<IMessage, ulong>;
 using CChn = Cacheable<IMessageChannel, ulong>;
 
 public class EasterEggs
@@ -21,6 +22,7 @@ public class EasterEggs
 	private readonly IDbService _db;
 	private readonly IServiceProvider _provider;
 	private readonly ITokenService _token;
+	private readonly IAnimeApiService _anime;
 
 	private static Dictionary<ulong, GptChat> _chats = new();
 	private static ulong[] AUTHORIZED_USERS = { 191100926486904833 };
@@ -33,6 +35,7 @@ public class EasterEggs
 		ILogger<EasterEggs> logger,
 		IDbService db,
 		IServiceProvider provider,
+		IAnimeApiService anime,
 		ITokenService token)
 	{
 		_client = client;
@@ -43,12 +46,14 @@ public class EasterEggs
 		_db = db;
 		_provider = provider;
 		_token = token;
+		_anime = anime;
 	}
 
 	public Task Setup()
 	{
 		_client.MessageReceived += _client_MessageReceived;
 		_client.ReactionAdded += _client_ReactionAdded;
+		_client.MessageUpdated += _client_MessageUpdated;
 		return Task.CompletedTask;
 	}
 
@@ -58,9 +63,16 @@ public class EasterEggs
 	}
 
 	private Task _client_MessageReceived(SocketMessage arg)
-	{
-		return Task.Run(() => HandOff(arg));
+    {
+        _ = LogMessage(arg);
+        return Task.Run(() => HandOff(arg));
 	}
+
+	private Task _client_MessageUpdated(CMMsg oldMsg, SocketMessage msg, ISocketMessageChannel channel)
+	{
+        _ = LogMessage(msg);
+		return Task.CompletedTask;
+    }
 
 	public async void HandOff(CMsg message, CChn channel, SocketReaction reaction)
 	{
@@ -75,10 +87,26 @@ public class EasterEggs
 		await _lookup.HandleEmojiLookup(msg, chn, reaction);
 	}
 
-	public async void HandOff(SocketMessage arg)
+	public Task LogMessage(SocketMessage msg)
 	{
+        return Task.Run(async () =>
+        {
+            try
+            {
+                await _anime.PostMessage(msg);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while logging message");
+            }
+        });
+    }
+
+	public async void HandOff(SocketMessage arg)
+    {
+        if (arg.Author.IsBot) return;
+
 		var reference = new MessageReference(arg.Id, arg.Channel.Id);
-		if (arg.Author.IsBot) return;
 
 		if (arg.Channel is not SocketGuildChannel)
 		{

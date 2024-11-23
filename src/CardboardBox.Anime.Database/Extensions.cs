@@ -92,7 +92,11 @@ public static class Extensions
 			 .ForEntity<GraphOut>()
 
 			 .ForEntity<DbChat>()
-			 .ForEntity<DbChatMessage>();
+			 .ForEntity<DbChatMessage>()
+			 
+			 .ForEntity<DbDiscordLog>()
+			 .ForEntity<DbDiscordSticker>()
+			 .ForEntity<DbDiscordAttachment>();
 		});
 
 		MapConfig.StartMap();
@@ -109,6 +113,7 @@ public static class Extensions
 			.AddTransient<IMangaDbService, MangaDbService>()
 			.AddTransient<IMangaCacheDbService, MangaCacheDbService>()
 			.AddTransient<IDiscordGuildDbService, DiscordGuildDbService>()
+			.AddTransient<IDiscordLogDbService, DiscordLogDbService>()
 			.AddTransient<IChatDbService, ChatDbService>()
 
 			.AddTransient<IAiRequestDbService, AiRequestDbService>()

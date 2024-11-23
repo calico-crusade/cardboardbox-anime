@@ -9,14 +9,17 @@ using DiscordIntermediary;
 public class DiscordController : ControllerBase
 {
 	private readonly IDiscordGuildDbService _discord;
+	private readonly IDiscordLogDbService _logs;
 	private readonly IDiscordClient _client;
 
 	public DiscordController(
 		IDiscordGuildDbService discord,
+		IDiscordLogDbService logs,
 		IDiscordClient client)
 	{
 		_discord = discord;
 		_client = client;
+		_logs = logs;
 	}
 
 	[HttpGet, Route("discord/settings")]
@@ -25,6 +28,14 @@ public class DiscordController : ControllerBase
 	{
 		var records = await _discord.All();
 		return Ok(records);
+	}
+
+	[HttpPost, Route("discord/message")]
+	[ProducesDefaultResponseType(typeof(DbDiscordLog))]
+	public async Task<IActionResult> CreateMessage([FromBody] DbDiscordLog log)
+	{
+		log.Id = await _logs.Insert(log);
+		return Ok(log);
 	}
 
 	[HttpGet, Route("discord/settings/{guildId}")]

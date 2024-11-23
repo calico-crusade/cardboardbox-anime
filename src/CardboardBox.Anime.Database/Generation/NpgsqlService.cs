@@ -27,6 +27,8 @@ public class NpgsqlService : SqlService
 		con.TypeMapper.MapComposite<DbExtension>("ext");
 		con.TypeMapper.MapComposite<DbMangaAttribute>("manga_attribute");
 		con.TypeMapper.MapComposite<DbMangaChapterProgress>("manga_chapter_progress");
+		con.TypeMapper.MapComposite<DbDiscordAttachment>("discord_attachment");
+		con.TypeMapper.MapComposite<DbDiscordSticker>("discord_sticker");
 
 		return con;
 	}
