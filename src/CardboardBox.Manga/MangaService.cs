@@ -260,7 +260,12 @@ public class MangaService : IMangaService
 				if (src == null || id == null) return new MangaWorked(t, false);
 
 				var res = await LoadManga(src, id, platformId);
-				return new(res?.Manga ?? t, res != null);
+				if (res is not null && res.Manga is not null)
+                    return new(res.Manga, true);
+
+				await _db.Manga.FakeUpdate(t.Id);
+				_logger.LogWarning("Failed to update manga: {mangaId}", t.Id);
+				return new(t, false);
 			}
 			catch (Exception ex)
 			{
