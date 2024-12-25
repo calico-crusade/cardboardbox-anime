@@ -44,7 +44,9 @@ BEGIN
     FROM manga_progress mp
     JOIN profiles p ON p.id = mp.profile_id
     WHERE
-        p.platform_id = platformId
+        p.platform_id = platformId AND
+        p.deleted_at IS NULL AND
+        mp.deleted_at IS NULL
 ), records AS (
     SELECT DISTINCT
         m.id as manga_id,
@@ -86,7 +88,8 @@ BEGIN
         (mp.id IS NULL AND mmc.first_chapter_id = mc.id)
     LEFT JOIN manga_bookmarks mb ON mb.manga_chapter_id = mc.id
     WHERE
-        m.deleted_at IS NULL
+        m.deleted_at IS NULL AND
+        mb.deleted_at IS NULL
 ), all_records AS (
     SELECT
         DISTINCT

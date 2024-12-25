@@ -100,6 +100,8 @@ public interface IMangaDbService
 	Task DeleteManga(long id);
 
 	Task DeleteChapter(long id);
+
+	Task FakeUpdate(long id);
 }
 
 public class MangaDbService : OrmMapExtended<DbManga>, IMangaDbService
@@ -750,6 +752,12 @@ ORDER BY updated_at ASC
 LIMIT :count";
 		return _sql.Get<DbManga>(QUERY, new { count }); 
 	}
+
+	public Task FakeUpdate(long id)
+	{
+		const string QUERY = "UPDATE manga SET updated_at = CURRENT_TIMESTAMP WHERE id = :id";
+		return _sql.Execute(QUERY, new { id });
+    }
 
 	//
 	public async Task<MangaWithChapters?> Random(string? platformId)

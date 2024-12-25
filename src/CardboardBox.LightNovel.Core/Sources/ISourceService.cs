@@ -1,5 +1,7 @@
 ﻿namespace CardboardBox.LightNovel.Core;
 
+using Sources;
+
 public interface ISourceService
 {
 	string Name { get; }
@@ -19,7 +21,7 @@ public interface ISourceVolumeService : ISourceService
 	Task<SourceChapter?> GetChapter(string url, string bookTitle);
 }
 
-public abstract class SourceService : ISourceService
+public abstract class SourceService : RatedSource, ISourceService
 {
 	public readonly IApiService _api;
 	public readonly ILogger _logger;
@@ -38,20 +40,25 @@ public abstract class SourceService : ISourceService
 		string rootUrl = firstUrl.GetRootUrl(),
 			   url = firstUrl;
 
-		int count = 0;
-		
-		while(true)
+		var limiter = CreateLimiter(() =>
 		{
-			count++;
-			var chap = await GetChapter(url, rootUrl);
+			var currentUrl = url;
+			return GetChapter(currentUrl, rootUrl);
+		});
 
-			yield return chap;
+		using var tsc = new CancellationTokenSource();
+		await foreach(var chap in limiter.Fetch(_logger, tsc.Token))
+		{
+            yield return chap;
 
 			if (string.IsNullOrEmpty(chap.NextUrl))
+			{
+				tsc.Cancel();
 				break;
+			}
 
-			url = chap.NextUrl;
-		}
+            url = chap.NextUrl;
+        }
 	}
 
 	public virtual async Task<SourceChapter> GetChapter(string url, string rootUrl)
@@ -96,7 +103,7 @@ public abstract class SourceService : ISourceService
 
 		string? title = SeriesTitle(doc),
 				author = SeriesAuthor(doc),
-				descrip = SeriesDescription(doc),
+				description = SeriesDescription(doc),
 				image = SeriesImage(doc),
 				firstChap = SeriesFirstChapter(doc);
 		string[] tags = SeriesTags(doc),
@@ -106,7 +113,7 @@ public abstract class SourceService : ISourceService
 
 		if (string.IsNullOrEmpty(title)) return null;
 
-		return new TempSeriesInfo(title, descrip, authors, image, firstChap, genres, tags);
+		return new TempSeriesInfo(title, description, authors, image, firstChap, genres, tags);
 	}
 
 	public abstract string? SeriesTitle(HtmlDocument doc);

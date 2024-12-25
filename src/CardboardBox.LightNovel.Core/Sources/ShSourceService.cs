@@ -8,7 +8,12 @@ public class ShSourceService : SourceService, IShSourceService
 
 	public override string RootUrl => "https://www.scribblehub.com";
 
-	public ShSourceService(IApiService api, ILogger<ShSourceService> logger) : base(api, logger) { }
+	public override int MaxRequestsBeforePauseMin => 2;
+	public override int MaxRequestsBeforePauseMax => 4;
+	public override int PauseDurationSecondsMin => 10;
+	public override int PauseDurationSecondsMax => 15;
+
+    public ShSourceService(IApiService api, ILogger<ShSourceService> logger) : base(api, logger) { }
 
 	public override string? GetChapter(HtmlDocument doc)
 	{

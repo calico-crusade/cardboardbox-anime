@@ -254,11 +254,20 @@ public class MangaService : IMangaService
 
 		return await needs.Select(async t =>
 		{
-			var (src, id) = DetermineSource(t.Url);
-			if (src == null || id == null) return new MangaWorked(t, false);
+			try
+			{
+				var (src, id) = DetermineSource(t.Url);
+				if (src == null || id == null) return new MangaWorked(t, false);
 
-			var res = await LoadManga(src, id, platformId);
-			return new(res?.Manga ?? t, res != null);
+				var res = await LoadManga(src, id, platformId);
+				return new(res?.Manga ?? t, res != null);
+			}
+			catch (Exception ex)
+			{
+				await _db.Manga.FakeUpdate(t.Id);
+				_logger.LogError(ex, "Failed to update manga: {mangaId}", t.Id);
+                return new(t, false);
+            }
 		}).WhenAll();
 	}
 

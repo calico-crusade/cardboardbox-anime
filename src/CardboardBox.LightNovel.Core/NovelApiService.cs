@@ -147,14 +147,6 @@ public class NovelApiService : INovelApiService
 				PageId = pageId,
 				Ordinal = 0
 			});
-
-			if (offset % 10 == 0 && offset > 0)
-			{
-				var sec = _rnd.Next(3, 10);
-				_logger.LogInformation("Waiting for {sec} seconds", sec);
-                await Task.Delay(sec * 1000);
-				_logger.LogInformation("Finished waiting... Restarting feed.");
-            }
 		}
 
 		return offset;

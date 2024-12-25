@@ -21,21 +21,21 @@ BEGIN
     SELECT DISTINCT m.*, p.id as profile_id FROM manga m
     JOIN manga_bookmarks mb on m.id = mb.manga_id
     JOIN profiles p on mb.profile_id = p.id
-    WHERE p.platform_id = platformId
+    WHERE p.platform_id = platformId AND m.deleted_at IS NULL AND mb.deleted_at IS NULL AND p.deleted_at IS NULL
 
     UNION
 
     SELECT DISTINCT m.*, p.id as profile_id FROM manga m
     JOIN manga_favourites mb on m.id = mb.manga_id
     JOIN profiles p on mb.profile_id = p.id
-    WHERE p.platform_id = platformId
+    WHERE p.platform_id = platformId AND m.deleted_at IS NULL AND mb.deleted_at IS NULL AND p.deleted_at IS NULL
 
     UNION
 
     SELECT DISTINCT m.*, p.id as profile_id FROM manga m
     JOIN manga_progress mb on m.id = mb.manga_id
     JOIN profiles p on mb.profile_id = p.id
-    WHERE p.platform_id = platformId
+    WHERE p.platform_id = platformId AND m.deleted_at IS NULL AND mb.deleted_at IS NULL AND p.deleted_at IS NULL
 ), chapter_numbers AS (
     SELECT
         c.*,
@@ -59,7 +59,9 @@ BEGIN
     FROM manga_progress mp
     JOIN profiles p ON p.id = mp.profile_id
     WHERE
-        p.platform_id = platformId
+        p.platform_id = platformId AND
+        mp.deleted_at IS NULL AND
+        p.deleted_at IS NULL
 ), records AS (
     SELECT DISTINCT
         m.id as manga_id,
@@ -92,7 +94,8 @@ BEGIN
     LEFT JOIN manga_bookmarks mb ON mb.manga_chapter_id = mc.id
     WHERE
         m.deleted_at IS NULL AND
-        mp.deleted_at IS NULL
+        mp.deleted_at IS NULL AND
+        mb.deleted_at IS NULL
 )
 SELECT
     DISTINCT
