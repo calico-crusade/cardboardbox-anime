@@ -164,6 +164,9 @@ public class Sauce
 
 		[JsonPropertyName("getchu_id")]
 		public string? GetchuId { get; set; }
+
+		[JsonPropertyName("md_id")]
+		public string? MangaDexId { get; set; }
 	}
 
 	public class SauceResult

@@ -7,6 +7,8 @@ using MangaDex;
 using Match;
 using Http;
 using Providers;
+using CardboardBox.Match.SauceNao;
+using MangaDexSharp;
 
 public interface IMangaSearchService
 {
@@ -87,15 +89,25 @@ public class MangaSearchService : IMangaSearchService
 	{
 		var results = new ImageSearchResults();
 
-		using var second = new MemoryStream();
-		await stream.CopyToAsync(second);
+		var actions = new Func<MemoryStream, Task>[] 
+		{
+			(t) => HandleFallback(t, filename, results),
+			(t) => HandleSauceNao(t, filename, results),
+			(t) => HandleVision(t, filename, results)
+		};
 
-		stream.Position = 0;
-		second.Position = 0;
+		foreach(var action in actions)
+		{
+			if (AnyMatches(results)) break;
 
-		await HandleFallback(stream, filename, results);
-		if (!AnyMatches(results))
-			await HandleVision(second, filename, results);
+            using var second = new MemoryStream();
+            await stream.CopyToAsync(second);
+
+            stream.Position = 0;
+            second.Position = 0;
+
+			await action(second);
+        }
 
 		DetermineBestGuess(results);
 
@@ -400,45 +412,70 @@ public class MangaSearchService : IMangaSearchService
 	#endregion
 
 	#region SauceNao
-	public async Task HandleSauceNao(string image, ImageSearchResults results)
+	public async Task HandleSauceNao(Task<Sauce?> fetch, ImageSearchResults results)
 	{
-		var res = await _sauce.Get(image);
-		if (res == null || res.Results.Length == 0) return;
+		var res = await fetch;
+        if (res == null || res.Results.Length == 0) return;
 
-		var mdRes = res
-			.Results
-			.Where(t => t.Data.ExternalUrls.Any(a => a.ToLower().Contains("mangadex")))
-			.Select(t => (t, double.TryParse(t.Header.Similarity, out var sim) ? sim : -1))
-			.Where(t => t.Item2 > 70)
-			.OrderByDescending(t => t.Item2 != -1)
-			.Select(t => t.t)
-			.FirstOrDefault();
+        var mdRes = res
+            .Results
+            .Where(t => t.Data.ExternalUrls.Any(a => a.ToLower().Contains("mangadex")))
+            .Select(t => (t, double.TryParse(t.Header.Similarity, out var sim) ? sim : -1))
+            .Where(t => t.Item2 > 70)
+            .OrderByDescending(t => t.Item2 != -1)
+            .Select(t => t.t)
+            .FirstOrDefault();
 
-		if (mdRes == null || string.IsNullOrEmpty(mdRes.Data.Source)) return;
+        if (mdRes == null || string.IsNullOrEmpty(mdRes.Data.Source)) return;
 
-		var title = mdRes.Data.Source;
-		var raw = await _mangadex.Search(title);
-		if (raw == null || raw.Data == null || raw.Data.Count == 0)
-			return;
+		var manga = new List<MangaDexSharp.Manga>();
+		if (!string.IsNullOrEmpty(mdRes.Data.MangaDexId))
+		{
+			var single = await _mangadex.Chapter(mdRes.Data.MangaDexId);
+			if (single is not null && 
+				single.Data is not null &&
+				single.Data.Relationships.Any(t => t is RelatedDataRelationship))
+				manga.Add((single.Data.Relationships.First(t => t is RelatedDataRelationship) as RelatedDataRelationship)!);
+		}
 
-		var data = await raw.Data
-			.Select(async t => await _md.Convert(t, false))
-			.WhenAll();
+		if (manga.Count == 0)
+        {
+            var title = mdRes.Data.Source;
+            var raw = await _mangadex.Search(title);
+            if (raw == null || raw.Data == null || raw.Data.Count == 0)
+                return;
 
-		var rank = Rank(image, data)
-			.OrderByDescending(t => t.Compute)
-			.DistinctBy(t => t.Manga.Id)
-			.Select(t => new BaseResult
-			{
-				Manga = t.Manga,
-				ExactMatch = t.Compute > 1,
-				Score = t.Compute,
-				Source = "sauce nao"
-			}).ToList();
+			manga.AddRange(raw.Data);
+        }
 
-		results.Textual = rank;
-		results.BestGuess = rank.FirstOrDefault()?.Manga;
+        var data = await manga
+            .Select(async t => await _md.Convert(t, false))
+            .WhenAll();
+
+        var rank = Rank(mdRes.Data.Source, data)
+            .OrderByDescending(t => t.Compute)
+            .DistinctBy(t => t.Manga.Id)
+            .Select(t => new BaseResult
+            {
+                Manga = t.Manga,
+                ExactMatch = t.Compute > 1,
+                Score = t.Compute,
+                Source = "sauce nao"
+            }).ToList();
+
+        results.Textual = rank;
+        results.BestGuess = rank.FirstOrDefault()?.Manga;
+    }
+
+	public Task HandleSauceNao(string image, ImageSearchResults results)
+	{
+		return HandleSauceNao(_sauce.Get(image), results);
 	}
+
+	public Task HandleSauceNao(Stream stream, string filename, ImageSearchResults results)
+    {
+        return HandleSauceNao(_sauce.Get(stream, filename), results);
+    }
 	#endregion
 }
 
