@@ -91,17 +91,17 @@ public class EasterEggs
 		return Task.CompletedTask;
     }
 
-	public async void HandOff(CMsg message, CChn channel, SocketReaction reaction)
+	public void HandOff(CMsg message, CChn channel, SocketReaction reaction)
 	{
-		var emotes = new[] { "🍝", "🔍", "🔎" };
-		if (!reaction.User.IsSpecified || 
-			reaction.User.Value.IsBot || 
-			!emotes.Contains(reaction.Emote.Name)) return;
+		//var emotes = new[] { "🍝", "🔍", "🔎" };
+		//if (!reaction.User.IsSpecified || 
+		//	reaction.User.Value.IsBot || 
+		//	!emotes.Contains(reaction.Emote.Name)) return;
 
-		var msg = await message.GetOrDownloadAsync();
-		var chn = await channel.GetOrDownloadAsync();
+		//var msg = await message.GetOrDownloadAsync();
+		//var chn = await channel.GetOrDownloadAsync();
 
-		await _lookup.HandleEmojiLookup(msg, chn, reaction);
+		//await _lookup.HandleEmojiLookup(msg, chn, reaction);
 	}
 
 	public Task LogMessage(SocketMessage msg)

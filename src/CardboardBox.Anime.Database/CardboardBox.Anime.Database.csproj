@@ -15,4 +15,8 @@
     <ProjectReference Include="..\CardboardBox.Anime.Core\CardboardBox.Anime.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Scripts\Queries\discord_message_logs\" />
+  </ItemGroup>
+
 </Project>
