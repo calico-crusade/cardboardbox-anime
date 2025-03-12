@@ -228,7 +228,16 @@ public class Runner : IRunner
 			return;
 		}
 
-		_logger.LogInformation("Found");
+		var chapter = items.Chapters.FirstOrDefault();
+		if (string.IsNullOrEmpty(chapter?.Url))
+		{
+			_logger.LogInformation("Could not get chapter URL");
+			return;
+		}
+
+		var pages = await _manganato.ChapterPages(chapter.Url);
+
+        _logger.LogInformation("Found");
     }
 
 
