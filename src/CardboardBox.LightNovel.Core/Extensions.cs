@@ -5,6 +5,7 @@ using Anime.Database.Mapping;
 using Database;
 using Sources;
 using Sources.Utilities;
+using Sources.Utilities.FlareSolver;
 using Sources.ZirusSource;
 
 public static class Extensions
@@ -101,6 +102,7 @@ public static class Extensions
 			.AddTransient<INncSourceService, NncSourceService>()
 			.AddTransient<IBakaPervertSourceService, BakaPervertSourceService>()
 			.AddTransient<IFanTransSourceService, FanTransSourceService>()
+			.AddTransient<IMagicHouseSourceService, MagicHouseSourceService>()
 			.AddTransient<IHeadCanonTLSourceService, HeadCanonTLSourceService>()
 
 			.AddTransient<INovelUpdatesService, NovelUpdatesService>()
@@ -119,6 +121,8 @@ public static class Extensions
 			.AddTransient<IDbSeriesService, DbSeriesService>()
 			.AddTransient<IDbChapterPageService, DbChapterPageService>()
 			
-			.AddTransient<ILnDbService, LnDbService>();
+			.AddTransient<ILnDbService, LnDbService>()
+			
+			.AddFlareSolver();
 	}
 }

@@ -32,6 +32,7 @@ public class Manifest
 			"png" => ManifestItem.MEDIA_TYPE_PNG,
 			"webp" => ManifestItem.MEDIA_TYPE_WEBP,
 			"gif" => ManifestItem.MEDIA_TYPE_GIF,
+			"svg" => ManifestItem.MEDIA_TYPE_SVG,
 			_ => throw new NotSupportedException($"\"{ext}\" is not a valid image extension!")
 		};
 

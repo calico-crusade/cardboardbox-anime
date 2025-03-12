@@ -1,21 +1,61 @@
 ﻿namespace CardboardBox.LightNovel.Core.Sources;
 
+using Utilities.FlareSolver;
+
 public interface IShSourceService : ISourceService { }
 
-public class ShSourceService : SourceService, IShSourceService
+public class ShSourceService(
+	IApiService api, 
+	IFlareSolver _flare, 
+	ILogger<ShSourceService> logger) : SourceService(api, logger), IShSourceService
 {
+	private SolverCookie[]? _cookies = null;
+
 	public override string Name => "sh";
 
 	public override string RootUrl => "https://www.scribblehub.com";
 
-	public override int MaxRequestsBeforePauseMin => 2;
-	public override int MaxRequestsBeforePauseMax => 4;
-	public override int PauseDurationSecondsMin => 10;
-	public override int PauseDurationSecondsMax => 15;
+	public override int MaxRequestsBeforePauseMin => 0;
+	public override int MaxRequestsBeforePauseMax => 0;
+	public override int PauseDurationSecondsMin => 0;
+	public override int PauseDurationSecondsMax => 0;
 
-    public ShSourceService(IApiService api, ILogger<ShSourceService> logger) : base(api, logger) { }
+	public async Task<HtmlDocument> DoRequest(string url, bool first = true)
+	{
+        try
+        {
+            var data = await _flare.Get(url, _cookies, timeout: 30_000);
+            if (data is null || data.Solution is null) throw new Exception("Failed to get data");
 
-	public override string? GetChapter(HtmlDocument doc)
+            if (data.Solution.Status < 200 || data.Solution.Status >= 300)
+                throw new Exception($"Failed to get data: {data.Solution.Status}");
+
+            _cookies = data.Solution.Cookies;
+
+            var doc = new HtmlDocument();
+            doc.LoadHtml(data.Solution.Response);
+            return doc;
+        }
+        catch (Exception ex)
+        {
+			if (!first) throw;
+
+			_cookies = null;
+			var delay = Random.Shared.Next(30, 80);
+            _logger.LogError(ex, "Failed to get data, retrying after {delay} seconds", delay);
+            await Task.Delay(delay * 1000);
+			_logger.LogInformation("Retrying request");
+            return await DoRequest(url, false);
+        }
+    }
+
+
+    public override Task<HtmlDocument> Get(string url)
+    {
+		return DoRequest(url);
+    }
+
+    public override string? GetChapter(HtmlDocument doc)
 	{
 		return doc.InnerText("//div[@class='chapter-title']");
 	}

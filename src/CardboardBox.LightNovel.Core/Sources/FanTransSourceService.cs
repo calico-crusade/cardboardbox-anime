@@ -3,7 +3,7 @@ namespace CardboardBox.LightNovel.Core.Sources;
 
 public interface IFanTransSourceService : ISourceVolumeService { }
 
-internal class FanTransSourceService : IFanTransSourceService
+internal class FanTransSourceService : RatedSource, IFanTransSourceService
 {
     private readonly IApiService _api;
     private readonly ILogger _logger;
@@ -11,6 +11,11 @@ internal class FanTransSourceService : IFanTransSourceService
     public string Name => "fan-translations";
 
     public string RootUrl => "https://fanstranslations.com";
+
+    public override int MaxRequestsBeforePauseMin => 4;
+    public override int MaxRequestsBeforePauseMax => 7;
+    public override int PauseDurationSecondsMin => 30;
+    public override int PauseDurationSecondsMax => 35;
 
     private readonly Dictionary<string, SourceVolume[]> _volumes = new();
 
@@ -180,6 +185,8 @@ internal class FanTransSourceService : IFanTransSourceService
         var nextUrl = nextNode.GetAttributeValue("href", string.Empty);
         if (string.IsNullOrWhiteSpace(nextUrl)) return null;
 
+        if (nextUrl.Contains("/coming-soon/")) return null;
+
         return nextUrl;
     }
 
@@ -204,21 +211,50 @@ internal class FanTransSourceService : IFanTransSourceService
 
     public async IAsyncEnumerable<SourceChapter> Chapters(string firstUrl)
     {
-        string url = firstUrl;
-        while (true)
+        string rootUrl = firstUrl.GetRootUrl(),
+               url = firstUrl;
+
+        var limiter = CreateLimiter(() =>
         {
-            var chapter = await GetChapter(url, string.Empty);
-            if (chapter is null)
+            var currentUrl = url;
+            return GetChapter(currentUrl, rootUrl);
+        });
+
+        using var tsc = new CancellationTokenSource();
+        await foreach (var chap in limiter.Fetch(_logger, tsc.Token))
+        {
+            if (chap is null)
             {
-                _logger.LogError("Failed to get chapter: {url}", url);
-                yield break;
+                tsc.Cancel();
+                break;
             }
 
-            yield return chapter;
-            if (string.IsNullOrEmpty(chapter.NextUrl) || chapter.NextUrl.EndsWith("/coming-soon/"))
+            yield return chap;
+
+            if (string.IsNullOrEmpty(chap.NextUrl))
+            {
+                tsc.Cancel();
                 break;
-            url = chapter.NextUrl;
+            }
+
+            url = chap.NextUrl;
         }
+
+        //string url = firstUrl;
+        //while (true)
+        //{
+        //    var chapter = await GetChapter(url, string.Empty);
+        //    if (chapter is null)
+        //    {
+        //        _logger.LogError("Failed to get chapter: {url}", url);
+        //        yield break;
+        //    }
+
+        //    yield return chapter;
+        //    if (string.IsNullOrEmpty(chapter.NextUrl) || chapter.NextUrl.EndsWith("/coming-soon/"))
+        //        break;
+        //    url = chapter.NextUrl;
+        //}
     }
 
     public async Task<TempSeriesInfo?> GetSeriesInfo(string url)

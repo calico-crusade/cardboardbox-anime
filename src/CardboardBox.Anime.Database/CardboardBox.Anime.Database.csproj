@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <Folder Include="Scripts\Queries\discord_message_logs\" />
+    <Folder Include="Scripts\Queries\light_novels\" />
   </ItemGroup>
 
 </Project>

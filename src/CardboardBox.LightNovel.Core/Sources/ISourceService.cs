@@ -35,6 +35,11 @@ public abstract class SourceService : RatedSource, ISourceService
 		_logger = logger;
 	}
 
+	public virtual Task<HtmlDocument> Get(string url)
+	{
+		return _api.GetHtml(url);
+	}
+
 	public virtual async IAsyncEnumerable<SourceChapter> Chapters(string firstUrl)
 	{
 		string rootUrl = firstUrl.GetRootUrl(),
@@ -66,7 +71,7 @@ public abstract class SourceService : RatedSource, ISourceService
 		if (url.StartsWith("/"))
 			url = $"{rootUrl.TrimEnd('/')}{url}";
 
-		var doc = await _api.GetHtml(url);
+		var doc = await Get(url);
 		var title = GetTitle(doc);
 		var chapter = GetChapter(doc);
 		var next = GetNextLink(doc);
@@ -98,7 +103,7 @@ public abstract class SourceService : RatedSource, ISourceService
 
 	public virtual async Task<TempSeriesInfo?> GetSeriesInfo(string url)
 	{
-		var doc = await _api.GetHtml(url);
+		var doc = await Get(url);
 		if (doc == null) return null;
 
 		string? title = SeriesTitle(doc),

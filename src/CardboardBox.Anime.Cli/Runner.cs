@@ -67,6 +67,7 @@ public class Runner : IRunner
 	private readonly IBakaPervertSourceService _baka;
 	private readonly IFanTransSourceService _ftl;
 	private readonly IHeadCanonTLSourceService _headCanon;
+	private readonly IMagicHouseSourceService _magicHouse;
 
     public Runner(
 		IVrvApiService vrv, 
@@ -100,7 +101,8 @@ public class Runner : IRunner
 		IRawKumaSource kuma,
         IBakaPervertSourceService baka,
         IFanTransSourceService ftl,
-        IHeadCanonTLSourceService headCanon)
+        IHeadCanonTLSourceService headCanon,
+        IMagicHouseSourceService magicHouse)
 	{
 		_vrv = vrv;
 		_logger = logger;
@@ -134,7 +136,8 @@ public class Runner : IRunner
 		_baka = baka;
 		_ftl = ftl;
 		_headCanon = headCanon;
-	}
+        _magicHouse = magicHouse;
+    }
 
 	public async Task<int> Run(string[] args)
 	{
@@ -186,6 +189,7 @@ public class Runner : IRunner
 				case "baka": await Baka(); break;
 				case "ftl": await Ftl(); break;
 				case "head-canon": await HeadCanon(); break;
+				case "magic-house": await MagicHouse(); break;
                 default: _logger.LogInformation("Invalid command: " + command); break;
 			}
 
@@ -199,7 +203,58 @@ public class Runner : IRunner
 		}
 	}
 
-	public async Task HeadCanon()
+	public async Task MagicHouse()
+	{
+		async Task Info()
+		{
+			const string URL = "https://magichousetldotcom.wordpress.com/my-heart-is-that-of-an-uncle/";
+			var info = await _magicHouse.GetSeriesInfo(URL);
+			if (info is null)
+			{
+				_logger.LogError("Failed to fetch series info");
+				return;
+			}
+
+			_logger.LogInformation("Title: {Title}", info.Title);
+		}
+
+		async Task Chapter()
+		{
+			const string URL = "https://magichousetldotcom.wordpress.com/2024/06/03/c1-my-heart-is-that-of-an-uncle/";
+			var chap = await _magicHouse.GetChapter(URL, string.Empty);
+			if (chap is null)
+			{
+				_logger.LogError("Failed to fetch chapter");
+				return;
+			}
+			_logger.LogInformation("Chapter: {Title}", chap.ChapterTitle);
+		}
+
+		async Task Volumes()
+        {
+            const string URL = "https://magichousetldotcom.wordpress.com/my-heart-is-that-of-an-uncle/";
+			var info = await _magicHouse.Volumes(URL).ToArrayAsync();
+			if (info.Length == 0)
+			{
+                _logger.LogError("Failed to fetch volumes");
+                return;
+            }
+
+            foreach (var vol in info)
+            {
+                _logger.LogInformation("Volume: {Title}", vol.Title);
+                foreach (var chap in vol.Chapters)
+                    _logger.LogInformation("\tChapter: {Title}", chap.Title);
+            }
+        }
+
+		await Volumes();
+        await Info();
+		await Chapter();
+	}
+
+
+    public async Task HeadCanon()
 	{
 		async Task Info()
         {

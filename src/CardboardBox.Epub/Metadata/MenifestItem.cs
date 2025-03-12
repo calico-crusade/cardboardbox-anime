@@ -9,8 +9,9 @@ public class ManifestItem : IXmlItem
 	public const string MEDIA_TYPE_PNG = "image/png";
 	public const string MEDIA_TYPE_GIF = "image/gif";
 	public const string MEDIA_TYPE_WEBP = "image/webp";
+	public const string MEDIA_TYPE_SVG = "image/svg+xml";
 
-	public string Id { get; set; }
+    public string Id { get; set; }
 	public string Href { get; set; }
 	public string MediaType { get; set; }
 
