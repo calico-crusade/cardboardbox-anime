@@ -68,6 +68,8 @@ public class Runner : IRunner
 	private readonly IFanTransSourceService _ftl;
 	private readonly IHeadCanonTLSourceService _headCanon;
 	private readonly IMagicHouseSourceService _magicHouse;
+	private readonly IVampiramtlSourceService _vampiramtl;
+	private readonly IChapmanganatoSource _manganato;
 
     public Runner(
 		IVrvApiService vrv, 
@@ -102,7 +104,9 @@ public class Runner : IRunner
         IBakaPervertSourceService baka,
         IFanTransSourceService ftl,
         IHeadCanonTLSourceService headCanon,
-        IMagicHouseSourceService magicHouse)
+        IMagicHouseSourceService magicHouse,
+        IVampiramtlSourceService vampiramtl,
+		IChapmanganatoSource manganato)
 	{
 		_vrv = vrv;
 		_logger = logger;
@@ -137,6 +141,8 @@ public class Runner : IRunner
 		_ftl = ftl;
 		_headCanon = headCanon;
         _magicHouse = magicHouse;
+		_vampiramtl = vampiramtl;
+		_manganato = manganato;
     }
 
 	public async Task<int> Run(string[] args)
@@ -190,6 +196,8 @@ public class Runner : IRunner
 				case "ftl": await Ftl(); break;
 				case "head-canon": await HeadCanon(); break;
 				case "magic-house": await MagicHouse(); break;
+				case "vampiramtl": await Vampiramtl(); break;
+				case "manganato": await Manganato(); break;
                 default: _logger.LogInformation("Invalid command: " + command); break;
 			}
 
@@ -202,6 +210,77 @@ public class Runner : IRunner
 			return 1;
 		}
 	}
+
+	public async Task Manganato()
+	{
+		const string URL = "https://www.natomanga.com/manga-zx1002932";
+		var (matches, id) = _manganato.MatchesProvider(URL);
+		if (!matches || string.IsNullOrEmpty(id))
+		{
+            _logger.LogError("Failed to match provider");
+            return;
+        }
+
+		var items = await _manganato.Manga(id);
+		if (items == null)
+		{
+			_logger.LogError("Failed to fetch manga");
+			return;
+		}
+
+		_logger.LogInformation("Found");
+    }
+
+
+    public async Task Vampiramtl()
+	{
+        async Task Info()
+        {
+            const string URL = "https://www.vampiramtl.com/tgs/";
+            var info = await _vampiramtl.GetSeriesInfo(URL);
+            if (info is null)
+            {
+                _logger.LogError("Failed to fetch series info");
+                return;
+            }
+
+            _logger.LogInformation("Title: {Title}", info.Title);
+        }
+
+        async Task Chapter()
+        {
+            const string URL = "https://www.vampiramtl.com/tgs/v1-illustrations/";
+            var chap = await _vampiramtl.GetChapter(URL, string.Empty);
+            if (chap is null)
+            {
+                _logger.LogError("Failed to fetch chapter");
+                return;
+            }
+            _logger.LogInformation("Chapter: {Title}", chap.ChapterTitle);
+        }
+
+        async Task Volumes()
+        {
+            const string URL = "https://www.vampiramtl.com/tgs/";
+            var info = await _vampiramtl.Volumes(URL).ToArrayAsync();
+            if (info.Length == 0)
+            {
+                _logger.LogError("Failed to fetch volumes");
+                return;
+            }
+
+            foreach (var vol in info)
+            {
+                _logger.LogInformation("Volume: {Title}", vol.Title);
+                foreach (var chap in vol.Chapters)
+                    _logger.LogInformation("\tChapter: {Title}", chap.Title);
+            }
+        }
+
+        await Volumes();
+        await Info();
+        await Chapter();
+    }
 
 	public async Task MagicHouse()
 	{

@@ -14,12 +14,10 @@ public interface INovelApiService
 
 public class NovelApiService : INovelApiService
 {
-	private readonly static Random _rnd = new();
 	private const int AUTO_BOOK_SPLIT = 200;
 
 	private readonly ISourceService[] _srcs;
 	private readonly ILnDbService _db;
-	private readonly ILogger _logger;
 
 	public NovelApiService(
 		ILnpSourceService lnSrc, 
@@ -33,12 +31,11 @@ public class NovelApiService : INovelApiService
         IFanTransSourceService ftl,
         IHeadCanonTLSourceService headCanon,
 		IMagicHouseSourceService magicHouse,
-        ILnDbService db,
-		ILogger<NovelApiService> logger)
+        IVampiramtlSourceService vampiramtl,
+        ILnDbService db)
 	{
-		_logger = logger;
 		_db = db;
-		_srcs = [ lnSrc, shSrc, rlSrc, lntSrc, nyxSrc, zirusSrc, nncSrc, baka, ftl, headCanon, magicHouse ];
+		_srcs = [ lnSrc, shSrc, rlSrc, lntSrc, nyxSrc, zirusSrc, nncSrc, baka, ftl, headCanon, magicHouse, vampiramtl ];
 	}
 
 	public ISourceService? Source(string url)

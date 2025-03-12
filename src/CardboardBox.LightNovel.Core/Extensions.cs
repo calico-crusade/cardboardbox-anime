@@ -104,6 +104,7 @@ public static class Extensions
 			.AddTransient<IFanTransSourceService, FanTransSourceService>()
 			.AddTransient<IMagicHouseSourceService, MagicHouseSourceService>()
 			.AddTransient<IHeadCanonTLSourceService, HeadCanonTLSourceService>()
+			.AddTransient<IVampiramtlSourceService, VampiramtlSourceService>()
 
 			.AddTransient<INovelUpdatesService, NovelUpdatesService>()
 
