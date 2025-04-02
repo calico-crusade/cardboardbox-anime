@@ -3,6 +3,10 @@
 public interface IPurgeUtils 
 {
     string PurgeBadElements(string content);
+
+    IEnumerable<HtmlNode> Flatten(HtmlDocument doc);
+
+    IEnumerable<HtmlNode> Flatten(HtmlNode node);
 }
 
 public class PurgeUtils : IPurgeUtils
@@ -115,5 +119,40 @@ public class PurgeUtils : IPurgeUtils
             return node;
 
         return GetFirstNode(node.ParentNode);
+    }
+
+    public IEnumerable<HtmlNode> Flatten(HtmlDocument doc)
+    {
+        return Flatten(doc.DocumentNode);
+    }
+
+    public IEnumerable<HtmlNode> Flatten(HtmlNode node)
+    {
+        string[] passThrough = ["p", "img", "strong", "b", "i", "h1", "h2", "h3", "h4", "h5", "h6"];
+
+        if (!node.HasChildNodes)
+        {
+            yield return node;
+            yield break;
+        }
+
+        if (node.ChildNodes.Count == 1 && node.ChildNodes[0].NodeType == HtmlNodeType.Text)
+        {
+            yield return node;
+            yield break;
+        }
+
+        if (passThrough.Contains(node.Name))
+        {
+            yield return node;
+            yield break;
+        }
+
+        foreach (var child in node.ChildNodes)
+        {
+
+            foreach (var n in Flatten(child))
+                yield return n;
+        }
     }
 }

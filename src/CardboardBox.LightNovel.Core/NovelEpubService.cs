@@ -4,6 +4,7 @@ using ICSharpCode.SharpZipLib.Zip;
 namespace CardboardBox.LightNovel.Core;
 
 using Anime.Core;
+using CardboardBox.LightNovel.Core.Sources.Utilities.FlareSolver;
 using Epub;
 using ImageTransformers;
 
@@ -12,28 +13,15 @@ public interface INovelEpubService
 	Task<StreamResult?> Generate(params long[] bookIds);
 }
 
-public class NovelEpubService : INovelEpubService
+public class NovelEpubService(
+    ILnDbService _db,
+    ILogger<NovelEpubService> _logger,
+    IFileCacheService _file,
+    IFlareSolver _flare) : INovelEpubService
 {
 	private const string EPUB_MIMETYPE = "application/epub+zip";
 
-	private readonly ILnDbService _db;
-	private readonly ILogger _logger;
-	private readonly IApiService _api;
-	private readonly IFileCacheService _file;
-
-	public NovelEpubService(
-		ILnDbService db, 
-		ILogger<NovelEpubService> logger,
-		IApiService api,
-		IFileCacheService file)
-	{
-		_db = db;
-		_logger = logger;
-		_api = api;
-		_file = file;
-	}
-
-	public async Task<StreamResult?> Generate(params long[] bookIds)
+    public async Task<StreamResult?> Generate(params long[] bookIds)
 	{
 		if (bookIds.Length == 0) throw new ArgumentException("Please specify at least 1 book to generate", nameof(bookIds));
 		if (bookIds.Length == 1) return await GenerateOneBook(bookIds[0]);
@@ -270,6 +258,29 @@ public class NovelEpubService : INovelEpubService
 
 		return Path.GetRandomFileName() + "." + ext;
 	}
+
+	//public async Task<StreamResult> GetFileData(string url)
+	//{
+	//	if (url.ToLower().StartsWith("file://"))
+	//		return await GetDataFromFile(url.Remove(0, 7));
+
+	//	try
+	//	{
+	//		return await _file.GetFile(url);
+ //       }
+	//	catch (Exception ex)
+	//	{
+	//		_logger.LogError(ex, "Error occurred while attempting to fetch image. Trying flare solver: {url}", url);
+	//		var data = await _flare.Get(url);
+	//		if (data is null || data.Solution is null || data.Solution.Status < 200 || data.Solution.Status >= 300)
+	//		{
+ //               _logger.LogError("Flare Solver: Failed to fetch image: {url}", url);
+ //               throw new Exception($"Flare Solver: Failed to fetch image: {url}");
+	//		}
+
+	//		var result = data.Solution.Response.ToStream();
+ //       }
+ //   }
 
 	public async Task<StreamResult> GetData(string url, bool skipTransform = false)
 	{

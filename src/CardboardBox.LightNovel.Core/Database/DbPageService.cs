@@ -10,6 +10,7 @@ public interface IDbPageService : ILnOrmMap<Page>
 	Task<Page?> LastPage(long seriesId);
 	Task<Page[]> ImagePages();
 	Task<Page[]> AnchorPages();
+	Task<Page?> ByHashId(string hashId);
 }
 
 public class DbPageService : LnOrmMap<Page>, IDbPageService
@@ -30,12 +31,25 @@ public class DbPageService : LnOrmMap<Page>, IDbPageService
 
 	public async Task<Page?> LastPage(long seriesId)
 	{
-		const string QUERY = @"SELECT * FROM ln_pages WHERE series_id = :seriesId AND (next_url IS NULL OR next_url = '')";
+		const string QUERY = @"SELECT *
+FROM ln_pages 
+WHERE 
+	series_id = :seriesId AND 
+	(
+		next_url IS NULL OR 
+		next_url = ''
+	) 
+ORDER BY ordinal DESC 
+LIMIT 1";
 		var res = await _sql.Fetch<Page?>(QUERY, new { seriesId });
 
 		if (res != null) return res;
 
-		const string BACKUP_QUERY = "SELECT * FROM ln_pages WHERE series_id = :seriesId ORDER BY ordinal DESC LIMIT 1";
+		const string BACKUP_QUERY = @"SELECT * 
+FROM ln_pages 
+WHERE series_id = :seriesId 
+ORDER BY ordinal DESC 
+LIMIT 1";
 		return await _sql.Fetch<Page?>(BACKUP_QUERY, new { seriesId });
 	}
 
@@ -49,5 +63,11 @@ public class DbPageService : LnOrmMap<Page>, IDbPageService
     {
         const string QUERY = "SELECT * FROM ln_pages WHERE content LIKE '%<a%';";
         return _sql.Get<Page>(QUERY);
+    }
+
+    public Task<Page?> ByHashId(string hashId)
+    {
+        const string QUERY = "SELECT * FROM ln_pages WHERE hash_id = :hashId";
+        return _sql.Fetch<Page?>(QUERY, new { hashId });
     }
 }

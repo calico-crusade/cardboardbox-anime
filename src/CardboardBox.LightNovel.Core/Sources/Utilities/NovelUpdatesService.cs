@@ -1,4 +1,7 @@
-﻿namespace CardboardBox.LightNovel.Core.Sources.Utilities;
+﻿using CardboardBox.LightNovel.Core.Sources.Utilities.FlareSolver;
+using System.Net;
+
+namespace CardboardBox.LightNovel.Core.Sources.Utilities;
 
 public interface INovelUpdatesService
 {
@@ -9,18 +12,45 @@ public interface INovelUpdatesService
     Task<string?> GetChapterUrl(SourceChapterItem item);
 }
 
-public class NovelUpdatesService : INovelUpdatesService
+public class NovelUpdatesService(
+    IApiService _api, 
+    IFlareSolver _flare,
+    ILogger<NovelUpdatesService> _logger) : INovelUpdatesService
 {
-	private readonly IApiService _api;
+    private SolverCookie[]? _cookies = null;
 
-	public NovelUpdatesService(IApiService api)
-	{
-		_api = api;
-	}
+    public async Task<HtmlDocument> DoRequest(string url, bool first = true)
+    {
+        try
+        {
+            var data = await _flare.Get(url, _cookies, timeout: 30_000);
+            if (data is null || data.Solution is null) throw new Exception("Failed to get data");
 
-	public async Task<TempSeriesInfo?> Series(string url)
+            if (data.Solution.Status < 200 || data.Solution.Status >= 300)
+                throw new Exception($"Failed to get data: {data.Solution.Status}");
+
+            _cookies = data.Solution.Cookies;
+
+            var doc = new HtmlDocument();
+            doc.LoadHtml(data.Solution.Response);
+            return doc;
+        }
+        catch (Exception ex)
+        {
+            if (!first) throw;
+
+            _cookies = null;
+            var delay = Random.Shared.Next(30, 80);
+            _logger.LogError(ex, "Failed to get data, retrying after {delay} seconds", delay);
+            await Task.Delay(delay * 1000);
+            _logger.LogInformation("Retrying request");
+            return await DoRequest(url, false);
+        }
+    }
+
+    public async Task<TempSeriesInfo?> Series(string url)
 	{
-		var doc = await _api.GetHtml(url);
+		var doc = await DoRequest(url);
 		if (doc == null) return null;
 
 		return Series(doc);

@@ -10,6 +10,7 @@ public interface INovelApiService
 	Task<int> Load(long seriesId);
 	Task<int> Load(Series series);
 	Task<string?> Fix(long id, (int start, int? stop)[]? ranges = null);
+	Chapter ChapterFromPage(Page page, Book book, long ordinal);
 }
 
 public class NovelApiService : INovelApiService

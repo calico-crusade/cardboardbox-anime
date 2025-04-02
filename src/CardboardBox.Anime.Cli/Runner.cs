@@ -24,6 +24,7 @@ using AImage = Core.Models.Image;
 using MangaDexSharp;
 using Microsoft.Extensions.Logging;
 using System.IO.Compression;
+using CardboardBox.LightNovel.Core.Sources.Utilities.FlareSolver;
 
 public interface IRunner
 {
@@ -70,6 +71,8 @@ public class Runner : IRunner
 	private readonly IMagicHouseSourceService _magicHouse;
 	private readonly IVampiramtlSourceService _vampiramtl;
 	private readonly IChapmanganatoSource _manganato;
+	private readonly IMarkdownService _markdown;
+	private readonly IFlareSolver _flare;
 
     public Runner(
 		IVrvApiService vrv, 
@@ -106,7 +109,9 @@ public class Runner : IRunner
         IHeadCanonTLSourceService headCanon,
         IMagicHouseSourceService magicHouse,
         IVampiramtlSourceService vampiramtl,
-		IChapmanganatoSource manganato)
+		IChapmanganatoSource manganato,
+		IMarkdownService markdown,
+		IFlareSolver flare)
 	{
 		_vrv = vrv;
 		_logger = logger;
@@ -143,6 +148,8 @@ public class Runner : IRunner
         _magicHouse = magicHouse;
 		_vampiramtl = vampiramtl;
 		_manganato = manganato;
+        _markdown = markdown;
+        _flare = flare;
     }
 
 	public async Task<int> Run(string[] args)
@@ -198,6 +205,8 @@ public class Runner : IRunner
 				case "magic-house": await MagicHouse(); break;
 				case "vampiramtl": await Vampiramtl(); break;
 				case "manganato": await Manganato(); break;
+				case "fix-html": await FixBadHtml(); break;
+				case "japanese": await CheckJapaneseSmartReader(); break;
                 default: _logger.LogInformation("Invalid command: " + command); break;
 			}
 
@@ -210,6 +219,188 @@ public class Runner : IRunner
 			return 1;
 		}
 	}
+
+	public async Task CheckJapaneseSmartReader()
+	{
+		const string URL = "https://kakuyomu.jp/works/16817330657849409243/episodes/16817330657932337097";
+
+		async Task<string> FetchHtml(string url)
+		{
+			var data = await _flare.Get(url, timeout: 30_000);
+            if (data is null || data.Solution is null) throw new Exception("Failed to get data");
+
+            if (data.Solution.Status < 200 || data.Solution.Status >= 300)
+                throw new Exception($"Failed to get data: {data.Solution.Status}");
+
+			return data.Solution.Response;
+        }
+
+		async Task<string?> GetArticle(string html, string url)
+		{
+			var reader = new SmartReader.Reader(url, html)
+			{
+				Debug = true,
+				LoggerDelegate = (msg) => _logger.LogDebug("[SMART READER] {url} >> {msg}", url, msg)
+			};
+
+			var article = await reader.GetArticleAsync();
+            if (article is null || !article.Completed || !article.IsReadable)
+            {
+                var errors = article?.Errors?.ToArray() ?? [];
+                foreach (var error in errors)
+                    _logger.LogError(error, "[SMART READER] Failed to read >> {url}", url);
+                _logger.LogWarning("Could not get article for {url}", url);
+                return null;
+            }
+
+			return article.Content;
+        }
+
+		var html = await FetchHtml(URL);
+        await File.WriteAllTextAsync("japanese-test.html", html);
+
+        var article = await GetArticle(html, URL);
+		await File.WriteAllTextAsync("japanese-test-article.html", article);
+		_logger.LogInformation("Finished");
+    }
+
+	public async Task FixBadHtml()
+    {
+        const long SERIES_ID = 112;
+        const string IMAGE_OUTPUT = "F:\\Pictures\\novels\\TSG";
+
+        string Cleanse(string html)
+		{
+			var util = new PurgeUtils();
+            var doc = new HtmlDocument();
+			doc.LoadHtml(html);
+
+			var output = new StringBuilder();
+
+			foreach(var node in util.Flatten(doc))
+			{
+				output.AppendLine(node.OuterHtml);
+			}
+
+			var clean = output.ToString();
+			var markdown = _markdown.ToMarkdown(clean);
+			clean = _markdown.ToHtml(markdown);
+
+			var mdImg = new Regex(@"!\[.*?\]\((.*?)\)");
+			clean = mdImg.Replace(clean, "<img src=\"$1\" />");
+
+            return clean;
+        }
+
+		async Task FixData()
+		{
+            const string BACKUP_DIR = "backup";
+            var pages = await _lnDb.Pages.Paginate(SERIES_ID, 1, 99999999);
+            if (pages is null || pages.Count == 0)
+            {
+                _logger.LogError("No pages found for series: {id}", SERIES_ID);
+                return;
+            }
+
+            var backupDir = Path.Combine(BACKUP_DIR, $"{SERIES_ID}_{DateTime.Now:yyyy-MM-dd-HH-mm}");
+            if (!Directory.Exists(backupDir))
+                Directory.CreateDirectory(backupDir);
+
+            foreach (var page in pages.Results)
+            {
+                var path = Path.Combine(backupDir, $"{page.Id}.html");
+                await File.WriteAllTextAsync(path, page.Content);
+
+                var clean = Cleanse(page.Content);
+                page.Content = clean;
+
+                await _lnDb.Pages.Update(page);
+                _logger.LogInformation("Updated page: {id}", page.Id);
+            }
+        }
+
+		async Task PrintImages()
+		{
+            var pages = await _lnDb.Pages.Paginate(SERIES_ID, 1, 99999999);
+			if (pages is null || pages.Count == 0)
+			{
+				_logger.LogError("No pages found for series: {id}", SERIES_ID);
+				return;
+			}
+
+			var images = new HashSet<string>();
+
+            var img = new Regex(@"<img.*?src=""(.*?)"".*?>");
+			foreach (var page in pages.Results)
+			{
+				var matches = img.Matches(page.Content);
+				foreach (System.Text.RegularExpressions.Match match in matches)
+				{
+					var src = match.Groups[1].Value;
+					images.Add(src.Split('?').First().Trim());
+					_logger.LogInformation("Image: {src}", src);
+				}
+			}
+
+            await File.WriteAllLinesAsync("images.txt", images);
+
+			var client = new HttpClient();
+
+            foreach (var image in images)
+			{
+				var name = image.Split('/').Last();
+                var path = Path.Combine(IMAGE_OUTPUT, name);
+
+				using var req = new HttpRequestMessage(HttpMethod.Get, image);
+                using var res = await client.SendAsync(req);
+				res.EnsureSuccessStatusCode();
+				using var io = File.Create(path);
+				using var str = await res.Content.ReadAsStreamAsync();
+                await str.CopyToAsync(io);
+				await io.FlushAsync();
+
+				_logger.LogInformation("Downloaded: {name}", name);
+            }
+        }
+
+		async Task FixImages()
+        {
+            var pages = await _lnDb.Pages.Paginate(SERIES_ID, 1, 99999999);
+            if (pages is null || pages.Count == 0)
+            {
+                _logger.LogError("No pages found for series: {id}", SERIES_ID);
+                return;
+            }
+
+            var img = new Regex(@"<img.*?src=""(.*?)"".*?>");
+            foreach (var page in pages.Results)
+            {
+                var matches = img.Matches(page.Content);
+                foreach (System.Text.RegularExpressions.Match match in matches)
+                {
+                    var src = match.Groups[1].Value;
+                    var url = src.Split('?').First().Trim();
+					var name = url.Split('/').Last();
+
+					var path = Path.Combine(IMAGE_OUTPUT, name);
+                    if (!File.Exists(path))
+                    {
+                        _logger.LogInformation("Image not found: {name}", name);
+                        continue;
+                    }
+
+                    page.Content = page.Content.Replace(src, "file://" + path);
+                    _logger.LogInformation("Replaced: {name}", name);
+                }
+
+				await _lnDb.Pages.Update(page);
+                _logger.LogInformation("Updated page: {id}", page.Id);
+            }
+
+        }
+
+		await FixImages();
+    }
 
 	public async Task Manganato()
 	{

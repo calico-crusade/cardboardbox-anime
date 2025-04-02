@@ -22,6 +22,7 @@ return await new ServiceCollection()
     .Cli(args, c => c
 		.Add<RunnerVerb>()
 		.Add<LoadNovelVerb>()
-		.Add<NovelEPubVerb>());
+		.Add<NovelEPubVerb>()
+		.Add<ManualLoadVerb>());
 
 	

@@ -86,7 +86,7 @@ public class ReLibSourceService : IReLibSourceService
 			{
 				Title = title,
 				Url = url ?? string.Empty,
-				Chapters = chapters.ToArray()
+				Chapters = [..chapters]
 			};
 		}
 	}
