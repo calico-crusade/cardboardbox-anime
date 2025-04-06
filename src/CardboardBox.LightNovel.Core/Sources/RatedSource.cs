@@ -17,4 +17,11 @@ public abstract class RatedSource
             requester);
     }
 
+    public RateLimiter<TIn, TOut> CreateLimiter<TIn, TOut>(Func<TIn, Task<TOut>> requester)
+    {
+        return new RateLimiter<TIn, TOut>(
+            new(MaxRequestsBeforePauseMin, MaxRequestsBeforePauseMax),
+            new(PauseDurationSecondsMin, PauseDurationSecondsMax),
+            requester);
+    }
 }

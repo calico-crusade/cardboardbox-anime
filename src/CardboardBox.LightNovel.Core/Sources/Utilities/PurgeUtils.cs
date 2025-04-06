@@ -129,6 +129,10 @@ public class PurgeUtils : IPurgeUtils
     public IEnumerable<HtmlNode> Flatten(HtmlNode node)
     {
         string[] passThrough = ["p", "img", "strong", "b", "i", "h1", "h2", "h3", "h4", "h5", "h6"];
+        string[] barred = ["script", "style", "iframe", "noscript", "object", "embed", "input"];
+
+        if (barred.Contains(node.Name))
+            yield break;
 
         if (!node.HasChildNodes)
         {
@@ -150,7 +154,6 @@ public class PurgeUtils : IPurgeUtils
 
         foreach (var child in node.ChildNodes)
         {
-
             foreach (var n in Flatten(child))
                 yield return n;
         }

@@ -33,10 +33,11 @@ public class NovelApiService : INovelApiService
         IHeadCanonTLSourceService headCanon,
 		IMagicHouseSourceService magicHouse,
         IVampiramtlSourceService vampiramtl,
+        IRoyalRoadSourceService royalRoad,
         ILnDbService db)
 	{
 		_db = db;
-		_srcs = [ lnSrc, shSrc, rlSrc, lntSrc, nyxSrc, zirusSrc, nncSrc, baka, ftl, headCanon, magicHouse, vampiramtl ];
+		_srcs = [ lnSrc, shSrc, rlSrc, lntSrc, nyxSrc, zirusSrc, nncSrc, baka, ftl, headCanon, magicHouse, vampiramtl, royalRoad ];
 	}
 
 	public ISourceService? Source(string url)

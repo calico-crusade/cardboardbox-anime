@@ -105,10 +105,13 @@ public static class Extensions
 			.AddTransient<IMagicHouseSourceService, MagicHouseSourceService>()
 			.AddTransient<IHeadCanonTLSourceService, HeadCanonTLSourceService>()
 			.AddTransient<IVampiramtlSourceService, VampiramtlSourceService>()
+			.AddTransient<IRoyalRoadSourceService, RoyalRoadSourceService>()
 
 			.AddTransient<INovelUpdatesService, NovelUpdatesService>()
 
 			.AddTransient<IPurgeUtils, PurgeUtils>()
+			.AddTransient<IAITranslatorService, AITranslatorService>()
+			.AddTransient<ISmartReaderService, SmartReaderService>()
 
 			.AddTransient<IOldLnApiService, OldLnApiService>()
 			.AddTransient<INovelApiService, NovelApiService>()

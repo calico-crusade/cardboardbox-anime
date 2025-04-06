@@ -25,6 +25,23 @@ internal class ManualLoadVerb(
     INovelApiService _api,
     IMarkdownService _markdown) : BooleanVerb<ManualLoadOptions>(logger)
 {
+    public static string FixCharacters(string data)
+    {
+        var items = new Dictionary<string, string>
+        {
+            { "“", "\"" },
+            { "”", "\"" },
+            { "’", "'" },
+            { "—", "-" },
+            { "…", "..." },
+        };
+
+        foreach (var item in items)
+            data = data.Replace(item.Key, item.Value);
+
+        return data;
+    }
+
     public async Task<string?> GetHtmlFile(string path, string dir, CancellationToken token)
     {
         _logger.LogInformation("Generating HTML from MD file: {path}", path);
@@ -34,6 +51,8 @@ internal class ManualLoadVerb(
             _logger.LogWarning("Empty file: {path}", path);
             return null;
         }
+
+        data = FixCharacters(data);
 
         var html = _markdown.ToHtml(data);
         if (string.IsNullOrEmpty(html))

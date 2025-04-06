@@ -73,6 +73,7 @@ public class Runner : IRunner
 	private readonly IChapmanganatoSource _manganato;
 	private readonly IMarkdownService _markdown;
 	private readonly IFlareSolver _flare;
+	private readonly IRoyalRoadSourceService _royalRoad;
 
     public Runner(
 		IVrvApiService vrv, 
@@ -111,7 +112,8 @@ public class Runner : IRunner
         IVampiramtlSourceService vampiramtl,
 		IChapmanganatoSource manganato,
 		IMarkdownService markdown,
-		IFlareSolver flare)
+		IFlareSolver flare,
+        IRoyalRoadSourceService royalRoad)
 	{
 		_vrv = vrv;
 		_logger = logger;
@@ -150,6 +152,7 @@ public class Runner : IRunner
 		_manganato = manganato;
         _markdown = markdown;
         _flare = flare;
+        _royalRoad = royalRoad;
     }
 
 	public async Task<int> Run(string[] args)
@@ -207,6 +210,7 @@ public class Runner : IRunner
 				case "manganato": await Manganato(); break;
 				case "fix-html": await FixBadHtml(); break;
 				case "japanese": await CheckJapaneseSmartReader(); break;
+				case "royalroad": await RoyalRoad(); break;
                 default: _logger.LogInformation("Invalid command: " + command); break;
 			}
 
@@ -220,7 +224,66 @@ public class Runner : IRunner
 		}
 	}
 
-	public async Task CheckJapaneseSmartReader()
+	public async Task RoyalRoad()
+	{
+		const string URL = "https://www.royalroad.com/fiction/44024/misadventures-incorporated";
+		ISourceVolumeService service = _royalRoad;
+        async Task Info()
+        {
+            var info = await service.GetSeriesInfo(URL);
+            if (info is null)
+            {
+                _logger.LogError("Failed to fetch series info");
+                return;
+            }
+
+            _logger.LogInformation("Title: {Title}", info.Title);
+        }
+
+        async Task Chapter(string chapterUrl)
+        {
+            var chap = await service.GetChapter(chapterUrl, string.Empty);
+            if (chap is null)
+            {
+                _logger.LogError("Failed to fetch chapter");
+                return;
+            }
+            _logger.LogInformation("Chapter: {Title}", chap.ChapterTitle);
+        }
+
+        async Task<string[]> Volumes()
+        {
+            var info = await service.Volumes(URL).ToArrayAsync();
+            if (info.Length == 0)
+            {
+                _logger.LogError("Failed to fetch volumes");
+                return [];
+            }
+
+            foreach (var vol in info)
+            {
+                _logger.LogInformation("Volume: {Title}", vol.Title);
+                foreach (var chap in vol.Chapters)
+                    _logger.LogInformation("\tChapter: {Title}", chap.Title);
+            }
+
+			return info.SelectMany(t => t.Chapters).Take(3).Select(t => t.Url).ToArray();
+        }
+
+        await Info();
+        var chaps = await Volumes();
+        if (chaps is null || chaps.Length == 0)
+        {
+            _logger.LogError("Failed to fetch chapter URL");
+            return;
+        }
+
+		foreach (var chap in chaps)
+			await Chapter(chap);
+    }
+
+
+    public async Task CheckJapaneseSmartReader()
 	{
 		const string URL = "https://kakuyomu.jp/works/16817330657849409243/episodes/16817330657932337097";
 

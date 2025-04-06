@@ -7,7 +7,7 @@ public interface IChatGptService
 {
 	int CountTokens(GptChat chat);
 	List<int> Tokenize(string message);
-	Task<GptResponse?> Completions(GptChat chat);
+	Task<GptResponse?> Completions(GptChat chat, int? maxTokenSize = null);
 }
 
 public class ChatGptService : IChatGptService
@@ -15,9 +15,10 @@ public class ChatGptService : IChatGptService
 	private readonly IApiService _api;
 	private readonly IConfiguration _config;
 
-	private string ApiToken => _config["ChatGPT:Token"];
+	private string ApiToken => _config["ChatGPT:Token"] ?? throw new ArgumentNullException("ChatGPT:Token", "ChatGPT token is missing from config");
+	private int MaxTokenSize => int.TryParse(_config["ChatGPT:MaxTokenSize"], out var size) ? size : 4096;
 
-	public ChatGptService(
+    public ChatGptService(
 		IApiService api, 
 		IConfiguration config)
 	{
@@ -37,10 +38,12 @@ public class ChatGptService : IChatGptService
 
 	public List<int> Tokenize(string message) =>  GPT3Tokenizer.Encode(message);
 
-	public Task<GptResponse?> Completions(GptChat chat)
+	public Task<GptResponse?> Completions(GptChat chat, int? maxTokenSize = null)
 	{
-		var tokenize = CountTokens(chat);
-		if (tokenize > 4096) throw new ArgumentException("Token count exceeds limit", nameof(chat));
+		maxTokenSize ??= MaxTokenSize;
+
+        var tokenize = CountTokens(chat);
+		if (tokenize > maxTokenSize) throw new ArgumentException($"Token count exceeds limit: {maxTokenSize} < {tokenize}", nameof(chat));
 
 		return _api.Post<GptResponse, GptChat>("https://api.openai.com/v1/chat/completions", chat, c =>
 		{
