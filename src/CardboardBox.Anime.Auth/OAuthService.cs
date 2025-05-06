@@ -15,8 +15,8 @@ public class OAuthService : IOAuthService
 	private readonly IApiService _api;
 	private readonly IConfiguration _config;
 
-	public string AppId => _config["OAuth:AppId"];
-	public string Secret => _config["OAuth:Secret"];
+	public string AppId => _config["OAuth:AppId"] ?? throw new ArgumentNullException("OAuth:AppId");
+	public string Secret => _config["OAuth:Secret"] ?? throw new ArgumentNullException("OAuth:Secret");
 
 	public OAuthService(
 		IApiService api,

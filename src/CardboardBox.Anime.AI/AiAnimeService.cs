@@ -21,7 +21,7 @@ public class AiAnimeService : IAiAnimeService
 	private readonly IApiService _api;
 	private readonly IConfiguration _config;
 
-	public string AIUrl => _config["Ai:Url"];
+	public string AIUrl => _config["Ai:Url"] ?? throw new ArgumentNullException("Ai:Url");
 
 	public AiAnimeService(
 		IApiService api, 

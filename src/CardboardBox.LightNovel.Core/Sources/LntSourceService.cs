@@ -14,7 +14,7 @@ public class LntSourceService : ILntSourceService
 
 	public string NovelUrl => RootUrl + "/novel/";
 
-	public string AuthValue => _config["NovelSources:LntAuth"];
+	public string? AuthValue => _config["NovelSources:LntAuth"];
 
 	public LntSourceService(
 		IApiService api, 

@@ -15,7 +15,7 @@ public interface INovelApiService
 
 public class NovelApiService : INovelApiService
 {
-	private const int AUTO_BOOK_SPLIT = 200;
+	private const int AUTO_BOOK_SPLIT = 9999;
 
 	private readonly ISourceService[] _srcs;
 	private readonly ILnDbService _db;
@@ -34,10 +34,11 @@ public class NovelApiService : INovelApiService
 		IMagicHouseSourceService magicHouse,
         IVampiramtlSourceService vampiramtl,
         IRoyalRoadSourceService royalRoad,
+        IStorySeedlingSourceService storySeedling,
         ILnDbService db)
 	{
 		_db = db;
-		_srcs = [ lnSrc, shSrc, rlSrc, lntSrc, nyxSrc, zirusSrc, nncSrc, baka, ftl, headCanon, magicHouse, vampiramtl, royalRoad ];
+		_srcs = [lnSrc, shSrc, rlSrc, lntSrc, nyxSrc, zirusSrc, nncSrc, baka, ftl, headCanon, magicHouse, vampiramtl, royalRoad, storySeedling];
 	}
 
 	public ISourceService? Source(string url)
@@ -75,7 +76,9 @@ public class NovelApiService : INovelApiService
 	public Task<int> Load(Series series)
 	{
 		var src = Source(series.Url) ?? throw new NotSupportedException($"Could not find source loader for: {series.Url}");
-		return CatchupBook(series, src);
+		if (src is ISourceVolumeService vsrc)
+            return CatchupBookByVolume(series, vsrc);
+        return CatchupBook(series, src);
 	}
 
 	public async Task<int> LoadNewBook(string url, ISourceService src)
@@ -191,6 +194,93 @@ public class NovelApiService : INovelApiService
 	}
 
 	public async Task<int> CatchupBookByVolume(Series series, ISourceVolumeService src)
+	{
+		static IEnumerable<(Book book, Chapter chapter, ChapterPage map, Page page)> Flatten(FullScaffold scaffold)
+        {
+            foreach (var book in scaffold.Books)
+                foreach (var chap in book.Chapters)
+                    foreach (var page in chap.Pages)
+                        yield return (book.Book, chap.Chapter, page.Map, page.Page);
+        }
+
+		static bool Exists<T>(IEnumerable<T> source, Func<T, bool> predicate, out T result)
+		{
+			foreach (var item in source)
+			{
+				if (!predicate(item)) continue;
+
+				result = item;
+				return true;
+			}
+            result = default!;
+            return false;
+        }
+
+        //Get all of the books and chapters for the series
+        var scaffold = await _db.Series.Scaffold(series.Id);
+        if (scaffold == null) return -1;
+
+        //Flatten the chapters and order them by ordinal
+        var chapters = Flatten(scaffold)
+			.OrderBy(t => t.page.Ordinal)
+			.ToArray();
+
+        //Fetch all of the volumes for the series
+        var volumes = src.Volumes(series.Url);
+        //Keep track of the volume index to be used as the ordinal for the book
+        int vi = 0;
+		//Keep track of the last page present
+		Page? lastPage = null;
+		//Track the number of new chapters loaded
+		int loaded = 0;
+		await foreach(var volume in volumes)
+		{
+			vi++;
+			//Update the book information
+			var book = BookFromVolume(series, volume, vi);
+            book.Id = await _db.Books.Upsert(book);
+
+			int chapOrdinal = 0;
+			//Iterate through the chapters of the volume
+			foreach(var chapter in volume.Chapters)
+            {
+                //Increment the chapter ordinal for the current book
+                chapOrdinal++;
+                //If the chapter already exists in the scaffold, skip it
+                if (Exists(chapters, t => t.page.Url == chapter.Url, out var existing))
+				{
+					//Keep track of the last page so we can use the ordinal
+					lastPage = existing.page;
+					continue;
+				}
+
+				//Get the chapter from the source
+				var chap = await src.GetChapter(chapter.Url, book.Title);
+                if (chap == null) continue;
+				//Increment the number of loaded chapters
+                loaded++;
+				//Determiner the ordinal of the page
+				var ordinal = (lastPage?.Ordinal ?? 0) + 1;
+                //Create the new page from the chapter
+                var page = PageFromChapter(chap, ordinal, series.Id);
+				page.Id = await _db.Pages.Upsert(page);
+				lastPage = page;
+                //Create the new chapter from the chapter
+                var chapId = await _db.Chapters.Upsert(ChapterFromChapter(chap, book, chapOrdinal));
+				//Create the map between the chapter and the page
+				await _db.ChapterPages.Upsert(new()
+				{
+					ChapterId = chapId,
+                    PageId = page.Id,
+                    Ordinal = 0
+                });
+            }
+        }
+		//Return the number of newly loaded chapters
+		return loaded;
+    }
+
+	public async Task<int> CatchupBookByVolumeOld(Series series, ISourceVolumeService src)
 	{
 		var scaffold = await _db.Series.PartialScaffold(series.Id);
 		if (scaffold == null) return -1;
@@ -360,8 +450,8 @@ public class NovelApiService : INovelApiService
 		string[] Images(string[] source)
 		{
 			if (source != null && source.Length > 0) return source;
-			if (!string.IsNullOrEmpty(info.Image)) return new[] { info.Image };
-			return Array.Empty<string>();
+			if (!string.IsNullOrEmpty(info.Image)) return [info.Image];
+			return [];
 		}
 
 		string? Cover()

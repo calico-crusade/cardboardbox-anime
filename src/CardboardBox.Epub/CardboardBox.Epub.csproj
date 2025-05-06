@@ -11,10 +11,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="DotNetZip" Version="1.16.0" />
-	</ItemGroup>
-
-	<ItemGroup>
 	  <ProjectReference Include="..\CardboardBox.Anime.Core\CardboardBox.Anime.Core.csproj" />
 	</ItemGroup>
 	

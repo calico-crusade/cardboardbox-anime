@@ -19,8 +19,8 @@ public class HolyBooksService : IHolyBooksService
 	private readonly Dictionary<string, CacheItem<RepoFile[]>> _fileCache;
 	private readonly GitHubClient _client;
 
-	public string Repo => _config["Github:Repo"];
-	public string Owner => _config["Github:Owner"];
+	public string Repo => _config["Github:Repo"] ?? throw new ArgumentNullException("Github:Repo");
+	public string Owner => _config["Github:Owner"] ?? throw new ArgumentNullException("Github:Owner");
 
 	public HolyBooksService(
 		IConfiguration config)

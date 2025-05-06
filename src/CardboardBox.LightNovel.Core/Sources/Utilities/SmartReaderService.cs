@@ -30,8 +30,9 @@ public interface ISmartReaderService
     /// </summary>
     /// <param name="html">The HTML to clean</param>
     /// <param name="root">The root URL to use to absolute images</param>
+    /// <param name="onFlatten">A function to run whenever a node is identified</param>
     /// <returns>The cleaned HTML</returns>
-    string CleanseHtml(string html, string root);
+    string CleanseHtml(string html, string root, Func<HtmlNode, HtmlNode>? onFlatten = null);
 
     /// <summary>
     /// Gets the article content from the given document
@@ -97,7 +98,7 @@ internal class SmartReaderService(
         return markdown;
     }
 
-    public string CleanseHtml(string html, string root)
+    public string CleanseHtml(string html, string root, Func<HtmlNode, HtmlNode>? onFlatten = null)
     {
         var doc = new HtmlDocument();
         doc.LoadHtml(html);
@@ -106,7 +107,8 @@ internal class SmartReaderService(
 
         foreach (var node in _purge.Flatten(doc))
         {
-            output.AppendLine(node.OuterHtml);
+            var result = onFlatten?.Invoke(node) ?? node;
+            output.AppendLine(result.OuterHtml);
             output.AppendLine();
         }
 
@@ -114,7 +116,6 @@ internal class SmartReaderService(
         var markdown = _markdown.ToMarkdown(clean);
         clean = _markdown.ToHtml(markdown);
         clean = FixImages(clean, root);
-
         return clean;
     }
 

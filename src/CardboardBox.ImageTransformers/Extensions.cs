@@ -4,7 +4,7 @@ namespace CardboardBox.ImageTransformers;
 
 public static class Extensions
 {
-    public static async Task ConvertImage(this Stream input, Stream output, MagickFormat format = MagickFormat.Png, int quality = 75, int maxSize = 1024)
+    public static async Task ConvertImage(this Stream input, Stream output, MagickFormat format = MagickFormat.Png, uint quality = 75, int maxSize = 1024)
     {
         using var mgc = new MagickImage(input);
 

@@ -11,7 +11,7 @@ public class AnimeConfig : IMongoConfig<Anime>
 		_config = config;
 	}
 
-	public string ConnectionString => _config["Mongo:ConnectionString"];
+	public string ConnectionString => _config["Mongo:ConnectionString"] ?? throw new ArgumentNullException("Mongo:ConnectionString");
 
 	public string DatabaseName => "cba";
 

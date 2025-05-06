@@ -50,7 +50,7 @@ public static class Extensions
 					ValidateAudience = true,
 					ValidAudience = config["OAuth:Audience"],
 					ValidIssuer = config["OAuth:Issuer"],
-					IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["OAuth:Key"]))
+					IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["OAuth:Key"] ?? throw new ArgumentNullException("OAuth:Key")))
 				};
 			});
 		return services;

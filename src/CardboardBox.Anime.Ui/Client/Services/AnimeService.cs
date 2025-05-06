@@ -14,7 +14,7 @@ public class AnimeService : IAnimeService
 	private readonly IApiService _api;
 	private readonly IConfiguration _config;
 
-	public string BaseUrl => _config["ApiUrl"];
+	public string BaseUrl => _config["ApiUrl"] ?? throw new ArgumentNullException("ApiUrl");
 
 	public AnimeService(
 		IApiService api, 
@@ -33,7 +33,7 @@ public class AnimeService : IAnimeService
 	{
 		var url = Url("anime");
 		return await _api.Post<PaginatedResult<AnimeModel>, FilterSearch>(url, search) 
-			?? new PaginatedResult<AnimeModel>(0, 0, Array.Empty<AnimeModel>());
+			?? new PaginatedResult<AnimeModel>(0, 0, []);
 	}
 
 	public async Task<AnimeModel[]> Random(FilterSearch search)

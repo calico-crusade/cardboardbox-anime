@@ -26,5 +26,10 @@
   <ItemGroup>
     <Folder Include="ImageSets\Fetish\" />
   </ItemGroup>
+	
+  <ItemGroup>
+    <PackageReference Include="F23.StringSimilarity" Version="6.0.0" />
+    <PackageReference Include="Jint" Version="4.2.2" />
+  </ItemGroup>
 
 </Project>

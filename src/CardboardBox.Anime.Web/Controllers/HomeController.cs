@@ -95,7 +95,7 @@ public class HomeController : Controller
 		return File(data, "text/html");
 	}
 
-	[HttpGet, Route("manga"), Route("manga/{**catchall}")]
+	[HttpGet, Route("manga"), /*Route("manga/{**catchall}")*/]
 	public async Task<IActionResult> Manga()
 	{
 		var data = await _og.Replace(c =>
@@ -203,18 +203,18 @@ public class HomeController : Controller
 		return File(data, "text/html");
 	}
 
-	[HttpGet, Route("series/{**catchAll}"), Route("series")]
-	public async Task<IActionResult> Series()
-	{
-		var data = await _og.Replace(c =>
-		{
-			c.Title(SITE_NAME_BOOKS)
-			 .Description("Find your next light novel binge!")
-			 .Url("https://cba.index-0.com/series")
-			 .SiteName(SITE_NAME_BOOKS)
-			 .Image(DEFAULT_IMAGE)
-			 .Type("website");
-		});
-		return File(data, "text/html");
-	}
+	//[HttpGet, Route("series/{**catchAll}"), Route("series")]
+	//public async Task<IActionResult> Series()
+	//{
+	//	var data = await _og.Replace(c =>
+	//	{
+	//		c.Title(SITE_NAME_BOOKS)
+	//		 .Description("Find your next light novel binge!")
+	//		 .Url("https://cba.index-0.com/series")
+	//		 .SiteName(SITE_NAME_BOOKS)
+	//		 .Image(DEFAULT_IMAGE)
+	//		 .Type("website");
+	//	});
+	//	return File(data, "text/html");
+	//}
 }

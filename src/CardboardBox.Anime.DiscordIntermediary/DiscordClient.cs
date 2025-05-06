@@ -26,7 +26,7 @@ public class DiscordClient : IDiscordClient
 	private readonly IConfiguration _config;
 	private readonly CacheItem<RestGuild[]> _guilds;
 
-	private string Token => _config["Discord:Token"];
+	private string Token => _config["Discord:Token"] ?? throw new ArgumentNullException("Discord:Token");
 
 	public DiscordClient(
 		IConfiguration config)

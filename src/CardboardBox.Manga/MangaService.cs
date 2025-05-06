@@ -1,13 +1,12 @@
-﻿namespace CardboardBox.Manga;
+﻿using System.IO.Compression;
+
+namespace CardboardBox.Manga;
 
 using Anime.Core.Models;
 using Anime.Database;
-using Ionic.Zip;
 using MangaDex;
 using Match;
 using Providers;
-using System;
-using System.Collections;
 
 public interface IMangaService
 {
@@ -359,27 +358,27 @@ public class MangaService : IMangaService
 		var pages = await MangaPages(chapter, manga.Manga, false);
 		if (pages.Length == 0) return null;
 
-		using var zip = new ZipFile();
-
+		var ms = new MemoryStream();
+		using var zip = new ZipArchive(ms, ZipArchiveMode.Create, true);
 		int requests = 0;
 		for (var i = 0; i < pages.Length; i++)
 		{
 			requests++;
 			var proxy = ProxyUrl(pages[i], referer: manga.Manga.Referer);
 			var (stream, _, name, _) = await _api.GetData(proxy);
-			zip.AddEntry($"{i}-{name}", stream);
+			var entry = zip.CreateEntry($"{i}-{name}");
+			using var entryIo = entry.Open();
+			await stream.CopyToAsync(entryIo);
+			await stream.DisposeAsync();
 
-			if (requests >= 25)
-			{
-				await Task.Delay(5000);
-				requests = 0;
-			}
+			if (requests < 25) continue;
+
+			await Task.Delay(5000);
+			requests = 0;
 		}
+		zip.Dispose();
 
-		var ms = new MemoryStream();
-		zip.Save(ms);
-
-		ms.Position = 0;
+        ms.Position = 0;
 		return (ms, $"{manga.Manga.HashId}-{chapter.Ordinal}.zip");
 	}
 

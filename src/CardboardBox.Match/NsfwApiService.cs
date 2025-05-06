@@ -16,7 +16,7 @@ public class NsfwApiService : INsfwApiService
 	private readonly IApiService _api;
 	private readonly IConfiguration _config;
 
-	public string ApiUrl => _config["NsfwApiUrl"];
+	public string ApiUrl => _config["NsfwApiUrl"] ?? throw new ArgumentNullException("NsfwApiUrl");
 
 	public NsfwApiService(
 		IApiService api, 

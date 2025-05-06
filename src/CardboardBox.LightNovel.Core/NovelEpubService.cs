@@ -1,10 +1,11 @@
 ﻿using ICSharpCode.SharpZipLib.Core;
 using ICSharpCode.SharpZipLib.Zip;
 
+using System.Collections.Concurrent;
+
 namespace CardboardBox.LightNovel.Core;
 
 using Anime.Core;
-using CardboardBox.LightNovel.Core.Sources.Utilities.FlareSolver;
 using Epub;
 using ImageTransformers;
 
@@ -16,10 +17,11 @@ public interface INovelEpubService
 public class NovelEpubService(
     ILnDbService _db,
     ILogger<NovelEpubService> _logger,
-    IFileCacheService _file,
-    IFlareSolver _flare) : INovelEpubService
+    IFileCacheService _file) : INovelEpubService
 {
 	private const string EPUB_MIMETYPE = "application/epub+zip";
+
+	private ConcurrentDictionary<string, SemaphoreSlim> _fileDownloads = [];
 
     public async Task<StreamResult?> Generate(params long[] bookIds)
 	{
@@ -259,35 +261,28 @@ public class NovelEpubService(
 		return Path.GetRandomFileName() + "." + ext;
 	}
 
-	//public async Task<StreamResult> GetFileData(string url)
-	//{
-	//	if (url.ToLower().StartsWith("file://"))
-	//		return await GetDataFromFile(url.Remove(0, 7));
+	public async Task<StreamResult> DownloadFile(string url)
+	{
+		if (!_fileDownloads.TryGetValue(url, out var semaphore))
+			_fileDownloads.TryAdd(url, semaphore = new SemaphoreSlim(1));
 
-	//	try
-	//	{
-	//		return await _file.GetFile(url);
- //       }
-	//	catch (Exception ex)
-	//	{
-	//		_logger.LogError(ex, "Error occurred while attempting to fetch image. Trying flare solver: {url}", url);
-	//		var data = await _flare.Get(url);
-	//		if (data is null || data.Solution is null || data.Solution.Status < 200 || data.Solution.Status >= 300)
-	//		{
- //               _logger.LogError("Flare Solver: Failed to fetch image: {url}", url);
- //               throw new Exception($"Flare Solver: Failed to fetch image: {url}");
-	//		}
-
-	//		var result = data.Solution.Response.ToStream();
- //       }
- //   }
+		try
+        {
+            await semaphore.WaitAsync();
+            return await _file.GetFile(url);
+		}
+		finally
+		{
+			semaphore.Release();
+		}
+    }
 
 	public async Task<StreamResult> GetData(string url, bool skipTransform = false)
 	{
 		if (url.ToLower().StartsWith("https://static.index-0.com/"))
 			url = url.Replace("https://static.index-0.com/", "file://C:/users/cardboard/documents/local-files/");
 
-		var output = await (url.ToLower().StartsWith("file://") ? GetDataFromFile(url.Remove(0, 7)) : _file.GetFile(url));
+		var output = await (url.ToLower().StartsWith("file://") ? GetDataFromFile(url.Remove(0, 7)) : DownloadFile(url));
 
 		if (output.Mimetype != "image/webp" || skipTransform) return output;
 

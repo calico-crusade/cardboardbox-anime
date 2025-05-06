@@ -23,7 +23,7 @@ public class TokenService : ITokenService
 
 	public SymmetricSecurityKey GetKey()
 	{
-		return new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["OAuth:Key"]));
+		return new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["OAuth:Key"] ?? throw new ArgumentNullException("OAuth:Key")));
 	}
 
 	public TokenValidationParameters GetParameters()
@@ -53,8 +53,8 @@ public class TokenService : ITokenService
 	public string GenerateToken(TokenResponse resp, params string[] roles)
 	{
 		return new JwtToken(GetKey())
-			.SetAudience(_config["OAuth:Audience"])
-			.SetIssuer(_config["OAuth:Issuer"])
+			.SetAudience(_config["OAuth:Audience"] ?? throw new ArgumentNullException("OAuth:Audience"))
+			.SetIssuer(_config["OAuth:Issuer"] ?? throw new ArgumentNullException("OAuth:Issuer"))
 			.AddClaim(ClaimTypes.NameIdentifier, resp.User.Id)
 			.AddClaim(ClaimTypes.Name, resp.User.Nickname)
 			.AddClaim(ClaimTypes.Email, resp.User.Email)

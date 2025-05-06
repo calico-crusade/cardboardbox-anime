@@ -35,7 +35,7 @@ public class MatchApiService : IMatchApiService
 	private readonly IApiService _api;
 	private readonly IConfiguration _config;
 
-	public string MatchUrl => _config["Match:Url"];
+	public string MatchUrl => _config["Match:Url"] ?? throw new ArgumentNullException("Match:Url");
 
 	public MatchApiService(IApiService api, IConfiguration config)
 	{

@@ -74,6 +74,7 @@ public class Runner : IRunner
 	private readonly IMarkdownService _markdown;
 	private readonly IFlareSolver _flare;
 	private readonly IRoyalRoadSourceService _royalRoad;
+	private readonly IStorySeedlingSourceService _storySeedling;
 
     public Runner(
 		IVrvApiService vrv, 
@@ -113,7 +114,8 @@ public class Runner : IRunner
 		IChapmanganatoSource manganato,
 		IMarkdownService markdown,
 		IFlareSolver flare,
-        IRoyalRoadSourceService royalRoad)
+        IRoyalRoadSourceService royalRoad,
+        IStorySeedlingSourceService storySeedling)
 	{
 		_vrv = vrv;
 		_logger = logger;
@@ -153,6 +155,7 @@ public class Runner : IRunner
         _markdown = markdown;
         _flare = flare;
         _royalRoad = royalRoad;
+        _storySeedling = storySeedling;
     }
 
 	public async Task<int> Run(string[] args)
@@ -168,7 +171,7 @@ public class Runner : IRunner
 				case "fetch": await FetchVrvResources(); break;
 				case "format": await FormatVrvResources(); break;
 				case "fun": await FetchFunimationResources(); break;
-				case "sizes": await DeteremineImageSizes(); break;
+				case "sizes": await DetermineImageSizes(); break;
 				case "all": await All(); break;
 				case "reformat": await ReformatIds(); break;
 				case "load": await Load(); break;
@@ -211,6 +214,7 @@ public class Runner : IRunner
 				case "fix-html": await FixBadHtml(); break;
 				case "japanese": await CheckJapaneseSmartReader(); break;
 				case "royalroad": await RoyalRoad(); break;
+				case "story-seedling": await StorySeedling(); break;
                 default: _logger.LogInformation("Invalid command: " + command); break;
 			}
 
@@ -224,7 +228,72 @@ public class Runner : IRunner
 		}
 	}
 
-	public async Task RoyalRoad()
+	public async Task StorySeedling()
+	{
+		const string URL = "https://storyseedling.com/series/138027/"; //"https://storyseedling.com/series/99893/";
+        ISourceVolumeService service = _storySeedling;
+        async Task Info()
+        {
+            var info = await service.GetSeriesInfo(URL);
+            if (info is null)
+            {
+                _logger.LogError("Failed to fetch series info");
+                return;
+            }
+
+            _logger.LogInformation("Title: {Title}", info.Title);
+        }
+
+        async Task Chapter(string chapterUrl)
+        {
+            var chap = await service.GetChapter(chapterUrl, string.Empty);
+            if (chap is null)
+            {
+                _logger.LogError("Failed to fetch chapter");
+                return;
+            }
+            _logger.LogInformation("Chapter: {Title}", chap.ChapterTitle);
+        }
+
+        async Task<string[]> Volumes()
+        {
+            var info = await service.Volumes(URL).ToArrayAsync();
+            if (info.Length == 0)
+            {
+                _logger.LogError("Failed to fetch volumes");
+                return [];
+            }
+
+            foreach (var vol in info)
+            {
+                _logger.LogInformation("Volume: {Title}", vol.Title);
+                foreach (var chap in vol.Chapters)
+                    _logger.LogInformation("\tChapter: {Title}", chap.Title);
+            }
+
+			var all = info.SelectMany(t => t.Chapters).ToArray();
+			return all.Take(2)
+				.Concat(all.Reverse().Take(2))
+				.Select(t => t.Url)
+				.ToArray();
+        }
+
+		//await Chapter("https://storyseedling.com/series/138027/v7/0/");
+
+        await Info();
+        var chaps = await Volumes();
+        if (chaps is null || chaps.Length == 0)
+        {
+            _logger.LogError("Failed to fetch chapter URL");
+            return;
+        }
+
+        foreach (var chap in chaps)
+            await Chapter(chap);
+    }
+
+
+    public async Task RoyalRoad()
 	{
 		const string URL = "https://www.royalroad.com/fiction/44024/misadventures-incorporated";
 		ISourceVolumeService service = _royalRoad;
@@ -761,11 +830,6 @@ public class Runner : IRunner
 			.WhenAll();
 	}
 
-	public async Task GetChapters()
-	{
-
-	}
-
 	public async Task Load()
 	{
 		using var io = File.OpenRead("hidive.json");
@@ -796,7 +860,7 @@ public class Runner : IRunner
 		await JsonSerializer.SerializeAsync(io, data);
 	}
 
-	public async Task DeteremineImageSizes()
+	public async Task DetermineImageSizes()
 	{
 		var dic = new Dictionary<string, List<(int width, int height, string source)>>();
 		var data = await _fun.All().ToListAsync();
@@ -815,7 +879,7 @@ public class Runner : IRunner
 				using var res = await _api.Create(im.Source).Result();
 				if (res == null || !res.IsSuccessStatusCode)
 				{
-					_logger.LogError("Failed to fetch resource: " + im.Source);
+					_logger.LogError("Failed to fetch resource: {source}", im.Source);
 					continue;
 				}
 

@@ -13,7 +13,7 @@ public class DiscordApiService : IDiscordApiService
 	private readonly IApiService _api;
 	private readonly IConfiguration _config;
 
-	public string ApiUrl => _config["CBA:Url"];
+	public string ApiUrl => _config["CBA:Url"] ?? throw new ArgumentNullException("CBA:Url");
 
 	public DiscordApiService(IApiService api, IConfiguration config)
 	{

@@ -436,7 +436,7 @@ public class AiState
         request.Seed = actualSeed;
         request.Width = Width ?? DEFAULT_SIZE;
         request.Height = Height ?? DEFAULT_SIZE;
-        request.Sampler = Sampler;
+        request.Sampler = Sampler ?? string.Empty;
 
         return request;
     }
