@@ -42,21 +42,16 @@ public class MangaEpubService : IMangaEpubService
 
 		if (cwp.Length == 0) return null;
 
-		var path = await GenerateRaw(manga, cwp);
 		var io = new MemoryStream();
-		using (var f = File.OpenRead(path))
-			await f.CopyToAsync(io);
+        await GenerateRaw(io, manga, cwp);
 
 		io.Position = 0;
-		File.Delete(path);
 		return new(io, $"{manga.Title}.epub".PurgePathChars(), "application/epub+zip");
 	}
 
-	public async Task<string> GenerateRaw(DbManga manga, DbMangaChapter[] chapters)
+	public async Task GenerateRaw(Stream stream, DbManga manga, DbMangaChapter[] chapters)
 	{
-		var path = Path.GetTempFileName();
-
-		await using (var epub = EpubBuilder.Create(manga.Title, path))
+		await using (var epub = EpubBuilder.Create(manga.Title, stream))
 		{
 			var bob = await epub.Start();
 			bob.BelongsTo(manga.Title, 1);
@@ -67,8 +62,6 @@ public class MangaEpubService : IMangaEpubService
 			foreach (var chap in chapters)
 				await HandleChapter(bob, chap);
 		}
-
-		return path;
 	}
 
 	public async Task HandleChapter(IEpubBuilder bob, DbMangaChapter chapter)

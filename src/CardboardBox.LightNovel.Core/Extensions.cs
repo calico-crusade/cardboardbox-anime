@@ -107,6 +107,7 @@ public static class Extensions
 			.AddTransient<IVampiramtlSourceService, VampiramtlSourceService>()
 			.AddTransient<IRoyalRoadSourceService, RoyalRoadSourceService>()
 			.AddTransient<IStorySeedlingSourceService, StorySeedlingSourceService>()
+			//.AddTransient<ICardboardTranslationsSourceService, CardboardTranslationsSourceService>()
 
 			.AddTransient<INovelUpdatesService, NovelUpdatesService>()
 

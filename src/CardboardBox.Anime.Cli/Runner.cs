@@ -75,6 +75,7 @@ public class Runner : IRunner
 	private readonly IFlareSolver _flare;
 	private readonly IRoyalRoadSourceService _royalRoad;
 	private readonly IStorySeedlingSourceService _storySeedling;
+	private readonly ICardboardTranslationsSourceService _ctl;
 
     public Runner(
 		IVrvApiService vrv, 
@@ -115,7 +116,8 @@ public class Runner : IRunner
 		IMarkdownService markdown,
 		IFlareSolver flare,
         IRoyalRoadSourceService royalRoad,
-        IStorySeedlingSourceService storySeedling)
+        IStorySeedlingSourceService storySeedling,
+        ICardboardTranslationsSourceService ctl)
 	{
 		_vrv = vrv;
 		_logger = logger;
@@ -156,6 +158,7 @@ public class Runner : IRunner
         _flare = flare;
         _royalRoad = royalRoad;
         _storySeedling = storySeedling;
+        _ctl = ctl;
     }
 
 	public async Task<int> Run(string[] args)
@@ -215,6 +218,7 @@ public class Runner : IRunner
 				case "japanese": await CheckJapaneseSmartReader(); break;
 				case "royalroad": await RoyalRoad(); break;
 				case "story-seedling": await StorySeedling(); break;
+				case "ctl": await CTLTest(); break;
                 default: _logger.LogInformation("Invalid command: " + command); break;
 			}
 
@@ -292,6 +296,20 @@ public class Runner : IRunner
             await Chapter(chap);
     }
 
+	public async Task CTLTest()
+	{
+		const string TITLE = "I Am a Max-level Priestess in Another World";
+		var services = (CardboardTranslationsSourceService)_ctl;
+
+		var content = await services.FetchContents(TITLE);
+        if (content is null)
+        {
+            _logger.LogError("Failed to fetch contents");
+            return;
+        }
+
+		_logger.LogInformation("Title: {Title}", content.Feed.Title.Text);
+    }
 
     public async Task RoyalRoad()
 	{

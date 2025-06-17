@@ -358,6 +358,15 @@ public class MangaController : ControllerBase
         return Ok(records);
     }
 
+    [HttpGet, Route("manga/{id}/{chapterId}/download/epub")]
+    public async Task<IActionResult> DownloadEpub([FromRoute] long id, [FromRoute] long chapterId)
+    {
+        var data = await _epub.Generate(id, chapterId);
+        if (data == null) return NotFound();
+
+        return File(data.Stream, data.Mimetype, data.Name);
+    }
+
     [HttpGet, Route("manga/{id}/download")]
 	public async Task<IActionResult> Download([FromRoute] long id)
 	{

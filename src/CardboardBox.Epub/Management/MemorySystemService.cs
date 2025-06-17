@@ -10,7 +10,7 @@ public class MemorySystemService : IManagementSystem
 	public MemorySystemService(Stream output)
 	{
 		Output = output;
-		Archive = new ZipArchive(output, ZipArchiveMode.Create);
+		Archive = new ZipArchive(output, ZipArchiveMode.Create, true);
 	}
 
 	public void Initialize()
@@ -19,9 +19,9 @@ public class MemorySystemService : IManagementSystem
 	}
 
 	public async Task Finish()
-	{
-		await Output.FlushAsync();
-		Archive.Dispose();
+    {
+        Archive.Dispose();
+        await Output.FlushAsync();
 	}
 
 	public async Task Add(string filename, Stream content)

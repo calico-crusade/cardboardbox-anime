@@ -48,6 +48,7 @@ var bot = DiscordBotBuilder.Start(null, client)
 	{
 		c.With<HolybookCommands>()
 		 .With<DateCommands>()
+		 .With<DndCommands>()
 		 .With<MangaCommand>()
 		 .With<TierListCommands>()
 		 .With<NsfwCommands>()
