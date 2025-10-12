@@ -17,6 +17,11 @@ public static class Extensions
 			yield return last = FromChapter(chapter, last);
 	}
 
+	public static IEnumerable<T> AReverse<T>(this IEnumerable<T> source)
+	{
+		return source.Reverse();
+	}
+
 	public static DbChapter FromChapter(SourceChapter chapter, DbChapter? last)
 	{
 		return new DbChapter
@@ -95,6 +100,7 @@ public static class Extensions
 			.AddTransient<ILnpSourceService, LnpSourceService>()
 			.AddTransient<IShSourceService, ShSourceService>()
 			.AddTransient<IReLibSourceService, ReLibSourceService>()
+			.AddTransient<INewRelibrarySourceService, NewRelibrarySourceService>()
 			.AddTransient<ILntSourceService, LntSourceService>()
 			.AddTransient<INyxSourceService, NyxSourceService>()
 			.AddTransient<IZirusApiService, ZirusApiService>()
@@ -107,7 +113,8 @@ public static class Extensions
 			.AddTransient<IVampiramtlSourceService, VampiramtlSourceService>()
 			.AddTransient<IRoyalRoadSourceService, RoyalRoadSourceService>()
 			.AddTransient<IStorySeedlingSourceService, StorySeedlingSourceService>()
-			//.AddTransient<ICardboardTranslationsSourceService, CardboardTranslationsSourceService>()
+			.AddTransient<ICardboardTranslationsSourceService, CardboardTranslationsSourceService>()
+			.AddTransient<INovelBinSourceService, NovelBinSourceService>()
 
 			.AddTransient<INovelUpdatesService, NovelUpdatesService>()
 

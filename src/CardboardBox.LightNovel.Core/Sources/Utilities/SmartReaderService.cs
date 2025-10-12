@@ -116,6 +116,7 @@ internal class SmartReaderService(
         var markdown = _markdown.ToMarkdown(clean);
         clean = _markdown.ToHtml(markdown);
         clean = FixImages(clean, root);
+        clean = _purge.PurgeBadElements(clean);
         return clean;
     }
 

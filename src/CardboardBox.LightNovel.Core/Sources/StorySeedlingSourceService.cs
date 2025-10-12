@@ -1,8 +1,8 @@
-﻿namespace CardboardBox.LightNovel.Core.Sources;
-
-using AngleSharp.Dom;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
+
+namespace CardboardBox.LightNovel.Core.Sources;
+
 using Utilities;
 using Utilities.FlareSolver;
 
@@ -22,6 +22,8 @@ internal class StorySeedlingSourceService(
     public override int MaxRequestsBeforePauseMax => 2;
     public override int PauseDurationSecondsMin => 30;
     public override int PauseDurationSecondsMax => 60;
+
+    public int RetryCount { get; } = 10;
 
     //https://gist.github.com/calico-crusade/ea4944b2137dd964c384e66ff163b906
     private readonly Dictionary<char, char> _characterMap = new()
@@ -297,7 +299,7 @@ internal class StorySeedlingSourceService(
         }
     }
 
-    public async Task<SourceChapter?> GetChapterRaw(string url, string bookTitle, bool first = true)
+    public async Task<SourceChapter?> GetChapterRaw(string url, string bookTitle, int count = 0)
     {
         await LimitCheck(CancellationToken.None);
         var doc = await Get(url);
@@ -323,17 +325,19 @@ internal class StorySeedlingSourceService(
         var content = await GetContent(url, nonce);
         if (content is null)
         {
-            if (!first) throw new Exception("Failed to get content");
+            if (count >= RetryCount) 
+                throw new Exception("Failed to get content");
 
-            var delay = Random.Shared.Next(90, 120) + Random.Shared.NextDouble();
+            int offset = count * 30;
+            var delay = Random.Shared.Next(99 + offset, 130 + offset) + Random.Shared.NextDouble();
             var ts = TimeSpan.FromSeconds(delay);
-            _logger.LogError("Failed to get content, retrying after {delay} seconds: {url}", delay, url);
+            _logger.LogError("Failed to get content, retrying after {delay} seconds, try {count} of {max}: {url}", delay, count + 1, RetryCount, url);
             //OpenUrl(url);
             Limiter.Rate = 0;
             ClearCookies();
             await Task.Delay(ts);
             _logger.LogInformation("Retrying request");
-            return await GetChapterRaw(url, bookTitle, false);
+            return await GetChapterRaw(url, bookTitle, count + 1);
         }
 
         var cleaned = FilterContent(content);

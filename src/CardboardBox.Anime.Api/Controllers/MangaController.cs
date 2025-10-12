@@ -451,6 +451,7 @@ public class MangaController : ControllerBase
         if (chapter == null) return NotFound();
 
         await _db.Manga.DeleteChapter(chapter.Id);
+        await _db.Manga.UpdateComputed();
         return Ok();
     }
 }

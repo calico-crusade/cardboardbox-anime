@@ -28,4 +28,6 @@ return await new ServiceCollection()
 		.Add<LoadNovelVerb>()
 		.Add<NovelEPubVerb>()
 		.Add<ManualLoadVerb>()
-		.Add<InteractiveVerb>());
+		.Add<InteractiveVerb>()
+		.Add<MaxLevelPreistessVerb>()
+		.Add<RepurgeVerb>());

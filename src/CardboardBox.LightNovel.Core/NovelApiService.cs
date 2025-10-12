@@ -13,35 +13,36 @@ public interface INovelApiService
 	Chapter ChapterFromPage(Page page, Book book, long ordinal);
 }
 
-public class NovelApiService : INovelApiService
+public class NovelApiService(
+	ILnpSourceService lnSrc,
+	IShSourceService shSrc,
+	INewRelibrarySourceService rlSrc,
+	ILntSourceService lntSrc,
+	INyxSourceService nyxSrc,
+	IZirusMusingsSourceService zirusSrc,
+	INncSourceService nncSrc,
+	IBakaPervertSourceService baka,
+	IFanTransSourceService ftl,
+	IHeadCanonTLSourceService headCanon,
+	IMagicHouseSourceService magicHouse,
+	IVampiramtlSourceService vampiramtl,
+	IRoyalRoadSourceService royalRoad,
+	IStorySeedlingSourceService storySeedling,
+	INovelBinSourceService nbs,
+	ILnDbService _db) : INovelApiService
 {
 	private const int AUTO_BOOK_SPLIT = 9999;
 
-	private readonly ISourceService[] _srcs;
-	private readonly ILnDbService _db;
+	private readonly ISourceService[] _srcs = 
+	[
+		lnSrc, shSrc, rlSrc, 
+		lntSrc, nyxSrc, zirusSrc, 
+		nncSrc, baka, ftl, 
+		headCanon, magicHouse, vampiramtl, 
+		royalRoad, storySeedling, nbs
+	];
 
-	public NovelApiService(
-		ILnpSourceService lnSrc, 
-		IShSourceService shSrc,
-		IReLibSourceService rlSrc,
-		ILntSourceService lntSrc,
-		INyxSourceService nyxSrc,
-		IZirusMusingsSourceService zirusSrc,
-        INncSourceService nncSrc,
-        IBakaPervertSourceService baka,
-        IFanTransSourceService ftl,
-        IHeadCanonTLSourceService headCanon,
-		IMagicHouseSourceService magicHouse,
-        IVampiramtlSourceService vampiramtl,
-        IRoyalRoadSourceService royalRoad,
-        IStorySeedlingSourceService storySeedling,
-        ILnDbService db)
-	{
-		_db = db;
-		_srcs = [lnSrc, shSrc, rlSrc, lntSrc, nyxSrc, zirusSrc, nncSrc, baka, ftl, headCanon, magicHouse, vampiramtl, royalRoad, storySeedling];
-	}
-
-	public ISourceService? Source(string url)
+    public ISourceService? Source(string url)
 	{
 		var root = url.GetRootUrl().ToLower();
 		return _srcs.FirstOrDefault(t => t.RootUrl.ToLower() == root);

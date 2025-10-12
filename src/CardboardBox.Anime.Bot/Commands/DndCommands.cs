@@ -5,7 +5,7 @@ using Dnd.NumberGenerator;
 
 public class DndCommands
 {
-    private readonly INumberGenerator _generator = new CryptoNumberGenerator();
+    private static INumberGenerator _generator = new CryptoNumberGenerator();
 
     private const int MAX_DICE_SHOWN = 20;
 
@@ -30,19 +30,18 @@ public class DndCommands
         };
     }
 
-    [Command("roll", "Roll a D&D formatted dice (example: 3D10+2)")]
-    public async Task DndRoll(SocketSlashCommand cmd,
-        [Option("The dice to roll", true)] string input,
-        [Option("Roll type", false, "Regular", "Advantage", "Disadvantage")] string? type)
+    public static string RollDice(string input, string? type)
     {
-        if (!Roll.TryParse(input, out var roll))
-        {
-            await cmd.RespondAsync("Invalid roll format. Please use the format like `3D10+2, 4D10-2 (radiant)`.");
-            return;
-        }
-
         if (!Enum.TryParse<RollType>(type, out var rollType))
             rollType = RollType.Regular;
+
+        return RollDice(input, rollType);
+    }
+
+    public static string RollDice(string input, RollType rollType)
+    {
+        if (!Roll.TryParse(input, out var roll))
+            return "Invalid roll format. Please use the format like `3D10+2, 4D10-2 (radiant)`.";
 
         var results = roll.Results(rollType, _generator);
 
@@ -93,7 +92,15 @@ public class DndCommands
             }));
         bob.AppendLine(totals);
 
-        var output = bob.ToString().Trim();
+        return bob.ToString().Trim();
+    }
+
+    [Command("roll", "Roll a D&D formatted dice (example: 3D10+2)")]
+    public async Task DndRoll(SocketSlashCommand cmd,
+        [Option("The dice to roll", true)] string input,
+        [Option("Roll type", false, "Regular", "Advantage", "Disadvantage")] string? type)
+    {
+        var output = RollDice(input, type);
         await cmd.RespondAsync(output);
     }
 }

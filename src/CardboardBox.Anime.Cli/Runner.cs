@@ -31,137 +31,57 @@ public interface IRunner
 	Task<int> Run(string[] args);
 }
 
-public class Runner : IRunner
+public class Runner(
+	IVrvApiService vrv,
+	ILogger<Runner> logger,
+	IFunimationApiService fun,
+	IApiService api,
+	IAnimeMongoService mongo,
+	IHiDiveApiService hidive,
+	IAnimeDbService db,
+	ICrunchyrollApiService crunchy,
+	IOldLnApiService ln,
+	IChapterDbService chapDb,
+	IPdfService pdf,
+	ILnDbService lnDb,
+	INovelApiService napi,
+	INovelUpdatesService info,
+	IReLibSourceService reL,
+	IMangaDexService mangaDex,
+	IMangaClashSource mangaClash,
+	INhentaiSource nhentai,
+	IMangaService manga,
+	IMangaMatchService match,
+	IMangaCacheDbService cacheDb,
+	IMangaDbService mangaDb,
+	IBattwoSource battwo,
+	ILntSourceService lnt,
+	INyxSourceService nyx,
+	IPurgeUtils purge,
+	IZirusMusingsSourceService zirus,
+	INncSourceService nnc,
+	IRawKumaSource kuma,
+	IBakaPervertSourceService baka,
+	IFanTransSourceService ftl,
+	IHeadCanonTLSourceService headCanon,
+	IMagicHouseSourceService magicHouse,
+	IVampiramtlSourceService vampiramtl,
+	IChapmanganatoSource manganato,
+	IMarkdownService markdown,
+	IFlareSolver flare,
+	IRoyalRoadSourceService royalRoad,
+	IStorySeedlingSourceService storySeedling,
+	ICardboardTranslationsSourceService ctl,
+    INovelBinSourceService _nbs) : IRunner
 {
 	private const string VRV_JSON = "vrv2.json";
 	private const string FUN_JSON = "fun.json";
+    private readonly ILogger _logger = logger;
+    private readonly INovelUpdatesService _info = info;
+    private readonly IMangaService _manga = manga;
+    private readonly IMarkdownService _markdown = markdown;
 
-	private readonly IVrvApiService _vrv;
-	private readonly IFunimationApiService _fun;
-	private readonly ILogger _logger;
-	private readonly IApiService _api;
-	private readonly IAnimeMongoService _mongo;
-	private readonly IHiDiveApiService _hidive;
-	private readonly IAnimeDbService _db;
-	private readonly ICrunchyrollApiService _crunchy;
-	private readonly IOldLnApiService _ln;
-	private readonly IChapterDbService _chapDb;
-	private readonly IPdfService _pdf;
-	private readonly ILnDbService _lnDb;
-	private readonly INovelApiService _napi;
-	private readonly INovelUpdatesService _info;
-	private readonly IReLibSourceService _reL;
-	private readonly IMangaDexService _mangaDex;
-	private readonly IMangaClashSource _mangaClash;
-	private readonly INhentaiSource _nhentai;
-	private readonly IMangaService _manga;
-	private readonly IMangaMatchService _match;
-	private readonly IMangaCacheDbService _cacheDb;
-	private readonly IMangaDbService _mangaDb;
-	private readonly IBattwoSource _battwo;
-	private readonly ILntSourceService _lnt;
-	private readonly INyxSourceService _nyx;
-	private readonly IPurgeUtils _purge;
-	private readonly IZirusMusingsSourceService _zirus;
-	private readonly INncSourceService _nnc;
-	private readonly IRawKumaSource _kuma;
-	private readonly IBakaPervertSourceService _baka;
-	private readonly IFanTransSourceService _ftl;
-	private readonly IHeadCanonTLSourceService _headCanon;
-	private readonly IMagicHouseSourceService _magicHouse;
-	private readonly IVampiramtlSourceService _vampiramtl;
-	private readonly IChapmanganatoSource _manganato;
-	private readonly IMarkdownService _markdown;
-	private readonly IFlareSolver _flare;
-	private readonly IRoyalRoadSourceService _royalRoad;
-	private readonly IStorySeedlingSourceService _storySeedling;
-	private readonly ICardboardTranslationsSourceService _ctl;
-
-    public Runner(
-		IVrvApiService vrv, 
-		ILogger<Runner> logger,
-		IFunimationApiService fun,
-		IApiService api,
-		IAnimeMongoService mongo,
-		IHiDiveApiService hidive,
-		IAnimeDbService db,
-		ICrunchyrollApiService crunchy,
-		IOldLnApiService ln,
-		IChapterDbService chapDb,
-		IPdfService pdf,
-		ILnDbService lnDb,
-		INovelApiService napi,
-		INovelUpdatesService info,
-		IReLibSourceService reL,
-		IMangaDexService mangaDex,
-		IMangaClashSource mangaClash,
-		INhentaiSource nhentai,
-		IMangaService manga,
-		IMangaMatchService match,
-		IMangaCacheDbService cacheDb,
-		IMangaDbService mangaDb,
-		IBattwoSource battwo,
-		ILntSourceService lnt,
-		INyxSourceService nyx,
-		IPurgeUtils purge,
-		IZirusMusingsSourceService zirus,
-        INncSourceService nnc,
-		IRawKumaSource kuma,
-        IBakaPervertSourceService baka,
-        IFanTransSourceService ftl,
-        IHeadCanonTLSourceService headCanon,
-        IMagicHouseSourceService magicHouse,
-        IVampiramtlSourceService vampiramtl,
-		IChapmanganatoSource manganato,
-		IMarkdownService markdown,
-		IFlareSolver flare,
-        IRoyalRoadSourceService royalRoad,
-        IStorySeedlingSourceService storySeedling,
-        ICardboardTranslationsSourceService ctl)
-	{
-		_vrv = vrv;
-		_logger = logger;
-		_fun = fun;
-		_api = api;
-		_mongo = mongo;
-		_hidive = hidive;
-		_db = db;
-		_crunchy = crunchy;
-		_ln = ln;
-		_chapDb = chapDb;
-		_pdf = pdf;
-		_lnDb = lnDb;
-		_napi = napi;
-		_info = info;
-		_reL = reL;
-		_mangaDex = mangaDex;
-		_mangaClash = mangaClash;
-		_nhentai = nhentai;
-		_manga = manga;
-		_match = match;
-		_cacheDb = cacheDb;
-		_mangaDb = mangaDb;
-		_battwo = battwo;
-		_lnt = lnt;
-		_nyx = nyx;
-		_purge = purge;
-		_zirus = zirus;
-		_nnc = nnc;
-		_kuma = kuma;
-		_baka = baka;
-		_ftl = ftl;
-		_headCanon = headCanon;
-        _magicHouse = magicHouse;
-		_vampiramtl = vampiramtl;
-		_manganato = manganato;
-        _markdown = markdown;
-        _flare = flare;
-        _royalRoad = royalRoad;
-        _storySeedling = storySeedling;
-        _ctl = ctl;
-    }
-
-	public async Task<int> Run(string[] args)
+    public async Task<int> Run(string[] args)
 	{
 		try
 		{
@@ -219,6 +139,7 @@ public class Runner : IRunner
 				case "royalroad": await RoyalRoad(); break;
 				case "story-seedling": await StorySeedling(); break;
 				case "ctl": await CTLTest(); break;
+				case "nbs": await NBSTest(); break;
                 default: _logger.LogInformation("Invalid command: " + command); break;
 			}
 
@@ -232,10 +153,24 @@ public class Runner : IRunner
 		}
 	}
 
-	public async Task StorySeedling()
+	public async Task NBSTest()
+	{
+		const string URL = "https://novelbin.com/b/i-became-my-healer-elf-character";
+		var ctx = (NovelBinSourceService)_nbs;
+        var info = await ctx.ParseVolumes(new HtmlDocument(), URL).ToArrayAsync();
+		if (info is null)
+		{
+			_logger.LogError("Failed to fetch volumes");
+			return;
+        }
+
+		_logger.LogInformation("Title: {count}", info.Length);
+    }
+
+    public async Task StorySeedling()
 	{
 		const string URL = "https://storyseedling.com/series/138027/"; //"https://storyseedling.com/series/99893/";
-        ISourceVolumeService service = _storySeedling;
+        ISourceVolumeService service = storySeedling;
         async Task Info()
         {
             var info = await service.GetSeriesInfo(URL);
@@ -277,7 +212,7 @@ public class Runner : IRunner
 
 			var all = info.SelectMany(t => t.Chapters).ToArray();
 			return all.Take(2)
-				.Concat(all.Reverse().Take(2))
+				.Concat(all.AReverse().Take(2))
 				.Select(t => t.Url)
 				.ToArray();
         }
@@ -298,23 +233,31 @@ public class Runner : IRunner
 
 	public async Task CTLTest()
 	{
-		const string TITLE = "I Am a Max-level Priestess in Another World";
-		var services = (CardboardTranslationsSourceService)_ctl;
+        //					  Is It Funny to Lose to Your Love Rival and Marry Him
+        const string TITLE = "I Am a Max-level Priestess in Another World";
+		var services = (CardboardTranslationsSourceService)ctl;
 
-		var content = await services.FetchContents(TITLE);
+		var content = await services.AllEntries(TITLE).ToArrayAsync();
         if (content is null)
         {
             _logger.LogError("Failed to fetch contents");
             return;
         }
 
-		_logger.LogInformation("Title: {Title}", content.Feed.Title.Text);
+		_logger.LogInformation("Entries: {count}", content.Length);
+		using var io = File.Create("ctl-content.json");
+		await JsonSerializer.SerializeAsync(io, content, new JsonSerializerOptions
+		{
+			WriteIndented = true,
+			AllowTrailingCommas = true
+		});
+		_logger.LogInformation("Finished");
     }
 
     public async Task RoyalRoad()
 	{
 		const string URL = "https://www.royalroad.com/fiction/44024/misadventures-incorporated";
-		ISourceVolumeService service = _royalRoad;
+		ISourceVolumeService service = royalRoad;
         async Task Info()
         {
             var info = await service.GetSeriesInfo(URL);
@@ -376,7 +319,7 @@ public class Runner : IRunner
 
 		async Task<string> FetchHtml(string url)
 		{
-			var data = await _flare.Get(url, timeout: 30_000);
+			var data = await flare.Get(url, timeout: 30_000);
             if (data is null || data.Solution is null) throw new Exception("Failed to get data");
 
             if (data.Solution.Status < 200 || data.Solution.Status >= 300)
@@ -445,7 +388,7 @@ public class Runner : IRunner
 		async Task FixData()
 		{
             const string BACKUP_DIR = "backup";
-            var pages = await _lnDb.Pages.Paginate(SERIES_ID, 1, 99999999);
+            var pages = await lnDb.Pages.Paginate(SERIES_ID, 1, 99999999);
             if (pages is null || pages.Count == 0)
             {
                 _logger.LogError("No pages found for series: {id}", SERIES_ID);
@@ -464,14 +407,14 @@ public class Runner : IRunner
                 var clean = Cleanse(page.Content);
                 page.Content = clean;
 
-                await _lnDb.Pages.Update(page);
+                await lnDb.Pages.Update(page);
                 _logger.LogInformation("Updated page: {id}", page.Id);
             }
         }
 
 		async Task PrintImages()
 		{
-            var pages = await _lnDb.Pages.Paginate(SERIES_ID, 1, 99999999);
+            var pages = await lnDb.Pages.Paginate(SERIES_ID, 1, 99999999);
 			if (pages is null || pages.Count == 0)
 			{
 				_logger.LogError("No pages found for series: {id}", SERIES_ID);
@@ -515,7 +458,7 @@ public class Runner : IRunner
 
 		async Task FixImages()
         {
-            var pages = await _lnDb.Pages.Paginate(SERIES_ID, 1, 99999999);
+            var pages = await lnDb.Pages.Paginate(SERIES_ID, 1, 99999999);
             if (pages is null || pages.Count == 0)
             {
                 _logger.LogError("No pages found for series: {id}", SERIES_ID);
@@ -543,7 +486,7 @@ public class Runner : IRunner
                     _logger.LogInformation("Replaced: {name}", name);
                 }
 
-				await _lnDb.Pages.Update(page);
+				await lnDb.Pages.Update(page);
                 _logger.LogInformation("Updated page: {id}", page.Id);
             }
 
@@ -555,14 +498,14 @@ public class Runner : IRunner
 	public async Task Manganato()
 	{
 		const string URL = "https://www.natomanga.com/manga-zx1002932";
-		var (matches, id) = _manganato.MatchesProvider(URL);
+		var (matches, id) = manganato.MatchesProvider(URL);
 		if (!matches || string.IsNullOrEmpty(id))
 		{
             _logger.LogError("Failed to match provider");
             return;
         }
 
-		var items = await _manganato.Manga(id);
+		var items = await manganato.Manga(id);
 		if (items == null)
 		{
 			_logger.LogError("Failed to fetch manga");
@@ -576,7 +519,7 @@ public class Runner : IRunner
 			return;
 		}
 
-		var pages = await _manganato.ChapterPages(chapter.Url);
+		var pages = await manganato.ChapterPages(chapter.Url);
 
         _logger.LogInformation("Found");
     }
@@ -587,7 +530,7 @@ public class Runner : IRunner
         async Task Info()
         {
             const string URL = "https://www.vampiramtl.com/tgs/";
-            var info = await _vampiramtl.GetSeriesInfo(URL);
+            var info = await vampiramtl.GetSeriesInfo(URL);
             if (info is null)
             {
                 _logger.LogError("Failed to fetch series info");
@@ -600,7 +543,7 @@ public class Runner : IRunner
         async Task Chapter()
         {
             const string URL = "https://www.vampiramtl.com/tgs/v1-illustrations/";
-            var chap = await _vampiramtl.GetChapter(URL, string.Empty);
+            var chap = await vampiramtl.GetChapter(URL, string.Empty);
             if (chap is null)
             {
                 _logger.LogError("Failed to fetch chapter");
@@ -612,7 +555,7 @@ public class Runner : IRunner
         async Task Volumes()
         {
             const string URL = "https://www.vampiramtl.com/tgs/";
-            var info = await _vampiramtl.Volumes(URL).ToArrayAsync();
+            var info = await vampiramtl.Volumes(URL).ToArrayAsync();
             if (info.Length == 0)
             {
                 _logger.LogError("Failed to fetch volumes");
@@ -637,7 +580,7 @@ public class Runner : IRunner
 		async Task Info()
 		{
 			const string URL = "https://magichousetldotcom.wordpress.com/my-heart-is-that-of-an-uncle/";
-			var info = await _magicHouse.GetSeriesInfo(URL);
+			var info = await magicHouse.GetSeriesInfo(URL);
 			if (info is null)
 			{
 				_logger.LogError("Failed to fetch series info");
@@ -650,7 +593,7 @@ public class Runner : IRunner
 		async Task Chapter()
 		{
 			const string URL = "https://magichousetldotcom.wordpress.com/2024/06/03/c1-my-heart-is-that-of-an-uncle/";
-			var chap = await _magicHouse.GetChapter(URL, string.Empty);
+			var chap = await magicHouse.GetChapter(URL, string.Empty);
 			if (chap is null)
 			{
 				_logger.LogError("Failed to fetch chapter");
@@ -662,7 +605,7 @@ public class Runner : IRunner
 		async Task Volumes()
         {
             const string URL = "https://magichousetldotcom.wordpress.com/my-heart-is-that-of-an-uncle/";
-			var info = await _magicHouse.Volumes(URL).ToArrayAsync();
+			var info = await magicHouse.Volumes(URL).ToArrayAsync();
 			if (info.Length == 0)
 			{
                 _logger.LogError("Failed to fetch volumes");
@@ -688,7 +631,7 @@ public class Runner : IRunner
 		async Task Info()
         {
             const string URL = "https://headcanontl.wordpress.com/all-works-maid-table-of-contents/";
-            var (info, vols) = await _headCanon.Actual(URL);
+            var (info, vols) = await headCanon.Actual(URL);
 
             if (info is null ||
                 vols.Length == 0)
@@ -703,7 +646,7 @@ public class Runner : IRunner
 		async Task Chapter()
 		{
 			const string URL = "https://headcanontl.wordpress.com/2022/04/30/all-works-maid-vol1-illustrations/";
-			var chap = await _headCanon.GetChapter(URL, string.Empty);
+			var chap = await headCanon.GetChapter(URL, string.Empty);
 
 			if (chap is null)
 			{
@@ -723,7 +666,7 @@ public class Runner : IRunner
 
         async Task GetVolumes()
         {
-            var volumes = _ftl.Volumes(URL);
+            var volumes = ftl.Volumes(URL);
 
             await foreach (var volume in volumes)
             {
@@ -737,7 +680,7 @@ public class Runner : IRunner
 
         async Task GetInfo()
 		{
-            var info = await _ftl.GetSeriesInfo(URL);
+            var info = await ftl.GetSeriesInfo(URL);
             if (info is null)
             {
                 _logger.LogError("Failed to fetch series info");
@@ -750,7 +693,7 @@ public class Runner : IRunner
 		async Task GetChapter()
 		{
 			const string CHAP_URL = "https://fanstranslations.com/novel/why-am-i-a-priestess-when-i-reach-the-maximum-level/vol-3-chapter-46/";
-			var chapter = await _ftl.GetChapter(CHAP_URL, "");
+			var chapter = await ftl.GetChapter(CHAP_URL, "");
 			if (chapter is null)
 			{
 				_logger.LogError("Failed to fetch chapter");
@@ -771,7 +714,7 @@ public class Runner : IRunner
 
 		async Task GetVolumes()
 		{
-            var volumes = _baka.Volumes(URL);
+            var volumes = baka.Volumes(URL);
 
             await foreach (var volume in volumes)
             {
@@ -785,7 +728,7 @@ public class Runner : IRunner
 		
 		async Task GetInfo()
 		{
-			var info = await _baka.GetSeriesInfo(URL);
+			var info = await baka.GetSeriesInfo(URL);
 			if (info is null)
 			{
 				_logger.LogError("Failed to fetch series info");
@@ -803,7 +746,7 @@ public class Runner : IRunner
 	{
 		const string token = "";
 
-		var data = await _crunchy.All(token).ToListAsync();
+		var data = await crunchy.All(token).ToListAsync();
 		if (data == null)
 		{
 			_logger.LogError("Failed to fetch crunchy data");
@@ -828,23 +771,23 @@ public class Runner : IRunner
 		}	
 
 		foreach (var anime in data)
-			await _db.Upsert(anime);
+			await db.Upsert(anime);
 
 		_logger.LogInformation("Finsihed loading crunchyroll anime");
 	}
 
 	public async Task Hidive()
 	{
-		var data = await _hidive.Fetch("https://www.hidive.com/movies/", "movie").ToArrayAsync();
+		var data = await hidive.Fetch("https://www.hidive.com/movies/", "movie").ToArrayAsync();
 		//using var io = File.OpenWrite("hidive.json");
 		//await JsonSerializer.SerializeAsync(io, data);
-		await _mongo.Upsert(data);
+		await mongo.Upsert(data);
 	}
 
 	public async Task Test()
 	{
 		await new[] { 47, 50, 49 }
-			.Select(t => _lnDb.Series.Delete(t))
+			.Select(t => lnDb.Series.Delete(t))
 			.WhenAll();
 	}
 
@@ -866,14 +809,14 @@ public class Runner : IRunner
 
 		_logger.LogInformation("Ids nulled");
 
-		await _mongo.Upsert(data);
+		await mongo.Upsert(data);
 
 		_logger.LogInformation("Data loaded");
 	}
 
 	public async Task FetchFunimationResources()
 	{
-		var data = await _fun.All().ToListAsync();
+		var data = await fun.All().ToListAsync();
 		using var io = File.OpenWrite(FUN_JSON);
 		await JsonSerializer.SerializeAsync(io, data);
 	}
@@ -881,7 +824,7 @@ public class Runner : IRunner
 	public async Task DetermineImageSizes()
 	{
 		var dic = new Dictionary<string, List<(int width, int height, string source)>>();
-		var data = await _fun.All().ToListAsync();
+		var data = await fun.All().ToListAsync();
 
 		for(var i = 0; i < data.Count && i < 5; i++)
 		{
@@ -894,7 +837,7 @@ public class Runner : IRunner
 					continue;
 				}
 
-				using var res = await _api.Create(im.Source).Result();
+				using var res = await api.Create(im.Source).Result();
 				if (res == null || !res.IsSuccessStatusCode)
 				{
 					_logger.LogError("Failed to fetch resource: {source}", im.Source);
@@ -921,7 +864,7 @@ public class Runner : IRunner
 
 	public async Task All()
 	{
-		var services = new IAnimeApiService[] { _vrv, _fun };
+		var services = new IAnimeApiService[] { vrv, fun };
 
 		var tasks = services.Select(t => t.All().ToListAsync().AsTask());
 		var data = (await Task.WhenAll(tasks)).SelectMany(t => t).ToArray();
@@ -937,7 +880,7 @@ public class Runner : IRunner
 
 	public async Task FormatVrvResources()
 	{
-		var data = await _vrv.All().ToListAsync();
+		var data = await vrv.All().ToListAsync();
 		using var io = File.OpenWrite(VRV_JSON);
 		await JsonSerializer.SerializeAsync(io, data);
 	}
@@ -971,7 +914,7 @@ public class Runner : IRunner
 		var ops = "ABCDEFGHIJKLMNOPQRSTUVWXYZ#";
 		foreach (var op in ops)
 		{
-			var resources = await _vrv.Fetch(op.ToString());
+			var resources = await vrv.Fetch(op.ToString());
 			if (resources == null)
 			{
 				_logger.LogWarning("Resource not found for: " + op);
@@ -989,7 +932,7 @@ public class Runner : IRunner
 
 	public async Task Clean()
 	{
-		var data = await _db.All();
+		var data = await db.All();
 		if (data == null)
 		{
 			_logger.LogError("Data is null");
@@ -997,7 +940,7 @@ public class Runner : IRunner
 		}
 
 		foreach (var anime in data)
-			await _db.Upsert(anime.Clean());
+			await db.Upsert(anime.Clean());
 	}
 
 	public async Task Migrate()
@@ -1036,10 +979,10 @@ public class Runner : IRunner
 			};
 		};
 
-		var all = await _mongo.All(1, 9000);
+		var all = await mongo.All(1, 9000);
 
 		foreach(var a in all.Results)
-			await _db.Upsert(convertAnime(a));
+			await db.Upsert(convertAnime(a));
 	}
 
 	public async Task LoadLightNovel()
@@ -1047,7 +990,7 @@ public class Runner : IRunner
 		const string FIRST_CHAPTER = "";
 		const int SRC = 1;
 
-		var src = _ln.Sources()[SRC];
+		var src = ln.Sources()[SRC];
 
 		var chaps = src.DbChapters(FIRST_CHAPTER);
 
@@ -1058,7 +1001,7 @@ public class Runner : IRunner
 		}
 
 		await foreach (var chap in chaps)
-			await _chapDb.Upsert(chap);
+			await chapDb.Upsert(chap);
 
 		_logger.LogInformation("Book uploaded!");
 	}
@@ -1066,7 +1009,7 @@ public class Runner : IRunner
 	public async Task ToPdf()
 	{
 		const string ID = "445C5E7AC91435D2155BC1D1DAAE8EB8";
-		await _pdf.ToPdf(ID);
+		await pdf.ToPdf(ID);
 	}
 
 	public async Task ToEpub()
@@ -1121,7 +1064,7 @@ public class Runner : IRunner
 		};
 
 		var settings = ranges.Select((t, i) => genSet(i, t.Item1, t.Item2)).ToArray();
-		var (epubs, dir) = await _ln.GenerateEpubs(BOOK_ID, settings);
+		var (epubs, dir) = await ln.GenerateEpubs(BOOK_ID, settings);
 
 		foreach (var epub in epubs)
 		{
@@ -1137,8 +1080,8 @@ public class Runner : IRunner
 	{
 		const string ID = "445C5E7AC91435D2155BC1D1DAAE8EB8";
 		const int SOURCE_ID = 0;
-		var src = _ln.Sources()[SOURCE_ID];
-		var book = await _chapDb.BookById(ID);
+		var src = ln.Sources()[SOURCE_ID];
+		var book = await chapDb.BookById(ID);
 		if (book == null)
 		{
 			_logger.LogWarning($"Could not find book with ID: {ID}");
@@ -1151,7 +1094,7 @@ public class Runner : IRunner
 		await foreach(var item in cur)
 		{
 			item.Ordinal = book.LastChapterOrdinal + count;
-			await _chapDb.Upsert(item);
+			await chapDb.Upsert(item);
 			count++;
 		}
 
@@ -1166,7 +1109,7 @@ public class Runner : IRunner
 
 	public async Task MigrateBooks()
 	{
-		var (_, books) = await _chapDb.Books();
+		var (_, books) = await chapDb.Books();
 
 		await Task.WhenAll(books.Select(MigrateBook));
 	}
@@ -1175,7 +1118,7 @@ public class Runner : IRunner
 	{
 		try
 		{
-			var src = _ln.Source(book.LastChapterUrl);
+			var src = ln.Source(book.LastChapterUrl);
 			if (src == null)
 			{
 				_logger.LogWarning($"Could not find source for: {book.Title} - {book.LastChapterUrl}");
@@ -1191,7 +1134,7 @@ public class Runner : IRunner
 				return;
 			}
 
-			var id = await _lnDb.Series.Upsert(new Series
+			var id = await lnDb.Series.Upsert(new Series
 			{
 				HashId = book.Title.MD5Hash(),
 				Title = book.Title,
@@ -1206,11 +1149,11 @@ public class Runner : IRunner
 				Translators = Array.Empty<string>(),
 				Description = data.Description
 			});
-			var (_, chaps) = await _chapDb.Chapters(book.Id, 1, 10000);
+			var (_, chaps) = await chapDb.Chapters(book.Id, 1, 10000);
 
 			foreach (var chap in chaps)
 			{
-				await _lnDb.Pages.Upsert(new Page
+				await lnDb.Pages.Upsert(new Page
 				{
 					SeriesId = id,
 					HashId = chap.HashId,
@@ -1235,7 +1178,7 @@ public class Runner : IRunner
 	public async Task DoJm()
 	{
 		const long SERIES_ID = 8;
-		var scaffold = await _lnDb.Series.Scaffold(SERIES_ID);
+		var scaffold = await lnDb.Series.Scaffold(SERIES_ID);
 
 		const string JM_IMG_DIR = @"C:\Users\Cardboard\Desktop\JM";
 		const string JM_IMG_URL = "https://static.index-0.com/jm/volumeart";
@@ -1246,8 +1189,8 @@ public class Runner : IRunner
 		var toUris = ((string dir, string url) a) => Directory.GetFiles(a.dir).Select(t => $"{a.url}/{Path.GetFileName(t)}").ToArray();
 
 		
-		var series = await _lnDb.Series.Fetch(SERIES_ID);
-		var (_, _, pages) = await _lnDb.Pages.Paginate(SERIES_ID, 1, 1000);
+		var series = await lnDb.Series.Fetch(SERIES_ID);
+		var (_, _, pages) = await lnDb.Pages.Paginate(SERIES_ID, 1, 1000);
 
 		var ranges = new[]
 		{
@@ -1304,7 +1247,7 @@ public class Runner : IRunner
 		series.Translators = new[] { "Supreme Tentacle", "Yuuki" };
 		series.Editors = new[] { "Joker", "SpeedPheonix" };
 
-		await _lnDb.Series.Upsert(series);
+		await lnDb.Series.Upsert(series);
 
 		for (var i = 0; i < ranges.Length; i++)
 		{
@@ -1318,7 +1261,7 @@ public class Runner : IRunner
 
 			var title = $"{series.Title} Vol {vol}";
 
-			var id = await _lnDb.Books.Upsert(new Book
+			var id = await lnDb.Books.Upsert(new Book
 			{
 				SeriesId = SERIES_ID,
 				CoverImage = cvi(vol).Item2,
@@ -1333,14 +1276,14 @@ public class Runner : IRunner
 			for(var p = 0; p < pageChunk.Length; p++)
 			{
 				var page = pageChunk[p];
-				var chapId = await _lnDb.Chapters.Upsert(new LightNovel.Core.Chapter
+				var chapId = await lnDb.Chapters.Upsert(new LightNovel.Core.Chapter
 				{
 					HashId = $"{page.Title}-{i}-{p}".MD5Hash(),
 					Title = page.Title,
 					Ordinal = p,
 					BookId = id
 				});
-				await _lnDb.ChapterPages.Upsert(new ChapterPage
+				await lnDb.ChapterPages.Upsert(new ChapterPage
 				{
 					ChapterId = chapId,
 					PageId = page.Id,
@@ -1352,7 +1295,7 @@ public class Runner : IRunner
 
 	public async Task TestMangaDex()
 	{
-		var item = await _mangaDex.Search("sonna hiroki");
+		var item = await mangaDex.Search("sonna hiroki");
 
 		Console.WriteLine($"Manga: {item?.Data?.Count}");
 	}
@@ -1362,8 +1305,8 @@ public class Runner : IRunner
 		const string id = "402922",
 			chapId = "chapter-118";
 
-		var manga = await _nhentai.Manga(id);
-		var chap = await _nhentai.ChapterPages(id, chapId);
+		var manga = await nhentai.Manga(id);
+		var chap = await nhentai.ChapterPages(id, chapId);
 
 		Console.WriteLine("Manga Source: " + manga?.Title);
 	}
@@ -1400,7 +1343,7 @@ public class Runner : IRunner
 
 	public async Task Index()
 	{
-		await _match.IndexLatest();
+		await match.IndexLatest();
 	}
 
 	public async Task PolyfillChapters()
@@ -1475,10 +1418,10 @@ public class Runner : IRunner
 
 	public async Task FixCache()
 	{
-		var manga = await _cacheDb.All();
+		var manga = await cacheDb.All();
 		var ids = manga.Select(t => t.SourceId).ToArray();
 
-		var md = await _mangaDex.AllManga(ids);
+		var md = await mangaDex.AllManga(ids);
 		if (md == null || md.Data.Count == 0)
 		{
 			_logger.LogError("No results from mangadex");
@@ -1498,7 +1441,7 @@ public class Runner : IRunner
 			var coverUrl = $"https://mangadex.org/covers/{m.SourceId}/{coverFile}";
 
 			m.Cover = coverUrl;
-			await _cacheDb.Upsert(m);
+			await cacheDb.Upsert(m);
 		}
 
 		_logger.LogInformation("Cover art has been fixed");
@@ -1506,8 +1449,8 @@ public class Runner : IRunner
 
 	public async Task IndexDbImages()
 	{
-		var manga = await _mangaDb.All();
-		var chapters = await _mangaDb.AllChapters();
+		var manga = await mangaDb.All();
+		var chapters = await mangaDb.AllChapters();
 
 		int count = 0;
 		foreach(var m in manga)
@@ -1521,11 +1464,11 @@ public class Runner : IRunner
 
 			_logger.LogInformation($"Indexing pages for: {m.Title} ({m.Id})");
 			var chaps = chapters.Where(t => t.MangaId == m.Id);
-			var cmi = await _cacheDb.Upsert(m);
+			var cmi = await cacheDb.Upsert(m);
 			foreach(var chapter in chaps)
 			{
 				chapter.MangaId = cmi;
-				await _cacheDb.Upsert(chapter);
+				await cacheDb.Upsert(chapter);
 
 				var chunk = chapter.Pages.Select((t, i) => (t, i)).Split(5);
 				await Parallel.ForEachAsync(chunk, async (t, c) =>
@@ -1543,7 +1486,7 @@ public class Runner : IRunner
 							Page = index + 1,
 						};
 
-						await _match.IndexPageProxy(url, meta, m.Referer);
+						await match.IndexPageProxy(url, meta, m.Referer);
 					}
 				});
 			}
@@ -1557,7 +1500,7 @@ public class Runner : IRunner
 
 	public async Task IndexCovers()
 	{
-		var manga = await _cacheDb.All();
+		var manga = await cacheDb.All();
 		var images = manga.Select(t => (t.Referer, new MangaMetadata
 		{
 			Id = t.Cover.MD5Hash(),
@@ -1569,20 +1512,20 @@ public class Runner : IRunner
 
 		_logger.LogInformation("Starting cover indexing for: " + manga.Length);
 		foreach (var (referer, data) in images)
-			await _match.IndexPageProxy(data.Url, data, referer);
+			await match.IndexPageProxy(data.Url, data, referer);
 		_logger.LogInformation("Finished");
 	}
 
 	public async Task TestBattow()
 	{
-		var manga = await _battwo.Manga("113585");
+		var manga = await battwo.Manga("113585");
 
 		Console.WriteLine("Found");
 	}
 
 	public async Task FixTags()
 	{
-		var mangas = await _mangaDb.Search(new Core.Models.MangaFilter
+		var mangas = await mangaDb.Search(new Core.Models.MangaFilter
 		{
 			Size = 10000,
 			Sources = new[] { "nhentai" },
@@ -1603,7 +1546,7 @@ public class Runner : IRunner
 			{
 				return Regex.Replace(t, @"[\d-]", string.Empty).Replace("\r", "").Replace("\n", "").Trim();
 			}).Where(t => !string.IsNullOrEmpty(t)).ToArray();
-			await _mangaDb.Upsert(manga.Manga);
+			await mangaDb.Upsert(manga.Manga);
 		}
 
 		_logger.LogInformation("Tags fixed");
@@ -1611,7 +1554,7 @@ public class Runner : IRunner
 
 	public async Task FixProgress()
 	{
-		var progresses = await _mangaDb.AllProgress();
+		var progresses = await mangaDb.AllProgress();
 		if (progresses.Length == 0)
 		{
 			_logger.LogError("No progresses found.");
@@ -1624,7 +1567,7 @@ public class Runner : IRunner
 		{
 			if (cache.ContainsKey(id)) return cache[id];
 
-			var prog = await _mangaDb.GetManga(id, null);
+			var prog = await mangaDb.GetManga(id, null);
 			if (prog == null) return null;
 
 			cache.Add(id, prog);
@@ -1670,7 +1613,7 @@ public class Runner : IRunner
 			if (pages.Count == 0) continue;
 
 			prog.Read = pages.ToArray();
-			await _mangaDb.UpdateProgress(prog);
+			await mangaDb.UpdateProgress(prog);
 			_logger.LogInformation("Finished: User: {ProfileId}, Manga Id: {MangaId}, Prog: {Id} - {Count}", prog.ProfileId, prog.MangaId, prog.Id, pages.Count);
 		}
 
@@ -1680,7 +1623,7 @@ public class Runner : IRunner
 	public async Task TestLnt()
 	{
 		var url = "https://lightnovelstranslations.com/novel/i-woke-up-piloting-the-strongest-starship-so-i-became-a-space-mercenary/";
-		var info = _lnt.Volumes(url);
+		var info = lnt.Volumes(url);
 
 		var vols = await info.ToArrayAsync();
 		foreach(var volume in vols)
@@ -1690,7 +1633,7 @@ public class Runner : IRunner
 
 		var chapUrl = "https://lightnovelstranslations.com/novel/i-woke-up-piloting-the-strongest-starship-so-i-became-a-space-mercenary/415-pirate-hunting/";
 
-		var chapter = await _lnt.GetChapter(chapUrl, "");
+		var chapter = await lnt.GetChapter(chapUrl, "");
 		_logger.LogInformation("Finished");
 	}
 
@@ -1710,7 +1653,7 @@ public class Runner : IRunner
 
 	public async Task LntImageFix()
 	{
-		var pages = await _lnDb.Pages.ImagePages();
+		var pages = await lnDb.Pages.ImagePages();
 
 		if (pages.Length == 0)
 		{
@@ -1731,18 +1674,18 @@ public class Runner : IRunner
 
 			page.Content = doc.DocumentNode.InnerHtml;
 
-			await _lnDb.Pages.Update(page);
+			await lnDb.Pages.Update(page);
 		}
 	}
 
 	public async Task PurgeAll()
 	{
-        var pages = await _lnDb.Pages.AnchorPages();
+        var pages = await lnDb.Pages.AnchorPages();
 
         foreach (var page in pages)
         {
-            page.Content = _purge.PurgeBadElements(page.Content);
-            await _lnDb.Pages.Update(page);
+            page.Content = purge.PurgeBadElements(page.Content);
+            await lnDb.Pages.Update(page);
         }
 
         _logger.LogInformation("Finished");
@@ -1750,7 +1693,7 @@ public class Runner : IRunner
 
 	public async Task PurgeBadStuff()
 	{
-        var page = await _lnDb.Pages.Fetch(577);
+        var page = await lnDb.Pages.Fetch(577);
 		if (page == null)
 		{
 			_logger.LogInformation("Page does not exist");
@@ -1758,7 +1701,7 @@ public class Runner : IRunner
 		}
 
 		var before = page.Content;
-		var after = _purge.PurgeBadElements(page.Content);
+		var after = purge.PurgeBadElements(page.Content);
 
 		_logger.LogInformation("Before: {before}\r\nAfter: {after}", before, after);
     }
@@ -1767,7 +1710,7 @@ public class Runner : IRunner
 	{
 		await PurgeAll();
 
-        var pages = await _lnDb.Pages.AnchorPages();
+        var pages = await lnDb.Pages.AnchorPages();
 
 		var lanks = new List<(string href, string content, Page page)>();
 
@@ -1811,7 +1754,7 @@ public class Runner : IRunner
 	public async Task ZirusTest()
 	{
 		var url = "https://zirusmusings.net/series/mg";
-		var info = await _zirus.GetSeriesInfo(url);
+		var info = await zirus.GetSeriesInfo(url);
 		if (info == null)
 		{
 			_logger.LogInformation("Could not find series.");
@@ -1827,7 +1770,7 @@ public class Runner : IRunner
 		//{
 		//	_logger.LogInformation("Chapter: {title}", chapter.ChapterTitle);
 		//}
-		var chap = await _zirus.GetChapter(url, "");
+		var chap = await zirus.GetChapter(url, "");
 		if (chap == null)
 		{
 			_logger.LogInformation("Could not find series.");
@@ -1852,7 +1795,7 @@ public class Runner : IRunner
 		{
 			var filename = url.Split('/').Last().Replace("png.png", ".png");
             _logger.LogInformation("Writing: {filename}", filename);
-            var (data, _, _, _) = await _api.GetData(url);
+            var (data, _, _, _) = await api.GetData(url);
 
 			var path = Path.Combine(OUTPUT, filename);
 			using var write = File.OpenWrite(path);
@@ -1915,7 +1858,7 @@ public class Runner : IRunner
 		foreach(var image in images)
 		{
             var filename = image.Split('/').Last();
-            var (data, _, _, _) = await _api.GetData(image);
+            var (data, _, _, _) = await api.GetData(image);
 
             var path = Path.Combine(IMAGE_DIR, filename);
             using var write = File.OpenWrite(path);
@@ -1930,7 +1873,7 @@ public class Runner : IRunner
 	public async Task NnconLoad()
 	{
 		const string URL = "https://novelonomicon.com/novels/isekai-yururi-kikou/prologue/";
-		var chapters = _nnc.Chapters(URL);
+		var chapters = nnc.Chapters(URL);
 		await foreach(var chap in chapters)
 		{
 			_logger.LogInformation("Chapter found: {0}", chap.ChapterTitle);
@@ -2078,9 +2021,9 @@ public class Runner : IRunner
             };
         }
 
-		var api = (NovelApiService)_napi;
+		var api = (NovelApiService)napi;
 
-        var scaffold = await _lnDb.Series.Scaffold(SERIES_ID);
+        var scaffold = await lnDb.Series.Scaffold(SERIES_ID);
 		if (scaffold == null)
 		{
 			_logger.LogWarning("Couldn't find series");
@@ -2098,15 +2041,15 @@ public class Runner : IRunner
             "v12 & v13 illustrations", "v14 illustrations"
         };
 
-		await _lnDb.Series.Delete(SERIES_ID);
+		await lnDb.Series.Delete(SERIES_ID);
 
-        series.Id = await _lnDb.Series.Upsert(series);
+        series.Id = await lnDb.Series.Upsert(series);
 
 		var books = SplitVolumes(pages, splits).ToArray();
 		int pageOrdinal = 0;
 		foreach(var (volume, ps) in books)
 		{
-			var bid = await _lnDb.Books.Upsert(FromVolume(series, volume));
+			var bid = await lnDb.Books.Upsert(FromVolume(series, volume));
 			int pageCount = 0;
 			foreach(var page in ps)
 			{
@@ -2115,9 +2058,9 @@ public class Runner : IRunner
 				pageOrdinal++;
 				pageCount++;
 
-				var pid = await _lnDb.Pages.Upsert(FromPage(series, page, pageOrdinal));
-				var cid = await _lnDb.Chapters.Upsert(FromChapter(page.Title, volume, bid, pageCount));
-				await _lnDb.ChapterPages.Upsert(new ChapterPage
+				var pid = await lnDb.Pages.Upsert(FromPage(series, page, pageOrdinal));
+				var cid = await lnDb.Chapters.Upsert(FromChapter(page.Title, volume, bid, pageCount));
+				await lnDb.ChapterPages.Upsert(new ChapterPage
 				{
                     ChapterId = cid,
                     PageId = pid,
@@ -2135,11 +2078,11 @@ public class Runner : IRunner
 		var fromHtml = true;
 
 		var chapters = new List<(string path, int count)>();
-		await foreach(var chapter in _kuma.GetDownloadLinks(URL))
+		await foreach(var chapter in kuma.GetDownloadLinks(URL))
 		{
 			var zip = await (fromHtml 
-				? _kuma.DownloadFromPages(chapter, output) 
-				: _kuma.Download(chapter, output));
+				? kuma.DownloadFromPages(chapter, output) 
+				: kuma.Download(chapter, output));
 			if (string.IsNullOrEmpty(zip)) continue;
 
 			if (fromHtml)

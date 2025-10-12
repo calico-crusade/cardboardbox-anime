@@ -14,7 +14,7 @@ public class LntSourceService : ILntSourceService
 
 	public string NovelUrl => RootUrl + "/novel/";
 
-	public string? AuthValue => _config["NovelSources:LntAuth"];
+	public string? AuthValue => null;//_config["NovelSources:LntAuth"];
 
 	public LntSourceService(
 		IApiService api, 
@@ -26,10 +26,25 @@ public class LntSourceService : ILntSourceService
 		_config = config;
 	}
 
-	public Task<HtmlDocument> GetWithAuth(string url)
+	public async Task<HtmlDocument> GetWithAuth(string url)
 	{
-		var authValue = AuthValue;
-		return _api.GetHtml(url, c =>
+		var proxied = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase)
+		{
+			["https://lightnovelstranslations.com/novel/level-1-strongest-sage/?tab=table_contents"] = "ProxiedPages\\l1ss.html",
+            ["https://lightnovelstranslations.com/novel/level-1-strongest-sage?tab=table_contents"] = "ProxiedPages\\l1ss.html"
+        };
+
+		if (proxied.TryGetValue(url, out var path) && File.Exists(path))
+		{
+			_logger.LogInformation("Using proxied page for {Url} from {Path}", url, path);
+			var data = await File.ReadAllTextAsync(path);
+			var doc = new HtmlDocument();
+			doc.LoadHtml(data);
+			return doc;
+        }
+
+        var authValue = AuthValue;
+		return await _api.GetHtml(url, c =>
 		{
 			if (!string.IsNullOrEmpty(authValue))
 				c.Headers.Add("Cookie", authValue);

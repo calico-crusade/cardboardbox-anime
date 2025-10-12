@@ -20,9 +20,34 @@ public class CardboardTranslationsSourceService(
     public override int PauseDurationSecondsMin => 0;
     public override int PauseDurationSecondsMax => 0;
 
-    public async Task<PostContent?> FetchContents(string title, int start = 1, int max = 999)
+    public async IAsyncEnumerable<Entry> AllEntries(string title, int start = 1, int max = 150)
     {
-        var encoded = WebUtility.UrlDecode(title);
+        while(true)
+        {
+#if DEBUG
+            _logger.LogInformation("Fetching entries for {title} - start: {start}, max: {max}",
+                title, start, max);
+#endif
+
+            var contents = await FetchContents(title, start, max);
+            if (contents is null) yield break;
+
+            foreach (var entry in contents.Feed.Entries)
+                yield return entry;
+
+            if (contents.Feed.Entries.Length == 0) 
+                yield break;
+
+            var current = contents.Feed.Entries.Length;
+            if (contents.Feed.StartIndex.Value + current > contents.Feed.TotalResults.Value)
+                yield break;
+            start += current;
+        }
+    }
+
+    public async Task<PostContent?> FetchContents(string title, int start = 1, int max = 150)
+    {
+        var encoded = WebUtility.UrlEncode(title.Replace("?", ""));
         var callback = "test";
         var url = $"{RootUrl}/feeds/posts/default/-/{encoded}?alt=json-in-script&start-index={start}&max-results={max}&callback={callback}";
         var response = await _api.Create(url).Result();

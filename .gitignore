@@ -357,6 +357,7 @@ logs/
 
 dist/
 /src/CardboardBox.LightNovel.Core/SourceNotes.txt
+/src/CardboardBox.LightNovel.Core/ProxiedPages
 /src/CardboardBox.Anime.Api/Cache
 /src/CardboardBox.Anime.Api/ProxyCache
 

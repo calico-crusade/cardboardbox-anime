@@ -293,10 +293,18 @@ internal class InteractiveVerb(
             return false;
         }
 
-        foreach(var action in actions)
+        try
         {
-            if (token.IsCancellationRequested) return false;
-            if (!await action(token)) return false;
+            foreach (var action in actions)
+            {
+                if (token.IsCancellationRequested) return false;
+                if (!await action(token)) return false;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while running actions");
+            return false;
         }
 
         return true;

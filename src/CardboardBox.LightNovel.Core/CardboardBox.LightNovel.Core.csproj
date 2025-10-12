@@ -25,4 +25,11 @@
 	<ItemGroup>
 		<Compile Include="./../global.cs" />
 	</ItemGroup>
+
+
+	<ItemGroup>
+	  <None Update="ProxiedPages\l1ss.html">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
 </Project>

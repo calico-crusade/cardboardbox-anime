@@ -1,5 +1,6 @@
 ﻿namespace CardboardBox.Anime.Bot.Commands;
 
+using CardboardBox.LightNovel.Core;
 using Services;
 
 public class MangaReadComponent : ComponentHandler
@@ -32,7 +33,7 @@ public class MangaReadComponent : ComponentHandler
 			.Split('(')
 			.Last()
 			.Split('/')
-			.Reverse()
+			.AReverse()
 			.ToArray() ?? Array.Empty<string>();
 		return (long.Parse(parts[2]), long.Parse(parts[1]), int.Parse(parts[0]) - 1);
 	}

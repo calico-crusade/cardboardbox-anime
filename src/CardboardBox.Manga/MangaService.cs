@@ -382,9 +382,29 @@ public class MangaService : IMangaService
 		return (ms, $"{manga.Manga.HashId}-{chapter.Ordinal}.zip");
 	}
 
+	public static IEnumerable<DbMangaChapter> FixVolumes(IEnumerable<DbMangaChapter> chapters)
+	{
+		var grouped = chapters.GroupBy(t => t.Ordinal);
+        foreach (var group in grouped)
+        {
+			var chaps = group.ToArray();
+			var volume = chaps.Select(t => t.Volume)
+				.Distinct()
+				.Where(t => t != null)
+				.OrderBy(t => t)
+				.FirstOrDefault();
+
+			foreach(var chap in chaps)
+			{
+				chap.Volume ??= volume;
+				yield return chap;
+            }
+        }
+    }
+
 	public IEnumerable<DbMangaChapter> Ordered(IEnumerable<DbMangaChapter> chap, ChapterSortColumn sort, bool asc, DbMangaProgress? progress, bool reset)
 	{
-		var byOrdinalAsc = () => reset ? chap.OrderBy(t => t.Ordinal).OrderBy(t => t.Volume ?? 99999) : chap.OrderBy(t => t.Ordinal);
+        var byOrdinalAsc = () => reset ? chap.OrderBy(t => t.Ordinal).OrderBy(t => t.Volume ?? 99999) : chap.OrderBy(t => t.Ordinal);
 		var byOrdinalDesc = () => reset ? chap.OrderByDescending(t => t.Ordinal).OrderByDescending(t => t.Volume ?? 99999) : chap.OrderByDescending(t => t.Ordinal);
 
 		return sort switch
@@ -410,7 +430,8 @@ public class MangaService : IMangaService
 
 	public IEnumerable<Volume> Volumize(IEnumerable<DbMangaChapter> chapters, DbMangaProgress? progress, MangaStats? stats)
 	{
-		var iterator = chapters.GetEnumerator();
+		chapters = FixVolumes(chapters);
+        var iterator = chapters.GetEnumerator();
 
 		//Setup tracking stuff
 		DbMangaChapter? chapter = null;

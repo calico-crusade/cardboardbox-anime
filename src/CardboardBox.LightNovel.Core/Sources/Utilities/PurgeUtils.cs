@@ -17,6 +17,7 @@ public class PurgeUtils : IPurgeUtils
         doc.LoadHtml(content);
 
         PurgeAnchors(doc.DocumentNode);
+        PurgeTips(doc.DocumentNode);
 
         return doc.DocumentNode.InnerHtml;
     }
@@ -24,6 +25,7 @@ public class PurgeUtils : IPurgeUtils
     public void PurgeAnchors(HtmlNode node)
     {
         var anchors = node.SelectNodes("//a");
+        if (anchors is null) return;
 
         foreach (var anchor in anchors)
             PurgeAnchor(anchor);
@@ -33,7 +35,7 @@ public class PurgeUtils : IPurgeUtils
     {
         bool RemoveParents(HtmlNode target, string href)
         {
-            var removeParents = new[] { "patreon.com", "ko-fi.com", "paypal.com", "strawpoll.com" };
+            var removeParents = new[] { "patreon.com", "ko-fi.com", "paypal.com", "strawpoll.com", "aliexpress.com" };
             foreach (var h in removeParents)
             {
                 if (!href.Contains(h)) continue;
@@ -99,6 +101,23 @@ public class PurgeUtils : IPurgeUtils
         {
             HandleNyxShare(anchor);
             return;
+        }
+    }
+
+    public void PurgeTips(HtmlNode node)
+    {
+        string[] inners = ["Tip: You can use left"];
+
+        var tips = node.SelectNodes("//code");
+        if (tips is null) return;
+
+        foreach (var item in tips)
+        {
+            var inner = item.InnerText.HTMLDecode().Trim();
+            if (!inners.Any(t => inner.Contains(t, StringComparison.InvariantCultureIgnoreCase)))
+                continue;
+
+            item.ParentNode.Remove();
         }
     }
 

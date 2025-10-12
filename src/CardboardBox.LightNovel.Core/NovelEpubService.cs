@@ -83,7 +83,8 @@ public class NovelEpubService(
 
 		await using (var epub = EpubBuilder.Create(book.Title, path))
 		{
-			var bob = await epub.Start();
+			_logger.LogDebug("Starting EPUB generation for [Book:{bookId}]::\"{bookTitle}\"", book.Id, book.Title);
+            var bob = await epub.Start();
 
 			bob.BelongsTo(series.Title, (int)book.Ordinal);
 
@@ -92,12 +93,18 @@ public class NovelEpubService(
 			ooo(series.Editors, book.Editors).Each(t => bob.Editor(t));
 			ooo(series.Translators, book.Translators).Each(t => bob.Translator(t));
 
-			await HandleCoverImage(bob, book);
-			await bob.AddStylesheetFromFile("stylesheet.css", "stylesheet.css");
-			await HandleForwards(bob, book);
-			await HandleChapters(bob, book, chaps);
-			await HandleInserts(bob, book);
-		}
+			_logger.LogDebug("Handling cover image for [Book:{bookId}]::\"{bookTitle}\"", book.Id, book.Title);
+            await HandleCoverImage(bob, book);
+            await bob.AddStylesheetFromFile("stylesheet.css", "stylesheet.css");
+
+            _logger.LogDebug("Handling forwards for [Book:{bookId}]::\"{bookTitle}\"", book.Id, book.Title);
+            await HandleForwards(bob, book);
+			_logger.LogDebug("Handling chapters for [Book:{bookId}]::\"{bookTitle}\"", book.Id, book.Title);
+            await HandleChapters(bob, book, chaps);
+			_logger.LogDebug("Handling inserts for [Book:{bookId}]::\"{bookTitle}\"", book.Id, book.Title);
+            await HandleInserts(bob, book);
+			_logger.LogDebug("Finalizing EPUB generation for [Book:{bookId}]::\"{bookTitle}\"", book.Id, book.Title);
+        }
 
 		return (path, $"{book.Title}.epub".PurgePathChars());
 	}
@@ -271,12 +278,18 @@ public class NovelEpubService(
             await semaphore.WaitAsync();
             return await _file.GetFile(url);
 		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Error occurred while downloading file: {url}", url);
+			throw;
+        }
 		finally
 		{
 			semaphore.Release();
 		}
     }
 
+    
 	public async Task<StreamResult> GetData(string url, bool skipTransform = false)
 	{
 		if (url.ToLower().StartsWith("https://static.index-0.com/"))

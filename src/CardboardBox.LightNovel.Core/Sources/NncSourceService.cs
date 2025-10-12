@@ -32,7 +32,7 @@ public class NncSourceService : INncSourceService
         string? startUrl = firstUrl;
 
         if (firstUrl.ToLower().Contains("novelupdates"))
-            startUrl = await _nus.GetChapterUrl(chapters.Reverse().First());
+            startUrl = await _nus.GetChapterUrl(chapters.AReverse().First());
 
         if (startUrl == null) yield break;
 
@@ -96,7 +96,7 @@ public class NncSourceService : INncSourceService
         var (series, chapters) = await _nus.GetChapters(SeriesFromChapter(url));
         if (series == null || chapters.Length == 0) return null;
 
-        var first = await _nus.GetChapterUrl(chapters.Reverse().First());
+        var first = await _nus.GetChapterUrl(chapters.AReverse().First());
 
         return new TempSeriesInfo(
             series.Title,

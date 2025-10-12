@@ -12,6 +12,7 @@ public abstract class FlareVolumeSource(
     private RateLimiterBase? _rateLimiter = null;
     private (int limit, int timeout)? _limiter = null;
     private readonly Dictionary<string, SourceVolume[]> _volumes = [];
+    private readonly Dictionary<string, HtmlDocument> _pageCache = new(StringComparer.InvariantCultureIgnoreCase);
 
     public abstract string Name { get; }
 
@@ -21,6 +22,7 @@ public abstract class FlareVolumeSource(
     public virtual int MaxRequestsBeforePauseMax => 6;
     public virtual int PauseDurationSecondsMin => 15;
     public virtual int PauseDurationSecondsMax => 35;
+    public virtual int MaxRetries => 4;
 
     public virtual RateLimiterBase Limiter => _rateLimiter ??= new(
         new(MaxRequestsBeforePauseMin, MaxRequestsBeforePauseMax),
@@ -84,10 +86,11 @@ public abstract class FlareVolumeSource(
         return _volumes[url] = await ParseVolumes(doc, url).ToArrayAsync();
     }
 
-    private async Task<HtmlDocument> DoRequest(string url, bool first = true)
+    private async Task<HtmlDocument> DoRequest(string url, int count = 0)
     {
         try
         {
+            _logger.LogInformation("Getting data from {url}", url);
             var data = await _flare.Get(url, _cookies, timeout: 30_000);
             if (data is null || data.Solution is null) throw new Exception("Failed to get data");
 
@@ -98,24 +101,31 @@ public abstract class FlareVolumeSource(
 
             var doc = new HtmlDocument();
             doc.LoadHtml(data.Solution.Response);
+            _logger.LogInformation("Got data from {url}", url);
             return doc;
         }
         catch (Exception ex)
         {
-            if (!first) throw;
+            if (count > MaxRetries) throw;
 
+            count++;
             ClearCookies();
-            var delay = Random.Shared.Next(30, 80);
-            _logger.LogError(ex, "Failed to get data, retrying after {delay} seconds", delay);
+            var delay = Random.Shared.Next(PauseDurationSecondsMin, PauseDurationSecondsMax);
+            _logger.LogError(ex, "Failed to get data for url {count}/{max}, retrying after {delay} seconds: {url}", count, MaxRetries, delay, url);
             await Task.Delay(delay * 1000);
             _logger.LogInformation("Retrying request");
-            return await DoRequest(url, false);
+            return await DoRequest(url, count);
         }
     }
 
-    public Task<HtmlDocument> Get(string url)
+    public async Task<HtmlDocument> Get(string url, bool cache = false)
     {
-        return DoRequest(url);
+        if (_pageCache.TryGetValue(url, out var doc))
+            return doc;
+
+        var page = await DoRequest(url);
+        if (cache) _pageCache[url] = page;
+        return page;
     }
 
     public virtual async IAsyncEnumerable<SourceVolume> Volumes(string url)
@@ -128,7 +138,7 @@ public abstract class FlareVolumeSource(
             yield break;
         }
 
-        var doc = await Get(url);
+        var doc = await Get(url, true);
         if (doc is null)
         {
             _logger.LogError("Failed to get series info: {url}", url);
