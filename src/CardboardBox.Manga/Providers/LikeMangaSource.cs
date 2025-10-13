@@ -67,7 +67,7 @@ internal class LikeMangaSource(
         };
 
         //https://likemanga.in/manga/i-got-my-wish-and-reincarnated-as-the-villainess-last-boss/ajax/chapters/
-        var chapters = await _api.PostHtml($"{url.TrimEnd("/")}/ajax/chapters/");
+        var chapters = await _api.PostHtml($"{url.TrimEnd('/')}/ajax/chapters/");
         if (chapters is null)
         {
             _logger.LogWarning("Could not get chapters for manga: {url}", url);

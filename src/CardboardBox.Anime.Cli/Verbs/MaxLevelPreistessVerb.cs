@@ -64,7 +64,8 @@ internal partial class MaxLevelPreistessVerb(
         MLPChapter? last = null;
         await foreach(var chap in chapters)
         {
-            last?.NextUrl = chap.Url;
+            if (last is not null)
+                last.NextUrl = chap.Url;
             yield return last = chap;
         }
         if (last is not null)
