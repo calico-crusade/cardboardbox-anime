@@ -72,16 +72,17 @@ public class MangaService : IMangaService
 		INhentaiSource nhentai,
 		IMangaKatanaSource katana,
 		IBattwoSource battwo,
-        IChapmanganatoSource chap)
+        IChapmanganatoSource chap,
+		ILikeMangaSource lkm)
 	{
 		_db = db;
 		_match = match;
 		_api = api;
 		_md = md;
 		_logger = logger;
-		_sources = new IMangaSource[]
-		{
-			mangaDex,
+		_sources =
+        [
+            mangaDex,
 			mangakakalot,
 			mangaClash,
 			nhentai,
@@ -89,8 +90,9 @@ public class MangaService : IMangaService
 			mangakakalot3,
 			katana,
 			dark,
-			chap
-		};
+			chap,
+			lkm
+		];
 	}
 
 	public IMangaSource[] Sources() => _sources;

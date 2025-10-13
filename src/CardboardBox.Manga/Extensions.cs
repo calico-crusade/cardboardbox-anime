@@ -22,6 +22,7 @@ public static class Extensions
 			.AddTransient<IMangaKatanaSource, MangaKatanaSource>()
 			.AddTransient<IDarkScansSource, DarkScansSource>()
 			.AddTransient<IChapmanganatoSource, ChapmanganatoSource>()
+			.AddTransient<ILikeMangaSource, LikeMangaSource>()
 
 			.AddTransient<IRawKumaSource, RawKumaSource>()
 

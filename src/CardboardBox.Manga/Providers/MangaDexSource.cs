@@ -231,14 +231,14 @@ public class MangaDexSource : IMangaDexSource
 
 	public (bool matches, string? part) MatchesProvider(string url)
 	{
-		var regex = new Regex("https://mangadex.org/title/(.*?)(/(.*?))?");
-		if (!regex.IsMatch(url)) return (false, null);
+		const string URL = "https://mangadex.org/title/";
+        if (!url.StartsWith(URL, StringComparison.InvariantCultureIgnoreCase))
+			return (false, null);
 
-		var parts = url.Split('/').Reverse().ToArray();
-		
-		var last = parts.Skip(1).First();
-		if (last == "title")
-			last = parts.First();
-		return (true, last);
+		var parts = url[URL.Length..].Split("/", StringSplitOptions.RemoveEmptyEntries);
+		if (parts.Length == 0)
+			return (false, null);
+
+		return (true, parts.First());
 	}
 }

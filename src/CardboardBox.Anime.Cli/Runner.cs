@@ -72,7 +72,8 @@ public class Runner(
 	IRoyalRoadSourceService royalRoad,
 	IStorySeedlingSourceService storySeedling,
 	ICardboardTranslationsSourceService ctl,
-    INovelBinSourceService _nbs) : IRunner
+    INovelBinSourceService _nbs,
+	ILikeMangaSource _lkm) : IRunner
 {
 	private const string VRV_JSON = "vrv2.json";
 	private const string FUN_JSON = "fun.json";
@@ -140,6 +141,7 @@ public class Runner(
 				case "story-seedling": await StorySeedling(); break;
 				case "ctl": await CTLTest(); break;
 				case "nbs": await NBSTest(); break;
+				case "lkm": await LKMTest(); break;
                 default: _logger.LogInformation("Invalid command: " + command); break;
 			}
 
@@ -152,6 +154,29 @@ public class Runner(
 			return 1;
 		}
 	}
+
+	public async Task LKMTest()
+	{
+		const string ID = "i-got-my-wish-and-reincarnated-as-the-villainess-last-boss";
+		const string CID = "chapter-72";
+
+        var manga = await _lkm.Manga(ID);
+		if (manga is null)
+		{
+			_logger.LogWarning("Could not find manga by ID: {id}", ID);
+			return;
+		}
+
+		_logger.LogInformation("Manga: {title}", manga.Title);
+		var chapter = await _lkm.ChapterPages(ID, CID);
+		if (chapter is null)
+		{
+			_logger.LogWarning("Could not find chapter by ID: {id}", CID);
+			return;
+        }
+
+		_logger.LogInformation("Chapter: {title} - {pages} pages", chapter.Title, chapter.Pages.Length);
+    }
 
 	public async Task NBSTest()
 	{
