@@ -64,6 +64,7 @@ internal class LikeMangaSource(
             Cover = imageUrl ?? string.Empty,
             Description = summary,
             Tags = genres,
+            Referer = HomeUrl + "/",
         };
 
         //https://likemanga.in/manga/i-got-my-wish-and-reincarnated-as-the-villainess-last-boss/ajax/chapters/
@@ -242,7 +243,7 @@ internal class LikeMangaSource(
             Url = url,
             Id = url.Split("/", StringSplitOptions.RemoveEmptyEntries).Last(),
             Number = double.IsNaN(number) ? 0d : number,
-            Pages = pages
+            Pages = pages,
         };
     }
 

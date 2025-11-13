@@ -14,12 +14,11 @@ public class MaxLevelPreistessOptions
 
 internal partial class MaxLevelPreistessVerb(
     ILnDbService _db,
-    IMarkdownService _md,
     ISmartReaderService _smart,
     ILogger<MaxLevelPreistessVerb> logger,
     ICardboardTranslationsSourceService _ctl) : BooleanVerb<MaxLevelPreistessOptions>(logger)
 {
-    private const long SERIES_ID = 92;
+    private const long SERIES_ID = 139;
     private const string SERIES_TITLE = "I Am a Max-level Priestess in Another World";
 
     public CardboardTranslationsSourceService Ctl => (_ctl as CardboardTranslationsSourceService)!;
@@ -86,13 +85,40 @@ internal partial class MaxLevelPreistessVerb(
         var series = await _db.Series.Scaffold(SERIES_ID);
         if (series is null)
         {
-            _logger.LogWarning("Couldn't find series {id} in the database!", SERIES_ID);
-            return false;
+            var s = new Series
+            {
+                Title = SERIES_TITLE,
+                Authors = ["Cardboard"],
+                Description = @"In the fully immersive and realistic RPG online game [Illusory World], which has been in official public beta testing for its fourth year, Violet, one of the top players, experiences an unpredictable twist while participating in the conquest of a special dungeon. <br>
+With her eyes closed and then opened, Violet finds herself no longer in the game world but in a completely new and unknown place, separated from the modern society behind it. <br>
+Here, there is no doubt that it is the real world. <br>
+Violet’s incredible adventure begins, but this world seems somewhat different from what she had expected. <br>
+Enemy A: Why? You’re just a priestess, aren’t you!? <br>
+Violet: Is there a problem between me being a priestess and me being able to beat you with a stick? Drop your loot and hand it over!",
+                Editors = ["Cardboard"],
+                Genre = ["Action", "Adventure", "Gender Bender"],
+                Illustrators = ["Cardboard"],
+                Image = "https://fanstranslations.com/wp-content/uploads/2023/12/11185e5f-36b5-494f-b904-8ca3e95e5645.jpg",
+                Tags = ["Isekai", "Web Novel", "Fantasy"],
+                Url = "https://www.cardboardtranslation.com/2025/01/im-max-level-priestess-in-another-world.html",
+                HashId = SERIES_TITLE.MD5Hash(),
+                Translators = ["Cardboard"],
+            };
+            _logger.LogWarning("Couldn't find series {id} in the database! Creating it!", SERIES_ID);
+            s.Id = await _db.Series.Upsert(s);
+            series = await _db.Series.Scaffold(s.Id);
+            _logger.LogInformation("Created series {id}", s.Id);
+
+            if (series is null)
+            {
+                _logger.LogError("Failed to create series {id} in the database!", s.Id);
+                return false;
+            }
         }
 
+        var image = series.Series.Image!;
         var loaded = new HashSet<string>();
         var books = series.Books.Select(t => t.Book).ToDictionary(t => t.Ordinal);
-        var latestBook = series.Books.OrderByDescending(t => t.Book.Ordinal).First().Book;
         var unnest = Unnest(series).ToDictionary(t => t.Page.HashId);
         var chapters = SortNextChapter(FetchChapters()).OrderBy(t => t.Volume).ThenBy(t => t.Ordinal);
         await foreach(var chapter in chapters)
@@ -111,14 +137,15 @@ internal partial class MaxLevelPreistessVerb(
 
             if (!books.TryGetValue(chapter.Volume, out var book))
             {
+                var title = $"{SERIES_TITLE} - Volume {chapter.Volume}";
                 book = new Book
                 {
-                    SeriesId = SERIES_ID,
-                    CoverImage = latestBook.CoverImage,
-                    Forwards = latestBook.Forwards,
-                    Inserts = latestBook.Inserts,
-                    Title = chapter.Volume.ToString(),
-                    HashId = chapter.Volume.ToString().MD5Hash(),
+                    SeriesId = series.Series.Id,
+                    CoverImage = image,
+                    Forwards = [image],
+                    Inserts = [image],
+                    Title = title,
+                    HashId = title.MD5Hash(),
                     Ordinal = chapter.Volume,
                 };
                 book.Id = await _db.Books.Upsert(book);
@@ -134,12 +161,14 @@ internal partial class MaxLevelPreistessVerb(
             };
             chap.Id = await _db.Chapters.Upsert(chap);
 
+            var lastOrdinal = unnest.Count == 0 ? 1 : unnest.Values.Max(t => t.Page.Ordinal) + 1;
+
             var page = new Page
             {
                 HashId = chapter.PageHash,
                 Title = chapter.Title,
-                Ordinal = unnest.Values.Max(t => t.Page.Ordinal) + 1,
-                SeriesId = SERIES_ID,
+                Ordinal = lastOrdinal,
+                SeriesId = series.Series.Id,
                 Url = chapter.Url,
                 NextUrl = chapter.NextUrl,
                 Content = chapter.Content,
@@ -188,6 +217,6 @@ internal partial class MaxLevelPreistessVerb(
         Page Page,
         ChapterPage ChapterPage);
 
-    [GeneratedRegex("\\[Vol\\. ([0-9]{1,})\\] Chapter ([0-9,\\.]+): (.*)")]
+    [GeneratedRegex("\\[Vol\\. ([0-9]{1,})\\] Chapter ([0-9,\\.]+)(:?) (.*)")]
     private static partial Regex TitleRegex();
 }
