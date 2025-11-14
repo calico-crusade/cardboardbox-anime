@@ -117,7 +117,7 @@ public static class Extensions
 			.AddTransient<IChatDbService, ChatDbService>()
 
 			.AddTransient<IAiRequestDbService, AiRequestDbService>()
-			
+
 			.AddTransient<IDbService, DbService>();
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using Microsoft.Extensions.Logging;
 
 namespace CardboardBox.Anime.Database;
 
@@ -121,17 +122,22 @@ public class MangaDbService : OrmMapExtended<DbManga>, IMangaDbService
 	private static readonly List<string> _upsertManga = new();
 	private static readonly List<string> _upsertBookmark = new();
 	private static readonly Random _rnd = new();
+	private static readonly SemaphoreSlim _compute = new(1, 1);
+	private static Task? _finishedTask = null;
 
 	public override string TableName => TABLE_NAME_MANGA;
 
 	private readonly IProfileDbService _prof;
+	private readonly ILogger<MangaDbService> _logger;
 
 	public MangaDbService(
 		IDbQueryBuilderService query, 
 		ISqlService sql, 
-		IProfileDbService prof) : base(query, sql) 
+		IProfileDbService prof,
+		ILogger<MangaDbService> logger) : base(query, sql) 
 	{ 
 		_prof = prof;
+		_logger = logger;
 	}
 
 	public Task<DbMangaChapter[]> AllChapters()
@@ -874,7 +880,34 @@ COMMIT;";
 		return _sql.Get<GraphOut>(QUERY, new { platformId, state });
 	}
 
-	public Task UpdateComputed() => _sql.Execute("CALL update_computed()");
+	public async Task UpdateComputed()
+	{
+		if (_compute.CurrentCount < 1 && _finishedTask is not null)
+		{
+			_logger.LogInformation("Doing breakout stuff");
+			await _finishedTask;
+			return;
+		}
+
+		await _compute.WaitAsync();
+		var tsc = new TaskCompletionSource();
+		_finishedTask = tsc.Task;
+		try
+		{
+			await _sql.Execute("CALL update_computed()");
+			_logger.LogInformation("Updated computed fields for manga");
+		}
+		catch(Exception ex)
+		{
+			_logger.LogError(ex, "Error updating computed fields");
+		}
+		finally
+		{
+			tsc.SetResult();
+			_finishedTask = null;
+			_compute.Release();
+		}
+	}
 
 	public Task SetDisplayTitle(string id, string? title)
 	{

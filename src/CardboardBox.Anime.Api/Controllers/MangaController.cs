@@ -454,6 +454,13 @@ public class MangaController : ControllerBase
         await _db.Manga.UpdateComputed();
         return Ok();
     }
+
+    [HttpGet, Route("manga/force-recompute"), AdminAuthorize]
+    public async Task<IActionResult> ForceRecompute()
+    {
+		await _db.Manga.UpdateComputed();
+        return Ok();
+    }
 }
 
 public class DisplayTitleRequest
