@@ -71,6 +71,8 @@ CREATE TABLE IF NOT EXISTS manga_chapter (
     external_url text,
     attributes manga_attribute[] not null default '{}',
 
+    ordinal_index int not null default 0,
+
     created_at timestamp not null default CURRENT_TIMESTAMP,
     updated_at timestamp not null default CURRENT_TIMESTAMP,
     deleted_at timestamp,
@@ -140,6 +142,8 @@ CREATE TABLE IF NOT EXISTS manga_stats (
     first_chapter_ordinal numeric not null,
     chapter_count numeric not null,
     unique_chapter_count numeric not null,
+    max_chapter_row_num numeric not null,
+    latest_chapter timestamp not null,
 
     CONSTRAINT uiq_manga_stats UNIQUE(manga_id)
 );

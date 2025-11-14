@@ -145,7 +145,7 @@ public class MangaDbService : OrmMapExtended<DbManga>, IMangaDbService
 		{
 			new MangaSortField("Title", 0, "m.title"),
 			new("Provider", 1, "m.provider"),
-			new("Latest Chapter", 2, "lc.created_at"),
+			new("Latest Chapter", 2, "p.latest_chapter"),
 			new("Description", 3, "m.description"),
 			new("Updated", 4, "m.updated_at"),
 			new("Created", 5, "m.created_at")
@@ -425,31 +425,17 @@ ORDER BY key, value";
 	public async Task<PaginatedResult<MangaProgress>> Search(MangaFilter filter, string? platformId)
 	{
 		const string QUERY = @"
-DROP TABLE IF EXISTS progress_{3};
+BEGIN;
 DROP TABLE IF EXISTS search_manga_{3};
 
-CREATE TEMP TABLE progress_{3} AS
-SELECT
-    e.*
-FROM manga_progress_ext e
-JOIN profiles p on e.profile_id = p.id
-WHERE p.platform_id = :platformId;
-
-CREATE TEMP TABLE search_manga_{3} AS
+CREATE TEMP TABLE search_manga_{3} ON COMMIT DROP AS
 SELECT
     DISTINCT
-    m.id
-FROM manga m
+    p.*
+FROM get_manga(:platformId, :state) p
+JOIN manga m ON m.id = p.manga_id
 LEFT JOIN manga_attributes a ON a.id = m.id
-LEFT JOIN progress_{3} p ON p.manga_id = m.id
-WHERE (
-    (p.favourite AND (:state = 1 OR :state = 6)) OR
-    (p.completed AND (:state = 2 OR :state = 6)) OR
-    (p.completed = FALSE AND p.in_progress AND (:state = 3 OR :state = 6)) OR
-    (p.has_bookmarks AND (:state = 4 OR :state = 6)) OR
-    (:state = 5 AND p.profile_id IS NULL) OR
-    (:state NOT IN (1, 2, 3, 4, 5, 6))
-) AND ( {0} ) AND
+WHERE ( {0} ) AND
 m.deleted_at IS NULL;
 
 SELECT
@@ -460,32 +446,13 @@ SELECT
     '' as split,
     mc.*,
     '' as split,
-    m.id as manga_id,
-    mc.id as manga_chapter_id,
-    s.first_chapter_id,
-    p.progress_chapter_id,
-    mp.id as progress_id,
-    p.max_chapter_ordinal as max_chapter_num,
-    p.chapter_num,
-    p.page_count,
-    p.chapter_progress,
-    p.page_progress,
-    p.favourite,
-    p.bookmarks,
-    p.has_bookmarks,
-    p.profile_id,
-    lc.created_at as latest_chapter,
-    mp.id IS NOT NULL AND mp.page_index IS NULL as progress_removed,
-    COALESCE(p.completed, FALSE) as completed
+    p.*
 FROM manga m
-JOIN search_manga_{3} c ON c.id = m.id
+JOIN search_manga_{3} p ON p.manga_id = m.id
 JOIN manga_stats s ON s.manga_id = m.id
 LEFT JOIN manga_attributes a ON a.id = m.id
-LEFT JOIN progress_{3} p ON p.manga_id = m.id
 LEFT JOIN manga_progress mp ON mp.manga_id = m.id AND mp.profile_id = p.profile_id
-JOIN manga_chapter mc ON
-	(p.manga_chapter_id IS NOT NULL AND mc.id = p.manga_chapter_id AND mc.deleted_at IS NULL) OR
-	(p.manga_chapter_id IS NULL AND mc.id = s.first_chapter_id AND mc.deleted_at IS NULL)
+JOIN manga_chapter mc ON p.manga_chapter_id = mc.id
 JOIN manga_chapter lc ON lc.id = s.last_chapter_id
 WHERE
 	m.deleted_at IS NULL
@@ -494,8 +461,8 @@ LIMIT :size OFFSET :offset;
 
 SELECT COUNT(*) FROM search_manga_{3};
 
-DROP TABLE progress_{3};
-DROP TABLE search_manga_{3};";
+DROP TABLE search_manga_{3};
+COMMIT;";
 
         var sortField = SortFields().FirstOrDefault(t => t.Id == (filter.Sort ?? 0))?.SqlName ?? "m.title";
 
@@ -800,7 +767,9 @@ WHERE p.platform_id = :platformId AND mf.manga_id = :id";
 
 	public async Task<PaginatedResult<MangaProgress>> Since(string? platformId, DateTime since, int page, int size)
 	{
-		const string QUERY = @"CREATE TEMP TABLE touched_manga AS
+		const string QUERY = @"
+BEGIN;
+CREATE TEMP TABLE touched_manga ON COMMIT DROP AS
 SELECT
     t.*
 FROM get_manga(:platformId, :state) t
@@ -824,7 +793,8 @@ LIMIT :size OFFSET :offset;
 
 SELECT COUNT(*) FROM touched_manga;
 
-DROP TABLE touched_manga;";
+DROP TABLE touched_manga;
+COMMIT;";
 
 		var state = string.IsNullOrEmpty(platformId) ? TouchedState.All : TouchedState.InProgress;
 		var offset = (page - 1) * size;
@@ -878,7 +848,9 @@ LEFT JOIN manga_progress mp ON mp.id = t.progress_id";
 
 	public Task<GraphOut[]> Graphic(string? platformId, TouchedState state = TouchedState.Completed)
 	{
-		const string QUERY = @"CREATE TEMP TABLE touched_manga AS
+		const string QUERY = @"
+BEGIN;
+CREATE TEMP TABLE touched_manga ON COMMIT DROP AS
 SELECT DISTINCT manga_id
 FROM get_manga(:platformId, :state);
 
@@ -897,7 +869,8 @@ JOIN (
     WHERE nsfw = false
 ) n ON n.tag = x.tag
 GROUP BY x.tag
-ORDER BY COUNT(*) DESC;";
+ORDER BY COUNT(*) DESC;
+COMMIT;";
 		return _sql.Get<GraphOut>(QUERY, new { platformId, state });
 	}
 

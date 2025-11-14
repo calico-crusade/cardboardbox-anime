@@ -6,7 +6,7 @@ AS $$
 
     WITH touched AS (
         SELECT
-            DISTINCT *
+            DISTINCT x.*
         FROM (
             SELECT manga_id, profile_id FROM manga_favourites
             UNION
@@ -14,34 +14,19 @@ AS $$
             UNION
             SELECT manga_id, profile_id FROM manga_progress
         ) x
-    ), chapter_numbers AS (
-        SELECT
-            c.*,
-            row_number() OVER (
-                PARTITION BY c.manga_id
-                ORDER BY c.ordinal ASC
-            ) AS row_num
-        FROM manga_chapter c
-        JOIN touched m ON m.manga_id = c.manga_id
-        WHERE c.deleted_at IS NULL
-    ), max_chapter_numbers AS (
-        SELECT
-            c.manga_id,
-            MAX(c.row_num) AS max,
-            MIN(c.id) AS first_chapter_id
-        FROM chapter_numbers c
-        GROUP BY c.manga_id
+        JOIN manga m ON m.id = x.manga_id
+        WHERE m.deleted_at IS NULL
     ), progress AS (
         SELECT
             mp.*,
-            mmc.max AS max_chapter_num,
-            mc.row_num AS chapter_num,
+            mmc.max_chapter_row_num AS max_chapter_num,
+            mc.ordinal_index AS chapter_num,
             COALESCE(ARRAY_LENGTH(mc.pages, 1), 0) AS page_count,
             (
                 CASE
                     WHEN mmc.first_chapter_id = mc.id AND mp.page_index IS NULL THEN 0
-                    WHEN mc.id = s.last_chapter_id THEN 100
-                    ELSE LEAST(ROUND(mc.row_num / CAST(mmc.max AS DECIMAL) * 100, 2), 100)
+                    WHEN mc.id = mmc.last_chapter_id THEN 100
+                    ELSE LEAST(ROUND(mc.ordinal_index / CAST(mmc.max_chapter_row_num AS DECIMAL) * 100, 2), 100)
                 END
             ) AS chapter_progress,
             LEAST((COALESCE(ROUND((mp.page_index + 1) / CAST(ARRAY_LENGTH(mc.pages, 1) AS DECIMAL), 2), 0) * 100), 100) AS page_progress,
@@ -50,9 +35,11 @@ AS $$
                 ORDER BY mp.id ASC
             ) AS row_number
         FROM manga_progress mp
-        JOIN manga_stats s ON s.manga_id = mp.manga_id
-        JOIN max_chapter_numbers mmc ON mmc.manga_id = mp.manga_id
-        JOIN chapter_numbers mc ON mc.id = mp.manga_chapter_id
+        JOIN manga_stats mmc ON mmc.manga_id = mp.manga_id
+        JOIN manga_chapter mc ON mc.id = mp.manga_chapter_id
+        WHERE 
+            mp.deleted_at IS NULL AND 
+            mc.deleted_at IS NULL
     ), bookmark_count AS (
         SELECT
             manga_id,

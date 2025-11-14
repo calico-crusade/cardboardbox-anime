@@ -35,7 +35,7 @@ public class MangaStats
 	public int MaxChapterNum { get; set; }
 
 	[JsonPropertyName("chapterNum")]
-	public int ChapterNum { get; set; }
+	public double ChapterNum { get; set; }
 
 	[JsonPropertyName("pageCount")]
 	public int PageCount { get; set; }
