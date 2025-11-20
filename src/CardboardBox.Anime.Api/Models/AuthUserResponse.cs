@@ -41,6 +41,8 @@ public class AuthUserResponse
                 roles.Add("Admin");
 			if (profile.Admin || profile.UiApproval)
 				roles.Add("Approved");
+			if (profile.Admin || profile.CanRead)
+				roles.Add("User");
 
 			return new UserData
 			{

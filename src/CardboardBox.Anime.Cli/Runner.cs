@@ -1557,7 +1557,7 @@ public class Runner(
 			Nsfw = NsfwCheck.DontCare,
 			Page = 1,
 			State = TouchedState.All
-		}, null);
+		}, null, true);
 
 		if (mangas == null || mangas.Results.Length == 0)
 		{

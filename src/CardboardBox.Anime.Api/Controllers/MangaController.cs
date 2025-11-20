@@ -41,6 +41,9 @@ public class MangaController : ControllerBase
 		_match = match;
 	}
 
+    private const string ROLES = "User,Admin";
+    private bool CanRead => User.IsInRole("User") || User.IsInRole("Admin");
+
 	// GET manga
 	[HttpGet, Route("manga")]
 	[ProducesDefaultResponseType(typeof(PaginatedResult<DbManga>))]
@@ -76,7 +79,7 @@ public class MangaController : ControllerBase
     [ProducesDefaultResponseType(typeof(PaginatedResult<MangaProgress>))]
     public async Task<IActionResult> SearchV2([FromBody] MangaFilter filter)
     {
-        var data = await _db.Manga.Search(filter, this.UserFromIdentity()?.Id);
+		var data = await _db.Manga.Search(filter, this.UserFromIdentity()?.Id, CanRead);
         return Ok(data);
     }
 
@@ -152,6 +155,8 @@ public class MangaController : ControllerBase
     [ProducesDefaultResponseType(typeof(string[])), ProducesResponseType(404)]
     public async Task<IActionResult> GetPages([FromRoute] long chapterId, [FromQuery] bool refetch = false)
     {
+        if (!CanRead) return Ok(Array.Empty<string>());
+
         var manga = await _manga.MangaPages(chapterId, refetch);
         return Ok(manga ?? Array.Empty<string>());
     }
@@ -179,7 +184,7 @@ public class MangaController : ControllerBase
     }
 
     // POST bookmark
-    [HttpPost, Route("manga/{id}/{chapterId}/bookmark"), Authorize]
+    [HttpPost, Route("manga/{id}/{chapterId}/bookmark"), Authorize(Roles = ROLES)]
     public async Task<IActionResult> Bookmark([FromRoute] long id, [FromRoute] long chapterId, [FromBody] int[] pages)
     {
         var pid = this.UserFromIdentity()?.Id;
@@ -201,7 +206,7 @@ public class MangaController : ControllerBase
     }
 
     // DELETE progress/{id}
-    [HttpDelete, Route("manga/progress/{id}"), Authorize]
+    [HttpDelete, Route("manga/progress/{id}"), Authorize(Roles = ROLES)]
     public async Task<IActionResult> RemoveProgress([FromRoute] string id)
     {
         var pid = this.UserFromIdentity()?.Id;
@@ -218,7 +223,7 @@ public class MangaController : ControllerBase
     }
 
     // GET progress/{id}
-    [HttpGet, Route("manga/{id}/progress"), Authorize]
+    [HttpGet, Route("manga/{id}/progress"), Authorize(Roles = ROLES)]
     [ProducesDefaultResponseType(typeof(DbMangaProgress)), ProducesResponseType(404)]
     public async Task<IActionResult> GetProgress([FromRoute] string id)
     {
@@ -234,7 +239,7 @@ public class MangaController : ControllerBase
     }
 
     // PUT progress
-    [HttpGet, Route("manga/{id}/mark-as-read"), Authorize]
+    [HttpGet, Route("manga/{id}/mark-as-read"), Authorize(Roles = ROLES)]
     public async Task<IActionResult> MarkAsRead([FromRoute] string id)
     {
         var pid = this.UserFromIdentity()?.Id;
@@ -245,7 +250,7 @@ public class MangaController : ControllerBase
     }
 
     // PUT progress
-    [HttpGet, Route("manga/{id}/mark-as-read/{chapterId}"), Authorize]
+    [HttpGet, Route("manga/{id}/mark-as-read/{chapterId}"), Authorize(Roles = ROLES)]
     public async Task<IActionResult> MarkAsReadChapter([FromRoute] string id, [FromRoute] long chapterId)
     {
         var pid = this.UserFromIdentity()?.Id;
@@ -256,7 +261,7 @@ public class MangaController : ControllerBase
     }
 
     // PUT progress
-    [HttpPost, Route("manga/{id}/mark-as-read"), Authorize]
+    [HttpPost, Route("manga/{id}/mark-as-read"), Authorize(Roles = ROLES)]
     public async Task<IActionResult> MarkAsReadPost([FromRoute] string id, [FromBody] long[] chapters)
     {
         var pid = this.UserFromIdentity()?.Id;
@@ -267,7 +272,7 @@ public class MangaController : ControllerBase
     }
 
     // PUT progress
-    [HttpPost, Route("manga"), Authorize]
+    [HttpPost, Route("manga"), Authorize(Roles = ROLES)]
     public async Task<IActionResult> Post([FromBody] MangaProgressPost data)
     {
         var id = this.UserFromIdentity()?.Id;
@@ -297,7 +302,7 @@ public class MangaController : ControllerBase
             actSort = res;
 
         var pid = this.UserFromIdentity()?.Id;
-        var vols = await _manga.Volumed(id, pid, actSort, asc);
+		var vols = await _manga.Volumed(id, pid, actSort, asc, CanRead);
         if (vols == null) return NotFound();
 
         return Ok(vols);

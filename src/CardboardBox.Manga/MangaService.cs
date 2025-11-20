@@ -32,7 +32,7 @@ public interface IMangaService
 
 	Task<(MemoryStream stream, string name)?> CreateZip(string mangaId, int chapterId, string? platformId);
 
-	Task<MangaData?> Volumed(string id, string? pid, ChapterSortColumn sort, bool asc);
+	Task<MangaData?> Volumed(string id, string? pid, ChapterSortColumn sort, bool asc, bool canRead);
 
     Task<bool> ToggleRead(string id, string pid, params long[] chapters);
 }
@@ -115,7 +115,7 @@ public class MangaService : IMangaService
 			Size = 9999999,
 			Nsfw = NsfwCheck.DontCare
 		};
-		var db = await _manga.Search(filter, null);
+		var db = await _manga.Search(filter, null, true);
 		return db ?? new();
 	}
 
@@ -404,24 +404,31 @@ public class MangaService : IMangaService
         }
     }
 
-	public IEnumerable<DbMangaChapter> Ordered(IEnumerable<DbMangaChapter> chap, ChapterSortColumn sort, bool asc, DbMangaProgress? progress, bool reset)
+	public IEnumerable<DbMangaChapter> Ordered(IEnumerable<DbMangaChapter> chap, ChapterSortColumn sort, bool asc, DbMangaProgress? progress, bool reset, bool canRead)
 	{
         var byOrdinalAsc = () => reset ? chap.OrderBy(t => t.Ordinal).OrderBy(t => t.Volume ?? 99999) : chap.OrderBy(t => t.Ordinal);
 		var byOrdinalDesc = () => reset ? chap.OrderByDescending(t => t.Ordinal).OrderByDescending(t => t.Volume ?? 99999) : chap.OrderByDescending(t => t.Ordinal);
+
+		if (!canRead) 
+			chap = chap.Select(t =>
+			{
+				t.Pages = [];
+				return t;
+			});
 
 		return sort switch
 		{
 			ChapterSortColumn.Date => asc ? chap.OrderBy(t => t.CreatedAt) : chap.OrderByDescending(t => t.CreatedAt),
 			ChapterSortColumn.Language => asc ? chap.OrderBy(t => t.Language) : chap.OrderByDescending(t => t.Language),
 			ChapterSortColumn.Title => asc ? chap.OrderBy(t => t.Title) : chap.OrderByDescending(t => t.Title),
-			ChapterSortColumn.Read => OrderByRead(chap, asc, progress, reset),
+			ChapterSortColumn.Read => OrderByRead(chap, asc, progress, reset, canRead),
 			_ => asc ? byOrdinalAsc() : byOrdinalDesc(),
 		};
 	}
 
-	public IEnumerable<DbMangaChapter> OrderByRead(IEnumerable<DbMangaChapter> chap, bool asc, DbMangaProgress? progress, bool reset)
+	public IEnumerable<DbMangaChapter> OrderByRead(IEnumerable<DbMangaChapter> chap, bool asc, DbMangaProgress? progress, bool reset, bool canRead)
 	{
-		if (progress == null) return Ordered(chap, ChapterSortColumn.Ordinal, asc, progress, reset);
+		if (progress == null) return Ordered(chap, ChapterSortColumn.Ordinal, asc, progress, reset, canRead);
 
 		var progs = progress.Read.ToDictionary(t => t.ChapterId, t => t);
 
@@ -508,7 +515,7 @@ public class MangaService : IMangaService
 		return await _manga.GetManga(id, pid);
 	}
 
-	public async Task<MangaData?> Volumed(string id, string? pid, ChapterSortColumn sort, bool asc)
+	public async Task<MangaData?> Volumed(string id, string? pid, ChapterSortColumn sort, bool asc, bool canRead)
 	{
 		var manga = await GetData(id, pid);
 		if (manga == null) return null;
@@ -522,7 +529,7 @@ public class MangaService : IMangaService
 		if (output == null) return null;
 
 		//Order the chapters by the given sorts
-		var chapters = Ordered(manga.Chapters, sort, asc, ext?.Progress, output.Manga.OrdinalVolumeReset);
+		var chapters = Ordered(manga.Chapters, sort, asc, ext?.Progress, output.Manga.OrdinalVolumeReset, canRead);
 		//Sort the chapters into volume collections (impacted by sorts)
 		output.Volumes = Volumize(chapters, ext?.Progress, ext?.Stats).ToArray();
 		//Pass through progress stuff

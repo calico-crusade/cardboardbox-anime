@@ -156,7 +156,7 @@ internal class InteractiveVerb(
             Page = 1,
         };
 
-        var series = await _mangaDb.Search(filter, null);
+        var series = await _mangaDb.Search(filter, null, true);
         if (series.Results.Length == 0)
         {
             _logger.LogWarning("No manga found with that title");

@@ -14,6 +14,9 @@ public class DbProfile : DbObject
 	[JsonPropertyName("admin")]
 	public bool Admin { get; set; } = false;
 
+	[JsonPropertyName("canRead")]
+	public bool CanRead { get; set; } = false;
+
 	[JsonIgnore]
 	public string Email { get; set; } = "";
 

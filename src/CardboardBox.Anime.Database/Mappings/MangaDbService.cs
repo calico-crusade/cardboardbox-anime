@@ -77,7 +77,7 @@ public interface IMangaDbService
 
     Task<PaginatedResult<MangaProgress>> Since(string? platform, DateTime since, int page, int size);
 
-    Task<PaginatedResult<MangaProgress>> Search(MangaFilter filter, string? platformId);
+    Task<PaginatedResult<MangaProgress>> Search(MangaFilter filter, string? platformId, bool canRead);
 
     Task<Filter[]> Filters();
     #endregion
@@ -428,7 +428,7 @@ ORDER BY key, value";
 		return new string(Enumerable.Range(0, 10).Select(t => chars[_rnd.Next(chars.Length)]).ToArray());
 	}
 
-	public async Task<PaginatedResult<MangaProgress>> Search(MangaFilter filter, string? platformId)
+	public async Task<PaginatedResult<MangaProgress>> Search(MangaFilter filter, string? platformId, bool canRead)
 	{
 		const string QUERY = @"
 BEGIN;
@@ -550,6 +550,9 @@ COMMIT;";
 		var result = multi.Read<DbManga, DbMangaProgress, DbMangaChapter, MangaStats, MangaProgress>(
 			func: (m, p, c, s) => new MangaProgress(m, p, c, s),
 			splitOn: "split").ToArray();
+		if (!canRead)
+			result.Each(t => t.Chapter.Pages = Array.Empty<string>());
+
 		var total = await multi.ReadSingleAsync<int>();
         var pages = (long)Math.Ceiling((double)total / filter.Size);
         return new PaginatedResult<MangaProgress>(pages, total, result);
