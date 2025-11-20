@@ -133,7 +133,7 @@ JOIN manga om ON om.source_id = mc.source_id AND om.provider = mc.provider
 LEFT JOIN manga_chapter omc ON omc.source_id = mcc.source_id AND om.id = omc.manga_id
 WHERE
     omc.id IS NULL;
-CALL update_computed();";
+CALL update_chapter_computed();";
 		return _sql.Execute(QUERY);
 	}
 

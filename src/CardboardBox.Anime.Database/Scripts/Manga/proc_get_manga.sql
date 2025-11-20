@@ -5,7 +5,7 @@
         first_chapter_id BIGINT,
         progress_chapter_id BIGINT,
         progress_id BIGINT,
-        max_chapter_num NUMERIC,
+        max_chapter_num INTEGER,
         chapter_num INTEGER,
         page_count INT,
         chapter_progress NUMERIC,

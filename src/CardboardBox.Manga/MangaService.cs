@@ -190,6 +190,7 @@ public class MangaService : IMangaService
 		var pid = !string.IsNullOrEmpty(platformId) ? (await _db.Profiles.Fetch(platformId))?.Id : null;
 		var manga = await ConvertManga(m, pid);
 		await ConvertChapters(m, manga.Id).ToArrayAsync();
+		await _db.Manga.UpdateChapterComputed();
 		await _db.Manga.UpdateComputed();
 		return await Manga(manga.Id, platformId);
 	}

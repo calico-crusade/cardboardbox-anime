@@ -98,6 +98,8 @@ public interface IMangaDbService
 
 	Task UpdateComputed();
 
+	Task UpdateChapterComputed();
+
 	Task DeleteManga(long id);
 
 	Task DeleteChapter(long id);
@@ -175,8 +177,8 @@ public class MangaDbService : OrmMapExtended<DbManga>, IMangaDbService
 			(v) => v.With(t => t.MangaId).With(t => t.SourceId).With(t => t.Language),
 			(v) => v.With(t => t.Id),
 			v => v.With(t => t.Id).With(t => t.CreatedAt).With(t => t.Pages));
-        if (updateComputed)
-            await UpdateComputed();
+		if (updateComputed)
+			await UpdateChapterComputed();
 		return id;
     }
 
@@ -195,7 +197,6 @@ public class MangaDbService : OrmMapExtended<DbManga>, IMangaDbService
 					new DbMangaChapterProgress(progress.MangaChapterId.Value, progress.PageIndex.Value)
 				};
 			var id = await _sql.ExecuteScalar<long>(_insertProgress, progress);
-            await UpdateComputed();
 			return id;
         }
 
@@ -223,18 +224,16 @@ public class MangaDbService : OrmMapExtended<DbManga>, IMangaDbService
 		progress.Read = pages.OrderBy(t => t.ChapterId).ToArray();
 
 		await _sql.Execute(_updateProgress, progress);
-        await UpdateComputed();
         return exists.Id;
 	}
 
-	public async Task SetPages(long id, string[] pages)
+	public Task SetPages(long id, string[] pages)
 	{
 		const string QUERY = "UPDATE manga_chapter SET pages = :pages WHERE id = :id";
-		await _sql.Execute(QUERY, new { id, pages });
-        await UpdateComputed();
+		return _sql.Execute(QUERY, new { id, pages });
     }
 
-	public async Task DeleteProgress(long profileId, long mangaId)
+	public Task DeleteProgress(long profileId, long mangaId)
 	{
 		const string QUERY = @"UPDATE manga_progress 
 SET 
@@ -243,8 +242,7 @@ SET
 WHERE 
 	profile_id = :profileId AND 
 	manga_id = :mangaId";
-		await _sql.Execute(QUERY, new { profileId, mangaId });
-        await UpdateComputed();
+		return _sql.Execute(QUERY, new { profileId, mangaId });
     }
 
 	public Task<DbMangaProgress[]> AllProgress()
@@ -252,19 +250,16 @@ WHERE
 		return _sql.Get<DbMangaProgress>("SELECT * FROM manga_progress");
 	}
 
-	public async Task UpdateProgress(DbMangaProgress progress)
+	public Task UpdateProgress(DbMangaProgress progress)
 	{
 		_updateProgress ??= _query.Update<DbMangaProgress>(TABLE_NAME_MANGA_PROGRESS, t => t.With(a => a.Id).With(a => a.CreatedAt));
-		await _sql.Execute(_updateProgress, progress);
-        await UpdateComputed();
+		return _sql.Execute(_updateProgress, progress);
     }
 
-	public async Task<long> InsertProgress(DbMangaProgress progress)
+	public Task<long> InsertProgress(DbMangaProgress progress)
 	{
         _insertProgress ??= _query.InsertReturn<DbMangaProgress, long>(TABLE_NAME_MANGA_PROGRESS, t => t.Id, t => t.With(a => a.Id));
-		var id = await _sql.ExecuteScalar<long>(_insertProgress, progress);
-        await UpdateComputed();
-		return id;
+		return _sql.ExecuteScalar<long>(_insertProgress, progress);
     }
 
 	public override Task<PaginatedResult<DbManga>> Paginate(int page = 1, int size = 100)
@@ -344,17 +339,19 @@ WHERE
 		return _sql.Fetch<DbMangaProgress?>(QUERY, new { platformId, mangaId });
 	}
 
-	public Task DeleteManga(long id)
+	public async Task DeleteManga(long id)
 	{
 		const string QUERY = "UPDATE manga SET deleted_at = NOW() WHERE id = :id";
-		return _sql.Execute(QUERY, new { id });
+		await _sql.Execute(QUERY, new { id });
+		await UpdateComputed();
 	}
 
-	public Task DeleteChapter(long id)
+	public async Task DeleteChapter(long id)
 	{
         const string QUERY = "UPDATE manga_chapter SET deleted_at = NOW() WHERE id = :id";
-        return _sql.Execute(QUERY, new { id });
-    }
+        await _sql.Execute(QUERY, new { id });
+		await UpdateChapterComputed();
+	}
 
 	public async Task<Filter[]> Filters()
 	{
@@ -584,7 +581,6 @@ WHERE id IN (
 		if (pages.Length == 0)
 		{
 			await _sql.Execute(DELETE_QUERY, new { id, chapterId, pages, platformId });
-            await UpdateComputed();
             return;
 		}
 
@@ -601,8 +597,6 @@ WHERE id IN (
 			v => v.With(t => t.ProfileId).With(t => t.MangaId).With(t => t.MangaChapterId),
 			v => v.With(t => t.Id),
 			v => v.With(t => t.Id).With(t => t.CreatedAt));
-
-        await UpdateComputed();
     }
 
 	public async Task<bool> IsFavourite(string? platformId, long mangaId)
@@ -622,7 +616,6 @@ WHERE p.platform_id = :platformId AND mf.manga_id = :mangaId";
 		var res = await _sql.ExecuteScalar<int>(QUERY, new { platformId, mangaId });
 		if (res == -1) return null;
 
-		await UpdateComputed();
         return res == 1;
 	}
 
@@ -910,6 +903,11 @@ COMMIT;";
 			_finishedTask = null;
 			_compute.Release();
 		}
+	}
+
+	public Task UpdateChapterComputed()
+	{
+		return _sql.Execute("CALL update_chapter_computed()");
 	}
 
 	public Task SetDisplayTitle(string id, string? title)
