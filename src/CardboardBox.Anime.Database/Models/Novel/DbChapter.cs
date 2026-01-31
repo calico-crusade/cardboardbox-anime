@@ -1,6 +1,6 @@
 ﻿namespace CardboardBox.Anime.Database;
 
-public class DbChapter : DbObject
+public class DbChapter : DbObjectInt
 {
 	[JsonPropertyName("hashId")]
 	public string HashId { get; set; } = string.Empty;
@@ -54,7 +54,7 @@ public class DbBook
 	public int LastChapterOrdinal { get; set; }
 }
 
-public class DbChapterLimited : DbObject
+public class DbChapterLimited : DbObjectInt
 {
 	[JsonPropertyName("hashId")]
 	public string HashId { get; set; } = string.Empty;

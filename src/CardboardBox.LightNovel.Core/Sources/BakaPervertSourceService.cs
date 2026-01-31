@@ -31,7 +31,7 @@ internal class BakaPervertSourceService : IBakaPervertSourceService
             return _volumes;
 
         _volumesUrl = url;
-        return _volumes = await Volumes(url).ToArrayAsync();
+        return _volumes = await Volumes(url).ToArrayA();
     }
 
     public static string SubUrl(string url)

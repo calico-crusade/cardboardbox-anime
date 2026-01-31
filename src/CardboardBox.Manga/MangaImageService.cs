@@ -7,6 +7,7 @@ namespace CardboardBox.Manga;
 
 using Anime.Core;
 using Anime.Database;
+using CardboardBox.Extensions;
 
 public interface IMangaImageService
 {

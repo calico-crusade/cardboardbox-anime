@@ -1,4 +1,6 @@
-﻿namespace CardboardBox.Manga;
+﻿using MongoDB.Bson.Serialization.Attributes;
+
+namespace CardboardBox.Manga;
 
 public class MangaChapter
 {

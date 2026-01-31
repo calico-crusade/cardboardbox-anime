@@ -4,6 +4,7 @@ namespace CardboardBox.Manga;
 
 using Anime.Core.Models;
 using Anime.Database;
+using CardboardBox.Extensions;
 using MangaDex;
 using Match;
 using Providers;

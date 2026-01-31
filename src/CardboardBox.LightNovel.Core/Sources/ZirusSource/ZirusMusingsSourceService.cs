@@ -1,4 +1,6 @@
-﻿namespace CardboardBox.LightNovel.Core.Sources.ZirusSource;
+﻿using CardboardBox.Extensions;
+
+namespace CardboardBox.LightNovel.Core.Sources.ZirusSource;
 
 public interface IZirusMusingsSourceService : ISourceVolumeService { }
 

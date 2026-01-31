@@ -57,7 +57,7 @@ WHERE
 	{
 		const string QUERY = "SELECT * FROM chat WHERE id = :id; SELECT * FROM chat_message WHERE chat_id = :id;";
 
-		using var con = _sql.CreateConnection();
+		using var con = await _sql.CreateConnection();
 		using var rdr = await con.QueryMultipleAsync(QUERY, new { id });
 
 		var chat = await rdr.ReadFirstOrDefaultAsync<DbChat>();

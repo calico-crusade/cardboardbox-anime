@@ -1,6 +1,6 @@
 ﻿namespace CardboardBox.Anime.Database;
 
-public class DbMangaChapter : DbObject
+public class DbMangaChapter : DbObjectInt
 {
 	[JsonPropertyName("mangaId")]
 	public long MangaId { get; set; }

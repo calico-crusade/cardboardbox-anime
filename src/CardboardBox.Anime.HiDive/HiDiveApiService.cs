@@ -3,6 +3,8 @@ using HtmlAgilityPack;
 
 namespace CardboardBox.Anime.HiDive;
 
+using CardboardBox.Extensions;
+using CardboardBox.Json;
 using Core;
 using Core.Models;
 using Http;
@@ -12,20 +14,15 @@ public interface IHiDiveApiService : IAnimeApiService
 	IAsyncEnumerable<Anime> Fetch(string url, string type = "series");
 }
 
-public class HiDiveApiService : IHiDiveApiService
+public class HiDiveApiService(
+	ILogger<HiDiveApiService> _logger, 
+	IApiService _api,
+	IJsonService _json) : IHiDiveApiService
 {
-	private readonly ILogger _logger;
-	private readonly IApiService _api;
-
-	public HiDiveApiService(ILogger<HiDiveApiService> logger, IApiService api)
-	{
-		_logger = logger;
-		_api = api;
-	}
 
 	public async IAsyncEnumerable<Anime> Fetch(string url, string type = "series")
 	{
-		var html = await _api.Create(url).GetHtml();
+		var html = await _api.Create(url, _json, "GET").GetHtml();
 		if (html == null) yield break;
 
 		var divs = html.DocumentNode.SelectNodes("//div[@class='body-bg-color top-page-offset']/div/div[@class='section']");
@@ -47,8 +44,8 @@ public class HiDiveApiService : IHiDiveApiService
 
 	public Task<HtmlDocument?> GetAnimeData(string id)
 	{
-		return _api.Create("https://www.hidive.com/shows/titlewindowcontent", "POST")
-			.Body(("id", id))
+		return ((IHttpBuilder)_api.Create("https://www.hidive.com/shows/titlewindowcontent", _json, "POST")
+			.Body(("id", id)))
 			.GetHtml();
 	}
 

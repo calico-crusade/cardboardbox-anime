@@ -1,6 +1,6 @@
 ﻿namespace CardboardBox.Anime.Database;
 
-public abstract class DbObject
+public abstract class DbObjectInt
 {
 	[JsonPropertyName("id")]
 	public long Id { get; set; }

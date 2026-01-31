@@ -6,6 +6,7 @@ namespace CardboardBox.Anime.Cli.Verbs;
 
 using CardboardBox.Anime.Core.Models;
 using CardboardBox.Anime.Database;
+using CardboardBox.Extensions;
 using CardboardBox.Manga;
 using Interactive;
 using System.Collections.Generic;

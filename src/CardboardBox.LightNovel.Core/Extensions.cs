@@ -1,4 +1,6 @@
-﻿namespace CardboardBox.LightNovel.Core;
+﻿using CardboardBox.Extensions;
+
+namespace CardboardBox.LightNovel.Core;
 
 using Anime.Database;
 using Anime.Database.Mapping;
@@ -84,6 +86,43 @@ public static class Extensions
             return;
         }
     }
+
+	public static async IAsyncEnumerable<T> WhereA<T>(this IAsyncEnumerable<T> source, Func<T, bool> predicate)
+	{
+		await foreach (var item in source)
+		{
+			if (predicate(item))
+				yield return item;
+		}
+	}
+
+	public static async IAsyncEnumerable<T> SkipWhileA<T>(this IAsyncEnumerable<T> source, Func<T, bool> predicate)
+	{
+		var skipping = true;
+		await foreach (var item in source)
+		{
+			if (skipping && predicate(item))
+				continue;
+			skipping = false;
+			yield return item;
+		}
+	}
+
+	public static async Task<T[]> ToArrayA<T>(this IAsyncEnumerable<T> source)
+	{
+		var items = new List<T>();
+		await foreach (var item in source)
+			items.Add(item);
+		return [.. items];
+	}
+
+	public static async Task<T?> FirstOrDefaultA<T>(this IAsyncEnumerable<T> source)
+	{
+		await foreach(var item in source)
+			return item;
+
+		return default;
+	}
 
 	public static IServiceCollection AddLightNovel(this IServiceCollection services)
 	{

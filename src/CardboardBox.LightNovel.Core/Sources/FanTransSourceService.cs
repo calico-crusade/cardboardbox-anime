@@ -34,7 +34,7 @@ internal class FanTransSourceService : RatedSource, IFanTransSourceService
         if (_volumes.TryGetValue(url, out var volumes))
             return volumes;
 
-        return _volumes[url] = await Volumes(url).ToArrayAsync();
+        return _volumes[url] = await Volumes(url).ToArrayA();
     }
 
     public async IAsyncEnumerable<SourceVolume> Volumes(string seriesUrl)

@@ -2,6 +2,7 @@
 using ICSharpCode.SharpZipLib.Zip;
 
 using System.Collections.Concurrent;
+using CardboardBox.Extensions;
 
 namespace CardboardBox.LightNovel.Core;
 

@@ -1,4 +1,6 @@
-﻿namespace CardboardBox.Anime.Core;
+﻿using CardboardBox.Extensions;
+
+namespace CardboardBox.Anime.Core;
 
 public interface IFileCacheService
 {

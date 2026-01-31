@@ -2,7 +2,7 @@
 
 using Core.Models;
 
-public class DbAnime : DbObject
+public class DbAnime : DbObjectInt
 {
 	[JsonPropertyName("hashId")]
 	public string HashId { get; set; } = "";

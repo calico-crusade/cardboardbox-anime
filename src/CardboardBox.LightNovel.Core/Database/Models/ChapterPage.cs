@@ -2,7 +2,7 @@
 
 using Anime.Database;
 
-public class ChapterPage : DbObject
+public class ChapterPage : DbObjectInt
 {
 	[JsonPropertyName("chapterId")]
 	public long ChapterId { get; set; }

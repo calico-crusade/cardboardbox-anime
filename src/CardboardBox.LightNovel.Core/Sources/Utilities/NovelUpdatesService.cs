@@ -1,4 +1,5 @@
-﻿using CardboardBox.LightNovel.Core.Sources.Utilities.FlareSolver;
+﻿using CardboardBox.Json;
+using CardboardBox.LightNovel.Core.Sources.Utilities.FlareSolver;
 using System.Net;
 
 namespace CardboardBox.LightNovel.Core.Sources.Utilities;
@@ -15,6 +16,7 @@ public interface INovelUpdatesService
 public class NovelUpdatesService(
     IApiService _api, 
     IFlareSolver _flare,
+    IJsonService _json,
     ILogger<NovelUpdatesService> _logger) : INovelUpdatesService
 {
     private SolverCookie[]? _cookies = null;
@@ -103,14 +105,14 @@ public class NovelUpdatesService(
         var doc = await _api.PostHtml(URL, items.ToArray());
         if (doc == null) return Array.Empty<SourceChapterItem>();
 
-        return doc.DocumentNode.SelectNodes("//ol/li/a[not(contains(title, 'Go to chapter page'))]")
+        return doc.DocumentNode.SelectNodes("//ol/li/a[not(contains(title, 'Go to chapter page'))]")?
             .Select(t => new SourceChapterItem
             {
                 Title = t.InnerText.HTMLDecode().Trim(),
                 Url = "https:" + t.GetAttributeValue("href", "")
             })
             .Where(t => !string.IsNullOrEmpty(t.Title))
-            .ToArray();
+            .ToArray() ?? [];
     }
 
 	public async Task<(TempSeriesInfo? info, SourceChapterItem[] chapters)> GetChapters(string url)
@@ -138,12 +140,12 @@ public class NovelUpdatesService(
 
     public async Task<string?> GetChapterUrl(SourceChapterItem item)
     {
-        var req = await _api.Create(item.Url)
+        var req = await ((IHttpBuilder)_api.Create(item.Url, _json, "GET")
             .Accept("text/html")
-            .With(c =>
+            .With(c => c.Message(c => 
             {
-                c.Headers.Add("user-agent", CardboardBox.Extensions.USER_AGENT);
-            }).Result() ?? throw new NullReferenceException($"Request returned null for: {item.Url}");
+                c.Headers.Add("user-agent", SomeExtensions.USER_AGENT);
+            }))).Result() ?? throw new NullReferenceException($"Request returned null for: {item.Url}");
 
         req.EnsureSuccessStatusCode();
         return req.RequestMessage?.RequestUri?.OriginalString;

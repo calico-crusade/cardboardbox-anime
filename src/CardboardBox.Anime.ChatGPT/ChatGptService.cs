@@ -45,9 +45,9 @@ public class ChatGptService : IChatGptService
         var tokenize = CountTokens(chat);
 		if (tokenize > maxTokenSize) throw new ArgumentException($"Token count exceeds limit: {maxTokenSize} < {tokenize}", nameof(chat));
 
-		return _api.Post<GptResponse, GptChat>("https://api.openai.com/v1/chat/completions", chat, c =>
+		return _api.Post<GptResponse, GptChat>("https://api.openai.com/v1/chat/completions", chat, c => c.Message(c => 
 		{
 			c.Headers.Authorization = new AuthenticationHeaderValue("Bearer", ApiToken);
-		});
+		}));
 	}
 }

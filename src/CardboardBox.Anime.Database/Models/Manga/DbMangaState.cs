@@ -1,6 +1,6 @@
 ﻿namespace CardboardBox.Anime.Database;
 
-public class DbMangaState : DbObject
+public class DbMangaState : DbObjectInt
 {
 	[JsonPropertyName("messageId")]
 	public ulong MessageId { get; set; }

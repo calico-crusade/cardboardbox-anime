@@ -1,6 +1,6 @@
 ﻿namespace CardboardBox.Anime.Bot;
 
-public class GptAuthorized : DbObject
+public class GptAuthorized : DbObjectInt
 {
 	public string? UserId { get; set; }
 

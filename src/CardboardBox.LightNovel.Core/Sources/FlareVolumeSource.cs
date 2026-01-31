@@ -83,7 +83,7 @@ public abstract class FlareVolumeSource(
         if (_volumes.TryGetValue(url, out var volumes))
             return volumes;
 
-        return _volumes[url] = await ParseVolumes(doc, url).ToArrayAsync();
+        return _volumes[url] = await ParseVolumes(doc, url).ToArrayA();
     }
 
     private async Task<HtmlDocument> DoRequest(string url, int count = 0)
@@ -157,8 +157,8 @@ public abstract class FlareVolumeSource(
         var safeUrl = Safe(firstUrl);
         var series = SeriesFromChapter(firstUrl);
         var volumes = Volumes(series)
-            .SelectMany(volume => volume.Chapters.Select(chapter => (volume, chapter)).ToAsyncEnumerable())
-            .SkipWhile(t => Safe(t.chapter.Url) != safeUrl);
+            .SelectMany(volume => volume.Chapters.Select(chapter => (volume, chapter)))
+            .SkipWhileA(t => Safe(t.chapter.Url) != safeUrl);
 
         await foreach(var item in volumes)
         {

@@ -1,6 +1,6 @@
 ﻿namespace CardboardBox.Anime.Bot;
 
-public class LookupRequest : DbObject
+public class LookupRequest : DbObjectInt
 {
 	public string ImageUrl { get; set; } = string.Empty;
 

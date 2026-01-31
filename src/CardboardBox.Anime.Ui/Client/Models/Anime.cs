@@ -1,6 +1,6 @@
 ﻿namespace CardboardBox.Anime.Ui.Client.Models;
 
-public class AnimeModel : DbObject
+public class AnimeModel : DbObjectInt
 {
 	[JsonPropertyName("hashId")]
 	public string HashId { get; set; } = "";

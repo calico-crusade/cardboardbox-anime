@@ -1,4 +1,6 @@
-﻿namespace CardboardBox.Manga.Providers;
+﻿using CardboardBox.Extensions;
+
+namespace CardboardBox.Manga.Providers;
 
 public interface INhentaiSource : IMangaSource { }
 

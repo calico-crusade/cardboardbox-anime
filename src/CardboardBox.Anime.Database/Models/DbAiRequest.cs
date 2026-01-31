@@ -1,6 +1,6 @@
 ﻿namespace CardboardBox.Anime.Database;
 
-public class DbAiRequest : DbObject
+public class DbAiRequest : DbObjectInt
 {
 	public long ProfileId { get; set; }
 

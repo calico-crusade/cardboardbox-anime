@@ -9,6 +9,7 @@ using Match = System.Text.RegularExpressions.Match;
 using CMsg = Cacheable<IUserMessage, ulong>;
 using CMMsg = Cacheable<IMessage, ulong>;
 using CChn = Cacheable<IMessageChannel, ulong>;
+using CardboardBox.Extensions;
 
 public class EasterEggs
 {
@@ -270,11 +271,11 @@ public class EasterEggs
 			return;
 		}
 
-		var messages = StringExtensions.Split(message);
+		var messages = message.Chunk(2000);
 		await res.ModifyAsync(t => t.Content = "My response is a bit long, so I'm going to post it below. Bare with me!");
 
 		foreach(var m in messages)
-			await msg.Channel.SendMessageAsync(m, messageReference: reference);
+			await msg.Channel.SendMessageAsync(new string(m), messageReference: reference);
 	}
 
 	public async Task HandleScript(SocketMessage msg)

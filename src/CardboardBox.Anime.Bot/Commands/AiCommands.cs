@@ -1,4 +1,5 @@
 ﻿using CardboardBox.Anime.AI;
+using CardboardBox.Extensions;
 
 namespace CardboardBox.Anime.Bot.Commands;
 

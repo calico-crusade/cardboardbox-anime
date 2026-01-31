@@ -1,5 +1,6 @@
 ﻿namespace CardboardBox.LightNovel.Core.Sources;
 
+using CardboardBox.Json;
 using Utilities;
 using Utilities.FlareSolver;
 
@@ -8,6 +9,7 @@ public interface ICardboardTranslationsSourceService : ISourceVolumeService { }
 public class CardboardTranslationsSourceService(
     IFlareSolver _flare,
     IApiService _api,
+    IJsonService _json,
     ISmartReaderService _smart,
     ILogger<CardboardTranslationsSourceService> _logger) 
     : FlareVolumeSource(_flare, _smart, _logger), ICardboardTranslationsSourceService
@@ -50,7 +52,7 @@ public class CardboardTranslationsSourceService(
         var encoded = WebUtility.UrlEncode(title.Replace("?", ""));
         var callback = "test";
         var url = $"{RootUrl}/feeds/posts/default/-/{encoded}?alt=json-in-script&start-index={start}&max-results={max}&callback={callback}";
-        var response = await _api.Create(url).Result();
+        var response = await _api.Create(url, _json, "GET").Result();
         if (response is null)
         {
             _logger.LogError("Failed to fetch contents from {url}", url);

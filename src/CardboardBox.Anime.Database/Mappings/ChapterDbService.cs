@@ -52,7 +52,7 @@ OFFSET {offset};
 
 SELECT COUNT(*) FROM light_novels WHERE book_id = :bookId;";
 
-		using var con = _sql.CreateConnection();
+		using var con = await _sql.CreateConnection();
 		using var rdr = await con.QueryMultipleAsync(query, new { bookId });
 
 		var res = (await rdr.ReadAsync<DbChapter>()).ToArray();
@@ -89,7 +89,7 @@ OFFSET {offset};
 
 SELECT COUNT(DISTINCT book) from light_novels;";
 
-		using var con = _sql.CreateConnection();
+		using var con = await _sql.CreateConnection();
 		using var rdr = await con.QueryMultipleAsync(query);
 
 		var res = (await rdr.ReadAsync<DbBook>()).ToArray();
@@ -183,7 +183,7 @@ WHERE
 	book_id = :bookId
 ORDER BY ordinal";
 
-		using var con = _sql.CreateConnection();
+		using var con = await _sql.CreateConnection();
 		using var rdr = await con.QueryMultipleAsync(QUERY, new { bookId });
 
 		var res = await rdr.ReadFirstOrDefaultAsync<DbBook>();

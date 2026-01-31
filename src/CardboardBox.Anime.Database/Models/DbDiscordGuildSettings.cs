@@ -1,6 +1,6 @@
 ﻿namespace CardboardBox.Anime.Database;
 
-public class DbDiscordGuildSettings : DbObject
+public class DbDiscordGuildSettings : DbObjectInt
 {
 	[JsonPropertyName("guildId")]
 	public string GuildId { get; set; } = string.Empty;

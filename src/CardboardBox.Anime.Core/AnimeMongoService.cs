@@ -1,5 +1,6 @@
 ﻿namespace CardboardBox.Anime.Core;
 
+using CardboardBox.Extensions;
 using Models;
 
 public class AnimeConfig : IMongoConfig<Anime>

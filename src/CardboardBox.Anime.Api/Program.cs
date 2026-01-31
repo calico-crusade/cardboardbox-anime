@@ -1,5 +1,5 @@
 using CardboardBox.Anime;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,20 +19,6 @@ builder.Services.AddSwaggerGen(c =>
 		BearerFormat = "JWT",
 		In = ParameterLocation.Header,
 		Description = "JWT Authorization header using the Bearer scheme."
-	});
-	c.AddSecurityRequirement(new OpenApiSecurityRequirement
-	{
-		{
-			new OpenApiSecurityScheme
-			{
-				Reference = new OpenApiReference
-				{
-					Type = ReferenceType.SecurityScheme,
-					Id = "Bearer"
-				}
-			},
-			Array.Empty<string>()
-		}
 	});
 });
 

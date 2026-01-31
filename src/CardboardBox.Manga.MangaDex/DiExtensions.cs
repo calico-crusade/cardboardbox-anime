@@ -4,7 +4,7 @@ namespace CardboardBox;
 
 using Manga.MangaDex;
 
-public static class Extensions
+public static class DiExtensions
 {
 	public static IServiceCollection AddMangadex(this IServiceCollection services)
 	{

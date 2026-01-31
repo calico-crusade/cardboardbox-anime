@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CardboardBox.Anime.Vrv;
 
+using CardboardBox.Extensions;
 using Core;
 using Core.Models;
 using Http;

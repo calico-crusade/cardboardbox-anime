@@ -2,7 +2,7 @@
 
 using Anime.Database;
 
-public abstract class HashBase : DbObject
+public abstract class HashBase : DbObjectInt
 {
 	[JsonPropertyName("hashId")]
 	public string HashId { get; set; } = string.Empty;

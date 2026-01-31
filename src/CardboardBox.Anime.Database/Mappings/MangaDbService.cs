@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CardboardBox.Anime.Database;
 
+using CardboardBox.Extensions;
 using Core;
 using Core.Models;
 using Generation;
@@ -539,7 +540,7 @@ COMMIT;";
         var where = string.Join(" AND ", parts);
         var sort = filter.Ascending ? "ASC" : "DESC";
 
-		using var con = _sql.CreateConnection();
+		using var con = await _sql.CreateConnection();
 
 		var query = string.Format(QUERY, where, sort, sortField, RandomSuffix());
 		using var multi = await con.QueryMultipleAsync(query, pars);
@@ -644,7 +645,7 @@ WHERE
 
 		var query = string.IsNullOrEmpty(platformId) ? QUERY : QUERY + TARGETED_QUERY;
 
-		using var con = _sql.CreateConnection();
+		using var con = await _sql.CreateConnection();
 		using var rdr = await con.QueryMultipleAsync(query, new { id, platformId });
 
 		var manga = await rdr.ReadFirstOrDefaultAsync<DbManga>();
@@ -696,7 +697,7 @@ WHERE
 
 		var query = string.IsNullOrEmpty(platformId) ? QUERY : QUERY + TARGETED_QUERY;
 
-		using var con = _sql.CreateConnection();
+		using var con = await _sql.CreateConnection();
 		using var rdr = await con.QueryMultipleAsync(query, new { id, platformId });
 
 		var manga = await rdr.ReadFirstOrDefaultAsync<DbManga>();
@@ -744,7 +745,7 @@ FROM manga_favourites mf
 JOIN profiles p ON p.id = mf.profile_id
 WHERE p.platform_id = :platformId AND mf.manga_id = :id";
 
-		using var con = _sql.CreateConnection();
+		using var con = await _sql.CreateConnection();
 		var manga = await con.QueryFirstOrDefaultAsync<DbManga>(RANDOM_QUERY);
 		if (manga == null) return null;
 
@@ -800,7 +801,7 @@ COMMIT;";
 
 		var state = string.IsNullOrEmpty(platformId) ? TouchedState.All : TouchedState.InProgress;
 		var offset = (page - 1) * size;
-		using var con = _sql.CreateConnection();
+		using var con = await _sql.CreateConnection();
 		using var rdr = await con.QueryMultipleAsync(QUERY, new { platformId, state = (int)state, offset, size, since });
 
 		var results = rdr.Read<DbManga, DbMangaProgress, DbMangaChapter, MangaStats, MangaProgress>((m, p, c, s) => new MangaProgress(m, p, c, s), splitOn: "split");
@@ -841,7 +842,7 @@ JOIN manga m ON m.id = t.manga_id
 JOIN manga_chapter mc ON mc.id = t.manga_chapter_id
 LEFT JOIN manga_progress mp ON mp.id = t.progress_id";
 
-		using var con = _sql.CreateConnection();
+		using var con = await _sql.CreateConnection();
 		var records = await con.QueryAsync<DbManga, DbMangaProgress, DbMangaChapter, MangaStats, MangaProgress>(
 			QUERY, (m, p, c, s) => new MangaProgress(m, p, c, s), 
 			param: new { hashId, id, platformId }, splitOn: "split");

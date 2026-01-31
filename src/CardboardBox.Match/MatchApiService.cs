@@ -3,6 +3,7 @@ using System.Text.Json;
 
 namespace CardboardBox.Match;
 
+using CardboardBox.Json;
 using Http;
 
 public interface IMatchApiService
@@ -30,22 +31,17 @@ public interface IMatchApiService
 	Task<MatchResult?> Ping();
 }
 
-public class MatchApiService : IMatchApiService
+public class MatchApiService(
+	IApiService _api, 
+	IConfiguration _config,
+	IJsonService _json) : IMatchApiService
 {
-	private readonly IApiService _api;
-	private readonly IConfiguration _config;
 
 	public string MatchUrl => _config["Match:Url"] ?? throw new ArgumentNullException("Match:Url");
 
-	public MatchApiService(IApiService api, IConfiguration config)
-	{
-		_api = api;
-		_config = config;
-	}
-
 	public Task<T?> Request<T>(string url, string method, params (string key, string value)[] body)
 	{
-		var req = _api.Create($"{MatchUrl}{url}", method);
+		var req = _api.Create($"{MatchUrl}{url}", _json, method);
 
 		if (body != null && body.Length > 0)
 			req.Body(body);
@@ -88,7 +84,7 @@ public class MatchApiService : IMatchApiService
 
 	public async Task<MatchSearchResults<T>?> Search<T>(MemoryStream io, string filename, bool allOris = false)
 	{
-		var req = _api.Create($"{MatchUrl}search", "POST");
+		var req = _api.Create($"{MatchUrl}search", _json, "POST");
 
 		using var content = new MultipartFormDataContent
 		{

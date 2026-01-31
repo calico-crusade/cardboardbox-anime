@@ -19,16 +19,15 @@ public class SqliteService : SqlService
 		_logger = logger;
 	}
 
-	public override IDbConnection CreateConnection()
+	public override async Task<IDbConnection> CreateConnection()
 	{
 		var constring = _config["Sqlite:ConnectionString"];
 		var con = new SqliteConnection(constring);
-		con.Open();
-
+		await con.OpenAsync();
 		if (!FirstRun) return con;
 
 		FirstRun = false;
-		ExecuteScripts(con).Wait();
+		await ExecuteScripts(con);
 		return con;
 	}
 

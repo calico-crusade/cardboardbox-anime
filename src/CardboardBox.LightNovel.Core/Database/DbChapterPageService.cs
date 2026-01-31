@@ -47,7 +47,7 @@ WHERE
 	cp.chapter_id = :chapterId
 ORDER BY cp.ordinal ASC";
 
-		using var con = _sql.CreateConnection();
+		using var con = await _sql.CreateConnection();
 		return (await con.QueryAsync<Page, ChapterPage, ChapterPages>(QUERY, 
 			(p, c) => new(p, c),
 			new { chapterId })).ToArray();

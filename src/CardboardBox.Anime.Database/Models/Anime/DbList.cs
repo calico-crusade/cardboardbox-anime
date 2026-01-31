@@ -1,6 +1,6 @@
 ﻿namespace CardboardBox.Anime.Database;
 
-public class DbList : DbObject
+public class DbList : DbObjectInt
 {
 	[JsonPropertyName("title")]
 	public string Title { get; set; } = "";

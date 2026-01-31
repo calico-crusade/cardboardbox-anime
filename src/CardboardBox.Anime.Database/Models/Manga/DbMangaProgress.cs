@@ -1,6 +1,6 @@
 ﻿namespace CardboardBox.Anime.Database;
 
-public class DbMangaProgress : DbObject
+public class DbMangaProgress : DbObjectInt
 {
 	[JsonPropertyName("profileId")]
 	public long ProfileId { get; set; }

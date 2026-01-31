@@ -191,7 +191,7 @@ WHERE
     l.deleted_at IS NULL AND
     p.deleted_at IS NULL ";
 
-		using var con = _sql.CreateConnection();
+		using var con = await _sql.CreateConnection();
 		using var reader = await con.QueryMultipleAsync(query);
 		var results = await reader.ReadAsync<CompPublicList>();
 		var count = await reader.ReadSingleAsync<long>();

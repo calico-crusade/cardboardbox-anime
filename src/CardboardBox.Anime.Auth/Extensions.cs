@@ -1,17 +1,21 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using System.Security.Claims;
+using System.Text;
 
 namespace CardboardBox.Anime.Auth;
 
+using CardboardBox.Json;
 using Http;
+using System.Text.Json;
 
 public static class Extensions
 {
+
+	private static IJsonService _json = new SystemTextJsonService(new JsonSerializerOptions());
 	public static readonly Random RandomInstance = new();
 
 	public static Dictionary<string, string> GetParameters(this IConfiguration config, string section)
@@ -23,9 +27,9 @@ public static class Extensions
 
 	public static Task<T?> Post<T>(this IApiService api, string url, (string, string)[] data, Action<HttpRequestMessage>? config = null)
 	{
-		return api.Create(url, "POST")
-			.With(config)
-			.Body(data)
+		return ((IHttpBuilder)api.Create(url, _json, "POST")
+			.With(c => c.Message(config))
+			.Body(data))
 			.Result<T>();
 	}
 

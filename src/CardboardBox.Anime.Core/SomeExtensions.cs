@@ -1,12 +1,15 @@
-﻿using System.Linq.Expressions;
+﻿using CardboardBox.Json;
+using System.Linq.Expressions;
 using System.Web;
 
 namespace CardboardBox;
 
 using AnimeM = Anime.Core.Models.Anime;
 
-public static class Extensions
+public static class SomeExtensions
 {
+	private static IJsonService _json = new SystemTextJsonService(new JsonSerializerOptions());
+
 	public const string USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36";
 
 	public static AnimeM Clean(this AnimeM anime)
@@ -195,13 +198,14 @@ public static class Extensions
 	//
 	public static async Task<HtmlDocument> GetHtml(this IApiService api, string url, Action<HttpRequestMessage>? config = null)
 	{
-		var req = await api.Create(url)
+		var json = new SystemTextJsonService(new JsonSerializerOptions());
+		var req = await ((IHttpBuilder)api.Create(url, json, "GET")
 			.Accept("text/html")
-			.With(c =>
+			.With(c => c.Message(c => 
 			{
 				c.Headers.Add("user-agent", USER_AGENT);
 				config?.Invoke(c);
-			})
+			})))
 			.Result() ?? throw new NullReferenceException($"Request returned null for: {url}");
 
 		if (req.StatusCode == HttpStatusCode.Moved)
@@ -226,13 +230,13 @@ public static class Extensions
 
 	public static async Task<HtmlDocument> PostHtml(this IApiService api, string url, Action<HttpRequestMessage>? config = null)
 	{
-		var req = await api.Create(url, "POST")
+		var req = await ((IHttpBuilder)api.Create(url, _json, "POST")
 			.Accept("*/*")
-			.With(c =>
+			.With(c => c.Message(c => 
 			{
                 c.Headers.Add("user-agent", USER_AGENT);
                 config?.Invoke(c);
-            })
+            })))
 			.Result() ?? throw new NullReferenceException($"Request returned null for: {url}");
 
         req.EnsureSuccessStatusCode();
@@ -246,14 +250,14 @@ public static class Extensions
 
 	public static async Task<HtmlDocument> PostHtml(this IApiService api, string url, (string, string)[] formData, Action<HttpRequestMessage>? config = null)
 	{
-		var req = await api.Create(url, "POST")
+		var req = await ((IHttpBuilder)api.Create(url, _json, "POST")
 			.Body(formData)
 			.Accept("*/*")
-			.With(c =>
+			.With(c => c.Message(c => 
 			{
 				c.Headers.Add("user-agent", USER_AGENT);
 				config?.Invoke(c);
-			})
+			})))
 			.Result() ?? throw new NullReferenceException($"Request returned null for: {url}");
 
         req.EnsureSuccessStatusCode();
@@ -267,13 +271,13 @@ public static class Extensions
 	//
 	public static async Task<(Stream data, long length, string filename, string type)> GetData(this IApiService api, string url, Action<HttpRequestMessage>? config = null)
 	{
-		var req = await api.Create(url)
+		var req = await ((IHttpBuilder)api.Create(url, _json, "GET")
 			.Accept("*/*")
-			.With(c =>
+			.With(c => c.Message(c =>
 			{
 				c.Headers.Add("user-agent", USER_AGENT);
 				config?.Invoke(c);
-			})
+			})))
 			.Result();
 		if (req == null)
 			throw new NullReferenceException($"Request returned null for: {url}");
@@ -294,7 +298,7 @@ public static class Extensions
 	//
 	public static async Task<(T1 item1, T2 item2, T3 item3, T4 item4)[]> QueryAsync<T1, T2, T3, T4>(this ISqlService sql, string query, object? parameters = null, string splitOn = "split")
 	{
-		using var con = sql.CreateConnection();
+		using var con = await sql.CreateConnection();
 		return (await con.QueryAsync<T1, T2, T3, T4, (T1, T2, T3, T4)>(query,
 			(a, b, c, d) => (a, b, c, d),
 			parameters,
@@ -303,7 +307,7 @@ public static class Extensions
 	//
 	public static async Task<(T1 item1, T2 item2, T3 item3)[]> QueryAsync<T1, T2, T3>(this ISqlService sql, string query, object? parameters = null, string splitOn = "split")
 	{
-		using var con = sql.CreateConnection();
+		using var con = await sql.CreateConnection();
 		return (await con.QueryAsync<T1, T2, T3, (T1, T2, T3)>(query,
 			(a, b, c) => (a, b, c),
 			parameters,
@@ -312,7 +316,7 @@ public static class Extensions
 	//
 	public static async Task<(T1 item1, T2 item2)[]> QueryAsync<T1, T2>(this ISqlService sql, string query, object? parameters = null, string splitOn = "split")
 	{
-		using var con = sql.CreateConnection();
+		using var con = await sql.CreateConnection();
 		return (await con.QueryAsync<T1, T2, (T1, T2)>(query,
 			(a, b) => (a, b),
 			parameters,

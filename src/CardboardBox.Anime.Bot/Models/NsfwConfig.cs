@@ -1,6 +1,6 @@
 ﻿namespace CardboardBox.Anime.Bot;
 
-public class NsfwConfig : DbObject
+public class NsfwConfig : DbObjectInt
 {
 	public string GuildId { get; set; } = string.Empty;
 
@@ -29,7 +29,7 @@ public class NsfwConfig : DbObject
 	public int BanAfter { get; set; } = 5;
 }
 
-public class NsfwConfigState : DbObject
+public class NsfwConfigState : DbObjectInt
 {
 	public ulong GuildId { get; set; }
 

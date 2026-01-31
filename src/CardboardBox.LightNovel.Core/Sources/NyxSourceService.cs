@@ -1,4 +1,6 @@
-﻿namespace CardboardBox.LightNovel.Core.Sources;
+﻿using CardboardBox.Extensions;
+
+namespace CardboardBox.LightNovel.Core.Sources;
 
 public interface INyxSourceService : ISourceVolumeService { }
 

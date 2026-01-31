@@ -4,6 +4,7 @@ using MManga = MangaDexSharp.Manga;
 namespace CardboardBox.BackgroundTasks.Cli.Tasks;
 
 using Anime.Database;
+using CardboardBox.Extensions;
 using Manga.MangaDex;
 
 public class HistoricalMangadexIndexing : IScheduledTask

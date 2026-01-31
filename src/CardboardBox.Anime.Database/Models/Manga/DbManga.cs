@@ -1,6 +1,6 @@
 ﻿namespace CardboardBox.Anime.Database;
 
-public class DbManga : DbObject
+public class DbManga : DbObjectInt
 {
 	[JsonPropertyName("hashId")]
 	public string HashId { get; set; } = string.Empty;

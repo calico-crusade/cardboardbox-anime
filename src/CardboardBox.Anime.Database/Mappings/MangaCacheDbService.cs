@@ -70,7 +70,7 @@ SELECT m.*
 FROM manga_cache m
 JOIN manga_chapter_cache c ON m.id = c.manga_id
 WHERE m.source_id = :sourceId";
-		using var con = _sql.CreateConnection();
+		using var con = await _sql.CreateConnection();
 		using var results = await con.QueryMultipleAsync(QUERY, new { sourceId });
 
 		var manga = await results.ReadFirstOrDefaultAsync<DbManga>();

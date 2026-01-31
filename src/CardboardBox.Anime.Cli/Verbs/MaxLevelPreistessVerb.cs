@@ -2,6 +2,7 @@
 
 namespace CardboardBox.Anime.Cli.Verbs;
 
+using CardboardBox.Extensions;
 using LightNovel.Core;
 using LightNovel.Core.Sources;
 using LightNovel.Core.Sources.Utilities;

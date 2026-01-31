@@ -200,8 +200,8 @@ internal class RoyalRoadSourceService(
         var safeUrl = Safe(firstUrl);
         var series = SeriesFromChapter(firstUrl);
         var volumes = Volumes(series)
-            .SelectMany(volume => volume.Chapters.Select(chapter => (volume, chapter)).ToAsyncEnumerable())
-            .SkipWhile(t => Safe(t.chapter.Url) != safeUrl);
+            .SelectMany(volume => volume.Chapters.Select(chapter => (volume, chapter)))
+            .SkipWhileA(t => Safe(t.chapter.Url) != safeUrl);
 
         string url = firstUrl;
 
@@ -212,8 +212,7 @@ internal class RoyalRoadSourceService(
 
         var token = CancellationToken.None;
         return limiter.Fetch(volumes, _logger, token)
-            .Where(t => t is not null)
-            .Select(t => t!);
+            .WhereA(t => t is not null)!;
     }
 
     public async Task<TempSeriesInfo?> GetSeriesInfo(string url)

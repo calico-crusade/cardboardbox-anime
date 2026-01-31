@@ -1,4 +1,5 @@
-﻿using CardboardBox.LightNovel.Core;
+﻿using CardboardBox.Extensions;
+using CardboardBox.LightNovel.Core;
 using CommandLine;
 using System.Runtime.CompilerServices;
 

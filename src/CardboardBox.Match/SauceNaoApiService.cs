@@ -85,9 +85,9 @@ public class SauceNaoApiService : ISauceNaoApiService
 				{ content, "file", filename }
 			};
 
-			var result = await _api
-				.Create(url, "POST")
-				.BodyContent(body)
+			var result = await ((IHttpBuilder)_api
+				.Create(url, _json, "POST")
+				.BodyContent(body))
 				.Result();
 
 			if (result is null || !result.IsSuccessStatusCode)

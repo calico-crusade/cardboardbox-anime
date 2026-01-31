@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CardboardBox.Anime.Crunchyroll;
 
+using CardboardBox.Extensions;
 using Core;
 using Core.Models;
 using Http;
@@ -43,10 +44,10 @@ public class CrunchyrollApiService : ICrunchyrollApiService
 		foreach(var (name, res) in _crunchyConfig.Query)
 			url.SetQueryParam(name, res);
 
-		return _api.Get<CrunchyrollResult>(url, c =>
+		return _api.Get<CrunchyrollResult>(url, c => c.Message(c => 
 		{
 			c.Headers.Add("Authorization", $"Bearer " + authToken);
-		});
+		}));
 	}
 
 	public IAsyncEnumerable<Anime> All() => All(null);

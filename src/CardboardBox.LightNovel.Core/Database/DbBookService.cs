@@ -3,6 +3,7 @@
 namespace CardboardBox.LightNovel.Core.Database;
 
 using Anime.Database.Generation;
+using CardboardBox.Extensions;
 
 public interface IDbBookService : ILnOrmMap<Book>
 {
@@ -60,7 +61,7 @@ JOIN ln_chapters c ON c.id = cp.chapter_id
 WHERE c.book_id = :bookId
 ORDER BY cp.ordinal";
 
-		using var con = _sql.CreateConnection();
+		using var con = await _sql.CreateConnection();
 		using var rdr = await con.QueryMultipleAsync(QUERY, new { bookId });
 
 		var series = await rdr.ReadFirstOrDefaultAsync<Series>();

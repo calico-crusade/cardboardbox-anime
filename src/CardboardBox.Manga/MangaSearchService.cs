@@ -9,6 +9,7 @@ using Http;
 using Providers;
 using CardboardBox.Match.SauceNao;
 using MangaDexSharp;
+using CardboardBox.Extensions;
 
 public interface IMangaSearchService
 {

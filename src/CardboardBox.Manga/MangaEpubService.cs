@@ -2,6 +2,7 @@
 
 using Anime.Core;
 using Anime.Database;
+using CardboardBox.Extensions;
 using Epub;
 
 public interface IMangaEpubService

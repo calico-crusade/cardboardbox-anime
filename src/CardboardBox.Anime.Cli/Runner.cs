@@ -1,4 +1,5 @@
 ﻿using SLImage = SixLabors.ImageSharp.Image;
+using CardboardBox.Extensions;
 
 namespace CardboardBox.Anime.Cli;
 

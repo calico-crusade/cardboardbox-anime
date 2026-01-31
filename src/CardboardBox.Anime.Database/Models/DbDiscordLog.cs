@@ -1,6 +1,6 @@
 ﻿namespace CardboardBox.Anime.Database;
 
-public class DbDiscordLog : DbObject
+public class DbDiscordLog : DbObjectInt
 {
     public string MessageId { get; set; } = string.Empty;
 

@@ -1,5 +1,6 @@
 ﻿namespace CardboardBox.LightNovel.Core.Sources;
 
+using CardboardBox.Extensions;
 using Utilities;
 using Utilities.FlareSolver;
 
@@ -56,8 +57,7 @@ internal class LONAMMTLSourceService(
 
         var descriptionEls = iterator.EverythingUntil(t => t.SelectSingleNode(".//a") is not null);
         var description = descriptionEls.Join(true);
-
-        var chapter = (await ParseVolumes(doc, url).FirstOrDefaultAsync())?.Chapters.FirstOrDefault()?.Url;
+        var chapter = (await ParseVolumes(doc, url).FirstOrDefaultA())?.Chapters.FirstOrDefault()?.Url;
 
         return new(title, description, [author], imageUrl, chapter, [], []);
 	}
@@ -74,7 +74,7 @@ internal class LONAMMTLSourceService(
             .GetAttributeValue("href", "");
         if (!string.IsNullOrEmpty(url)) return url;
 
-        return doc.DocumentNode.SelectNodes("//a")
+        return doc.DocumentNode.SelectNodes("//a")?
             .FirstOrDefault(t =>
                 t.InnerText?.Contains(text, StringComparison.InvariantCultureIgnoreCase) ?? false &&
                 t.GetAttributeValue("href", "").StartsWith(RootUrl, StringComparison.InvariantCultureIgnoreCase))?
@@ -89,7 +89,7 @@ internal class LONAMMTLSourceService(
         var title = doc.DocumentNode.InnerText("//head/title");
 
         var html = mod.DocumentNode.SelectNodes("//html");
-        html.Each(t => t.Remove());
+        html?.Each(t => t.Remove());
 
         var output = _smart.CleanseHtml(mod.DocumentNode.InnerHtml, url);
         return (title, output);

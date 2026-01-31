@@ -1,5 +1,6 @@
 ﻿namespace CardboardBox.LightNovel.Core;
 
+using CardboardBox.Extensions;
 using Sources;
 using Sources.ZirusSource;
 

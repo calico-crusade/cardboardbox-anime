@@ -1,6 +1,6 @@
 ﻿namespace CardboardBox.Anime.Database;
 
-public class DbListMap : DbObject
+public class DbListMap : DbObjectInt
 {
 	[JsonPropertyName("listId")]
 	public long ListId { get; set; }

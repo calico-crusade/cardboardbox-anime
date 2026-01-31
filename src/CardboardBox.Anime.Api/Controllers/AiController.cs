@@ -9,6 +9,7 @@ using Auth;
 using Database;
 using Match;
 using Http;
+using CardboardBox.Extensions;
 
 [ApiController, Authorize]
 public class AiController : ControllerBase

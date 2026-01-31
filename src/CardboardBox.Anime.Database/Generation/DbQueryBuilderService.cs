@@ -11,7 +11,7 @@ public interface IDbQueryBuilderService
 	string InsertReturn<T, TReturn>(string tableName, Expression<Func<T, TReturn>> returnCol, Action<PropertyExpressionBuilder<T>>? exclusions = null);
 	string InsertReturn(string tableName, Type type, string returnCol, params string[] exclusions);
 
-	string Update<T>(string tableName, Action<PropertyExpressionBuilder<T>>? exclusions = null) where T : DbObject;
+	string Update<T>(string tableName, Action<PropertyExpressionBuilder<T>>? exclusions = null) where T : DbObjectInt;
 	string Update<T, TId>(string tableName, Expression<Func<T, TId>> id, Action<PropertyExpressionBuilder<T>>? exclusions = null);
 	string Update(string tableName, Type type, PropertyMap id, params string[] exclusions);
 
@@ -98,7 +98,7 @@ public class DbQueryBuilderService : IDbQueryBuilderService
 	#region Inserts
 	public string[] DeteremineInsertExclusions(Type type)
 	{
-		if (AssignableFrom<DbObject>(type))
+		if (AssignableFrom<DbObjectInt>(type))
 			return new[] { "id", "deleted_at" };
 
 		return Array.Empty<string>();
@@ -143,13 +143,13 @@ public class DbQueryBuilderService : IDbQueryBuilderService
 	#region Updates
 	public string[] DeteremineUpdateExclusions(Type type)
 	{
-		if (AssignableFrom<DbObject>(type))
+		if (AssignableFrom<DbObjectInt>(type))
 			return new[] { "id", "created_at" };
 
 		return Array.Empty<string>();
 	}
 
-	public string Update<T>(string tableName, Action<PropertyExpressionBuilder<T>>? exclusions = null) where T : DbObject
+	public string Update<T>(string tableName, Action<PropertyExpressionBuilder<T>>? exclusions = null) where T : DbObjectInt
 	{
 		return Update(tableName, t => t.Id, exclusions);
 	}
@@ -232,7 +232,7 @@ WHERE
 	public string SelectId<T>(string tableName)
 	{
 		var type = typeof(T);
-		if (AssignableFrom<DbObject>(type))
+		if (AssignableFrom<DbObjectInt>(type))
 			return Select(tableName, new PropertyMap[]
 			{
 				new ("id", ":Id"),

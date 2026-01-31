@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CardboardBox.Anime.Funimation;
 
+using CardboardBox.Extensions;
 using Core;
 using Core.Models;
 using Http;
@@ -39,12 +40,12 @@ public class FunimationApiService : IFunimationApiService
 	public Task<FunimationAnimeResult?> Anime(string showUrl)
 	{
 		var url = $"{FUNIMATION_ANIME}/{showUrl.Trim('/')}.json";
-		return _api.Get<FunimationAnimeResult>(url, c =>
+		return _api.Get<FunimationAnimeResult>(url, c => c.Message(c => 
 		{
 			c.Headers.Add("Origin", "https://www.funimation.com");
 			c.Headers.Add("Referer", "https://www.funimation.com");
 			c.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:94.0) Gecko/20100101 Firefox/94.0");
-		});
+		}));
 	}
 
 	public Task<FunimationSearchResults?> Search(int offset, Sort sort, params Filter[] filters) => Search(offset, LIMIT_DEFAULT, sort, filters);
@@ -66,12 +67,12 @@ public class FunimationApiService : IFunimationApiService
 			lang = Languages(filters)
 		}).ToString();
 
-		return _api.CacheGet<FunimationSearchResults>(uri, c =>
+		return _api.Get<FunimationSearchResults>(uri, c => c.Message(c => 
 		{
 			c.Headers.Add("Origin", "https://www.funimation.com");
 			c.Headers.Add("Referer", "https://www.funimation.com");
 			c.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:94.0) Gecko/20100101 Firefox/94.0");
-		});
+		}));
 	}
 
 	public async Task<FunimationSearchResults?> FetchAll()

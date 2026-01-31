@@ -16,12 +16,6 @@ global using System.Text.RegularExpressions;
 global using System.Xml.Serialization;
 global using System.Xml.Linq;
 
-global using MongoDB.Bson;
-global using MongoDB.Bson.Serialization;
-global using MongoDB.Bson.Serialization.Attributes;
-global using MongoDB.Bson.Serialization.IdGenerators;
-global using MongoDB.Driver;
-
 global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Logging;

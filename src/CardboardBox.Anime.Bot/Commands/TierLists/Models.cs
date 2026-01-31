@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents a tier list stored in the database
 /// </summary>
-public class TierList : DbObject
+public class TierList : DbObjectInt
 {
     /// <summary>
     /// An MD5 hash of the URL
@@ -34,7 +34,7 @@ public class TierList : DbObject
 /// <summary>
 /// Represents a tier list instance associated with a specific message
 /// </summary>
-public class TierListInstance : DbObject
+public class TierListInstance : DbObjectInt
 {
     /// <summary>
     /// The ID of the tier 

@@ -1,6 +1,7 @@
 ﻿namespace CardboardBox.LightNovel.Core.Database;
 
 using Anime.Database.Generation;
+using CardboardBox.Extensions;
 
 public interface IDbSeriesService
 {
@@ -43,7 +44,7 @@ JOIN ln_books b ON b.id = c.book_id
 WHERE b.series_id = :seriesId
 ORDER BY b.ordinal, c.ordinal;";
 
-		using var con = _sql.CreateConnection();
+		using var con = await _sql.CreateConnection();
 		using var rdr = await con.QueryMultipleAsync(QUERY, new { seriesId });
 
 		var series = await rdr.ReadFirstOrDefaultAsync<Series>();
@@ -97,7 +98,7 @@ JOIN ln_books b ON b.id = c.book_id
 WHERE b.series_id = :seriesId
 ORDER BY b.ordinal, c.ordinal, cp.ordinal";
 
-		using var con = _sql.CreateConnection();
+		using var con = await _sql.CreateConnection();
 		using var rdr = await con.QueryMultipleAsync(QUERY, new { seriesId });
 
 		var series = await rdr.ReadFirstOrDefaultAsync<Series>();

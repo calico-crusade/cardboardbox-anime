@@ -2,6 +2,7 @@
 
 namespace CardboardBox.Manga.Providers;
 
+using CardboardBox.Extensions;
 using MangaDex;
 using MManga = MangaDexSharp.Manga;
 

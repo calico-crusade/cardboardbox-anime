@@ -34,7 +34,7 @@ public abstract class OrmMap<T>
 }
 
 public abstract class OrmMapExtended<T> : OrmMap<T>
-	where T : DbObject
+	where T : DbObjectInt
 {
 	private string? _fetchQuery;
 	private string? _insertReturnQuery;
@@ -76,7 +76,7 @@ public abstract class OrmMapExtended<T> : OrmMap<T>
 		p.Add("offset", (page - 1) * size);
 		p.Add("size", size);
 
-		using var con = _sql.CreateConnection();
+		using var con = await _sql.CreateConnection();
 		using var rdr = await con.QueryMultipleAsync(query, p);
 
 		var res = (await rdr.ReadAsync<T>()).ToArray();
@@ -95,7 +95,7 @@ public abstract class OrmMapExtended<T> : OrmMap<T>
 	public async Task<long> FakeUpsert<T2>(T2 item, string table, List<string> queryCache,
 		Action<PropertyExpressionBuilder<T2>> conflicts,
 		Action<PropertyExpressionBuilder<T2>>? inserts = null,
-		Action<PropertyExpressionBuilder<T2>>? updates = null) where T2 : DbObject
+		Action<PropertyExpressionBuilder<T2>>? updates = null) where T2 : DbObjectInt
 	{
 		//Note: This is purely to combat the issue of postgres SERIAL and BIGSERIAL 
 		//		primary keys incrementing even if it was an update was preformed

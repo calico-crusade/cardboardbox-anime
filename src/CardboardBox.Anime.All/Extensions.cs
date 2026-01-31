@@ -11,6 +11,7 @@ using ChatGPT;
 using Crunchyroll;
 using Core;
 using Core.Models;
+using Core.MongoDb;
 using Database;
 using DiscordIntermediary;
 using Funimation;

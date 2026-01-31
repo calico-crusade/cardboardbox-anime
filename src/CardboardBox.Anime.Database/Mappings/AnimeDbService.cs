@@ -127,7 +127,7 @@ JOIN profiles p ON p.id = l.profile_id";
 		var where = string.Join(" AND ", parts);
 		var fullQuery = string.Format(query, where, sub);
 
-		using var con = _sql.CreateConnection();
+		using var con = await _sql.CreateConnection();
 
 		using var reader = await con.QueryMultipleAsync(fullQuery, pars);
 

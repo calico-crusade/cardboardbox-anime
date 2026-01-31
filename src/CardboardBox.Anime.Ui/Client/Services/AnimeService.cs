@@ -51,7 +51,7 @@ public class AnimeService : IAnimeService
 
 public class FakeCacheService : ICacheService
 {
-	public Task<T?> Load<T>(string filename)
+	public Task<T?> Load<T>(string filename, CancellationToken token = default)
 	{
 		return Task.FromResult(default(T));
 	}

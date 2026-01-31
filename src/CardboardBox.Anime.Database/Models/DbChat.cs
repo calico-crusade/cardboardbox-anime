@@ -1,6 +1,6 @@
 ﻿namespace CardboardBox.Anime.Database;
 
-public class DbChat : DbObject
+public class DbChat : DbObjectInt
 {
 	[JsonPropertyName("profileId")]
 	public long ProfileId { get; set; }
@@ -12,7 +12,7 @@ public class DbChat : DbObject
 	public string? Grounder { get; set; }
 }
 
-public class DbChatMessage : DbObject
+public class DbChatMessage : DbObjectInt
 {
 	[JsonPropertyName("chatId")]
 	public long ChatId { get; set; }

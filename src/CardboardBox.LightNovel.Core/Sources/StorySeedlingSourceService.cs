@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace CardboardBox.LightNovel.Core.Sources;
 
+using CardboardBox.Json;
 using Utilities;
 using Utilities.FlareSolver;
 
@@ -12,6 +13,7 @@ internal class StorySeedlingSourceService(
     IFlareSolver _flare,
     IApiService _api,
     ISmartReaderService _smart,
+    IJsonService _json,
     ILogger<StorySeedlingSourceService> _logger) : FlareVolumeSource(_flare, _smart, _logger), IStorySeedlingSourceService
 {
     public override string Name => "story-seedling";
@@ -162,9 +164,9 @@ internal class StorySeedlingSourceService(
         var contentUrl = url.Trim('/') + "/content";
         var payload = new ContentRequest();
 
-        using var response = await _api.Create(contentUrl, "POST")
+        using var response = await ((IHttpBuilder)_api.Create(contentUrl, _json, "POST")
             .Body(payload)
-            .With(t =>
+            .With(t => t.Message(t => 
             {
                 t.Headers.Add("accept", "*/*");
                 t.Headers.Add("accept-language", "en-US,en;q=0.9");
@@ -186,7 +188,7 @@ internal class StorySeedlingSourceService(
                 t.Headers.Add("sec-fetch-site", "same-origin");
                 t.Headers.Add("user-agent", USER_AGENT);
                 t.Headers.Add("x-nonce", nonce);
-            }).Result();
+            }))).Result();
         var content = string.Empty;
 
         try

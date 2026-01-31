@@ -15,12 +15,12 @@ public class NpgsqlService : SqlService
 		_config = config;
 	}
 
-	public override IDbConnection CreateConnection()
+	public override async Task<IDbConnection> CreateConnection()
 	{
 		var conString = _config["Postgres:ConnectionString"];
 		var con = new NpgsqlConnection(conString);
 		Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
-		con.Open();
+		await con.OpenAsync();
 		con.ReloadTypes();
 
 		con.TypeMapper.MapComposite<DbImage>("image");

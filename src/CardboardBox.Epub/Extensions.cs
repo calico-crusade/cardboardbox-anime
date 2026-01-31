@@ -1,4 +1,6 @@
-﻿namespace CardboardBox.Epub;
+﻿using CardboardBox.Extensions;
+
+namespace CardboardBox.Epub;
 
 public static class Extensions
 {
@@ -79,18 +81,6 @@ public static class Extensions
 			yield return ar[i];
 	}
 
-	//
-	public static string PurgePathChars(this string text)
-	{
-		var chars = Path.GetInvalidFileNameChars()
-			.Union(Path.GetInvalidPathChars())
-			.ToArray();
-
-		foreach (var c in chars)
-			text = text.Replace(c.ToString(), "");
-
-		return text;
-	}
 
 	public static string SnakeName(this string text)
 	{
