@@ -1,6 +1,6 @@
-using CardboardBox;
 using CardboardBox.Anime;
 using Microsoft.OpenApi.Models;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,9 +36,15 @@ builder.Services.AddSwaggerGen(c =>
 	});
 });
 
+var logConfig = new LoggerConfiguration()
+	.MinimumLevel.Debug()
+	.WriteTo.Console()
+	.WriteTo.File(Path.Combine("logs", "log.txt"), rollingInterval: RollingInterval.Day);
+
 builder
 	.Services
-	.RegisterCba(builder.Configuration);
+	.RegisterCba(builder.Configuration)
+	.AddLogging(c => c.AddSerilog(logConfig.CreateLogger()));
 
 var app = builder.Build();
 

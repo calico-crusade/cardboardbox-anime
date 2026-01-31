@@ -231,7 +231,7 @@ public class MangaDexSource : IMangaDexSource
 
 	public (bool matches, string? part) MatchesProvider(string url)
 	{
-		const string URL = "https://mangadex.org/title/";
+		string URL = $"{HomeUrl}/title/";
         if (!url.StartsWith(URL, StringComparison.InvariantCultureIgnoreCase))
 			return (false, null);
 

@@ -46,7 +46,7 @@ public static class Extensions
 				if (!checkWs || !string.IsNullOrWhiteSpace(node.InnerText))
 					doc.DocumentNode.AppendChild(node);
 
-			return doc.DocumentNode.InnerHtml.Trim();
+			return doc.DocumentNode?.InnerHtml?.Trim() ?? string.Empty;
 		}
 		catch
 		{
@@ -115,6 +115,7 @@ public static class Extensions
 			.AddTransient<IStorySeedlingSourceService, StorySeedlingSourceService>()
 			.AddTransient<ICardboardTranslationsSourceService, CardboardTranslationsSourceService>()
 			.AddTransient<INovelBinSourceService, NovelBinSourceService>()
+			.AddTransient<ILONAMMTLSourceService, LONAMMTLSourceService>()
 
 			.AddTransient<INovelUpdatesService, NovelUpdatesService>()
 

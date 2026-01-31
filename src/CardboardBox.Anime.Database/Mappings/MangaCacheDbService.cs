@@ -1,6 +1,7 @@
 ﻿namespace CardboardBox.Anime.Database;
 
 using CardboardBox.Database;
+using Dapper;
 using Generation;
 
 public interface IMangaCacheDbService
@@ -20,6 +21,8 @@ public interface IMangaCacheDbService
 	Task MergeUpdates();
 
 	Task<DbManga[]> BadCoverArt();
+
+	Task<(DbManga?, DbMangaChapter[])> Fetch(string sourceId);
 }
 
 public class MangaCacheDbService : OrmMapExtended<DbManga>, IMangaCacheDbService
@@ -57,6 +60,24 @@ public class MangaCacheDbService : OrmMapExtended<DbManga>, IMangaCacheDbService
 			(v) => v.With(t => t.MangaId).With(t => t.SourceId).With(t => t.Language),
 			(v) => v.With(t => t.Id),
 			v => v.With(t => t.Id).With(t => t.CreatedAt));
+	}
+
+	public async Task<(DbManga?, DbMangaChapter[])> Fetch(string sourceId)
+	{
+		const string QUERY = @"
+SELECT * FROM manga_cache WHERE source_id = :sourceId;
+SELECT m.* 
+FROM manga_cache m
+JOIN manga_chapter_cache c ON m.id = c.manga_id
+WHERE m.source_id = :sourceId";
+		using var con = _sql.CreateConnection();
+		using var results = await con.QueryMultipleAsync(QUERY, new { sourceId });
+
+		var manga = await results.ReadFirstOrDefaultAsync<DbManga>();
+		if (manga is null) return (null, Array.Empty<DbMangaChapter>());
+
+		var chapters = (await results.ReadAsync<DbMangaChapter>()).ToArray();
+		return (manga, chapters);
 	}
 
 	public Task<DbManga[]> ByIds(string[] mangaIds)

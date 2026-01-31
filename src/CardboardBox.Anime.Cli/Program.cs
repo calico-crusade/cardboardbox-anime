@@ -30,4 +30,5 @@ return await new ServiceCollection()
 		.Add<ManualLoadVerb>()
 		.Add<InteractiveVerb>()
 		.Add<MaxLevelPreistessVerb>()
-		.Add<RepurgeVerb>());
+		.Add<RepurgeVerb>()
+		.Add<GenerateCoversVerb>());

@@ -17,6 +17,8 @@ public interface IMangaMatchService
 
 	Task IndexLatest();
 
+	Task Queue(IndexRequest request);
+
 	Task<bool> IndexPageProxy(string image, MangaMetadata metadata, string? referer, bool noCache = false);
 
 	Task<bool> IndexPage(string url, MangaMetadata metadata);

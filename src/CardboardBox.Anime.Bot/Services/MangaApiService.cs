@@ -1,5 +1,6 @@
 ﻿namespace CardboardBox.Anime.Bot.Services;
 
+using CardboardBox.Json;
 using Core.Models;
 using Database;
 using Manga;
@@ -19,22 +20,15 @@ public interface IMangaApiService
 	Task<ImageSearchResults?> Search(MemoryStream stream, string filename);
 }
 
-public class MangaApiService : IMangaApiService
+public class MangaApiService(
+		IConfiguration _config,
+		IApiService _api,
+		IJsonService _json) : IMangaApiService
 {
 	private static Dictionary<long, CacheItem<MangaWithChapters?>> _mangaCache = new();
 	private static Dictionary<string, CacheItem<string[]>> _pagesCache = new();
-	private readonly IConfiguration _config;
-	private readonly IApiService _api;
 
 	public string ApiUrl => _config["CBA:Url"] ?? throw new NullReferenceException("CBA:Url is null");
-
-	public MangaApiService(
-		IConfiguration config,
-		IApiService api)
-	{
-		_config = config;
-		_api = api;
-	}
 
 	public Task<PaginatedResult<DbManga>?> Get(int page = 1, int size = 100)
 	{
@@ -102,8 +96,8 @@ public class MangaApiService : IMangaApiService
         {
             { content, "file", filename }
         };
-		var result = await _api.Create($"{ApiUrl}/manga/image-search", "POST")
-			.BodyContent(formContent)
+		var result = await ((IHttpBuilder)_api.Create($"{ApiUrl}/manga/image-search", _json, "POST")
+			.BodyContent(formContent))
 			.Result<ImageSearchResults>();
 
 		return result;

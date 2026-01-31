@@ -9,7 +9,7 @@ public static class Extensions
 	public static IServiceCollection AddMangadex(this IServiceCollection services)
 	{
 		return services
-			.AddMangaDex(string.Empty, userAgent: "cba-api")
+			.AddMangaDex(c => c.WithApiConfig(userAgent: "cba-api"))
 			.AddTransient<IMangaDexService, MangaDexService>();
 	}
 }

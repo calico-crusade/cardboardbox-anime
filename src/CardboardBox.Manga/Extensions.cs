@@ -4,6 +4,7 @@ namespace CardboardBox.Manga;
 
 using Match;
 using Providers;
+using WeebDexSharp;
 
 public static class Extensions
 {
@@ -16,6 +17,7 @@ public static class Extensions
 			.AddTransient<IMangakakalotComSource, MangakakalotComSource>()
 			.AddTransient<IMangakakalotComAltSource, MangakakalotComAltSource>()
 			.AddTransient<IMangaDexSource, MangaDexSource>()
+			.AddTransient<IWeebDexSource, WeebDexSource>()
 			.AddTransient<IMangaClashSource, MangaClashSource>()
 			.AddTransient<INhentaiSource, NhentaiSource>()
 			.AddTransient<IBattwoSource, BattwoSource>()
@@ -38,7 +40,8 @@ public static class Extensions
 			.AddTransient<IMangaSearchService, MangaSearchService>()
 			.AddRedis()
 
-			.AddMangadex();
+			.AddMangadex()
+			.AddWeebDex(c => c.WithCredentialsApiKey(string.Empty, string.Empty));
 	}
 
 	public static T? PreferedOrFirst<T>(this IEnumerable<T> data, Func<T, bool> prefered)

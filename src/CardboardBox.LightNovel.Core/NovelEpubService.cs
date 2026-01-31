@@ -246,6 +246,7 @@ public class NovelEpubService(
 
 	public string DetermineName(string url, string name, string type)
 	{
+		name = name.Replace("\"", "").PurgePathChars();
 		if (!string.IsNullOrEmpty(name) && 
 			string.IsNullOrEmpty(Path.GetExtension(name)))
 			name += "." + GetImageExtension(type);
@@ -292,8 +293,8 @@ public class NovelEpubService(
     
 	public async Task<StreamResult> GetData(string url, bool skipTransform = false)
 	{
-		if (url.ToLower().StartsWith("https://static.index-0.com/"))
-			url = url.Replace("https://static.index-0.com/", "file://C:/users/cardboard/documents/local-files/");
+		//if (url.ToLower().StartsWith("https://static.index-0.com/"))
+		//	url = url.Replace("https://static.index-0.com/", "file://C:/users/cardboard/documents/local-files/");
 
 		var output = await (url.ToLower().StartsWith("file://") ? GetDataFromFile(url.Remove(0, 7)) : DownloadFile(url));
 

@@ -1,22 +1,17 @@
-﻿namespace CardboardBox.Anime.Bot.Commands.TierLists;
+﻿using CardboardBox.Json;
+
+namespace CardboardBox.Anime.Bot.Commands.TierLists;
 
 public interface ITierFetchService
 {
     Task<TierList?> FetchTierList(string url);
 }
 
-public class TierFetchService : ITierFetchService
+public class TierFetchService(IApiService _api, IJsonService _json) : ITierFetchService
 {
     private const string USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36";
     private const string IMAGE_CACHE_DIR = "tier-image-cache";
     private const int IMAGE_SIZE = 100;
-
-    private readonly IApiService _api;
-
-    public TierFetchService(IApiService api)
-    {
-        _api = api;
-    }
 
     public async Task<TierList?> FetchTierList(string url)
     {
@@ -49,12 +44,12 @@ public class TierFetchService : ITierFetchService
 
     public async Task<(HtmlDocument doc, string cookie)> GetHtml(string url)
     {
-        var req = await _api.Create(url)
+        var req = await ((IHttpBuilder)_api.Create(url, _json, "GET")
             .Accept("text/html")
-            .With(c =>
+            .Message(c =>
             {
                 c.Headers.Add("user-agent", USER_AGENT);
-            })
+            }))
             .Result() ?? throw new NullReferenceException($"Request returned null for: {url}");
 
         req.EnsureSuccessStatusCode();
@@ -75,12 +70,12 @@ public class TierFetchService : ITierFetchService
     public async Task<string[]> Images(string id, string cookie, string referer)
     {
         var url = $"https://tiermaker.com/api/?type=templates-v2&id={id}";
-        var urls = await _api.Get<string[]>(url, c =>
+        var urls = await _api.Get<string[]>(url, c => c.Message(c => 
         {
             c.Headers.Add("user-agent", USER_AGENT);
             c.Headers.Add("cookie", cookie);
             c.Headers.Add("referer", referer);
-        }) ?? Array.Empty<string>();
+        })) ?? Array.Empty<string>();
         if (urls.Length == 0) return Array.Empty<string>();
 
         var sourceSet = "https://tiermaker.com/images" + urls.First() + "/";

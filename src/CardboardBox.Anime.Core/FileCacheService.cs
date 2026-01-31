@@ -30,6 +30,7 @@ public class FileCacheService : IFileCacheService
 		var (stream, _, file, type) = await _api.GetData(url);
 		await stream.CopyToAsync(io);
 		io.Position = 0;
+		file = file.Replace("\"", "").PurgePathChars();
 		cacheInfo = new CacheItem(file, type, DateTime.Now);
 		var worked = await WriteFile(io, hash);
 		if (worked)

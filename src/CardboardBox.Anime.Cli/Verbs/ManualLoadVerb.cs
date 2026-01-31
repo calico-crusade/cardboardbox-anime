@@ -230,7 +230,7 @@ internal class ManualLoadVerb(
 
             var pageOrdinal = lastPage.Ordinal;
 
-            await foreach(var file in series.OrderBy(t => t.fileName))
+            foreach(var file in series.OrderBy(t => t.fileName))
             {
                 _logger.LogInformation("Processing file {file} for series {seriesId} into book {booKId} >> {path}", 
                     file.fileName, seriesInfo.Id, book.Id, file.path);

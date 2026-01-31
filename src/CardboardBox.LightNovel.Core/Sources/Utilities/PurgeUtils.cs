@@ -148,7 +148,7 @@ public class PurgeUtils : IPurgeUtils
     public IEnumerable<HtmlNode> Flatten(HtmlNode node)
     {
         string[] passThrough = ["p", "img", "strong", "b", "i", "h1", "h2", "h3", "h4", "h5", "h6"];
-        string[] barred = ["script", "style", "iframe", "noscript", "object", "embed", "input"];
+        string[] barred = ["script", "style", "iframe", "noscript", "object", "embed", "input", "meta", "title"];
 
         if (barred.Contains(node.Name))
             yield break;

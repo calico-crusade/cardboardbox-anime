@@ -118,7 +118,7 @@ public abstract class FlareVolumeSource(
         }
     }
 
-    public async Task<HtmlDocument> Get(string url, bool cache = false)
+    public virtual async Task<HtmlDocument> Get(string url, bool cache = false)
     {
         if (_pageCache.TryGetValue(url, out var doc))
             return doc;
@@ -173,7 +173,7 @@ public abstract class FlareVolumeSource(
     {
         await LimitCheck(CancellationToken.None);
 
-        var doc = await Get(url);
+        var doc = await Get(url, true);
         if (doc is null)
         {
             _logger.LogError("Failed to get chapter: {url}", url);
@@ -205,7 +205,7 @@ public abstract class FlareVolumeSource(
 
     public virtual (string? title, string? content) BackupParse(HtmlDocument doc, string url)
     {
-        return (string.Empty, string.Empty);
+        return (null, null);
     }
 
     public virtual string MassageTitle(string title)

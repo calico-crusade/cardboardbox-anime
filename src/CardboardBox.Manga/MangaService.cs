@@ -73,7 +73,8 @@ public class MangaService : IMangaService
 		IMangaKatanaSource katana,
 		IBattwoSource battwo,
         IChapmanganatoSource chap,
-		ILikeMangaSource lkm)
+		ILikeMangaSource lkm,
+		IWeebDexSource wd)
 	{
 		_db = db;
 		_match = match;
@@ -91,7 +92,8 @@ public class MangaService : IMangaService
 			katana,
 			dark,
 			chap,
-			lkm
+			lkm,
+			wd
 		];
 	}
 

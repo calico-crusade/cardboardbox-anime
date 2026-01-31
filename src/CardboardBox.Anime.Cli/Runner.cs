@@ -25,6 +25,7 @@ using MangaDexSharp;
 using Microsoft.Extensions.Logging;
 using System.IO.Compression;
 using CardboardBox.LightNovel.Core.Sources.Utilities.FlareSolver;
+using CardboardBox.Json;
 
 public interface IRunner
 {
@@ -40,6 +41,7 @@ public class Runner(
 	IHiDiveApiService hidive,
 	IAnimeDbService db,
 	ICrunchyrollApiService crunchy,
+	IJsonService _json,
 	IOldLnApiService ln,
 	IChapterDbService chapDb,
 	IPdfService pdf,
@@ -73,7 +75,9 @@ public class Runner(
 	IStorySeedlingSourceService storySeedling,
 	ICardboardTranslationsSourceService ctl,
     INovelBinSourceService _nbs,
-	ILikeMangaSource _lkm) : IRunner
+	ILikeMangaSource _lkm,
+	ILONAMMTLSourceService _lonammtl,
+	IWeebDexSource _wd) : IRunner
 {
 	private const string VRV_JSON = "vrv2.json";
 	private const string FUN_JSON = "fun.json";
@@ -142,7 +146,10 @@ public class Runner(
 				case "ctl": await CTLTest(); break;
 				case "nbs": await NBSTest(); break;
 				case "lkm": await LKMTest(); break;
-                default: _logger.LogInformation("Invalid command: " + command); break;
+				case "index-manga": await IndexManga(); break;
+				case "lonammt": await LONAMMTLTest(); break;
+				case "weebdex": await WeebDex(); break;
+				default: _logger.LogInformation("Invalid command: " + command); break;
 			}
 
 			_logger.LogInformation("Finished.");
@@ -152,6 +159,68 @@ public class Runner(
 		{
 			_logger.LogError(ex, "Error occurred while processing command: " + string.Join(" ", args));
 			return 1;
+		}
+	}
+
+	public async Task WeebDex()
+	{
+		const string URL = "https://weebdex.org/title/vtyi8syfjd/yuusha-no-sensei-saikyou-no-kuzu-ni-naru-s-kyuu-party-no-moto-eiyuu-ura-shakai-no-ihou-guild-de-nariagari";
+
+		var (matches, part) = _wd.MatchesProvider(URL);
+		if (!matches || string.IsNullOrEmpty(part))
+		{
+			_logger.LogError("Failed to match provider");
+			return;
+		}
+
+		var manga = await _wd.Manga(part);
+		if (manga is null)
+		{
+			_logger.LogError("Failed to fetch manga");
+			return;
+		}
+
+		_logger.LogInformation("Manga: {title}", manga.Title);
+		var pages = await _wd.ChapterPages(part, manga.Chapters.First().Id);
+		if (pages is null)
+		{
+			_logger.LogError("Failed to fetch chapter");
+			return;
+		}
+
+		_logger.LogInformation("Chapter: {title} - {pages} pages", pages.Title, pages.Pages.Length);
+	}
+
+	public async Task LONAMMTLTest()
+	{
+		const string URL = "https://lilysobservatory.blogspot.com/2025/07/the-middle-aged-convenience-store-clerk.html";
+		var series = await _lonammtl.GetSeriesInfo(URL);
+		if (series is null)
+		{
+			_logger.LogError("Failed to fetch series info");
+			return;
+		}
+
+		var volumes = _lonammtl.Volumes(URL);
+		await foreach (var volume in volumes)
+		{
+			_logger.LogInformation("Volume: {title}", volume.Title);
+			foreach (var chapter in volume.Chapters)
+				_logger.LogInformation("\tChapter: {title} >> {url}", chapter.Title, chapter.Url);
+		}
+
+		if (string.IsNullOrEmpty(series.FirstChapterUrl))
+		{
+			_logger.LogError("No first chapter URL found");
+			return;
+		}
+
+		var chap = await _lonammtl.GetChapter(series.FirstChapterUrl, "First Chapter");
+
+		if (chap is null)
+		{
+			_logger.LogError("Failed to fetch chapter");
+			return;
 		}
 	}
 
@@ -862,7 +931,7 @@ public class Runner(
 					continue;
 				}
 
-				using var res = await api.Create(im.Source).Result();
+				using var res = await api.Create(im.Source, _json, "GET").Result();
 				if (res == null || !res.IsSuccessStatusCode)
 				{
 					_logger.LogError("Failed to fetch resource: {source}", im.Source);
@@ -1470,6 +1539,13 @@ public class Runner(
 		}
 
 		_logger.LogInformation("Cover art has been fixed");
+	}
+
+	public async Task IndexManga()
+	{
+		const string SOURCE_ID = "5a5651fe-7a1a-4b85-a812-3bf3cf72eb0c";
+		await match.IndexManga(SOURCE_ID);
+		_logger.LogInformation("Finished");
 	}
 
 	public async Task IndexDbImages()
