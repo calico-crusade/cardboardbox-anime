@@ -8,6 +8,7 @@ using System.Text;
 
 namespace CardboardBox.Anime.Auth;
 
+using CardboardBox.Anime.Auth.Jwt;
 using CardboardBox.Json;
 using Http;
 using System.Text.Json;
@@ -36,27 +37,11 @@ public static class Extensions
 	public static IServiceCollection AddOAuth(this IServiceCollection services, IConfiguration config)
 	{
 		services
-			.AddTransient<ITokenService, TokenService>()
+			.AddSingleton<IJwtKeyService, JwtKeyService>()
+			.AddTransient<IJwtTokenService, JwtTokenService>()
 			.AddTransient<IOAuthService, OAuthService>()
-			.AddAuthentication(opt =>
-			{
-				opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-				opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-				opt.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-			})
-			.AddJwtBearer(opt =>
-			{
-				opt.SaveToken = true;
-				opt.RequireHttpsMetadata = false;
-				opt.TokenValidationParameters = new TokenValidationParameters
-				{
-					ValidateIssuer = true,
-					ValidateAudience = true,
-					ValidAudience = config["OAuth:Audience"],
-					ValidIssuer = config["OAuth:Issuer"],
-					IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["OAuth:Key"] ?? throw new ArgumentNullException("OAuth:Key")))
-				};
-			});
+			.AddAuthentication(opts => opts.DefaultScheme = AuthMiddleware.SCHEMA)
+			.AddScheme<AuthMiddlewareOptions, AuthMiddleware>(AuthMiddleware.SCHEMA, _ => { });
 		return services;
 	}
 

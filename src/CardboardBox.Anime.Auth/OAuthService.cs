@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using CardboardBox.Extensions;
+
+using Microsoft.Extensions.Configuration;
 using System.Text.Json.Serialization;
 
 namespace CardboardBox.Anime.Auth;
@@ -10,30 +12,25 @@ public interface IOAuthService
 	Task<TokenResponse?> ResolveCode(string code);
 }
 
-public class OAuthService : IOAuthService
+public class OAuthService(
+	IApiService _api,
+	IConfiguration _config) : IOAuthService
 {
-	private readonly IApiService _api;
-	private readonly IConfiguration _config;
-
 	public string AppId => _config["OAuth:AppId"] ?? throw new ArgumentNullException("OAuth:AppId");
 	public string Secret => _config["OAuth:Secret"] ?? throw new ArgumentNullException("OAuth:Secret");
-
-	public OAuthService(
-		IApiService api,
-		IConfiguration config)
-	{
-		_api = api;
-		_config = config;
-	}
+	public string OAuthUrl => _config["OAuth:Url"]?.ForceNull() ?? "https://auth.index-0.com";
 
 	public Task<TokenResponse?> ResolveCode(string code)
 	{
 		var request = new TokenRequest(code, Secret, AppId);
-		return _api.Post<TokenResponse, TokenRequest>("https://auth.index-0.com/api/data", request);
+		return _api.Post<TokenResponse, TokenRequest>($"{OAuthUrl.TrimEnd('/')}/api/data", request);
 	}
 }
 
-public record class TokenRequest(string Code, string Secret, string AppId);
+public record class TokenRequest(
+	[property: JsonPropertyName("Code")] string Code,
+	[property: JsonPropertyName("Secret")] string Secret,
+	[property: JsonPropertyName("AppId")] string AppId);
 
 public class TokenUser
 {

@@ -4,24 +4,16 @@ using Microsoft.AspNetCore.Mvc;
 namespace CardboardBox.Anime.Api.Controllers;
 
 using Auth;
+using CardboardBox.Anime.Auth.Jwt;
 using Database;
+using System.Security.Claims;
 
 [ApiController]
-public class AuthController : ControllerBase
+public class AuthController(
+	IOAuthService _auth,
+	IJwtTokenService _token,
+	IDbService _db) : ControllerBase
 {
-	private readonly IOAuthService _auth;
-	private readonly ITokenService _token;
-	private readonly IDbService _db;
-
-	public AuthController(
-		IOAuthService auth, 
-		ITokenService token,
-		IDbService db)
-	{
-		_auth = auth;
-		_token = token;
-		_db = db;
-	}
 
 	[HttpGet, Route("auth/{code}")]
 	[ProducesDefaultResponseType(typeof(AuthUserResponse))]
@@ -48,13 +40,22 @@ public class AuthController : ControllerBase
 		profile = await _db.Profiles.Fetch(res.User.Id);
 
         var user = (AuthUserResponse.UserData)profile;
-		var token = _token.GenerateToken(res, user.Roles);
+		var token = _token.Empty()
+			.Add(ClaimTypes.NameIdentifier, res.User.Id)
+			.Add(ClaimTypes.Name, res.User.Nickname)
+			.Add(ClaimTypes.Email, res.User.Email)
+			.Add(ClaimTypes.UserData, res.User.Avatar)
+			.Add(ClaimTypes.PrimarySid, res.Provider)
+			.Add(ClaimTypes.PrimaryGroupSid, res.User.ProviderId);
+		token.AddRange(user.Roles.Select(t => new Claim(ClaimTypes.Role, t)));
+
+		var jwt = await _token.GenerateToken(token);
 
 		return Ok(new AuthUserResponse
 		{
 			User = user,
 			Id = profile.Id,
-			Token = token,
+			Token = jwt,
 		});
 	}
 

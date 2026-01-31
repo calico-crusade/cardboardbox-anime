@@ -1,132 +1,67 @@
-﻿using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
+﻿using System.Security.Claims;
 
 namespace CardboardBox.Anime.Auth;
 
-public class JwtToken
+/// <summary>
+/// Represents a JWT token
+/// </summary>
+public class JwtToken() : List<Claim>
 {
-    private List<Claim> _claims = new List<Claim>();
+	/// <summary>
+	/// The issuer of the token
+	/// </summary>
+	public string? Issuer { get; set; }
 
-    public string? this[string key]
-    {
-        get => _claims.Find(t => t.Type == key)?.Value;
-        set
-        {
-            var claim = _claims.Find(t => t.Type == key);
+	/// <summary>
+	/// The audiences of the token
+	/// </summary>
+	public string[] Audiences { get; set; } = [];
 
-            if (claim != null)
-                _claims.Remove(claim);
+	/// <summary>
+	/// How long until the key expires
+	/// </summary>
+	public TimeSpan? Expiry { get; set; }
 
-            _claims.Add(new Claim(key, value ?? ""));
-        }
-    }
+	/// <summary>
+	/// Fetches all of the claims by their key
+	/// </summary>
+	/// <param name="key">The key for the claims</param>
+	/// <returns>All of the claims</returns>
+	public Claim[] this[string key]
+	{
+		get => this.Where(t => t.Type == key).ToArray();
+		set
+		{
+			var claims = this.Where(t => t.Type == key).ToArray();
+			foreach (var claim in claims)
+				Remove(claim);
 
-    public string? Email
-    {
-        get => this[ClaimTypes.Email];
-        set => this[ClaimTypes.Email] = value;
-    }
+			AddRange(value);
+		}
+	}
 
-    public SymmetricSecurityKey Key { get; }
+	/// <summary>
+	/// Adds or updates the given claim value
+	/// </summary>
+	/// <param name="key">The key of the claim</param>
+	/// <param name="value">The value of the claim</param>
+	/// <returns>The current token instance for fluent method chaining</returns>
+	public JwtToken Set(string key, string value)
+	{
+		var claim = new Claim(key, value);
+		this[key] = [claim];
+		return this;
+	}
 
-    public string Issuer { get; set; } = "";
-    public string Audience { get; set; } = "";
-    public int ExpireyMinutes { get; set; } = 10080;
-    public string SigningAlgorithm { get; set; } = SecurityAlgorithms.HmacSha256;
-
-    public JwtToken(SymmetricSecurityKey key)
-    {
-        Key = key;
-    }
-    public JwtToken(SymmetricSecurityKey key, string token)
-    {
-        Key = key;
-        Read(token);
-    }
-    public JwtToken(string key)
-    {
-        Key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key));
-    }
-    public JwtToken(string key, string token)
-    {
-        Key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key));
-        Read(token);
-    }
-
-    public JwtToken AddClaim(params Claim[] claims)
-    {
-        foreach (var claim in claims)
-            _claims.Add(claim);
-        return this;
-    }
-    public JwtToken AddClaim(string key, string value)
-    {
-        return AddClaim(new Claim(key, value));
-    }
-    public JwtToken AddClaim(params (string, string)[] claims)
-    {
-        foreach (var claim in claims)
-            AddClaim(claim.Item1, claim.Item2);
-
-        return this;
-    }
-    public JwtToken Expires(int minutes)
-    {
-        ExpireyMinutes = minutes;
-        return this;
-    }
-    public JwtToken SetEmail(string email)
-    {
-        Email = email;
-        return this;
-    }
-    public JwtToken SetIssuer(string issuer)
-    {
-        Issuer = issuer;
-        return this;
-    }
-    public JwtToken SetAudience(string audience)
-    {
-        Audience = audience;
-        return this;
-    }
-
-    public string Write()
-    {
-        this[JwtRegisteredClaimNames.Jti] = Guid.NewGuid().ToString();
-
-        var token = new JwtSecurityToken
-        (
-            issuer: Issuer,
-            audience: Audience,
-            claims: _claims,
-            expires: DateTime.UtcNow.AddMinutes(ExpireyMinutes),
-            signingCredentials: new SigningCredentials(Key, SigningAlgorithm)
-        );
-
-        return new JwtSecurityTokenHandler().WriteToken(token);
-    }
-
-    private void Read(string token)
-    {
-        var handler = new JwtSecurityTokenHandler();
-
-        var validations = new TokenValidationParameters
-        {
-            ValidateIssuer = false,
-            ValidateAudience = false,
-            IssuerSigningKey = Key,
-            ValidateIssuerSigningKey = true
-        };
-
-        _claims = handler.ValidateToken(token, validations, out SecurityToken ts).Claims.ToList();
-
-        var t = (JwtSecurityToken)ts;
-        Issuer = t.Issuer;
-        Audience = t.Audiences.First();
-        ExpireyMinutes = (t.ValidTo - DateTime.Now).Minutes;
-        SigningAlgorithm = t.SignatureAlgorithm;
-    }
+	/// <summary>
+	/// Adds the given claim to the token
+	/// </summary>
+	/// <param name="key">The key of the claim</param>
+	/// <param name="value">The value of the claim</param>
+	/// <returns>The current token instance for fluent method chaining</returns>
+	public JwtToken Add(string key, string value)
+	{
+		Add(new Claim(key, value));
+		return this;
+	}
 }
