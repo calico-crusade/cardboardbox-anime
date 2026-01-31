@@ -38,6 +38,9 @@ public static class Extensions
 
 			.AddTransient<IGoogleVisionService, GoogleVisionService>()
 			.AddTransient<IMangaSearchService, MangaSearchService>()
+
+			.AddTransient<ComixApiService>()
+			.AddTransient<IComixSource, ComixSource>()
 			.AddRedis()
 
 			.AddMangadex()

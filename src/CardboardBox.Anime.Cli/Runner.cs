@@ -78,7 +78,8 @@ public class Runner(
     INovelBinSourceService _nbs,
 	ILikeMangaSource _lkm,
 	ILONAMMTLSourceService _lonammtl,
-	IWeebDexSource _wd) : IRunner
+	IWeebDexSource _wd,
+	IComixSource _comix) : IRunner
 {
 	private const string VRV_JSON = "vrv2.json";
 	private const string FUN_JSON = "fun.json";
@@ -150,6 +151,7 @@ public class Runner(
 				case "index-manga": await IndexManga(); break;
 				case "lonammt": await LONAMMTLTest(); break;
 				case "weebdex": await WeebDex(); break;
+				case "comix": await Comix(); break;
 				default: _logger.LogInformation("Invalid command: " + command); break;
 			}
 
@@ -163,18 +165,19 @@ public class Runner(
 		}
 	}
 
-	public async Task WeebDex()
+	public async Task Comix()
 	{
-		const string URL = "https://weebdex.org/title/vtyi8syfjd/yuusha-no-sensei-saikyou-no-kuzu-ni-naru-s-kyuu-party-no-moto-eiyuu-ura-shakai-no-ihou-guild-de-nariagari";
+		const string URL = "https://comix.to/title/j3zd-defying-expectations-with-gravity-magic-to-be-unparalleled";
 
-		var (matches, part) = _wd.MatchesProvider(URL);
+		var api = _comix;
+		var (matches, part) = api.MatchesProvider(URL);
 		if (!matches || string.IsNullOrEmpty(part))
 		{
 			_logger.LogError("Failed to match provider");
 			return;
 		}
 
-		var manga = await _wd.Manga(part);
+		var manga = await api.Manga(part);
 		if (manga is null)
 		{
 			_logger.LogError("Failed to fetch manga");
@@ -182,7 +185,37 @@ public class Runner(
 		}
 
 		_logger.LogInformation("Manga: {title}", manga.Title);
-		var pages = await _wd.ChapterPages(part, manga.Chapters.First().Id);
+		var pages = await api.ChapterPages(part, manga.Chapters.First().Id);
+		if (pages is null)
+		{
+			_logger.LogError("Failed to fetch chapter");
+			return;
+		}
+
+		_logger.LogInformation("Chapter: {title} - {pages} pages", pages.Title, pages.Pages.Length);
+	}
+
+	public async Task WeebDex()
+	{
+		const string URL = "https://weebdex.org/title/vtyi8syfjd/yuusha-no-sensei-saikyou-no-kuzu-ni-naru-s-kyuu-party-no-moto-eiyuu-ura-shakai-no-ihou-guild-de-nariagari";
+
+		var api = _wd;
+		var (matches, part) = api.MatchesProvider(URL);
+		if (!matches || string.IsNullOrEmpty(part))
+		{
+			_logger.LogError("Failed to match provider");
+			return;
+		}
+
+		var manga = await api.Manga(part);
+		if (manga is null)
+		{
+			_logger.LogError("Failed to fetch manga");
+			return;
+		}
+
+		_logger.LogInformation("Manga: {title}", manga.Title);
+		var pages = await api.ChapterPages(part, manga.Chapters.First().Id);
 		if (pages is null)
 		{
 			_logger.LogError("Failed to fetch chapter");

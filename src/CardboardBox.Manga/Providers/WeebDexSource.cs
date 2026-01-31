@@ -9,7 +9,6 @@ public interface IWeebDexSource : IMangaSource
 
 }
 
-
 internal class WeebDexSource(
 	IWeebDex _api,
 	ILogger<WeebDexSource> _logger) : IWeebDexSource
