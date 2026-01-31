@@ -36,16 +36,16 @@ public class MangaDexSource : IMangaDexSource
 
 		var chap = new MangaChapterPages
 		{
-			Title = chapter.Data.Attributes.Title ?? string.Empty,
+			Title = chapter.Data.Attributes?.Title ?? string.Empty,
 			Url = $"{HomeUrl}/chapter/{chapter.Data.Id}",
 			Id = chapter.Data.Id ?? string.Empty,
-			Number = double.TryParse(chapter.Data.Attributes.Chapter, out var a) ? a : 0,
-			Volume = double.TryParse(chapter.Data.Attributes.Volume, out var b) ? b : null,
-			ExternalUrl = chapter.Data.Attributes.ExternalUrl,
+			Number = double.TryParse(chapter.Data.Attributes?.Chapter, out var a) ? a : 0,
+			Volume = double.TryParse(chapter.Data.Attributes?.Volume, out var b) ? b : null,
+			ExternalUrl = chapter.Data.Attributes?.ExternalUrl,
 			Attributes = GetChapterAttributes(chapter.Data).ToList()
 		};
 
-		if (chapter.Data.Attributes.Pages == 0) return chap;
+		if (chapter.Data.Attributes?.Pages == 0) return chap;
 
 		var pages = await _mangadex.Pages(chapterId);
 		if (pages == null) return null;
@@ -62,7 +62,7 @@ public class MangaDexSource : IMangaDexSource
 
 		var chapters = getChaps ? await GetChapters(id, DEFAULT_LANG)
 			.OrderBy(t => t.Number)
-			.ToListAsync() : new List<MangaChapter>();
+			.ToListAsync() : [];
 
 		var title = DetermineTitle(manga);
 		var nsfwRatings = new[] { "erotica", "suggestive", "pornographic" };
@@ -74,21 +74,21 @@ public class MangaDexSource : IMangaDexSource
 			Provider = Provider,
 			HomePage = $"{HomeUrl}/title/{id}",
 			Cover = coverUrl,
-			Description = manga.Attributes.Description.PreferedOrFirst(t => t.Key == DEFAULT_LANG).Value,
-			AltTitles = manga.Attributes.AltTitles.SelectMany(t => t.Values).Distinct().ToArray(),
+			Description = manga.Attributes?.Description?.PreferedOrFirst(t => t.Key == DEFAULT_LANG).Value ?? string.Empty,
+			AltTitles = manga.Attributes?.AltTitles.SelectMany(t => t.Values).Distinct().ToArray() ?? [],
 			Tags = manga
-				.Attributes
+				.Attributes?
 				.Tags
 				.Select(t =>
-					t.Attributes
+					t.Attributes?
 					 .Name
 					 .PreferedOrFirst(t => t.Key == DEFAULT_LANG)
-					 .Value).ToArray(),
+					 .Value ?? string.Empty).ToArray() ?? [],
 			Chapters = chapters,
-			Nsfw = nsfwRatings.Contains(manga.Attributes.ContentRating?.ToString() ?? ""),
+			Nsfw = nsfwRatings.Contains(manga.Attributes?.ContentRating?.ToString() ?? ""),
 			Attributes = GetMangaAttributes(manga).ToList(),
-			SourceCreated = manga.Attributes.CreatedAt,
-			OrdinalVolumeReset = manga.Attributes.ChapterNumbersResetOnNewVolume,
+			SourceCreated = manga.Attributes?.CreatedAt,
+			OrdinalVolumeReset = manga.Attributes?.ChapterNumbersResetOnNewVolume ?? false,
 		};
 	}
 
@@ -124,12 +124,13 @@ public class MangaDexSource : IMangaDexSource
 
 	public string DetermineTitle(MManga manga)
 	{
-		var title = manga.Attributes.Title.PreferedOrFirst(t => t.Key.ToLower() == DEFAULT_LANG);
-		if (title.Key.ToLower() == DEFAULT_LANG) return title.Value;
+		manga.Attributes ??= new();
+		var title = manga.Attributes.Title.PreferedOrFirst(t => t.Key.Equals(DEFAULT_LANG, StringComparison.CurrentCultureIgnoreCase));
+		if (title.Key.Equals(DEFAULT_LANG, StringComparison.CurrentCultureIgnoreCase)) return title.Value;
 
-		var prefered = manga.Attributes.AltTitles.FirstOrDefault(t => t.Keys.Contains(DEFAULT_LANG));
+		var prefered = manga.Attributes.AltTitles.FirstOrDefault(t => t.Keys.Contains(DEFAULT_LANG, StringComparer.InvariantCultureIgnoreCase));
 		if (prefered != null)
-			return prefered.PreferedOrFirst(t => t.Key.ToLower() == DEFAULT_LANG).Value;
+			return prefered.PreferedOrFirst(t => t.Key.Equals(DEFAULT_LANG, StringComparison.CurrentCultureIgnoreCase)).Value;
 
 		return title.Value;
 	}
@@ -144,17 +145,18 @@ public class MangaDexSource : IMangaDexSource
 
 			var sortedChapters = chapters
 				.Data
-				.GroupBy(t => t.Attributes.Chapter + t.Attributes.Volume)
-				.Select(t => t.PreferedOrFirst(t => t.Attributes.TranslatedLanguage == DEFAULT_LANG))
+				.Where(t => t.Attributes is not null)!
+				.GroupBy(t => t.Attributes!.Chapter + t.Attributes.Volume)
+				.Select(t => t.PreferedOrFirst(t => t.Attributes!.TranslatedLanguage == DEFAULT_LANG))
 				.Where(t => t != null)
 				.Select(t => new MangaChapter
                 {
-					Title = t?.Attributes.Title ?? string.Empty,
+					Title = t?.Attributes!.Title ?? string.Empty,
 					Url = $"{HomeUrl}/chapter/{t?.Id}",
 					Id = t?.Id ?? string.Empty,
-					Number = double.TryParse(t?.Attributes.Chapter, out var a) ? a : 0,
-					Volume = double.TryParse(t?.Attributes.Volume, out var b) ? b : null,
-					ExternalUrl = t?.Attributes.ExternalUrl,
+					Number = double.TryParse(t?.Attributes!.Chapter, out var a) ? a : 0,
+					Volume = double.TryParse(t?.Attributes!.Volume, out var b) ? b : null,
+					ExternalUrl = t?.Attributes!.ExternalUrl,
 					Attributes = GetChapterAttributes(t).ToList()
 				})
 				.OrderBy(t => t.Volume)
@@ -172,11 +174,12 @@ public class MangaDexSource : IMangaDexSource
 
 	public IEnumerable<MangaAttribute> GetChapterAttributes(Chapter? chapter)
 	{
-		if (chapter == null) yield break;
+		if (chapter is null) yield break;
 
-		yield return new MangaAttribute("Translated Language", chapter.Attributes.TranslatedLanguage);
+		if (!string.IsNullOrEmpty(chapter.Attributes?.TranslatedLanguage))
+			yield return new MangaAttribute("Translated Language", chapter.Attributes.TranslatedLanguage);
 
-		if (!string.IsNullOrEmpty(chapter.Attributes.Uploader))
+		if (!string.IsNullOrEmpty(chapter.Attributes?.Uploader))
 			yield return new MangaAttribute("Uploader", chapter.Attributes.Uploader);
 
 		foreach(var relationship in chapter.Relationships)
@@ -184,16 +187,17 @@ public class MangaDexSource : IMangaDexSource
 			switch (relationship)
 			{
 				case PersonRelationship per:
-					yield return new MangaAttribute(per.Type == "author" ? "Author" : "Artist", per.Attributes.Name);
+					if (!string.IsNullOrEmpty(per.Attributes?.Name))
+						yield return new MangaAttribute(per.Type == "author" ? "Author" : "Artist", per.Attributes.Name);
 					break;
 				case ScanlationGroup grp:
-					if (!string.IsNullOrEmpty(grp.Attributes.Name))
+					if (!string.IsNullOrEmpty(grp.Attributes?.Name))
 						yield return new MangaAttribute("Scanlation Group", grp.Attributes.Name);
-					if (!string.IsNullOrEmpty(grp.Attributes.Website))
+					if (!string.IsNullOrEmpty(grp.Attributes?.Website))
 						yield return new MangaAttribute("Scanlation Link", grp.Attributes.Website);
-					if (!string.IsNullOrEmpty(grp.Attributes.Twitter))
+					if (!string.IsNullOrEmpty(grp.Attributes?.Twitter))
 						yield return new MangaAttribute("Scanlation Twitter", grp.Attributes.Twitter);
-					if (!string.IsNullOrEmpty(grp.Attributes.Discord))
+					if (!string.IsNullOrEmpty(grp.Attributes?.Discord))
 						yield return new MangaAttribute("Scanlation Discord", grp.Attributes.Discord);
 					break;
 			}
@@ -204,16 +208,16 @@ public class MangaDexSource : IMangaDexSource
 	{
 		if (manga == null) yield break;
 
-		if (manga.Attributes.ContentRating != null)
+		if (manga.Attributes?.ContentRating != null)
 			yield return new("Content Rating", manga.Attributes.ContentRating?.ToString() ?? "");
 
-		if (!string.IsNullOrEmpty(manga.Attributes.OriginalLanguage))
+		if (!string.IsNullOrEmpty(manga.Attributes?.OriginalLanguage))
 			yield return new("Original Language", manga.Attributes.OriginalLanguage);
 
-		if (manga.Attributes.Status != null)
+		if (manga.Attributes?.Status != null)
 			yield return new("Status", manga.Attributes.Status?.ToString() ?? "");
 
-		if (!string.IsNullOrEmpty(manga.Attributes.State))
+		if (!string.IsNullOrEmpty(manga.Attributes?.State))
 			yield return new("Publication State", manga.Attributes.State);
 
 		foreach(var rel in manga.Relationships)
@@ -221,10 +225,12 @@ public class MangaDexSource : IMangaDexSource
 			switch(rel)
 			{
 				case PersonRelationship person:
-					yield return new(person.Type == "author" ? "Author" : "Artist", person.Attributes.Name);
+					if (!string.IsNullOrEmpty(person.Attributes?.Name))
+						yield return new(person.Type == "author" ? "Author" : "Artist", person.Attributes.Name);
 					break;
 				case ScanlationGroup group:
-					yield return new("Scanlation Group", group.Attributes.Name);
+					if (!string.IsNullOrEmpty(group.Attributes?.Name))
+						yield return new("Scanlation Group", group.Attributes.Name);
 					break;
 			}
 		}
