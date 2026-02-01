@@ -3,32 +3,32 @@
 public class DbMangaChapter : DbObjectInt
 {
 	[JsonPropertyName("mangaId")]
-	public long MangaId { get; set; }
+	public long MangaId { get; set; } //
 
 	[JsonPropertyName("title")]
-	public string Title { get; set; } = string.Empty;
+	public string Title { get; set; } = string.Empty; //
 
 	[JsonPropertyName("url")]
-	public string Url { get; set; } = string.Empty;
+	public string Url { get; set; } = string.Empty; //
 
 	[JsonPropertyName("sourceId")]
-	public string SourceId { get; set; } = string.Empty;
+	public string SourceId { get; set; } = string.Empty; //
 
 	[JsonPropertyName("ordinal")]
-	public double Ordinal { get; set; }
+	public double Ordinal { get; set; } //
 
 	[JsonPropertyName("volume")]
-	public double? Volume { get; set; }
+	public double? Volume { get; set; } //
 
 	[JsonPropertyName("language")]
-	public string Language { get; set; } = "en";
+	public string Language { get; set; } = "en"; //
 
 	[JsonPropertyName("pages")]
 	public string[] Pages { get; set; } = Array.Empty<string>();
 
 	[JsonPropertyName("externalUrl")]
-	public string? ExternalUrl { get; set; }
+	public string? ExternalUrl { get; set; } //
 
 	[JsonPropertyName("attributes")]
-	public DbMangaAttribute[] Attributes { get; set; } = Array.Empty<DbMangaAttribute>();
+	public DbMangaAttribute[] Attributes { get; set; } = Array.Empty<DbMangaAttribute>(); //
 }

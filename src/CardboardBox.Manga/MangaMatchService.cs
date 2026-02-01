@@ -198,9 +198,9 @@ public class MangaMatchService : IMangaMatchService
 
 			if (existing != null && !reindex) continue;
 
-			if (!string.IsNullOrEmpty(chapter.Attributes.ExternalUrl))
+			if (!string.IsNullOrEmpty(chapter.Attributes?.ExternalUrl))
 			{
-				_logger.LogWarning($"Manga match indexing: External URL detected, skipping: {manga.Attributes.Title.PreferedOrFirst(t => t.Key == "en").Value} ({manga.Id}) >> {chapter.Attributes.Title} ({chapter.Id})");
+				_logger.LogWarning($"Manga match indexing: External URL detected, skipping: {manga.Attributes?.Title.PreferedOrFirst(t => t.Key == "en").Value} ({manga.Id}) >> {chapter.Attributes.Title} ({chapter.Id})");
 				continue;
 			}
 
@@ -287,7 +287,7 @@ public class MangaMatchService : IMangaMatchService
 	public async Task<DbManga> Convert(MManga manga)
 	{
 		var nsfwRatings = new[] { "erotica", "suggestive", "pornographic" };
-		var title = manga.Attributes.Title.PreferedOrFirst(t => t.Key == DEFAULT_LANG).Value;
+		var title = manga.Attributes?.Title.PreferedOrFirst(t => t.Key == DEFAULT_LANG).Value ?? string.Empty;
 
 		var coverFile = (manga.Relationships.FirstOrDefault(t => t is CoverArtRelationship) as CoverArtRelationship)?.Attributes?.FileName;
 		var coverUrl = $"https://mangadex.org/covers/{manga.Id}/{coverFile}";
@@ -299,30 +299,30 @@ public class MangaMatchService : IMangaMatchService
 			SourceId = manga.Id,
 			Provider = "mangadex",
 			Url = $"https://mangadex.org/title/{manga.Id}",
-			AltTitles = manga.Attributes.AltTitles.SelectMany(t => t.Values).ToArray(),
-			Description = manga.Attributes.Description.PreferedOrFirst(t => t.Key == DEFAULT_LANG).Value ?? "No Description Provided",
-			Nsfw = nsfwRatings.Contains(manga.Attributes.ContentRating?.ToString() ?? ""),
+			AltTitles = manga.Attributes?.AltTitles.SelectMany(t => t.Values).ToArray() ?? [],
+			Description = manga.Attributes?.Description.PreferedOrFirst(t => t.Key == DEFAULT_LANG).Value ?? "No Description Provided",
+			Nsfw = nsfwRatings.Contains(manga.Attributes?.ContentRating?.ToString() ?? ""),
 			Cover = coverUrl,
 
 			Attributes = new[]
 				{
-					new DbMangaAttribute("Content Rating", manga.Attributes.ContentRating ?.ToString() ?? ""),
-					new("Original Language", manga.Attributes.OriginalLanguage),
-					new("Status", manga.Attributes.Status ?.ToString() ?? ""),
-					new("Publication State", manga.Attributes.State)
+					new DbMangaAttribute("Content Rating", manga.Attributes?.ContentRating ?.ToString() ?? ""),
+					new("Original Language", manga.Attributes?.OriginalLanguage ?? ""),
+					new("Status", manga.Attributes?.Status ?.ToString() ?? ""),
+					new("Publication State", manga.Attributes?.State ?? "")
 				}
 				.Concat(manga.Relationships.Select(t => t switch
 				{
-					PersonRelationship person => new DbMangaAttribute(person.Type == "author" ? "Author" : "Artist", person.Attributes.Name),
-					ScanlationGroup group => new DbMangaAttribute("Scanlation Group", group.Attributes.Name),
+					PersonRelationship person => new DbMangaAttribute(person.Type == "author" ? "Author" : "Artist", person.Attributes?.Name ?? string.Empty),
+					ScanlationGroup group => new DbMangaAttribute("Scanlation Group", group.Attributes?.Name ?? string.Empty),
 					_ => new("", "")
 				})
 				.Where(t => !string.IsNullOrEmpty(t.Name)))
 				.ToArray(),
 
-			Tags = manga.Attributes.Tags
-				.Select(t => t.Attributes.Name.PreferedOrFirst(t => t.Key == DEFAULT_LANG).Value)
-				.ToArray(),
+			Tags = manga.Attributes?.Tags
+				.Select(t => t.Attributes?.Name.PreferedOrFirst(t => t.Key == DEFAULT_LANG).Value ?? string.Empty)
+				.ToArray() ?? [],
 
 			CreatedAt = DateTime.UtcNow,
 			UpdatedAt = DateTime.UtcNow
@@ -336,14 +336,14 @@ public class MangaMatchService : IMangaMatchService
 	{
 		var item = new DbMangaChapter
 		{
-			Title = chapter.Attributes.Title ?? chapter.Attributes.Chapter ?? "No Title",
+			Title = chapter.Attributes?.Title ?? chapter.Attributes?.Chapter ?? "No Title",
 			Url = $"https://mangadex.org/chapter/{chapter.Id}",
 			SourceId = chapter.Id,
 			MangaId = mangaId,
-			Ordinal = double.TryParse(chapter.Attributes.Chapter, out var a) ? a : 0,
-			Volume = double.TryParse(chapter.Attributes.Volume, out var b) ? b : null,
-			ExternalUrl = chapter.Attributes.ExternalUrl,
-			Language = chapter.Attributes.TranslatedLanguage,
+			Ordinal = double.TryParse(chapter.Attributes?.Chapter, out var a) ? a : 0,
+			Volume = double.TryParse(chapter.Attributes?.Volume, out var b) ? b : null,
+			ExternalUrl = chapter.Attributes?.ExternalUrl,
+			Language = chapter.Attributes?.TranslatedLanguage ?? "en",
 			CreatedAt = DateTime.UtcNow,
 			UpdatedAt = DateTime.UtcNow,
 			Pages = pages,
@@ -354,8 +354,8 @@ public class MangaMatchService : IMangaMatchService
 				}
 				.Concat(chapter?.Relationships?.Select(t => t switch
 				{
-					PersonRelationship person => new DbMangaAttribute(person.Type == "author" ? "Author" : "Artist", person.Attributes.Name),
-					ScanlationGroup group => new DbMangaAttribute("Scanlation Group", group.Attributes.Name),
+					PersonRelationship person => new DbMangaAttribute(person.Type == "author" ? "Author" : "Artist", person.Attributes?.Name ?? string.Empty),
+					ScanlationGroup group => new DbMangaAttribute("Scanlation Group", group.Attributes?.Name ?? string.Empty),
 					_ => new("", "")
 				})?
 				.Where(t => !string.IsNullOrEmpty(t.Name))?

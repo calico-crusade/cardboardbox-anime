@@ -13,11 +13,12 @@ public static class Extensions
 		return services
 			.AddTransient<IMangaService, MangaService>()
 
+			.AddTransient<IMangaDexSource, MangaDexSource>()
+			.AddTransient<IWeebDexSource, WeebDexSource>()
+
 			.AddTransient<IMangakakalotTvSource, MangakakalotTvSource>()
 			.AddTransient<IMangakakalotComSource, MangakakalotComSource>()
 			.AddTransient<IMangakakalotComAltSource, MangakakalotComAltSource>()
-			.AddTransient<IMangaDexSource, MangaDexSource>()
-			.AddTransient<IWeebDexSource, WeebDexSource>()
 			.AddTransient<IMangaClashSource, MangaClashSource>()
 			.AddTransient<INhentaiSource, NhentaiSource>()
 			.AddTransient<IBattwoSource, BattwoSource>()
@@ -25,6 +26,8 @@ public static class Extensions
 			.AddTransient<IDarkScansSource, DarkScansSource>()
 			.AddTransient<IChapmanganatoSource, ChapmanganatoSource>()
 			.AddTransient<ILikeMangaSource, LikeMangaSource>()
+			.AddTransient<ComixApiService>()
+			.AddTransient<IComixSource, ComixSource>()
 
 			.AddTransient<IRawKumaSource, RawKumaSource>()
 
@@ -39,8 +42,6 @@ public static class Extensions
 			.AddTransient<IGoogleVisionService, GoogleVisionService>()
 			.AddTransient<IMangaSearchService, MangaSearchService>()
 
-			.AddTransient<ComixApiService>()
-			.AddTransient<IComixSource, ComixSource>()
 			.AddRedis()
 
 			.AddMangadex()
