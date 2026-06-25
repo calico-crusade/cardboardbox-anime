@@ -21,6 +21,9 @@
     <None Update="images.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="rr.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="stylesheet.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

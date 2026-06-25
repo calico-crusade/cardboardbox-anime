@@ -51,9 +51,9 @@ internal class JwtKeyService(
 	/// <summary>
 	/// The algorithm used to sign the JWT tokens
 	/// </summary>
-	public Jose.JwsAlgorithm Algorithm => 
-		Enum.TryParse<Jose.JwsAlgorithm>(_configuration["OAuth:JwtAlgorithm"], out var value) 
-			? value 
+	public Jose.JwsAlgorithm Algorithm =>
+		Enum.TryParse<Jose.JwsAlgorithm>(_configuration["OAuth:JwtAlgorithm"], out var value)
+			? value
 			: Jose.JwsAlgorithm.RS256;
 
 	/// <summary>
@@ -62,23 +62,36 @@ internal class JwtKeyService(
 	public int KeySize => int.TryParse(_configuration["OAuth:JwtKeySize"], out var value) ? value : 4096;
 
 	/// <summary>
+	/// The path to the JWT key file
+	/// </summary>
+	public string KeyPath => field ??= _configuration["OAuth:JwtKeyPath"] ?? "./jwt-key/key.pem";
+
+	/// <summary>
 	/// Creates a new RSA key pair and saves it to the configured paths
 	/// </summary>
 	/// <param name="token">The cancellation token for the request</param>
 	public async Task<string> CreateRSAKeyPair(CancellationToken token)
 	{
+		var dir = Path.GetDirectoryName(KeyPath);
+		if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+			Directory.CreateDirectory(dir);
+
+		if (File.Exists(KeyPath))
+			return _jwtKey ??= await File.ReadAllTextAsync(KeyPath, token);
+
 		//Generate the RSA key
 		using var rsa = new RSACryptoServiceProvider(KeySize);
 		var parameters = rsa.ExportParameters(true);
 		var pair = DotNetUtilities.GetRsaKeyPair(parameters);
 
 		//Write the RSA key to the path
-		using var io = new StringWriter();
+		using var io = File.CreateText(KeyPath);
 		using var writer = new PemWriter(io);
 		writer.WriteObject(pair);
 		await io.FlushAsync(token);
+		await io.DisposeAsync();
 
-		return _jwtKey ??= io.ToString();
+		return _jwtKey ??= await File.ReadAllTextAsync(KeyPath, token);
 	}
 
 	/// <summary>

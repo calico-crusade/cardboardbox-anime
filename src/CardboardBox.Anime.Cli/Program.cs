@@ -20,6 +20,7 @@ if (!args.Any(t => t.Contains("interactive", StringComparison.OrdinalIgnoreCase)
 return await new ServiceCollection()
 	.AddLogging(c => c.AddSerilog(logConfig.CreateLogger()))
 	.AddSingleton<IConfiguration>(config)
+	.AddTransient<IReflectionVerbService, ReflectionVerbService>()
 	.RegisterCba(config)
     .AddSingleton<IRunner, Runner>()
 
@@ -31,4 +32,7 @@ return await new ServiceCollection()
 		.Add<InteractiveVerb>()
 		.Add<MaxLevelPreistessVerb>()
 		.Add<RepurgeVerb>()
-		.Add<GenerateCoversVerb>());
+		.Add<GenerateCoversVerb>()
+		.Add<StaticEpubVerb>()
+		.Add<ManualPatreonLoadVerb>()
+		.Add<CleanRRVerb>());

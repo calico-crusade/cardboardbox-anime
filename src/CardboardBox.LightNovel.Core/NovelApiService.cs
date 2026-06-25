@@ -31,6 +31,7 @@ public class NovelApiService(
 	IStorySeedlingSourceService storySeedling,
 	INovelBinSourceService nbs,
 	ILONAMMTLSourceService lonammtl,
+	IFoxaholicSourceService fox,
 	ILnDbService _db) : INovelApiService
 {
 	private const int AUTO_BOOK_SPLIT = 9999;
@@ -42,7 +43,7 @@ public class NovelApiService(
 		nncSrc, baka, ftl, 
 		headCanon, magicHouse, vampiramtl, 
 		royalRoad, storySeedling, nbs,
-		lonammtl
+		lonammtl, fox
 	];
 
     public ISourceService? Source(string url)

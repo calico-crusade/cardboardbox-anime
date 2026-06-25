@@ -12,7 +12,13 @@ public static class InteractiveExtensions
         return text;
     }
 
-    public static string FixTitle(Series series)
+	public static string Escape(this string text, int buffer = 5)
+	{
+		var maxLength = Console.WindowWidth - buffer;
+		return Markup.Escape(text.Trim(maxLength));
+	}
+
+	public static string FixTitle(Series series)
     {
         return FixTitle(series.Title);
     }
@@ -83,7 +89,24 @@ public static class InteractiveExtensions
         EventSink.OnLog -= PrintLogs;
     }
 
-    public static Task ParallelProcess<T>(this IEnumerable<T> items,
+	public static T ConsoleSelect<T>(this IEnumerable<T> items, string? prompt = null, Func<T, string>? display = null)
+		where T : notnull
+	{
+		if (items is null || !items.Any()) throw new NullReferenceException("Items cannot be null or empty.");
+
+		prompt = Escape(prompt ?? $"Please select a {typeof(T).Name}:");
+		display ??= item => item?.ToString() ?? string.Empty;
+
+		var select = new SelectionPrompt<T>()
+			.Title(prompt)
+			.PageSize(Console.WindowHeight - 5)
+			.MoreChoicesText("[grey](Move up and down to reveal more choices)[/]")
+			.UseConverter(t => display(t))
+			.AddChoices(items);
+		return AnsiConsole.Prompt(select);
+	}
+
+	public static Task ParallelProcess<T>(this IEnumerable<T> items,
         int parallels, CancellationToken token, 
         params (string title, Func<T, Task<bool>> action)[] actions)
     {

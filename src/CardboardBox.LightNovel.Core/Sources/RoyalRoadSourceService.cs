@@ -1,4 +1,6 @@
-﻿namespace CardboardBox.LightNovel.Core.Sources;
+﻿using ExCSS;
+
+namespace CardboardBox.LightNovel.Core.Sources;
 
 using Utilities;
 using Utilities.FlareSolver;
@@ -315,6 +317,31 @@ internal class RoyalRoadSourceService(
         return (title, clean);
     }
 
+    public static string? FindHideClass(HtmlDocument doc)
+    {
+        var nodes = doc.DocumentNode.SelectNodes("//style");
+        if (nodes is null || nodes.Count == 0)
+            return null;
+
+        foreach(var css in nodes)
+        {
+            if (css is null || string.IsNullOrEmpty(css.InnerText)) continue;
+
+            var sheet = new StylesheetParser().Parse(css.InnerText);
+            if (sheet is null || !sheet.StyleRules.Any()) continue;
+
+            var first = sheet.StyleRules.First();
+            if (first.Style.Length != 1) continue;
+            
+            var display = first.Style.GetPropertyValue("display");
+            if (string.IsNullOrEmpty(display) || display != "none") continue;
+
+            return first.SelectorText.Trim().TrimStart('.').Trim();
+		}
+
+        return null;
+	}
+
     public async Task<SourceChapter?> GetChapter(string url, string bookTitle)
     {
         var doc = await Get(url);
@@ -324,7 +351,17 @@ internal class RoyalRoadSourceService(
             return null;
         }
 
-        var (title, content) = await _reader.GetCleanArticle(doc, url);
+        var hideClass = FindHideClass(doc);
+
+		if (!string.IsNullOrEmpty(hideClass))
+		{
+			var nodes = doc.DocumentNode.SelectNodes($"//*[contains(@class, '{hideClass}')]");
+            if (nodes is not null && nodes.Count > 0)
+                foreach (var node in nodes)
+                    node.Remove();
+		}
+
+		var (title, content) = await _reader.GetCleanArticle(doc, url);
         if (string.IsNullOrEmpty(title) && string.IsNullOrEmpty(content))
         {
             var (nt, nc) = BackupParse(doc, url);

@@ -155,6 +155,7 @@ public static class Extensions
 			.AddTransient<ICardboardTranslationsSourceService, CardboardTranslationsSourceService>()
 			.AddTransient<INovelBinSourceService, NovelBinSourceService>()
 			.AddTransient<ILONAMMTLSourceService, LONAMMTLSourceService>()
+			.AddTransient<IFoxaholicSourceService, FoxaholicSource>()
 
 			.AddTransient<INovelUpdatesService, NovelUpdatesService>()
 

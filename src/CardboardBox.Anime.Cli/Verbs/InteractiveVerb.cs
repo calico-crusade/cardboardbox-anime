@@ -9,8 +9,6 @@ using CardboardBox.Anime.Database;
 using CardboardBox.Extensions;
 using CardboardBox.Manga;
 using Interactive;
-using System.Collections.Generic;
-using System.IO;
 
 [Verb("interactive", true, HelpText = "Starts an interactive session for doing stuff")]
 public class InteractiveOptions { }
@@ -22,7 +20,8 @@ internal class InteractiveVerb(
     IMangaService _manga,
     INovelApiService _novelApi,
     IApiService _api,
-    INovelEpubService _epub) : BooleanVerb<InteractiveOptions>(logger)
+    INovelEpubService _epub,
+	IReflectionVerbService _reflect) : BooleanVerb<InteractiveOptions>(logger)
 {
     public Series[] Series { get; set; } = [];
 
@@ -273,18 +272,35 @@ internal class InteractiveVerb(
         return true;
     }
 
+    public static string FormatDisplay(string input)
+    {
+        input = input.Replace(" - ", " [grey]-[/] [blue]");
+        if (input.Contains('-'))
+            input += "[/]";
+		return $"[white]{input}[/]";
+	}
+
     public async Task<bool> ActionChoices(CancellationToken token)
     {
         var dic = new Dictionary<string, Func<CancellationToken, Task<bool>>>()
         {
-            ["CBA Novels"] = TriggerSeriesSelection,
-            ["CBA Load New Novel"] = LoadNewSelection,
-            ["CBA Manga"] = TriggerMangaSelection,
-        };
+            ["existing - Manage existing novels"] = TriggerSeriesSelection,
+            ["new - Load new novels"] = LoadNewSelection,
+            ["manga - Manga Stuff"] = TriggerMangaSelection,
+			["clear - Clear the console"] = (_) =>
+			{
+				Console.Clear();
+				return Task.FromResult(true);
+			},
+			["exit - Exit the application"] = (_) => Task.FromResult(false),
+		};
 
-        var actions = dic
+        foreach(var verb in _reflect.Verbs())
+            dic[verb.Display()] = token => _reflect.RunVerb(verb, token);
+
+		var actions = dic
             .ToArray()
-            .MultiSelect("Action", t => t.Key)
+            .MultiSelect("Action", t => FormatDisplay(t.Key))
             .Select(t => t.Value)
             .ToArray();
 

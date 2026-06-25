@@ -1,8 +1,8 @@
 ﻿using CommandLine;
+using CardboardBox.Extensions;
 
 namespace CardboardBox.Anime.Cli.Verbs;
 
-using CardboardBox.Extensions;
 using LightNovel.Core;
 using LightNovel.Core.Sources;
 using LightNovel.Core.Sources.Utilities;
@@ -211,13 +211,14 @@ Violet: Is there a problem between me being a priestess and me being able to bea
         public string? NextUrl { get; set; }
     }
 
-    public record class SeriesUnnest(
-        Series Series,
-        Book Book,
-        Chapter Chapter,
-        Page Page,
-        ChapterPage ChapterPage);
 
     [GeneratedRegex("\\[Vol\\. ([0-9]{1,})\\] Chapter ([0-9,\\.]+)(:?) (.*)")]
     private static partial Regex TitleRegex();
 }
+
+public record class SeriesUnnest(
+	Series Series,
+	Book Book,
+	Chapter Chapter,
+	Page Page,
+	ChapterPage ChapterPage);

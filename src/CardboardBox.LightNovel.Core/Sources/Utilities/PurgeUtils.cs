@@ -18,6 +18,8 @@ public class PurgeUtils : IPurgeUtils
 
         PurgeAnchors(doc.DocumentNode);
         PurgeTips(doc.DocumentNode);
+        PurgeOriginals(doc.DocumentNode);
+        PurgeKofiImages(doc.DocumentNode);
 
         return doc.DocumentNode.InnerHtml;
     }
@@ -121,6 +123,35 @@ public class PurgeUtils : IPurgeUtils
         }
     }
 
+    public void PurgeOriginals(HtmlNode node)
+    {
+        string[] inners = ["LOCALIZERMEERKAT", "Support the Author by Buying"];
+
+        var ps = node.SelectNodes("//p");
+        if (ps is null) return;
+
+        foreach(var item in ps)
+        {
+            var inner = item.InnerText.HTMLDecode().Trim();
+            if (!inners.Any(t => inner.Contains(t, StringComparison.InvariantCultureIgnoreCase)))
+                continue;
+
+            item.Remove();
+		}
+	}
+
+    public void PurgeKofiImages(HtmlNode node)
+    {
+        var images = node.SelectNodes("//img");
+        if (images is null) return;
+        foreach (var item in images)
+        {
+            var src = item.GetAttributeValue("src", "").ToLower();
+            if (!src.Contains("kofi", StringComparison.InvariantCultureIgnoreCase)) continue;
+            item.ParentNode.Remove();
+		}
+	}
+
     public void HandleNyxShare(HtmlNode anchor)
     {
         var parent = GetFirstNode(anchor);
@@ -148,7 +179,7 @@ public class PurgeUtils : IPurgeUtils
     public IEnumerable<HtmlNode> Flatten(HtmlNode node)
     {
         string[] passThrough = ["p", "img", "strong", "b", "i", "h1", "h2", "h3", "h4", "h5", "h6"];
-        string[] barred = ["script", "style", "iframe", "noscript", "object", "embed", "input", "meta", "title"];
+        string[] barred = ["script", "style", "iframe", "noscript", "object", "embed", "input", "meta", "title", "figcaption"];
 
         if (barred.Contains(node.Name))
             yield break;
