@@ -47,7 +47,14 @@ internal class InteractiveVerb(
 
     public async Task<bool> GenerateEPUBs(Series series)
     {
-        var output = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "novels");
+        var seriesName = series.Title.PurgePathChars().Replace(" ", "-");
+        while(seriesName.Contains("--"))
+			seriesName = seriesName.Replace("--", "-");
+
+        if (seriesName.Length > 50)
+			seriesName = seriesName[..50];
+
+	    var output = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "novels", seriesName);
         if (!Directory.Exists(output))
         {
             Directory.CreateDirectory(output);
@@ -63,7 +70,7 @@ internal class InteractiveVerb(
             return false;
         }
 
-        var res = await _epub.Generate(books.Select(t => t.Id).ToArray());
+        var res = await _epub.Generate([..books.Select(t => t.Id)]);
         if (res is null)
         {
             _logger.LogWarning("An error occurred while generating epubs.");
@@ -72,7 +79,7 @@ internal class InteractiveVerb(
 
         var (stream, name, type) = res;
         var actualName = name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)
-            ? series.Title.PurgePathChars() + ".zip"
+            ? seriesName + ".zip"
             : name;
         var path = Path.Combine(output, actualName);
 

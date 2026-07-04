@@ -143,7 +143,7 @@ internal class SmartReaderService(
 
     public Task<Article> GetArticle(HtmlDocument doc, string url)
     {
-        return GetArticle(doc.Text, url);
+        return GetArticle(doc.DocumentNode.OuterHtml, url);
     }
 
     public async Task<Article> GetCleanArticle(string html, string url)
@@ -158,6 +158,6 @@ internal class SmartReaderService(
 
     public Task<Article> GetCleanArticle(HtmlDocument doc, string url)
     {
-        return GetCleanArticle(doc.Text, url);
+        return GetCleanArticle(doc.DocumentNode.OuterHtml, url);
     }
 }

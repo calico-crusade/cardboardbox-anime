@@ -1,5 +1,5 @@
-﻿using CommandLine;
-using CardboardBox.Extensions;
+﻿using CardboardBox.Extensions;
+using CommandLine;
 using System.Runtime.CompilerServices;
 
 namespace CardboardBox.Anime.Cli.Verbs;
@@ -10,14 +10,8 @@ using LightNovel.Core.Sources.Utilities;
 [Verb("patreon", HelpText = "Load novels from patreon sources (RR specifically)")]
 public class ManualPatreonLoadOptions
 {
-	[Option('d', "directory", Required = true, HelpText = "The directory to load from")]
+	[Option('d', "directory", HelpText = "The directory to load from")]
 	public string? Directory { get; set; }
-
-	[Option('s', "series-id", Required = true, HelpText = "The series id to load into")]
-	public int? SeriesId { get; set; }
-
-	[Option('u', "base-url", Required = true, HelpText = "The base URL to use for mapping pages")]
-	public string? BaseUrl { get; set; }
 }
 
 internal partial class ManualPatreonLoadVerb(
@@ -43,6 +37,25 @@ internal partial class ManualPatreonLoadVerb(
 	public async IAsyncEnumerable<ChapterFile> LoadChapters(string directory, string baseUrl,
 		[EnumeratorCancellation] CancellationToken token)
 	{
+		static void FixPs(HtmlNode node)
+		{
+			if (node == null) return;
+
+			if (node.Name.EqualsIc("p"))
+			{
+				var content = node.InnerHtml.Replace("\r", " ").Replace("\n", " ");
+				while (content.Contains("  "))
+					content = content.Replace("  ", " ");
+
+				node.InnerHtml = content;
+			}
+
+			if (node.ChildNodes == null || node.ChildNodes.Count == 0) return;
+
+			foreach (var child in node.ChildNodes?.ToArray() ?? [])
+				FixPs(child);
+		}
+
 		var files = Directory.GetFiles(directory, "*.html")
 			.OrderBy(t => int.TryParse(Path.GetFileNameWithoutExtension(t).TrimEnd('.'), out var val) ? val : int.MaxValue);
 		foreach(var file in files)
@@ -50,24 +63,17 @@ internal partial class ManualPatreonLoadVerb(
 			var text = await File.ReadAllTextAsync(file, token);
 			var title = H1Regex().Match(text).Groups[1].Value;
 			var url = GenerateUrl(baseUrl, title);
-			var result = await _smart.GetCleanArticle(text, url);
-			yield return new(title, url, result.content?.ForceNull() ?? text);
+			var doc = new HtmlDocument();
+			doc.LoadHtml(text);
+			FixPs(doc.DocumentNode);
+			text = doc.DocumentNode.InnerHtml;
+			var result = _smart.CleanseHtml(text, url);
+			yield return new(title, url, result);
 		}
 	}
 
-	public override async Task<bool> Execute(ManualPatreonLoadOptions options, CancellationToken token)
+	public async Task<bool> ProcessSeries(int seriesId, string directory, CancellationToken token)
 	{
-		if (options is null || options.SeriesId is null 
-			|| string.IsNullOrEmpty(options.Directory) 
-			|| string.IsNullOrEmpty(options.BaseUrl))
-		{
-			_logger.LogError("Invalid options provided. SeriesId: {SeriesId}, Directory: {Directory}, BaseUrl: {BaseUrl}", 
-				options?.SeriesId, options?.Directory, options?.BaseUrl);
-			return false;
-		}
-
-		var seriesId = options.SeriesId.Value;
-		var directory = options.Directory;
 		var series = await _db.Series.Scaffold(seriesId);
 		if (series is null)
 		{
@@ -75,12 +81,14 @@ internal partial class ManualPatreonLoadVerb(
 			return false;
 		}
 
+		var baseUrl = $"{series.Series.Url.TrimEnd('/')}/chapter/999999";
+
 		if (!Directory.Exists(directory))
 		{
 			_logger.LogError("The specified directory does not exist: {Directory}", directory);
 			return false;
 		}
-		
+
 		var unnest = Unnest(series).ToArray();
 		var urls = unnest.Select(t => t.Page.Url).Distinct().ToHashSet();
 		var lastBook = series.Books.OrderByDescending(t => t.Book.Ordinal).FirstOrDefault()?.Book;
@@ -101,7 +109,7 @@ internal partial class ManualPatreonLoadVerb(
 
 		int loaded = 0;
 
-		var chapters = LoadChapters(directory, options.BaseUrl, token);
+		var chapters = LoadChapters(directory, baseUrl, token);
 		await foreach (var chapter in chapters)
 		{
 			if (urls.Contains(chapter.Url))
@@ -149,9 +157,64 @@ internal partial class ManualPatreonLoadVerb(
 			cp.Id = await _db.ChapterPages.Upsert(cp);
 			urls.Add(chapter.Url);
 			loaded++;
+
+			_logger.LogInformation("Loaded new chapter: [{SeriesId}::{Series}] >> {Title} (URL: {Url}). Total loaded: {loaded}", 
+				seriesId, series.Series.Title, chapter.Title, chapter.Url, loaded);
 		}
 
 		_logger.LogInformation("Finished loading chapters. Total new chapters loaded: {Loaded}", loaded);
+
+		return true;
+	}
+
+	public static string? DetermineDirectory(string? directory)
+	{
+		if (!string.IsNullOrEmpty(directory) && Directory.Exists(directory))
+			return directory;
+
+		var baseDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "novels", "load");
+		if (Directory.Exists(baseDir))
+			return baseDir;
+
+		return null;
+	}
+
+	public override async Task<bool> Execute(ManualPatreonLoadOptions options, CancellationToken token)
+	{
+		var directory = DetermineDirectory(options?.Directory);
+		if (directory is null)
+		{
+			_logger.LogError("Invalid options provided. Directory: {Directory}", 
+				 options?.Directory);
+			return false;
+		}
+
+		var directories = Directory.GetDirectories(directory, "*", SearchOption.TopDirectoryOnly);
+		foreach(var dir in directories)
+		{
+			var folderName = dir.Split(['/', '\\'], StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
+			if (string.IsNullOrEmpty(folderName))
+			{
+				_logger.LogInformation("Skipping directory {Directory} as it does not have a valid folder name.", dir);
+				continue;
+			}
+
+			var strSeriesId = folderName.Split('-').FirstOrDefault();
+			if (!int.TryParse(strSeriesId, out var seriesId))
+			{
+				_logger.LogInformation("Skipping directory {Directory} as it does not have a valid series ID.", dir);
+				continue;
+			}
+
+			_logger.LogInformation("Processing series ID {SeriesId} from directory {Directory}.", seriesId, dir);
+			if (!await ProcessSeries(seriesId, dir, token))
+			{
+				_logger.LogError("Failed to process series ID {SeriesId} from directory {Directory}.", seriesId, dir);
+				return false;
+			}
+
+			_logger.LogInformation("Successfully processed series ID {SeriesId} from directory {Directory}.", seriesId, dir);
+		}
 
 		return true;
 	}

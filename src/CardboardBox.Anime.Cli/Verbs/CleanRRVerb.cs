@@ -1,4 +1,5 @@
-﻿using CardboardBox.LightNovel.Core;
+﻿using CardboardBox.Extensions;
+using CardboardBox.LightNovel.Core;
 using CommandLine;
 
 namespace CardboardBox.Anime.Cli.Verbs;
@@ -308,11 +309,31 @@ internal class CleanRRVerb(
 
 		}
 
+		void FixPs(HtmlNode node)
+		{
+			if (node == null) return;
+
+			if (node.Name.EqualsIc("p"))
+			{
+				var content = node.InnerHtml.Replace("\r", " ").Replace("\n", " ");
+				while(content.Contains("  "))
+					content = content.Replace("  ", " ");
+
+				node.InnerHtml = content;
+			}
+
+			if (node.ChildNodes == null || node.ChildNodes.Count == 0) return;
+
+			foreach (var child in node.ChildNodes?.ToArray() ?? [])
+				FixPs(child);
+		}
+
 		var before = page.Content;
 		var doc = new HtmlDocument();
 		doc.LoadHtml(before);
 		ClearNode(doc.DocumentNode);
 		RemoveCode(doc.DocumentNode);
+		FixPs(doc.DocumentNode);
 
 		page.Content = EpubHtmlCleaner.CleanInvisibleTextCharacters(
 			EpubHtmlCleaner.RemoveHiddenParagraphs(
