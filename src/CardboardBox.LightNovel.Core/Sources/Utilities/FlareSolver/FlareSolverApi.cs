@@ -6,11 +6,11 @@ public interface IFlareSolver
 {
     Task<SolverSession> CreateSession(SolverProxy? proxy = null);
 
-    Task<SolverResponse?> Get(string url, SolverCookie[]? cookies = null, SolverProxy? proxy = null, int? timeout = null);
+    Task<SolverResponse?> Get(string url, SolverCookie[]? cookies = null, SolverProxy? proxy = null, int? timeout = null, double? waitInSeconds = null);
 
-    Task<SolverResponse?> Post(string url, NameValueCollection data, SolverCookie[]? cookies = null, SolverProxy? proxy = null, int? timeout = null);
+    Task<SolverResponse?> Post(string url, NameValueCollection data, SolverCookie[]? cookies = null, SolverProxy? proxy = null, int? timeout = null, double? waitInSeconds = null);
 
-    Task<SolverResponse?> Post(string url, Dictionary<string, string> data, SolverCookie[]? cookies = null, SolverProxy? proxy = null, int? timeout = null);
+    Task<SolverResponse?> Post(string url, Dictionary<string, string> data, SolverCookie[]? cookies = null, SolverProxy? proxy = null, int? timeout = null, double? waitInSeconds = null);
 
     Task ClearSessions();
 }
@@ -36,23 +36,23 @@ internal class FlareSolverApi(
         return new SolverSession(_api, session.SessionId);
     }
 
-    public Task<SolverResponse?> Get(string url, SolverCookie[]? cookies = null, SolverProxy? proxy = null, int? timeout = null)
+    public Task<SolverResponse?> Get(string url, SolverCookie[]? cookies = null, SolverProxy? proxy = null, int? timeout = null, double? waitInSeconds = null)
     {
-        return _api.Get(url, cookies: cookies, proxy: proxy, maxTimeout: timeout);
+        return _api.Get(url, cookies: cookies, proxy: proxy, maxTimeout: timeout, waitInSeconds: waitInSeconds);
     }
 
-    public Task<SolverResponse?> Post(string url, NameValueCollection data, SolverCookie[]? cookies = null, SolverProxy? proxy = null, int? timeout = null)
+    public Task<SolverResponse?> Post(string url, NameValueCollection data, SolverCookie[]? cookies = null, SolverProxy? proxy = null, int? timeout = null, double? waitInSeconds = null)
     {
-        return _api.Post(url, data, cookies: cookies, proxy: proxy, maxTimeout: timeout);
+        return _api.Post(url, data, cookies: cookies, proxy: proxy, maxTimeout: timeout, waitInSeconds: waitInSeconds);
     }
 
-    public Task<SolverResponse?> Post(string url, Dictionary<string, string> data, SolverCookie[]? cookies = null, SolverProxy? proxy = null, int? timeout = null)
+    public Task<SolverResponse?> Post(string url, Dictionary<string, string> data, SolverCookie[]? cookies = null, SolverProxy? proxy = null, int? timeout = null, double? waitInSeconds = null)
     {
         var collection = new NameValueCollection();
         foreach (var (key, value) in data)
         {
             collection.Add(key, value);
         }
-        return Post(url, collection, cookies: cookies, proxy: proxy, timeout: timeout);
+        return Post(url, collection, cookies: cookies, proxy: proxy, timeout: timeout, waitInSeconds: waitInSeconds);
     }
 }

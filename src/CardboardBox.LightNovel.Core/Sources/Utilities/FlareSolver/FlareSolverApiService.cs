@@ -9,7 +9,8 @@ public interface IFlareSolverApiService
         SolverCookie[]? cookies = null,
         SolverProxy? proxy = null,
         bool returnOnlyCookies = false,
-        int? maxTimeout = null);
+        int? maxTimeout = null,
+		double? waitInSeconds = null);
 
     Task<SolverResponse?> Post(string url,
         NameValueCollection parameters,
@@ -17,7 +18,8 @@ public interface IFlareSolverApiService
         SolverCookie[]? cookies = null,
         SolverProxy? proxy = null,
         bool returnOnlyCookies = false,
-        int? maxTimeout = null);
+        int? maxTimeout = null,
+		double? waitInSeconds = null);
 
     Task<SolverSessionList?> SessionList();
 
@@ -45,7 +47,8 @@ internal class FlareSolverApiService(
         SolverCookie[]? cookies = null,
         SolverProxy? proxy = null,
         bool returnOnlyCookies = false,
-        int? maxTimeout = null)
+        int? maxTimeout = null,
+		double? waitInSeconds = null)
     {
         var request = new SolverRequest
         {
@@ -55,7 +58,8 @@ internal class FlareSolverApiService(
             Cookies = cookies,
             Proxy = proxy,
             MaxTimeout = maxTimeout ?? DEFAULT_TIMEOUT,
-            ReturnOnlyCookies = returnOnlyCookies
+			ReturnOnlyCookies = returnOnlyCookies,
+			WaitInSeconds = waitInSeconds
         };
         return _api.Post<SolverResponse, SolverRequest>(ServerUrl, request);
     }
@@ -66,7 +70,8 @@ internal class FlareSolverApiService(
         SolverCookie[]? cookies = null, 
         SolverProxy? proxy = null, 
         bool returnOnlyCookies = false, 
-        int? maxTimeout = null)
+        int? maxTimeout = null,
+		double? waitInSeconds = null)
     {
         var request = new SolverRequest
         {
@@ -77,7 +82,8 @@ internal class FlareSolverApiService(
             Cookies = cookies,
             Proxy = proxy,
             MaxTimeout = maxTimeout ?? DEFAULT_TIMEOUT,
-            ReturnOnlyCookies = returnOnlyCookies
+			ReturnOnlyCookies = returnOnlyCookies,
+			WaitInSeconds = waitInSeconds
         };
         return _api.Post<SolverResponse, SolverRequest>(ServerUrl, request);
     }

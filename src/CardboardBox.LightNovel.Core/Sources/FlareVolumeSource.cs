@@ -23,6 +23,7 @@ public abstract class FlareVolumeSource(
     public virtual int PauseDurationSecondsMin => 15;
     public virtual int PauseDurationSecondsMax => 35;
     public virtual int MaxRetries => 4;
+	public virtual double? ResponseWaitSeconds => null;
 
     public virtual RateLimiterBase Limiter => _rateLimiter ??= new(
         new(MaxRequestsBeforePauseMin, MaxRequestsBeforePauseMax),
@@ -91,7 +92,7 @@ public abstract class FlareVolumeSource(
         try
         {
             _logger.LogInformation("Getting data from {url}", url);
-            var data = await _flare.Get(url, _cookies, timeout: 30_000);
+            var data = await _flare.Get(url, _cookies, timeout: 30_000, waitInSeconds: ResponseWaitSeconds);
             if (data is null || data.Solution is null) throw new Exception("Failed to get data");
 
             if (data.Solution.Status < 200 || data.Solution.Status >= 300)

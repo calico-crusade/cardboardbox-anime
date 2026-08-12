@@ -6,6 +6,7 @@ using Anime.Database;
 using Anime.Database.Mapping;
 using Database;
 using Sources;
+using Sources.DragonholicSource;
 using Sources.Utilities;
 using Sources.Utilities.FlareSolver;
 using Sources.ZirusSource;
@@ -156,6 +157,9 @@ public static class Extensions
 			.AddTransient<INovelBinSourceService, NovelBinSourceService>()
 			.AddTransient<ILONAMMTLSourceService, LONAMMTLSourceService>()
 			.AddTransient<IFoxaholicSourceService, FoxaholicSource>()
+			.AddTransient<IFloraSourceService, FloraSource>()
+			.AddTransient<IDragonholicApiService, DragonholicApiService>()
+			.AddTransient<IDragonholicSourceService, DragonholicSourceService>()
 
 			.AddTransient<INovelUpdatesService, NovelUpdatesService>()
 

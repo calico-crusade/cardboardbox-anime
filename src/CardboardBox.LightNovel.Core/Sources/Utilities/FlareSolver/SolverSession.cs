@@ -6,24 +6,24 @@ public class SolverSession(
     IFlareSolverApiService _api, 
     string _sessionId) : IAsyncDisposable
 {
-    public Task<SolverResponse?> Get(string url, SolverCookie[]? cookies = null, SolverProxy? proxy = null)
+    public Task<SolverResponse?> Get(string url, SolverCookie[]? cookies = null, SolverProxy? proxy = null, double? waitInSeconds = null)
     {
-        return _api.Get(url, cookies: cookies, proxy: proxy, sessionId: _sessionId);
+        return _api.Get(url, cookies: cookies, proxy: proxy, sessionId: _sessionId, waitInSeconds: waitInSeconds);
     }
 
-    public Task<SolverResponse?> Post(string url, NameValueCollection data, SolverCookie[]? cookies = null, SolverProxy? proxy = null)
+    public Task<SolverResponse?> Post(string url, NameValueCollection data, SolverCookie[]? cookies = null, SolverProxy? proxy = null, double? waitInSeconds = null)
     {
-        return _api.Post(url, data, cookies: cookies, proxy: proxy, sessionId: _sessionId);
+        return _api.Post(url, data, cookies: cookies, proxy: proxy, sessionId: _sessionId, waitInSeconds: waitInSeconds);
     }
 
-    public Task<SolverResponse?> Post(string url, Dictionary<string, string> data, SolverCookie[]? cookies = null, SolverProxy? proxy = null)
+    public Task<SolverResponse?> Post(string url, Dictionary<string, string> data, SolverCookie[]? cookies = null, SolverProxy? proxy = null, double? waitInSeconds = null)
     {
         var collection = new NameValueCollection();
         foreach (var (key, value) in data)
         {
             collection.Add(key, value);
         }
-        return Post(url, collection, cookies: cookies, proxy: proxy);
+        return Post(url, collection, cookies: cookies, proxy: proxy, waitInSeconds: waitInSeconds);
     }
 
     public async ValueTask DisposeAsync()

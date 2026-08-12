@@ -22,7 +22,7 @@ public class NovelEpubService(
 {
 	private const string EPUB_MIMETYPE = "application/epub+zip";
 
-	private ConcurrentDictionary<string, SemaphoreSlim> _fileDownloads = [];
+	private readonly ConcurrentDictionary<string, SemaphoreSlim> _fileDownloads = [];
 
     public async Task<StreamResult?> Generate(params long[] bookIds)
 	{
@@ -107,7 +107,7 @@ public class NovelEpubService(
 			_logger.LogDebug("Finalizing EPUB generation for [Book:{bookId}]::\"{bookTitle}\"", book.Id, book.Title);
         }
 
-		return (path, $"{book.Title}.epub".PurgePathChars());
+		return (path, FormatFileName(scaffold));
 	}
 
 	#region Epub Builder Helpers
@@ -153,15 +153,16 @@ public class NovelEpubService(
 				{
 					var (page, _) = pages[p];
 
-					if (page.Mimetype.ToLower() == "application/html")
+					if (page.Mimetype.EqualsIc("application/html"))
 					{
-						var header = p == 0 ? $"<h1>{chap.Title}</h1>" : "";
-						var content = $"{header}{CleanContents(page.Content, page.Title)}";
-						await PostFixImages(bob, c, $"chapter-{i}-{p}.xhtml", content);
+						var clean = CleanContents(page.Content, page.Title);
+						if (p == 0 && !clean.ContainsIc(page.Title))
+                            clean = $"<h1>{chap.Title}</h1>{clean}";
+						await PostFixImages(bob, c, $"chapter-{i}-{p}.xhtml", clean);
 						continue;
 					}
 
-					if (page.Mimetype.ToLower().StartsWith("image/"))
+					if (page.Mimetype.StartsWithIc("image/"))
 					{
 						if (p == 0)
 							await c.AddRawPage($"chapter-{i}-{p}.xhtml", $"<h1>{chap.Title}</h1>");
@@ -173,7 +174,7 @@ public class NovelEpubService(
 						continue;
 					}
 
-					_logger.LogWarning($"Unknown Mimetype for: [Book:{book.Id}]::[Page:{page.Id}] - {page.Mimetype}");
+					_logger.LogWarning("Unknown Mimetype for: [Book:{Id}]::[Page:{pageId}] - {Mimetype}", book.Id, page.Id, page.Mimetype);
 				}
 			});
 		}
@@ -217,11 +218,48 @@ public class NovelEpubService(
 		await bob.AddRawPage(filename, content);
 	}
 
-	#endregion
+    #endregion
 
-	#region Utilities
+    #region Utilities
 
-	public string RandomBits(int size, string? chars = null)
+    public static string FormatFileName(FullBookScaffold book)
+    {
+        static string Clean(string input, int maxLength = 32)
+        {
+            const char REPLACER = '-';
+            string REPLACER_STR = $"{REPLACER}{REPLACER}";
+            var alphaNumeric = new Regex("[^a-zA-Z0-9-]");
+            var cleaned = alphaNumeric.Replace(input, REPLACER.ToString())
+                .Trim()
+                .TrimEnd('-')
+                .ToLower();
+            while (cleaned.Contains(REPLACER_STR))
+                cleaned = cleaned.Replace(REPLACER_STR, REPLACER.ToString());
+
+            if (cleaned.Length <= maxLength) return cleaned;
+
+            var firstIndex = cleaned.IndexOf(REPLACER);
+            if (firstIndex == -1 || firstIndex >= maxLength)
+                return cleaned[..32];
+
+            var output = "";
+            var parts = cleaned.Split(REPLACER, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (var part in parts)
+            {
+                if (output.Length + part.Length + 1 > maxLength)
+                    break;
+
+                output += $"{part}{REPLACER}";
+            }
+
+            return output.TrimEnd(REPLACER);
+        }
+
+        return $"{Clean(book.Series.Title)}-volume-{book.Book.Ordinal}.epub".PurgePathChars();
+    }
+
+    public string RandomBits(int size, string? chars = null)
 	{
 		chars ??= "abcdefghijklmnopqrstuvwxyz0123456789";
 		var r = new Random();
@@ -392,4 +430,3 @@ public class NovelEpubService(
 
 	#endregion
 }
-

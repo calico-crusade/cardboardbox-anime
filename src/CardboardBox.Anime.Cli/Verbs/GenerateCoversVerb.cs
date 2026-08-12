@@ -18,7 +18,7 @@ public class GenerateCoversOptions
 	private const string FONT_OUTLINE_COLOR = "#fff";
 	private const int MARGIN = 50;
 	private const int PEN_WIDTH = 5;
-	private const Position WHERE = Position.Bottom | Position.Center;
+	private const Position WHERE = Position.Middle | Position.Center;
 	private const string TEXT = "#{0}";
 
 	[Option('i', "series-id", HelpText = "The ID of the light novel series to generate covers for")]

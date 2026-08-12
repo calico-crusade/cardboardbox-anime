@@ -22,6 +22,10 @@ public class SolverRequest
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public int MaxTimeout { get; set; } = 0;
 
+	[JsonPropertyName("waitInSeconds")]
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public double? WaitInSeconds { get; set; }
+
     [JsonPropertyName("session")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? SessionId { get; set; }
