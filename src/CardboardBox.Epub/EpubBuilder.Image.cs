@@ -68,7 +68,7 @@ public partial class EpubBuilder
 		
 		//Add the cover path HTML to the manifest, zip file, ncx, and spine
 		using var htmlIO = html.ToStream();
-		await AddFile(COVER_HTML_PAGE, htmlIO, FileType.Page);
+		await AddPageFile(COVER_HTML_PAGE, htmlIO);
 		Ncx.Nav.Insert(0, ("Cover", htmlPath)); //Ensure it's the first item in the list
 		Content.SpineReferences.Insert(0, COVER_HTML_PAGE);
 		Content.Meta.Cover = name;

@@ -1,8 +1,8 @@
 ﻿
 using System.IO.Compression;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using CardboardBox.Epub;
 using HtmlAgilityPack;
 
 namespace CardboardBox.LightNovel.Core;
@@ -53,8 +53,7 @@ public static class EpubPageBreakWriter
         var navPath = NormalizeZipPath(CombineZipPath(opfDirectory, navItem.Href));
         var navDirectory = GetDirectory(navPath);
 
-        var pageEntries = new List<PageEntry>();
-        var pageNumber = 1;
+        var pageBreaks = new EpubPageBreakGenerator(wordsPerPage);
 
         foreach (var spineId in spineIds)
         {
@@ -71,96 +70,24 @@ public static class EpubPageBreakWriter
 
             var chapterHtml = Encoding.UTF8.GetString(chapterBytes);
 
-            var updated = AddPageBreaksToChapter(
-                chapterHtml,
-                chapterPath,
-                navDirectory,
-                wordsPerPage,
-                ref pageNumber,
-                pageEntries);
+            var hrefFromNavToChapter = MakeRelativeHref(navDirectory, chapterPath);
+            var updated = pageBreaks.AddToXhtmlPage(chapterHtml, hrefFromNavToChapter);
 
             files[chapterPath] = Encoding.UTF8.GetBytes(updated);
         }
 
-        if (pageEntries.Count == 0)
+        if (pageBreaks.PageBreaks.Count == 0)
             throw new InvalidOperationException("No page breaks were generated. Could not find usable XHTML spine content.");
 
         files[navPath] = Encoding.UTF8.GetBytes(
             AddPageListToNav(
                 Encoding.UTF8.GetString(files[navPath]),
-                pageEntries));
+                pageBreaks.PageBreaks));
 
         WriteZipFiles(outputEpubPath, files);
     }
 
-    private static string AddPageBreaksToChapter(
-        string html,
-        string chapterPath,
-        string navDirectory,
-        int wordsPerPage,
-        ref int pageNumber,
-        List<PageEntry> pageEntries)
-    {
-        var doc = new HtmlDocument
-        {
-            OptionFixNestedTags = true,
-            OptionAutoCloseOnEnd = true,
-            OptionWriteEmptyNodes = false,
-            OptionOutputAsXml = true,
-        };
-
-        doc.LoadHtml(html);
-
-        EnsureEpubNamespace(doc);
-
-        var body = doc.DocumentNode.SelectSingleNode("//*[local-name()='body']");
-        if (body is null)
-            return html;
-
-        var paragraphs = body
-            .Descendants()
-            .Where(n =>
-                n.NodeType == HtmlNodeType.Element &&
-                n.Name.Equals("p", StringComparison.OrdinalIgnoreCase) &&
-                CountWords(n.InnerText) > 0)
-            .ToArray();
-
-        if (paragraphs.Length == 0)
-            return html;
-
-        var wordsSinceBreak = 0;
-        var insertedAtLeastOne = false;
-
-        foreach (var paragraph in paragraphs)
-        {
-            var wordCount = CountWords(paragraph.InnerText);
-
-            if (!insertedAtLeastOne || wordsSinceBreak >= wordsPerPage)
-            {
-                var pageId = $"page-{pageNumber}";
-                var pageBreak = HtmlNode.CreateNode(
-                    $"""<span epub:type="pagebreak" id="{pageId}" title="{pageNumber}"></span>""");
-
-                paragraph.ParentNode.InsertBefore(pageBreak, paragraph);
-
-                var hrefFromNavToChapter = MakeRelativeHref(navDirectory, chapterPath);
-
-                pageEntries.Add(new PageEntry(
-                    PageNumber: pageNumber,
-                    Href: $"{hrefFromNavToChapter}#{pageId}"));
-
-                pageNumber++;
-                wordsSinceBreak = 0;
-                insertedAtLeastOne = true;
-            }
-
-            wordsSinceBreak += wordCount;
-        }
-
-        return doc.DocumentNode.OuterHtml;
-    }
-
-    private static string AddPageListToNav(string navHtml, List<PageEntry> pages)
+    private static string AddPageListToNav(string navHtml, IReadOnlyList<EpubPageBreak> pages)
     {
         var doc = new HtmlDocument
         {
@@ -230,14 +157,6 @@ public static class EpubPageBreakWriter
         var existing = html.GetAttributeValue("xmlns:epub", "");
         if (string.IsNullOrWhiteSpace(existing))
             html.SetAttributeValue("xmlns:epub", "http://www.idpf.org/2007/ops");
-    }
-
-    private static int CountWords(string text)
-    {
-        if (string.IsNullOrWhiteSpace(text))
-            return 0;
-
-        return Regex.Matches(text, @"[\p{L}\p{N}]+(?:['’\-][\p{L}\p{N}]+)?").Count;
     }
 
     private static bool IsXhtmlFile(ManifestItem item)
@@ -356,7 +275,4 @@ public static class EpubPageBreakWriter
         string MediaType,
         string Properties);
 
-    private sealed record PageEntry(
-        int PageNumber,
-        string Href);
 }

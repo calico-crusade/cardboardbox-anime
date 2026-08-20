@@ -49,7 +49,7 @@ public class ChapterBuilder : IChapterBuilder
 	public async Task AddPage(string name, Stream stream)
 	{
 		//Add to the manifest & add the actual file to the zip
-		await Builder.AddFile(name, stream, FileType.Page);
+		await Builder.AddPageFile(name, stream);
 
 		//Add to the spine
 		Builder.Content.SpineReferences.Add(name);

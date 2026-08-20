@@ -21,6 +21,7 @@ public class NovelEpubService(
     IFileCacheService _file) : INovelEpubService
 {
 	private const string EPUB_MIMETYPE = "application/epub+zip";
+	private const int EPUB_WORDS_PER_PAGE = 350;
 
 	private readonly ConcurrentDictionary<string, SemaphoreSlim> _fileDownloads = [];
 
@@ -86,6 +87,7 @@ public class NovelEpubService(
 		{
 			_logger.LogDebug("Starting EPUB generation for [Book:{bookId}]::\"{bookTitle}\"", book.Id, book.Title);
             var bob = await epub.Start();
+			bob.EnableApproximatePageBreaks(EPUB_WORDS_PER_PAGE);
 
 			bob.BelongsTo(series.Title, (int)book.Ordinal);
 

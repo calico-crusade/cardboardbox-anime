@@ -45,6 +45,7 @@ public partial class EpubBuilder
 	public string GenerateToc()
 	{
 		var sheets = string.Join("\r\n\t", GlobalStylesheets.Select(t => $"<link href=\"{t}\" rel=\"stylesheet\" type=\"text/css\"/>"));
+		var pageList = GeneratePageList();
 
 		var bob = new StringBuilder();
 		foreach(var (name, src) in Ncx.Nav)
@@ -68,6 +69,7 @@ public partial class EpubBuilder
 {bob}
     </ol>
   </nav>
+{pageList}
 </body>
 </html>";
 	}
