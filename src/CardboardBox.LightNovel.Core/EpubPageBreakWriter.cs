@@ -60,7 +60,7 @@ public static class EpubPageBreakWriter
             if (!manifest.TryGetValue(spineId, out var item))
                 continue;
 
-            if (!IsXhtmlFile(item))
+            if (!IsXhtmlFile(item) || IsNavigationFile(item))
                 continue;
 
             var chapterPath = NormalizeZipPath(CombineZipPath(opfDirectory, item.Href));
@@ -166,6 +166,12 @@ public static class EpubPageBreakWriter
 
         return item.Href.EndsWith(".xhtml", StringComparison.OrdinalIgnoreCase) ||
                item.Href.EndsWith(".html", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsNavigationFile(ManifestItem item)
+    {
+        return item.Properties.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Contains("nav", StringComparer.OrdinalIgnoreCase);
     }
 
     private static Dictionary<string, byte[]> ReadZipFiles(string epubPath)

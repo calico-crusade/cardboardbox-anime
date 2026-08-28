@@ -71,6 +71,6 @@ public partial class EpubBuilder
 		await AddPageFile(COVER_HTML_PAGE, htmlIO);
 		Ncx.Nav.Insert(0, ("Cover", htmlPath)); //Ensure it's the first item in the list
 		Content.SpineReferences.Insert(0, COVER_HTML_PAGE);
-		Content.Meta.Cover = name;
+		Content.Meta.Cover = Path.GetFileName(coverRelPath).CleanId();
 	}
 }

@@ -35,6 +35,7 @@ return await new ServiceCollection()
 		.Add<GenerateCoversVerb>()
 		.Add<StaticEpubVerb>()
 		.Add<ManualPatreonLoadVerb>()
+		.Add<LoadEpubVerb>()
 		.Add<CleanRRVerb>()
 		.Add<HtmlStyleTestVerb>()
 		.Add<EpubPageBreakVerb>());

@@ -98,7 +98,11 @@ public class NovelEpubService(
 
 			_logger.LogDebug("Handling cover image for [Book:{bookId}]::\"{bookTitle}\"", book.Id, book.Title);
             await HandleCoverImage(bob, book);
-            await bob.AddStylesheetFromFile("stylesheet.css", "stylesheet.css");
+
+            if (!string.IsNullOrWhiteSpace(book.Styles))
+				await bob.AddStylesheet("custom.css", book.Styles);
+            else
+                await bob.AddStylesheetFromFile("stylesheet.css", "stylesheet.css");
 
             _logger.LogDebug("Handling forwards for [Book:{bookId}]::\"{bookTitle}\"", book.Id, book.Title);
             await HandleForwards(bob, book);
@@ -159,7 +163,7 @@ public class NovelEpubService(
 					{
 						var clean = CleanContents(page.Content, page.Title);
 						if (p == 0 && !clean.ContainsIc(page.Title))
-                            clean = $"<h1>{chap.Title}</h1>{clean}";
+							clean = $"<h1>{chap.Title}</h1>{clean}";
 						await PostFixImages(bob, c, $"chapter-{i}-{p}.xhtml", clean);
 						continue;
 					}
@@ -337,7 +341,9 @@ public class NovelEpubService(
 		//if (url.ToLower().StartsWith("https://static.index-0.com/"))
 		//	url = url.Replace("https://static.index-0.com/", "file://C:/users/cardboard/documents/local-files/");
 
-		var output = await (url.ToLower().StartsWith("file://") ? GetDataFromFile(url.Remove(0, 7)) : DownloadFile(url));
+		var output = TryGetDataUrl(url, out var embedded)
+			? embedded
+			: await (url.StartsWith("file://", StringComparison.OrdinalIgnoreCase) ? GetDataFromFile(url.Remove(0, 7)) : DownloadFile(url));
 
 		if (output.Mimetype != "image/webp" || skipTransform) return output;
 
@@ -346,6 +352,33 @@ public class NovelEpubService(
 		pngStream.Position = 0;
 
 		return new StreamResult(pngStream, $"{Path.GetFileNameWithoutExtension(output.Name)}.png", "image/png");
+	}
+
+	public static bool TryGetDataUrl(string url, out StreamResult result)
+	{
+		result = default!;
+		if (!url.StartsWith("data:", StringComparison.OrdinalIgnoreCase)) return false;
+
+		var separator = url.IndexOf(',');
+		if (separator < 5) throw new InvalidDataException("Invalid data URL.");
+
+		var metadata = url[5..separator].Split(';', StringSplitOptions.RemoveEmptyEntries);
+		var mimetype = metadata.FirstOrDefault(t => t.Contains('/')) ?? "application/octet-stream";
+		var payload = url[(separator + 1)..];
+		var data = metadata.Contains("base64", StringComparer.OrdinalIgnoreCase)
+			? Convert.FromBase64String(payload)
+			: Encoding.UTF8.GetBytes(Uri.UnescapeDataString(payload));
+		var extension = mimetype switch
+		{
+			"image/jpeg" => ".jpg",
+			"image/png" => ".png",
+			"image/webp" => ".webp",
+			"image/gif" => ".gif",
+			"image/svg+xml" => ".svg",
+			_ => string.Empty,
+		};
+		result = new StreamResult(new MemoryStream(data), $"embedded{extension}", mimetype);
+		return true;
 	}
 
 	public Task<StreamResult> GetDataFromFile(string path)
@@ -383,9 +416,9 @@ public class NovelEpubService(
 		{
 			//This is purely to fix some malformed data within the files
 			content = content
-				.Replace("<hr>", "")
-				.Replace("<hr/>", "")
-				.Replace("<hr />", "")
+				//.Replace("<hr>", "")
+				//.Replace("<hr/>", "")
+				//.Replace("<hr />", "")
 				.Replace("<br>", "</p><p>");
 
 			content = FixMissingTags(content, "p");

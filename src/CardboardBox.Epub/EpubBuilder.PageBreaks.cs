@@ -55,7 +55,7 @@ public partial class EpubBuilder
 	}
 }
 
-public sealed class EpubPageBreakGenerator
+public sealed partial class EpubPageBreakGenerator
 {
 	private readonly List<EpubPageBreak> _pageBreaks = [];
 	private int _nextPageNumber = 1;
@@ -65,9 +65,8 @@ public sealed class EpubPageBreakGenerator
 
 	public EpubPageBreakGenerator(int wordsPerPage = 350)
 	{
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(wordsPerPage);
-
-        WordsPerPage = wordsPerPage;
+		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(wordsPerPage);
+		WordsPerPage = wordsPerPage;
 	}
 
 	public string AddToXhtmlPage(string html, string pageHref)
@@ -83,59 +82,76 @@ public sealed class EpubPageBreakGenerator
 		doc.LoadHtml(html);
 
 		var root = doc.DocumentNode.SelectSingleNode("//*[local-name()='html']");
-		if (root is not null && string.IsNullOrWhiteSpace(root.GetAttributeValue("xmlns:epub", "")))
+		if (root is not null && string.IsNullOrWhiteSpace(root.GetAttributeValue("xmlns:epub", string.Empty)))
 			root.SetAttributeValue("xmlns:epub", "http://www.idpf.org/2007/ops");
 
 		var body = doc.DocumentNode.SelectSingleNode("//*[local-name()='body']");
 		if (body is null)
 			return html;
 
-		var paragraphs = body
-			.Descendants()
-			.Where(node =>
-				node.NodeType == HtmlNodeType.Element &&
-				node.Name.Equals("p", StringComparison.OrdinalIgnoreCase) &&
-				CountWords(node.InnerText) > 0)
-			.ToArray();
-
-		if (paragraphs.Length == 0)
-			return html;
+		foreach (var existingPageBreak in body.Descendants().Where(IsPageBreak).ToArray())
+			existingPageBreak.Remove();
 
 		var normalizedHref = pageHref.Replace('\\', '/').TrimStart('/');
 		var wordsSinceBreak = 0;
 		var insertedAtLeastOne = false;
+		var textNodes = body
+			.Descendants()
+			.Where(node => node.NodeType == HtmlNodeType.Text && !ShouldIgnore(node))
+			.Cast<HtmlTextNode>()
+			.ToArray();
 
-		foreach (var paragraph in paragraphs)
+		foreach (var textNode in textNodes)
 		{
-			var wordCount = CountWords(paragraph.InnerText);
+			var text = textNode.Text;
+			var words = WordRegex().Matches(text);
+			if (words.Count == 0) continue;
 
-			if (!insertedAtLeastOne || wordsSinceBreak >= WordsPerPage)
+			var parent = textNode.ParentNode;
+			var position = 0;
+			foreach (Match word in words)
 			{
-				var pageNumber = _nextPageNumber++;
-				var pageId = $"page-{pageNumber}";
-				var pageBreak = HtmlNode.CreateNode(
-					$"""<span epub:type="pagebreak" id="{pageId}" title="{pageNumber}"></span>""");
+				if (!insertedAtLeastOne || wordsSinceBreak >= WordsPerPage)
+				{
+					if (word.Index > position)
+						parent.InsertBefore(doc.CreateTextNode(text[position..word.Index]), textNode);
 
-				paragraph.ParentNode.InsertBefore(pageBreak, paragraph);
-				_pageBreaks.Add(new EpubPageBreak(pageNumber, $"{normalizedHref}#{pageId}"));
+					var pageNumber = _nextPageNumber++;
+					var pageId = $"page-{pageNumber}";
+					parent.InsertBefore(HtmlNode.CreateNode(
+						$"""<span epub:type="pagebreak" id="{pageId}" title="{pageNumber}"></span>"""), textNode);
+					_pageBreaks.Add(new EpubPageBreak(pageNumber, $"{normalizedHref}#{pageId}"));
 
-				wordsSinceBreak = 0;
-				insertedAtLeastOne = true;
+					position = word.Index;
+					wordsSinceBreak = 0;
+					insertedAtLeastOne = true;
+				}
+
+				wordsSinceBreak++;
 			}
 
-			wordsSinceBreak += wordCount;
+			if (position == 0) continue;
+			parent.InsertBefore(doc.CreateTextNode(text[position..]), textNode);
+			textNode.Remove();
 		}
 
 		return doc.DocumentNode.OuterHtml;
 	}
 
-	private static int CountWords(string text)
+	private static bool ShouldIgnore(HtmlNode node)
 	{
-		if (string.IsNullOrWhiteSpace(text))
-			return 0;
-
-		return Regex.Matches(text, @"[\p{L}\p{N}]+(?:['’\-][\p{L}\p{N}]+)?").Count;
+		return node.Ancestors().Any(ancestor =>
+			ancestor.Name.Equals("script", StringComparison.OrdinalIgnoreCase) ||
+			ancestor.Name.Equals("style", StringComparison.OrdinalIgnoreCase) ||
+			IsPageBreak(ancestor));
 	}
+
+	private static bool IsPageBreak(HtmlNode node) => node.GetAttributeValue("epub:type", string.Empty)
+		.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+		.Contains("pagebreak", StringComparer.OrdinalIgnoreCase);
+
+	[GeneratedRegex(@"[\p{L}\p{N}]+(?:['\u2019\-][\p{L}\p{N}]+)?")]
+	private static partial Regex WordRegex();
 }
 
 public sealed record EpubPageBreak(int PageNumber, string Href);

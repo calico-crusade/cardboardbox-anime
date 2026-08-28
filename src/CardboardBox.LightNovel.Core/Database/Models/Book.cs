@@ -25,4 +25,7 @@ public class Book : BookBase
 
 	[JsonPropertyName("translators")]
 	public string[] Translators { get; set; } = Array.Empty<string>();
+
+	[JsonPropertyName("styles")]
+	public string? Styles { get; set; }
 }

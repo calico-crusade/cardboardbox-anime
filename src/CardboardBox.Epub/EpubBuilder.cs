@@ -2,6 +2,7 @@
 
 using Management;
 using Metadata;
+using System.Security.Cryptography;
 
 public interface IEpubBuilder : IEpubBuilderStylesheets, IEpubBuilderImage, IEpubBuilderCover, IEpubBuilderMetadata, IEpubBuilderChapters, IEpubBuilderPageBreaks
 {
@@ -20,6 +21,7 @@ public partial class EpubBuilder : IEpub, IEpubBuilder
 	public const string HTML_BODY_CLASS_NOMARGIN = "nomargin center";
 
 	private readonly IManagementSystem _files;
+	private readonly Dictionary<string, CachedImage> _images = new(StringComparer.Ordinal);
 
 	public string ContentDirectory { get; set; } = "OEPBS";
 	public string MetaInfoDirectory { get; set; } = "META-INF";
@@ -95,8 +97,33 @@ public partial class EpubBuilder : IEpub, IEpubBuilder
 		var absPath = Path.Combine(ContentDirectory, dir, name);
 		var path = Path.Combine(dir, name);
 		var relPath = Path.Combine("..", path).Replace("\\", "/");
+		var isImage = type is FileType.Image or FileType.Cover;
+		MemoryStream? image = null;
+		string? imageHash = null;
+		if (isImage)
+		{
+			image = new MemoryStream();
+			await stream.CopyToAsync(image);
+			imageHash = Convert.ToHexString(SHA256.HashData(image.ToArray()));
+			if (_images.TryGetValue(imageHash, out var cached))
+			{
+				image.Dispose();
+				if (type == FileType.Cover)
+					PromoteToCover(cached);
+				return cached.RelativePath;
+			}
+			image.Position = 0;
+			stream = image;
+		}
 
-		await AddEntry(absPath, stream);
+		try
+		{
+			await AddEntry(absPath, stream);
+		}
+		finally
+		{
+			image?.Dispose();
+		}
 
 		switch(type)
 		{
@@ -107,8 +134,25 @@ public partial class EpubBuilder : IEpub, IEpubBuilder
 			case FileType.Nav: Content.Manifest.AddPage(name, path, "nav"); break;
 		}
 
+		if (imageHash is not null)
+			_images[imageHash] = new CachedImage(path, relPath);
+
 		return relPath;
 	}
+
+	private void PromoteToCover(CachedImage image)
+	{
+		var item = Content.Manifest.Items.FirstOrDefault(t =>
+			t.Href.Equals(image.Path, StringComparison.OrdinalIgnoreCase));
+		if (item is null) return;
+
+		var properties = item.Properties?.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToHashSet(StringComparer.OrdinalIgnoreCase)
+			?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+		properties.Add("cover-image");
+		item.Properties = string.Join(' ', properties);
+	}
+
+	private sealed record CachedImage(string Path, string RelativePath);
 
 	public static IEpub Create(string title, string output, string? id = null, string? workingDir = null)
 	{
