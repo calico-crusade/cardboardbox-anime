@@ -97,19 +97,19 @@ public class NovelEpubService(
 			ooo(series.Translators, book.Translators).Each(t => bob.Translator(t));
 
 			_logger.LogDebug("Handling cover image for [Book:{bookId}]::\"{bookTitle}\"", book.Id, book.Title);
-            await HandleCoverImage(bob, book);
+            await HandleCoverImage(bob, book, series.Url);
 
             if (!string.IsNullOrWhiteSpace(book.Styles))
 				await bob.AddStylesheet("custom.css", book.Styles);
             else
                 await bob.AddStylesheetFromFile("stylesheet.css", "stylesheet.css");
 
-            _logger.LogDebug("Handling forwards for [Book:{bookId}]::\"{bookTitle}\"", book.Id, book.Title);
-            await HandleForwards(bob, book);
+			_logger.LogDebug("Handling forwards for [Book:{bookId}]::\"{bookTitle}\"", book.Id, book.Title);
+            await HandleForwards(bob, book, series.Url);
 			_logger.LogDebug("Handling chapters for [Book:{bookId}]::\"{bookTitle}\"", book.Id, book.Title);
             await HandleChapters(bob, book, chaps);
 			_logger.LogDebug("Handling inserts for [Book:{bookId}]::\"{bookTitle}\"", book.Id, book.Title);
-            await HandleInserts(bob, book);
+            await HandleInserts(bob, book, series.Url);
 			_logger.LogDebug("Finalizing EPUB generation for [Book:{bookId}]::\"{bookTitle}\"", book.Id, book.Title);
         }
 
@@ -118,35 +118,38 @@ public class NovelEpubService(
 
 	#region Epub Builder Helpers
 
-	public async Task HandleCoverImage(IEpubBuilder bob, Book book)
+	public async Task HandleCoverImage(IEpubBuilder bob, Book book, string? sourceUrl = null)
 	{
-		if (string.IsNullOrEmpty(book.CoverImage)) return;
+		if (string.IsNullOrEmpty(book.CoverImage) || IsPlaceholderImage(book.CoverImage)) return;
 
-		var (data, file, type) = await GetData(book.CoverImage);
-		var name = DetermineName(book.CoverImage, file, type);
+		var url = ResolveUrl(book.CoverImage, sourceUrl);
+		var (data, file, type) = await GetData(url);
+		var name = DetermineName(url, file, type);
 		await bob.AddCoverImage(name, data);
 		await data.DisposeAsync();
 	}
 
-	public async Task HandleImageChapter(IEpubBuilder bob, string[] urls, string title)
+	public async Task HandleImageChapter(IEpubBuilder bob, string[] urls, string title, string? sourceUrl = null)
 	{
-		if (!urls.Any()) return;
+		var images = urls.Where(t => !IsPlaceholderImage(t)).ToArray();
+		if (images.Length == 0) return;
 
 		await bob.AddChapter(title, async c =>
 		{
-			foreach (var image in urls)
+			foreach (var image in images)
 			{
-				var (dataIn, file, type) = await GetData(image);
-				var name = DetermineName(image, file, type);
+				var url = ResolveUrl(image, sourceUrl);
+				var (dataIn, file, type) = await GetData(url);
+				var name = DetermineName(url, file, type);
 				using var data = dataIn;
 				await c.AddImage(name, data);
 			}
 		});
 	}
 
-	public Task HandleForwards(IEpubBuilder bob, Book book) => HandleImageChapter(bob, book.Forwards, "Illustrations");
+	public Task HandleForwards(IEpubBuilder bob, Book book, string? sourceUrl = null) => HandleImageChapter(bob, book.Forwards, "Illustrations", sourceUrl);
 
-	public Task HandleInserts(IEpubBuilder bob, Book book) => HandleImageChapter(bob, book.Inserts, "Inserts");
+	public Task HandleInserts(IEpubBuilder bob, Book book, string? sourceUrl = null) => HandleImageChapter(bob, book.Inserts, "Inserts", sourceUrl);
 
 	public async Task HandleChapters(IEpubBuilder bob, Book book, ChapterScaffold[] chapters)
 	{
@@ -164,7 +167,7 @@ public class NovelEpubService(
 						var clean = CleanContents(page.Content, page.Title);
 						if (p == 0 && !clean.ContainsIc(page.Title))
 							clean = $"<h1>{chap.Title}</h1>{clean}";
-						await PostFixImages(bob, c, $"chapter-{i}-{p}.xhtml", clean);
+						await PostFixImages(bob, c, $"chapter-{i}-{p}.xhtml", clean, page.Url);
 						continue;
 					}
 
@@ -173,8 +176,9 @@ public class NovelEpubService(
 						if (p == 0)
 							await c.AddRawPage($"chapter-{i}-{p}.xhtml", $"<h1>{chap.Title}</h1>");
 
-						var (dataIn, file, type) = await GetData(page.Content);
-						var name = DetermineName(page.Content, file, type);
+						var url = ResolveUrl(page.Content, page.Url);
+						var (dataIn, file, type) = await GetData(url);
+						var name = DetermineName(url, file, type);
 						await c.AddImage(name, dataIn);
 						await dataIn.DisposeAsync();
 						continue;
@@ -186,7 +190,7 @@ public class NovelEpubService(
 		}
 	}
 
-	public async Task PostFixImages(IEpubBuilder epub, IChapterBuilder bob, string filename, string content)
+	public async Task PostFixImages(IEpubBuilder epub, IChapterBuilder bob, string filename, string content, string? sourceUrl = null)
 	{
 		if (!content.ToLower().Contains("<img"))
 		{
@@ -208,9 +212,11 @@ public class NovelEpubService(
 
 			try
 			{
-				var (dataIn, file, type) = await GetData(src);
-				var name = DetermineName(src, file, type);
-				var relPath = await epub.AddFile(name, dataIn, FileType.Image);
+				var url = ResolveUrl(src, sourceUrl);
+				var (dataIn, file, type) = await GetData(url);
+				using var data = dataIn;
+				var name = DetermineName(url, file, type);
+				var relPath = await epub.AddFile(name, data, FileType.Image);
 				img.SetAttributeValue("src", relPath);
 			}
 			catch (Exception ex)
@@ -227,6 +233,32 @@ public class NovelEpubService(
     #endregion
 
     #region Utilities
+
+	public static bool IsPlaceholderImage(string url)
+	{
+		var path = Uri.TryCreate(url, UriKind.Absolute, out var uri)
+			? uri.AbsolutePath
+			: url.Split('?', '#')[0];
+
+		return Path.GetFileName(path).Equals("nocover-new-min.png", StringComparison.OrdinalIgnoreCase);
+	}
+
+	public static string ResolveUrl(string url, string? sourceUrl)
+	{
+		if (string.IsNullOrWhiteSpace(sourceUrl) ||
+			url.StartsWith("data:", StringComparison.OrdinalIgnoreCase) ||
+			url.StartsWith("file://", StringComparison.OrdinalIgnoreCase))
+			return url;
+
+		if (Uri.TryCreate(url, UriKind.Absolute, out var absolute) &&
+			(absolute.Scheme == Uri.UriSchemeHttp || absolute.Scheme == Uri.UriSchemeHttps))
+			return absolute.AbsoluteUri;
+
+		return Uri.TryCreate(sourceUrl, UriKind.Absolute, out var source) &&
+			Uri.TryCreate(source, url, out var resolved)
+			? resolved.AbsoluteUri
+			: url;
+	}
 
     public static string FormatFileName(FullBookScaffold book)
     {
@@ -285,6 +317,8 @@ public class NovelEpubService(
 			"image/jpg" => "jpg",
 			"image/png" => "png",
 			"image/webp" => "webp",
+			"image/gif" => "gif",
+			"image/svg+xml" => "svg",
 			_ => throw new NotSupportedException($"`{type}` is not a known media-type")
 		};
 	}
@@ -292,6 +326,18 @@ public class NovelEpubService(
 	public string DetermineName(string url, string name, string type)
 	{
 		name = name.Replace("\"", "").PurgePathChars();
+		var mediaType = type.Split(';')[0].Trim().ToLowerInvariant();
+		if (mediaType.StartsWith("image/", StringComparison.Ordinal))
+		{
+			// Image proxies can return JPEG bytes for a .webp URL. The EPUB
+			// manifest uses this extension, so it must agree with the response type.
+			if (string.IsNullOrEmpty(name))
+			{
+				var path = Uri.TryCreate(url, UriKind.Absolute, out var uri) ? uri.AbsolutePath : url.Split('?', '#')[0];
+				name = Path.GetFileName(path).PurgePathChars();
+			}
+			name = Path.ChangeExtension(string.IsNullOrEmpty(name) ? "image" : name, GetImageExtension(mediaType));
+		}
 		if (!string.IsNullOrEmpty(name) && 
 			string.IsNullOrEmpty(Path.GetExtension(name)))
 			name += "." + GetImageExtension(type);
@@ -316,8 +362,7 @@ public class NovelEpubService(
 
 	public async Task<StreamResult> DownloadFile(string url)
 	{
-		if (!_fileDownloads.TryGetValue(url, out var semaphore))
-			_fileDownloads.TryAdd(url, semaphore = new SemaphoreSlim(1));
+		var semaphore = _fileDownloads.GetOrAdd(FileCacheService.NormalizeUrl(url), _ => new SemaphoreSlim(1, 1));
 
 		try
         {
@@ -347,8 +392,17 @@ public class NovelEpubService(
 
 		if (output.Mimetype != "image/webp" || skipTransform) return output;
 
+		await using var source = output.Stream;
 		var pngStream = new MemoryStream();
-		await output.Stream.ConvertImage(pngStream, ImageMagick.MagickFormat.Png);
+		try
+		{
+			await source.ConvertImage(pngStream, ImageMagick.MagickFormat.Png);
+		}
+		catch
+		{
+			await pngStream.DisposeAsync();
+			throw;
+		}
 		pngStream.Position = 0;
 
 		return new StreamResult(pngStream, $"{Path.GetFileNameWithoutExtension(output.Name)}.png", "image/png");

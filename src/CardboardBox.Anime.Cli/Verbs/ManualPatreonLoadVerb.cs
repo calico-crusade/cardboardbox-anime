@@ -1,5 +1,6 @@
 ﻿using CardboardBox.Extensions;
 using CommandLine;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 
 namespace CardboardBox.Anime.Cli.Verbs;
@@ -35,7 +36,8 @@ internal partial class ManualPatreonLoadVerb(
 	}
 
 	public async IAsyncEnumerable<ChapterFile> LoadChapters(string directory, string baseUrl,
-		[EnumeratorCancellation] CancellationToken token)
+		[EnumeratorCancellation] CancellationToken token,
+		IReadOnlySet<string>? includedFiles = null)
 	{
 		static void FixPs(HtmlNode node)
 		{
@@ -56,12 +58,32 @@ internal partial class ManualPatreonLoadVerb(
 				FixPs(child);
 		}
 
-		var files = Directory.GetFiles(directory, "*.html")
-			.OrderBy(t => int.TryParse(Path.GetFileNameWithoutExtension(t).TrimEnd('.'), out var val) ? val : int.MaxValue);
+		IEnumerable<string> chapterFiles = includedFiles is null
+			? Directory.GetFiles(directory, "*.html")
+			: includedFiles;
+		var files = chapterFiles
+			.Where(path => File.Exists(path) && Path.GetExtension(path).Equals(".html", StringComparison.OrdinalIgnoreCase))
+			.Select(path => new
+			{
+				Path = path,
+				Chapter = decimal.TryParse(
+					Path.GetFileNameWithoutExtension(path).TrimEnd('.'),
+					NumberStyles.Number,
+					CultureInfo.InvariantCulture,
+					out var value)
+					? value
+					: (decimal?)null,
+				Published = File.GetLastWriteTimeUtc(path),
+			})
+			.OrderBy(file => file.Chapter is null)
+			.ThenBy(file => file.Chapter)
+			.ThenBy(file => file.Published)
+			.ThenBy(file => file.Path, StringComparer.OrdinalIgnoreCase)
+			.Select(file => file.Path);
 		foreach(var file in files)
 		{
 			var text = await File.ReadAllTextAsync(file, token);
-			var title = H1Regex().Match(text).Groups[1].Value;
+			var title = WebUtility.HtmlDecode(H1Regex().Match(text).Groups[1].Value);
 			var url = GenerateUrl(baseUrl, title);
 			var doc = new HtmlDocument();
 			doc.LoadHtml(text);
@@ -72,7 +94,11 @@ internal partial class ManualPatreonLoadVerb(
 		}
 	}
 
-	public async Task<bool> ProcessSeries(int seriesId, string directory, CancellationToken token)
+	public async Task<bool> ProcessSeries(
+		int seriesId,
+		string directory,
+		CancellationToken token,
+		IReadOnlySet<string>? includedFiles = null)
 	{
 		var series = await _db.Series.Scaffold(seriesId);
 		if (series is null)
@@ -109,7 +135,7 @@ internal partial class ManualPatreonLoadVerb(
 
 		int loaded = 0;
 
-		var chapters = LoadChapters(directory, baseUrl, token);
+		var chapters = LoadChapters(directory, baseUrl, token, includedFiles);
 		await foreach (var chapter in chapters)
 		{
 			if (urls.Contains(chapter.Url))

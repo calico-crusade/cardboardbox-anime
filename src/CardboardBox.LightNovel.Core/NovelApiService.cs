@@ -1,4 +1,4 @@
-﻿namespace CardboardBox.LightNovel.Core;
+namespace CardboardBox.LightNovel.Core;
 
 using CardboardBox.Extensions;
 using Sources;
@@ -35,6 +35,7 @@ public class NovelApiService(
 	IFoxaholicSourceService fox,
 	IFloraSourceService flora,
 	IDragonholicSourceService dragonholic,
+	IKatReadingCafeSourceService katReadingCafe,
 	ILnDbService _db) : INovelApiService
 {
 	private const int AUTO_BOOK_SPLIT = 9999;
@@ -46,7 +47,7 @@ public class NovelApiService(
 		nncSrc, baka, ftl, 
 		headCanon, magicHouse, vampiramtl, 
 		royalRoad, storySeedling, nbs,
-		lonammtl, fox, flora, dragonholic
+		lonammtl, fox, flora, dragonholic, katReadingCafe
 	];
 
     public ISourceService? Source(string url)
@@ -211,53 +212,52 @@ public class NovelApiService(
                         yield return (book.Book, chap.Chapter, page.Map, page.Page);
         }
 
-		static bool Exists<T>(IEnumerable<T> source, Func<T, bool> predicate, out T result)
-		{
-			foreach (var item in source)
-			{
-				if (!predicate(item)) continue;
-
-				result = item;
-				return true;
-			}
-            result = default!;
-            return false;
-        }
-
         //Get all of the books and chapters for the series
         var scaffold = await _db.Series.Scaffold(series.Id);
         if (scaffold == null) return -1;
 
         //Flatten the chapters and order them by ordinal
-        var chapters = Flatten(scaffold)
+		var chapters = Flatten(scaffold)
 			.OrderBy(t => t.page.Ordinal)
-			.ToArray();
+			.GroupBy(t => t.page.Url, StringComparer.Ordinal)
+			.ToDictionary(g => g.Key, g => g.First(), StringComparer.Ordinal);
 
         //Fetch all of the volumes for the series
         var volumes = src.Volumes(series.Url);
-        //Keep track of the volume index to be used as the ordinal for the book
-        int vi = 0;
+		var nextBookOrdinal = scaffold.Books.Select(b => b.Book.Ordinal).DefaultIfEmpty(0).Max();
 		//Keep track of the last page present
 		Page? lastPage = null;
 		//Track the number of new chapters loaded
 		int loaded = 0;
 		await foreach(var volume in volumes)
 		{
-			vi++;
-			//Update the book information
-			var book = BookFromVolume(series, volume, vi);
-            book.Id = await _db.Books.Upsert(book);
+			var candidate = BookFromVolume(series, volume, nextBookOrdinal + 1);
+			// Hash casing changed in a dependency update. Reuse the original book
+			// rather than inserting an uppercase copy of a legacy lowercase hash.
+			var book = scaffold.Books.OrderBy(b => b.Book.Id)
+				.FirstOrDefault(b => string.Equals(b.Book.HashId, candidate.HashId, StringComparison.OrdinalIgnoreCase))?.Book;
+			book ??= volume.Chapters.Select(c => chapters.GetValueOrDefault(c.Url).book).FirstOrDefault(b => b != null);
+			if (book == null)
+			{
+				book = candidate;
+				book.Ordinal = ++nextBookOrdinal;
+				book.Id = await _db.Books.Upsert(book);
+			}
 
-			int chapOrdinal = 0;
+			long chapOrdinal = scaffold.Books.Where(b => b.Book.Id == book.Id)
+				.SelectMany(b => b.Chapters).Select(c => c.Chapter.Ordinal).DefaultIfEmpty(0).Max();
 			//Iterate through the chapters of the volume
 			foreach(var chapter in volume.Chapters)
             {
                 //Increment the chapter ordinal for the current book
                 chapOrdinal++;
                 //If the chapter already exists in the scaffold, skip it
-                if (Exists(chapters, t => t.page.Url == chapter.Url, out var existing))
+                if (chapters.TryGetValue(chapter.Url, out var existing))
 				{
-					//Keep track of the last page so we can use the ordinal
+					// The site's current volume may span multiple existing books.
+					// Preserve those splits and append after the last stored chapter.
+					book = existing.book;
+					chapOrdinal = existing.chapter.Ordinal;
 					lastPage = existing.page;
 					continue;
 				}
@@ -368,7 +368,7 @@ public class NovelApiService(
 	{
 		return new Page
 		{
-			HashId = chap.Url.MD5Hash(),
+			HashId = chap.Url.MD5Hash().ToLowerInvariant(),
 			Title = chap.ChapterTitle,
 			Ordinal = ordinal,
 			SeriesId = seriesId,
@@ -383,7 +383,7 @@ public class NovelApiService(
 	{
 		return new Chapter
 		{
-			HashId = $"{page.Title}-{book.Ordinal - 1}-{ordinal}".MD5Hash(),
+			HashId = $"{page.Title}-{book.Ordinal - 1}-{ordinal}".MD5Hash().ToLowerInvariant(),
 			Title = page.Title,
 			Ordinal = ordinal,
 			BookId = book.Id
@@ -394,7 +394,7 @@ public class NovelApiService(
 	{
 		return new Chapter
 		{
-			HashId = $"{chap.ChapterTitle}-{book.Ordinal - 1}-{ordinal}".MD5Hash(),
+			HashId = $"{chap.ChapterTitle}-{book.Ordinal - 1}-{ordinal}".MD5Hash().ToLowerInvariant(),
 			Title = chap.ChapterTitle,
 			Ordinal = ordinal,
 			BookId = book.Id
@@ -405,7 +405,7 @@ public class NovelApiService(
 	{
 		return new Series
 		{
-			HashId = info.Title.MD5Hash(),
+			HashId = info.Title.MD5Hash().ToLowerInvariant(),
 			Title = info.Title,
 			Url = url,
 			LastChapterUrl = "",
@@ -431,7 +431,7 @@ public class NovelApiService(
 			Forwards = ia,
 			Inserts = ia,
 			Title = title,
-			HashId = title.MD5Hash(),
+			HashId = title.MD5Hash().ToLowerInvariant(),
 			Ordinal = volume
 		};
 	}
@@ -448,7 +448,7 @@ public class NovelApiService(
 			Forwards = ia,
 			Inserts = ia,
 			Title = title,
-			HashId = title.MD5Hash(),
+			HashId = title.MD5Hash().ToLowerInvariant(),
 			Ordinal = volume
 		};
 	}
@@ -480,7 +480,7 @@ public class NovelApiService(
 			Forwards = forwards,
 			Inserts = inserts,
 			Title = volume.Title,
-			HashId = volume.Title.MD5Hash(),
+			HashId = volume.Title.MD5Hash().ToLowerInvariant(),
 			Ordinal = ordinal
 		};
 	}

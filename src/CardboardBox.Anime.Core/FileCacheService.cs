@@ -11,16 +11,21 @@ public class FileCacheService : IFileCacheService
 {
 	private const string FILE_CACHE_DIR = "ProxyCache";
 	private readonly IApiService _api;
+	private readonly string _cacheDirectory;
 
-	public FileCacheService(IApiService api)
+	public FileCacheService(IApiService api, string cacheDirectory = FILE_CACHE_DIR)
 	{
 		_api = api;
+		_cacheDirectory = cacheDirectory;
 	}
 
 	public async Task<StreamResult> GetFile(string url)
 	{
-		if (!Directory.Exists(FILE_CACHE_DIR))
-			Directory.CreateDirectory(FILE_CACHE_DIR);
+		// Older LNT chapters contain WordPress image-proxy URLs. Fetch the
+		// original upload instead, using its own cache key as well.
+		url = NormalizeUrl(url);
+		if (!Directory.Exists(_cacheDirectory))
+			Directory.CreateDirectory(_cacheDirectory);
 
 		var hash = url.MD5Hash();
 
@@ -30,7 +35,8 @@ public class FileCacheService : IFileCacheService
 
 		var io = new MemoryStream();
 		var (stream, _, file, type) = await _api.GetData(url);
-		await stream.CopyToAsync(io);
+		using (stream)
+			await stream.CopyToAsync(io);
 		io.Position = 0;
 		file = file.Replace("\"", "").PurgePathChars();
 		cacheInfo = new CacheItem(file, type, DateTime.Now);
@@ -42,9 +48,22 @@ public class FileCacheService : IFileCacheService
 		return new (io, file, type);
 	}
 
-	public string FilePath(string hash) => Path.Combine(FILE_CACHE_DIR, $"{hash}.data");
+	public static string NormalizeUrl(string url)
+	{
+		if (!Uri.TryCreate(url, UriKind.Absolute, out var proxy) ||
+			(proxy.Scheme != Uri.UriSchemeHttp && proxy.Scheme != Uri.UriSchemeHttps) ||
+			proxy.Host is not ("i0.wp.com" or "i1.wp.com" or "i2.wp.com")) return url;
 
-	public string CachePath(string hash) => Path.Combine(FILE_CACHE_DIR, $"{hash}.cache.json");
+		const string hostPath = "/lightnovelstranslations.com";
+		if (!proxy.AbsolutePath.StartsWith(hostPath + "/wp-content/uploads/", StringComparison.OrdinalIgnoreCase)) return url;
+
+		// Resize/quality arguments belong to the proxy, not the source image.
+		return "https://lightnovelstranslations.com" + proxy.AbsolutePath[hostPath.Length..];
+	}
+
+	public string FilePath(string hash) => Path.Combine(_cacheDirectory, $"{hash}.data");
+
+	public string CachePath(string hash) => Path.Combine(_cacheDirectory, $"{hash}.cache.json");
 
 	public Stream ReadFile(string hash)
 	{

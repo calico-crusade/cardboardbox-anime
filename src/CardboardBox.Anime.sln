@@ -5,6 +5,8 @@ VisualStudioVersion = 17.2.32630.192
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CardboardBox.Anime.Cli", "CardboardBox.Anime.Cli\CardboardBox.Anime.Cli.csproj", "{D987EC18-A2BC-49B2-A3CE-061AA05D52CF}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CardboardBox.Anime.Patreon", "CardboardBox.Anime.Patreon\CardboardBox.Anime.Patreon.csproj", "{B4F349F6-0AD4-45A9-8151-4184A0787390}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CardboardBox.Anime.Vrv", "CardboardBox.Anime.Vrv\CardboardBox.Anime.Vrv.csproj", "{136C4D2D-1F96-4E15-8959-F9FC3E9CAD32}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CardboardBox.Anime.Core", "CardboardBox.Anime.Core\CardboardBox.Anime.Core.csproj", "{1B09EDDE-F5E5-4FF5-90B7-B14C6C4AB882}"
@@ -91,6 +93,10 @@ Global
 		{D987EC18-A2BC-49B2-A3CE-061AA05D52CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D987EC18-A2BC-49B2-A3CE-061AA05D52CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D987EC18-A2BC-49B2-A3CE-061AA05D52CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4F349F6-0AD4-45A9-8151-4184A0787390}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4F349F6-0AD4-45A9-8151-4184A0787390}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4F349F6-0AD4-45A9-8151-4184A0787390}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4F349F6-0AD4-45A9-8151-4184A0787390}.Release|Any CPU.Build.0 = Release|Any CPU
 		{136C4D2D-1F96-4E15-8959-F9FC3E9CAD32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{136C4D2D-1F96-4E15-8959-F9FC3E9CAD32}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{136C4D2D-1F96-4E15-8959-F9FC3E9CAD32}.Release|Any CPU.ActiveCfg = Release|Any CPU

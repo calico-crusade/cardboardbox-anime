@@ -2,6 +2,7 @@
 using CardboardBox.Anime.Cli;
 using CardboardBox.Anime.Cli.Interactive;
 using CardboardBox.Anime.Cli.Verbs;
+using CardboardBox.Anime.Patreon;
 using Serilog;
 
 var config = new ConfigurationBuilder()
@@ -21,6 +22,8 @@ return await new ServiceCollection()
 	.AddLogging(c => c.AddSerilog(logConfig.CreateLogger()))
 	.AddSingleton<IConfiguration>(config)
 	.AddTransient<IReflectionVerbService, ReflectionVerbService>()
+	.AddTransient<IPatreonScraper, PatreonScraper>()
+	.AddTransient<ManualPatreonLoadVerb>()
 	.RegisterCba(config)
     .AddSingleton<IRunner, Runner>()
 
@@ -35,6 +38,7 @@ return await new ServiceCollection()
 		.Add<GenerateCoversVerb>()
 		.Add<StaticEpubVerb>()
 		.Add<ManualPatreonLoadVerb>()
+		.Add<PatreonScrapeVerb>()
 		.Add<LoadEpubVerb>()
 		.Add<CleanRRVerb>()
 		.Add<HtmlStyleTestVerb>()

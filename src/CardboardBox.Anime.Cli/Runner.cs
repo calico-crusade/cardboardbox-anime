@@ -80,7 +80,8 @@ public class Runner(
 	ILONAMMTLSourceService _lonammtl,
 	IWeebDexSource _wd,
 	IComixSource _comix,
-	IFoxaholicSourceService _fox) : IRunner
+	IFoxaholicSourceService _fox,
+	IKatReadingCafeSourceService _cat) : IRunner
 {
 	private const string VRV_JSON = "vrv2.json";
 	private const string FUN_JSON = "fun.json";
@@ -154,7 +155,8 @@ public class Runner(
 				case "weebdex": await WeebDex(); break;
 				case "comix": await Comix(); break;
 				case "fox": await Foxaholic(); break;
-				default: _logger.LogInformation("Invalid command: " + command); break;
+				case "cat": await CatReadingCafe(); break;
+                default: _logger.LogInformation("Invalid command: " + command); break;
 			}
 
 			_logger.LogInformation("Finished.");
@@ -167,7 +169,44 @@ public class Runner(
 		}
 	}
 
-	public async Task Foxaholic()
+	public async Task CatReadingCafe()
+	{
+        const string URL = "https://katreadingcafe.com/series/a-little-witch-and-the-bear-of-the-forest-i-want-to-make-potions-and-enjoy-a-relaxed-slow-life-in-another-world-no-ja/";
+        var source = _cat;
+        var series = await source.GetSeriesInfo(URL);
+        if (series is null)
+        {
+            _logger.LogError("Failed to fetch series info");
+            return;
+        }
+
+        var volumes = await source.Volumes(URL).ToArrayA();
+        foreach (var volume in volumes)
+        {
+            _logger.LogInformation("Volume: {title}", volume.Title);
+            foreach (var chapter in volume.Chapters)
+                _logger.LogInformation("\tChapter: {title} >> {url}", chapter.Title, chapter.Url);
+        }
+
+        if (string.IsNullOrEmpty(series.FirstChapterUrl))
+        {
+            _logger.LogError("No first chapter URL found");
+            return;
+        }
+
+        var chap = await source.GetChapter(series.FirstChapterUrl, "First Chapter");
+
+        if (chap is null)
+        {
+            _logger.LogError("Failed to fetch chapter");
+            return;
+        }
+
+        _logger.LogInformation("Chapter: {title}", chap.ChapterTitle);
+    }
+
+
+    public async Task Foxaholic()
 	{
 		const string URL = "https://www.foxaholic.com/novel/the-tanaka-family-reincarnates/";
 		var source = _fox;

@@ -23,6 +23,14 @@ internal class RoyalRoadSourceService(
 
     private readonly Dictionary<string, SourceVolume[]> _volumes = [];
 
+    private static string? NormalizeImageUrl(string? imageUrl, string sourceUrl)
+    {
+        if (string.IsNullOrWhiteSpace(imageUrl) || NovelEpubService.IsPlaceholderImage(imageUrl))
+            return null;
+
+        return NovelEpubService.ResolveUrl(imageUrl, sourceUrl);
+    }
+
     public SourceVolume[] GetVolumes(string url, HtmlDocument doc)
     {
         url = url.Trim('/').ToLower();
@@ -65,8 +73,15 @@ internal class RoyalRoadSourceService(
             }
         }
 
-        IEnumerable<SourceVolume> SortVolumes(RoyalRoadVolume[] volumes, RoyalRoadChapter[] chapters, string cover)
+        IEnumerable<SourceVolume> SortVolumes(RoyalRoadVolume[] volumes, RoyalRoadChapter[] chapters, string? cover)
         {
+            string[] Covers(params string?[] urls) => urls
+                .Select(t => NormalizeImageUrl(t, url))
+                .Where(t => !string.IsNullOrWhiteSpace(t))
+                .Select(t => t!)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
             SourceChapterItem Convert(RoyalRoadChapter chapter)
             {
                 var url = _reader.FixUrl(chapter.Url, RootUrl);
@@ -79,6 +94,7 @@ internal class RoyalRoadSourceService(
 
             if (volumes.Length == 0)
             {
+                var covers = Covers(cover);
                 yield return new SourceVolume
                 {
                     Title = "Volume 1",
@@ -87,8 +103,8 @@ internal class RoyalRoadSourceService(
                         .OrderBy(t => t.Order)
                         .Select(Convert)
                         .ToArray(),
-                    Inserts = [cover],
-                    Forwards = [cover],
+                    Inserts = covers,
+                    Forwards = covers,
                 };
                 yield break;
             }
@@ -107,13 +123,14 @@ internal class RoyalRoadSourceService(
 
                 if (chaps.Length == 0) continue;
 
+                var covers = Covers(volume.Cover, cover);
                 yield return new SourceVolume
                 {
                     Title = volume.Title,
                     Url = url,
                     Chapters = chaps,
-                    Inserts = [volume.Cover, cover],
-                    Forwards = [volume.Cover, cover],
+                    Inserts = covers,
+                    Forwards = covers,
                 };
             }
         }
@@ -250,7 +267,7 @@ internal class RoyalRoadSourceService(
             var author = data.Author?.Name ?? string.Empty;
             var title = data.Name;
             var description = data.Description;
-            var image = data.Image;
+            var image = NormalizeImageUrl(data.Image, url);
             var genres = data.Genre
                 .Select(t => t.Trim())
                 .Where(t => !string.IsNullOrEmpty(t))

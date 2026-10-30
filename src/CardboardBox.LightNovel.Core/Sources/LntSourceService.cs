@@ -124,14 +124,16 @@ public class LntSourceService : ILntSourceService
 			.Select(t => t.value)
 			.ToArray();
 
-		var image = doc.Attribute("//div[@class='col-2 novel-image']/img", "data-lazy-srcset")
+		var cover = WithClass(doc.DocumentNode, "novel-image").SelectMany(n => n.Descendants("img")).FirstOrDefault();
+		var image = (cover?.GetAttributeValue("data-lazy-srcset", null) ?? cover?.GetAttributeValue("srcset", null))
 			?.Split(',')
 			.LastOrDefault()
 			?.Trim()
 			.Split(' ')
-			.First();
+			.First() ?? cover?.GetAttributeValue("src", null);
 
-		var firstChap = doc.Attribute("//div[@class='novel_list_chapter_content']/" +
+		var firstChap = doc.DocumentNode.SelectSingleNode("//a[@id='lnt-reading-button']")?.GetAttributeValue("href", null)
+			?? doc.Attribute("//div[@class='novel_list_chapter_content']/" +
 			"div[@class='accordition_item']/" +
 			"div[@class='accordition_item_content']/" +
 			"ul/li/a", "href");
@@ -154,7 +156,8 @@ public class LntSourceService : ILntSourceService
 		if (!url.StartsWith(NovelUrl, 
 			StringComparison.InvariantCultureIgnoreCase)) return null;
 
-		var series = url.Remove(0, NovelUrl.Length).Split('/').First();
+		if (!Uri.TryCreate(url, UriKind.Absolute, out var uri)) return null;
+		var series = uri.AbsolutePath.Remove(0, "/novel/".Length).Split('/').First();
 		if (string.IsNullOrEmpty(series)) return null;
 
 		var root = NovelUrl + series + "/";
@@ -166,90 +169,138 @@ public class LntSourceService : ILntSourceService
 
 	public async IAsyncEnumerable<SourceVolume> Volumes(string seriesUrl)
 	{
-		static IEnumerable<(string name, string[] images)> Images(HtmlNode accords)
-		{
-			var clone = accords.Copy();
-			var volumes = clone.SelectNodes("//div[@class='accordition_item']");
-			if (volumes == null) yield break;
-
-			foreach(var vol in volumes)
-			{
-				var c = vol.Copy();
-				var title = c.InnerText("//h3[@class='accordition_item_title']")?.Trim();
-				if (string.IsNullOrEmpty(title)) continue;
-
-				var images = c.SelectNodes("//div[@class='accordition_item_content']/p/img")
-					.Select(t => t.GetAttributeValue("src", ""))
-					.ToArray();
-
-				yield return (title, images);
-			}
-		}
-
 		var set = SeriesFromUrl(seriesUrl);
 		if (set == null) yield break;
 
-		var url = set.Root;
-		var doc = await GetWithAuth(url);
-		if (doc == null) yield break;
-
-		var accordions = doc.DocumentNode.SelectNodes("//div[@class='novel_list_chapter_content']");
-		if (accordions == null) yield break;
-
-		var images = Images(accordions[1]).ToArray();
-		var table = accordions[0].Copy().SelectNodes("//div[@class='accordition_item']");
-		if (table == null) yield break;
-
-		foreach(var vol in table)
+		var doc = await GetWithAuth(set.Root);
+		var modernVolumes = WithClass(doc.DocumentNode, "lnt-volume").ToArray();
+		if (modernVolumes.Length > 0)
 		{
-			var c = vol.Copy();
-			var title = c.InnerText("//h3[@class='accordition_item_title']")?.Trim();
-			if (string.IsNullOrEmpty(title)) continue;
-
-			var chapters = c.SelectNodes("//div[@class='accordition_item_content']/ul/li")
-				.Select(t =>
+			// The new TOC only renders the selected volume and 50 chapters per page.
+			// Follow its normal HTML links so this also works without JavaScript.
+			var galleries = await GetWithAuth(set.Images);
+			foreach (var volume in modernVolumes)
+			{
+				var heading = WithClass(volume, "lnt-volume-link").FirstOrDefault();
+				if (heading == null) continue;
+				var titleNode = heading.CloneNode(true);
+				foreach (var count in titleNode.Descendants("span").ToArray()) count.Remove();
+				var title = titleNode.InnerText.HTMLDecode().Trim();
+				var chapters = new List<SourceChapterItem>();
+				var seenChapters = new HashSet<string>(StringComparer.Ordinal);
+				var seenPages = new HashSet<string>(StringComparer.Ordinal);
+				var page = WithClass(volume, "lnt-chapter-page").FirstOrDefault();
+				string? pageUrl = AbsoluteUrl(set.Root, heading.GetAttributeValue("href", ""));
+				while (pageUrl != null && seenPages.Add(pageUrl))
 				{
-					var title = string.Join(": ", t.InnerText.HTMLDecode().Trim().Split(':'));
-					var url = t.Copy().Attribute("//a", "href") ?? string.Empty;
-					var locked = !t.HasClass("unlock");
-					return (locked, new SourceChapterItem
+					if (page == null)
 					{
-						Title = title,
-						Url = url
-					});
-				})
-				.Where(t => !t.locked)
-				.Select(t => t.Item2)
-				.ToArray();
+						var pageDoc = await GetWithAuth(pageUrl);
+						var current = WithClass(pageDoc.DocumentNode, "lnt-volume")
+							.First(v => v.GetAttributeValue("data-volume", "") == volume.GetAttributeValue("data-volume", ""));
+						page = WithClass(current, "lnt-chapter-page").FirstOrDefault()
+							?? throw new InvalidOperationException($"Missing LNT chapter list at {pageUrl}");
+					}
+					chapters.AddRange(ReadChapters(page, set.Root).Where(c => seenChapters.Add(c.Url)));
+					var pageNumber = page.GetAttributeValue("data-page", 1);
+					pageUrl = WithClass(page, "lnt-page-link")
+						.Select(a => AbsoluteUrl(set.Root, a.GetAttributeValue("href", "")))
+						.FirstOrDefault(link => link != null &&
+							int.TryParse(Regex.Match(link, @"[?&]lnt_page=(\d+)").Groups[1].Value, out var number) &&
+							number == pageNumber + 1);
+					page = null;
+				}
 
-			var imgs = images.FirstOrDefault(t => t.name == title).images;
+				var gallery = WithClass(galleries.DocumentNode, "lnt-gallery-content")
+					.FirstOrDefault(g => g.SelectSingleNode("./h3")?.InnerText.HTMLDecode().Trim() == title);
+				if (gallery == null)
+				{
+					var link = WithClass(galleries.DocumentNode, "lnt-gallery-nav")
+						.SelectMany(n => n.Descendants("a"))
+						.FirstOrDefault(a => a.InnerText.HTMLDecode().Trim() == title);
+					var galleryUrl = AbsoluteUrl(set.Root, link?.GetAttributeValue("href", ""));
+					if (galleryUrl != null)
+						gallery = WithClass((await GetWithAuth(galleryUrl)).DocumentNode, "lnt-gallery-content").FirstOrDefault();
+				}
+				yield return new SourceVolume
+				{
+					Title = title,
+					Url = set.Root,
+					Chapters = chapters.ToArray(),
+					Forwards = ReadImages(gallery, set.Root)
+				};
+			}
+			yield break;
+		}
 
+		// Keep support for older pages, including the locally proxied catalog.
+		var accordions = WithClass(doc.DocumentNode, "novel_list_chapter_content").ToArray();
+		if (accordions.Length == 0) yield break;
+		var images = accordions.Skip(1).SelectMany(n => WithClass(n, "accordition_item")).ToArray();
+		foreach (var volume in WithClass(accordions[0], "accordition_item"))
+		{
+			var title = WithClass(volume, "accordition_item_title").FirstOrDefault()?.InnerText.HTMLDecode().Trim();
+			if (string.IsNullOrEmpty(title)) continue;
+			var gallery = images.FirstOrDefault(n =>
+				WithClass(n, "accordition_item_title").FirstOrDefault()?.InnerText.HTMLDecode().Trim() == title);
 			yield return new SourceVolume
 			{
-				Chapters = chapters,
+				Chapters = ReadChapters(volume, set.Root).ToArray(),
 				Title = title,
-				Url = url,
-				Forwards = imgs ?? Array.Empty<string>()
+				Url = set.Root,
+				Forwards = ReadImages(gallery, set.Root)
 			};
 		}
 	}
+
+	private static IEnumerable<HtmlNode> WithClass(HtmlNode node, string name) =>
+		node.Descendants().Where(n => n.HasClass(name));
+
+	private static string? AbsoluteUrl(string root, string? href)
+	{
+		if (string.IsNullOrWhiteSpace(href)) return null;
+		href = WebUtility.HtmlDecode(href).Trim();
+		if (!Uri.TryCreate(new Uri(root), href, out var uri) ||
+			(uri.Scheme != Uri.UriSchemeHttps && uri.Scheme != Uri.UriSchemeHttp)) return null;
+		// Absolute source URLs are database keys; preserve their percent-escape casing.
+		return Uri.IsWellFormedUriString(href, UriKind.Absolute) ? href : uri.AbsoluteUri;
+	}
+
+	private static IEnumerable<SourceChapterItem> ReadChapters(HtmlNode node, string root)
+	{
+		foreach (var row in node.Descendants("li").Where(n => n.HasClass("unlock") && !n.HasClass("lock")))
+		{
+			var url = AbsoluteUrl(root, row.SelectSingleNode("./a")?.GetAttributeValue("href", ""));
+			if (url == null) continue;
+			yield return new SourceChapterItem
+			{
+				// Preserve the existing title format used to identify stored chapters.
+				Title = string.Join(": ", row.InnerText.HTMLDecode().Trim().Split(':')),
+				Url = url
+			};
+		}
+	}
+
+	private static string[] ReadImages(HtmlNode? node, string root) =>
+		node?.Descendants("img").Select(n => AbsoluteUrl(root, n.GetAttributeValue("src", "")))
+			.Where(url => url != null).Cast<string>().Distinct().ToArray() ?? [];
 
 	public async Task<SourceChapter?> GetChapter(string url, string bookTitle)
 	{
 		var doc = await GetWithAuth(url);
 		if (doc == null) return null;
 
-		var title = doc.InnerText("//div[@class='text_story']/h2");
+		var content = WithClass(doc.DocumentNode, "text_story").FirstOrDefault();
+		var title = content?.SelectSingleNode("./h2")?.InnerText.HTMLDecode().Trim();
 		if (string.IsNullOrEmpty(title)) return null;
 
-		var next = doc.Attribute("//div[@class=' next_story_btn']/a", "href");
+		var next = AbsoluteUrl(url, WithClass(doc.DocumentNode, "next_story_btn")
+			.SelectMany(n => n.Descendants("a")).FirstOrDefault()?.GetAttributeValue("href", ""));
 
-		var locked = doc.DocumentNode.SelectSingleNode("//div[@class='excerpt-text']/div[@class='unlock_chapter text-center']");
-		if (locked != null) return null;
+		if (WithClass(doc.DocumentNode, "unlock_chapter").Any()) return null;
 
-		var content = doc.DocumentNode.SelectSingleNode("//div[@class='text_story']");
 		var validEls = new[] { "p", "hr", "img" };
-		foreach(var child in content.ChildNodes.ToArray())
+		foreach(var child in content!.ChildNodes.ToArray())
 		{
 			if (!validEls.Contains(child.Name) || child.InnerHtml == "&nbsp;")
 			{
@@ -261,8 +312,9 @@ public class LntSourceService : ILntSourceService
 				child.CleanupNode();
 		}
 
-		while (content.FirstChild.Name == "hr") content.RemoveChild(content.FirstChild);
-		while (content.LastChild.Name == "hr") content.RemoveChild(content.LastChild);
+		while (content.FirstChild?.Name == "hr") content.RemoveChild(content.FirstChild);
+		while (content.LastChild?.Name == "hr") content.RemoveChild(content.LastChild);
+		if (string.IsNullOrWhiteSpace(content.InnerText.HTMLDecode()) && !content.Descendants("img").Any()) return null;
 
 		return new SourceChapter
 		{

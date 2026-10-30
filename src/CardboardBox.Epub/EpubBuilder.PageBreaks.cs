@@ -80,6 +80,7 @@ public sealed partial class EpubPageBreakGenerator
 		};
 
 		doc.LoadHtml(html);
+		doc.DecodeHtmlEntitiesForXml();
 
 		var root = doc.DocumentNode.SelectSingleNode("//*[local-name()='html']");
 		if (root is not null && string.IsNullOrWhiteSpace(root.GetAttributeValue("xmlns:epub", string.Empty)))
@@ -135,7 +136,7 @@ public sealed partial class EpubPageBreakGenerator
 			textNode.Remove();
 		}
 
-		return doc.DocumentNode.OuterHtml;
+		return doc.ToXhtml();
 	}
 
 	private static bool ShouldIgnore(HtmlNode node)

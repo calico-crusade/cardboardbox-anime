@@ -4,6 +4,30 @@ namespace CardboardBox.Epub;
 
 public static class Extensions
 {
+	public static void DecodeHtmlEntitiesForXml(this HtmlDocument document)
+	{
+		// HtmlAgilityPack retains entity references in HTML text nodes. Decode
+		// once before XML serialization, preserving literal markup as text.
+		foreach (var text in document.DocumentNode.Descendants().OfType<HtmlTextNode>())
+		{
+			if (text.Ancestors().Any(n => n.Name is "script" or "style")) continue;
+			text.Text = WebUtility.HtmlDecode(text.Text);
+		}
+		foreach (var node in document.DocumentNode.Descendants())
+			foreach (var attribute in node.Attributes)
+				attribute.Value = WebUtility.HtmlDecode(attribute.Value);
+	}
+
+	public static string ToXhtml(this HtmlDocument document)
+	{
+		using var output = new Utf8StringWriter();
+		// HAP stores qualified names such as epub:type verbatim. Let the XML
+		// writer escape values while preserving those names and xmlns attributes.
+		using (var writer = new System.Xml.XmlTextWriter(output) { Namespaces = false })
+			document.DocumentNode.WriteTo(writer);
+		return output.ToString();
+	}
+
 	//
 	public static XElement AddAttribute(this XElement el, XName name, object? value)
 	{

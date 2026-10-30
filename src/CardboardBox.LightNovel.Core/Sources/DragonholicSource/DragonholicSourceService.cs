@@ -20,7 +20,7 @@ public class DragonholicSourceService(
             return null;
         }
 
-        var chapters = await _api.Chapters(series.Id);
+        var chapters = OrderedChapters(await _api.Chapters(series.Id));
         var terms = series.Embedded?.Terms.SelectMany(term => term) ?? [];
         var authors = Terms(terms, "series-author");
         var genres = Terms(terms, "genre");
@@ -83,12 +83,20 @@ public class DragonholicSourceService(
         DragonholicChapterItem[] chapters)
     {
         return chapters
+            .OrderBy(chapter => chapter.ChapterOrder)
+            .ThenBy(chapter => chapter.Id)
             .GroupBy(chapter => new DragonholicVolume(
                 chapter.VolumeId,
                 chapter.VolumeName,
                 chapter.VolumeOrder))
             .OrderBy(group => group.Key.Order ?? int.MaxValue)
             .ThenBy(group => group.Min(chapter => chapter.ChapterOrder));
+    }
+
+    // Metadata and navigation must follow the same volume order as the table of contents.
+    private static DragonholicChapterItem[] OrderedChapters(DragonholicChapterItem[] chapters)
+    {
+        return VolumeGroups(chapters).SelectMany(group => group).ToArray();
     }
 
     private static string VolumeTitle(DragonholicVolume volume)
@@ -131,7 +139,7 @@ public class DragonholicSourceService(
         }
 
         var content = await _api.Chapter(chapter.Id);
-        if (content is null)
+        if (content is null || content.Content.Protected || string.IsNullOrWhiteSpace(content.Content.Rendered))
         {
             _logger.LogError("Failed to get Dragonholic chapter: {url}", url);
             return null;
@@ -187,7 +195,7 @@ public class DragonholicSourceService(
         if (series is null)
             return (null, null, []);
 
-        var chapters = await _api.Chapters(series.Id);
+        var chapters = OrderedChapters(await _api.Chapters(series.Id));
         var safeUrl = NormalizeUrl(url);
         var chapterSlug = PathParts(url).Skip(2).FirstOrDefault();
         var chapter = chapters.FirstOrDefault(item =>

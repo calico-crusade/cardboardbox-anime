@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CardboardBox.Anime.All\CardboardBox.Anime.All.csproj" />
+	<ProjectReference Include="..\CardboardBox.Anime.Patreon\CardboardBox.Anime.Patreon.csproj" />
     <ProjectReference Include="..\CardboardBox.Epub\CardboardBox.Epub.csproj" />
     <ProjectReference Include="..\CardboardBox.Manga.MangaDex\CardboardBox.Manga.MangaDex.csproj" />
   </ItemGroup>

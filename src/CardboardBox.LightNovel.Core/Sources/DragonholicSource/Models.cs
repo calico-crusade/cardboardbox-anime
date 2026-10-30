@@ -4,6 +4,9 @@ public class DragonholicRenderedText
 {
     [JsonPropertyName("rendered")]
     public string Rendered { get; set; } = string.Empty;
+
+    [JsonPropertyName("protected")]
+    public bool Protected { get; set; }
 }
 
 public class DragonholicSeries

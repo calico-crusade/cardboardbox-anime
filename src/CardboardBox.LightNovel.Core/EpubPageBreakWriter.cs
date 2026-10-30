@@ -137,7 +137,8 @@ public static class EpubPageBreakWriter
 
         body.AppendChild(nav);
 
-        return doc.DocumentNode.OuterHtml;
+        doc.DecodeHtmlEntitiesForXml();
+        return doc.ToXhtml();
     }
 
     private static bool HasEpubType(HtmlNode node, string type)

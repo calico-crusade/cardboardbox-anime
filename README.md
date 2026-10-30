@@ -19,6 +19,8 @@
     * [lightnovelpub.com](https://www.lightnovelpub.com)
     * [re-library.com](https://re-library.com)
     * [scribblehub.com](https://www.scribblehub.com)
+    * [katreadingcafe.com](https://katreadingcafe.com)
+    * [dragonholictranslations.com](https://dragonholictranslations.com)
   * Generate ebooks (epubs) from any of the novels
 * [AI Image Generation](https://cba.index-0.com/ai)
   * Text to image generation

@@ -158,6 +158,7 @@ public static class Extensions
 			.AddTransient<ILONAMMTLSourceService, LONAMMTLSourceService>()
 			.AddTransient<IFoxaholicSourceService, FoxaholicSource>()
 			.AddTransient<IFloraSourceService, FloraSource>()
+			.AddTransient<IKatReadingCafeSourceService, KatReadingCafeSource>()
 			.AddTransient<IDragonholicApiService, DragonholicApiService>()
 			.AddTransient<IDragonholicSourceService, DragonholicSourceService>()
 
